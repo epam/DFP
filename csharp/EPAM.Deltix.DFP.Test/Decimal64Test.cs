@@ -207,6 +207,48 @@ namespace EPAM.Deltix.DFP.Test
 			Assert.Throws<ArgumentException>(delegate { DotNetImpl.FromFixedPointFastUnsigned(0, 399); });
 		}
 
+		[Test]
+		public void FromFixedPointUnsigned()
+		{
+			int m = 123;
+			foreach (var n in new long[] { 0, 1, 2, 10, 100, 1000, int.MaxValue - 1, int.MaxValue, int.MaxValue + 1L, uint.MaxValue - 1L, uint.MaxValue, uint.MaxValue + 1L, long.MaxValue })
+			{
+				var dII = Decimal64.FromFixedPoint(m, (int)n);
+				var dIU = Decimal64.FromFixedPoint(m, (uint)n);
+				var dUI = Decimal64.FromFixedPoint((uint)m, (int)n);
+				var dUU = Decimal64.FromFixedPoint((uint)m, (uint)n);
+				var dLI = Decimal64.FromFixedPoint((long)m, (int)n);
+				var dLU = Decimal64.FromFixedPoint((long)m, (uint)n);
+
+				Assert.AreEqual(dII, dUI);
+				Assert.AreEqual(dII, dLI);
+
+				Assert.AreEqual(dIU, dUU);
+				Assert.AreEqual(dIU, dLU);
+
+				Assert.AreEqual(dUI, dLI);
+
+				Assert.AreEqual(dUU, dLU);
+
+				if (n <= int.MaxValue)
+				{
+					Assert.AreEqual(dII, dIU);
+					Assert.AreEqual(dII, dUU);
+					Assert.AreEqual(dII, dLU);
+
+					Assert.AreEqual(dIU, dUI);
+					Assert.AreEqual(dIU, dLI);
+
+					Assert.AreEqual(dUI, dUU);
+					Assert.AreEqual(dUI, dLU);
+
+					Assert.AreEqual(dUU, dLI);
+
+					Assert.AreEqual(dLI, dLU);
+				}
+			}
+		}
+
 
 		[Test]
 		public void DecimalInternalRepresentation()

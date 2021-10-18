@@ -87,6 +87,21 @@ namespace EPAM.Deltix.DFP
 				: NativeImpl.fromFixedPoint64(mantissa, numberOfDigits));
 		}
 
+		public static Decimal64 FromFixedPoint(int mantissa, uint numberOfDigits)
+		{
+			return numberOfDigits < Int32.MaxValue ? FromFixedPoint(mantissa, (int)numberOfDigits) : Decimal64.Zero;
+		}
+
+		public static Decimal64 FromFixedPoint(uint mantissa, uint numberOfDigits)
+		{
+			return numberOfDigits < Int32.MaxValue ? FromFixedPoint(mantissa, (int)numberOfDigits) : Decimal64.Zero;
+		}
+
+		public static Decimal64 FromFixedPoint(long mantissa, uint numberOfDigits)
+		{
+			return numberOfDigits < Int32.MaxValue ? FromFixedPoint(mantissa, (int)numberOfDigits) : Decimal64.Zero;
+		}
+
 		public Int64 ToFixedPoint(int numberOfDigits)
 		{
 			return NativeImpl.toFixedPoint(Bits, numberOfDigits);
