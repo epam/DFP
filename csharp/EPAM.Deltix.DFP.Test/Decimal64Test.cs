@@ -205,6 +205,48 @@ namespace EPAM.Deltix.DFP.Test
 			Assert.Throws<ArgumentException>(delegate { DotNetImpl.FromFixedPointFastUnsigned(0, 399); });
 		}
 
+		[Test]
+		public void FromFixedPointUnsigned()
+		{
+			int m = 123;
+			foreach (var n in new long[] { 0, 1, 2, 10, 100, 1000, int.MaxValue - 1, int.MaxValue, int.MaxValue + 1L, uint.MaxValue - 1L, uint.MaxValue, uint.MaxValue + 1L, long.MaxValue })
+			{
+				var dII = Decimal64.FromFixedPoint(m, (int)n);
+				var dIU = Decimal64.FromFixedPoint(m, (uint)n);
+				var dUI = Decimal64.FromFixedPoint((uint)m, (int)n);
+				var dUU = Decimal64.FromFixedPoint((uint)m, (uint)n);
+				var dLI = Decimal64.FromFixedPoint((long)m, (int)n);
+				var dLU = Decimal64.FromFixedPoint((long)m, (uint)n);
+
+				Assert.AreEqual(dII, dUI);
+				Assert.AreEqual(dII, dLI);
+
+				Assert.AreEqual(dIU, dUU);
+				Assert.AreEqual(dIU, dLU);
+
+				Assert.AreEqual(dUI, dLI);
+
+				Assert.AreEqual(dUU, dLU);
+
+				if (n <= int.MaxValue)
+				{
+					Assert.AreEqual(dII, dIU);
+					Assert.AreEqual(dII, dUU);
+					Assert.AreEqual(dII, dLU);
+
+					Assert.AreEqual(dIU, dUI);
+					Assert.AreEqual(dIU, dLI);
+
+					Assert.AreEqual(dUI, dUU);
+					Assert.AreEqual(dUI, dLU);
+
+					Assert.AreEqual(dUU, dLI);
+
+					Assert.AreEqual(dLI, dLU);
+				}
+			}
+		}
+
 
 		[Test]
 		public void DecimalInternalRepresentation()
@@ -490,7 +532,8 @@ namespace EPAM.Deltix.DFP.Test
 
 				CheckCanonize(x, y);
 			});
-			PartsCombinationsWithoutEndingZeros(delegate (long m, int e) {
+			PartsCombinationsWithoutEndingZeros(delegate (long m, int e)
+			{
 				Decimal64 x = Decimal64.FromFixedPoint(m, e);
 				CheckCanonize2(x, x.Canonize());
 			});
@@ -523,7 +566,7 @@ namespace EPAM.Deltix.DFP.Test
 		[Test]
 		public void FastSignCheck()
 		{
-			var testValues = new []
+			var testValues = new[]
 			{
 				Decimal64.FromDouble(Math.PI),
 				Decimal64.MinValue,
@@ -576,7 +619,7 @@ namespace EPAM.Deltix.DFP.Test
 				CheckValues(testValue, NativeImpl.isZero(testValue.Bits), testValue.CompareTo(Decimal64.Zero) == 0);
 				CheckValues(negTestValue, NativeImpl.isZero(negTestValue.Bits), negTestValue.CompareTo(Decimal64.Zero) == 0);
 
-				CheckValues(testValue, NativeImpl.isNonZero(testValue.Bits), testValue.CompareTo( Decimal64.Zero) != 0);
+				CheckValues(testValue, NativeImpl.isNonZero(testValue.Bits), testValue.CompareTo(Decimal64.Zero) != 0);
 				CheckValues(negTestValue, NativeImpl.isNonZero(negTestValue.Bits), negTestValue.CompareTo(Decimal64.Zero) != 0);
 			}
 		}
