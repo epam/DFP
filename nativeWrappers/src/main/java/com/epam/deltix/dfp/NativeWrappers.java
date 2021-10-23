@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class NativeWrappers {
     public static void main(final String[] args) throws IOException, InterruptedException {
@@ -18,14 +19,31 @@ public class NativeWrappers {
         }
         final String apiPrefix = "ddfp" + args[1] + "_";
 
-//        final List<Path> processList = Files.walk(Paths.get("./native-gcc"))
-//            .filter(Files::isRegularFile)
-//            .filter(p -> p.toString().endsWith(".c"))
-//            .collect(Collectors.toList());
-//
-//        for (final Path path : processList)
-//            processNativeFile(path, apiPrefix);
-        processNativeFile(Paths.get(".", "native", "NativeImpl.c").toAbsolutePath(), apiPrefix, args[0], args[1], args[2]);
+        final String versionThreeDigits = args[0];
+        final String versionSuffix = args[1];
+        final String versionSha = args[2];
+
+        final String javaPrefix = "Java_com_epam_deltix_dfp_NativeImpl_";
+
+        final List<Path> processList = Files.walk(Paths.get("./native"))
+            .filter(Files::isRegularFile)
+            .filter(p -> p.toString().endsWith(".c"))
+            .collect(Collectors.toList());
+
+        final List<ApiEntry> csApi = new ArrayList<>();
+        final List<ApiEntry> javaApi = new ArrayList<>();
+        for (final Path path : processList) {
+            final String preprocess = callPreprocess(path.toAbsolutePath(), apiPrefix);
+
+            csApi.addAll(collectApi(preprocess, apiPrefix));
+
+            javaApi.addAll(collectApi(preprocess, javaPrefix));
+        }
+
+        makeCsWrappers(csApi, apiPrefix);
+        makeCsVersion(versionThreeDigits, versionSuffix, versionSha);
+
+        makeJavaWrappers(versionThreeDigits, javaApi, javaPrefix);
     }
 
     private static class StreamCollector implements Runnable {
@@ -69,21 +87,6 @@ public class NativeWrappers {
             }
             return message;
         }
-    }
-
-    private static void processNativeFile(final Path path, final String apiPrefix, final String versionThreeDigits,
-                                          final String versionSuffix, final String versionSha) throws IOException, InterruptedException {
-
-        final String preprocess = callPreprocess(path, apiPrefix);
-
-        final List<ApiEntry> api = collectApi(preprocess, apiPrefix);
-
-        makeCsWrappers(api, apiPrefix);
-        makeCsVersion(versionThreeDigits, versionSuffix, versionSha);
-
-        final String javaPrefix = "Java_com_epam_deltix_dfp_NativeImpl_";
-        final List<ApiEntry> javaApi = collectApi(preprocess, javaPrefix);
-        makeJavaWrappers(versionThreeDigits, javaApi, javaPrefix);
     }
 
     private static String callPreprocess(final Path path, final String apiPrefix) throws IOException, InterruptedException {
@@ -223,6 +226,8 @@ public class NativeWrappers {
             case "D64Bits":
             case "BID_UINT64":
                 return "UInt64";
+            case "BID_UINT64 *":
+                return "ref UInt64";
             case "int8":
             case "Int8":
                 return "SByte";
@@ -255,6 +260,8 @@ public class NativeWrappers {
                 return "double";
             case "intBool":
                 return "bool";
+            case "void":
+                return "void";
             default:
                 throw new RuntimeException("Can't convert C++ type (='" + type + "') to Cs type.");
         }
@@ -360,6 +367,12 @@ public class NativeWrappers {
                 return "double";
             case "intBool":
                 return "boolean";
+            case "jstring":
+                return "String";
+            case "void":
+                return "void";
+            case "jobject":
+                return "Decimal128Parts";
             default:
                 throw new RuntimeException("Can't convert C++ type (='" + type + "') to Java type.");
         }
