@@ -55,9 +55,9 @@ JNI_API(char*) PPCAT(PPCAT(Java_, JAVA_PREFIX), init) (JNIEnv* env, jclass jClas
     return NULL;
 }
 
-static const BID_UINT128 bid128NanConst = { 0x7C00000000000000ull, 0x7C00000000000000ull };
-static const BID_UINT128 bid128ZeroConst = { 0x31C0000000000000ull, 0x31C0000000000000ull };
-static const BID_UINT128 bid128TwoConst = { 0x31C0000000000002ull, 0x31C0000000000002ull };
+static const BID_UINT128 bid128NanConst = { 0x0000000000000000ull, 0xfc00000000000000ull };
+static const BID_UINT128 bid128ZeroConst = { 0x0000000000000000ull, 0x3040000000000000ull };
+static const BID_UINT128 bid128TwoConst = { 0x0000000000000002ull, 0x3040000000000000ull };
 
 //region Conversion
 
@@ -90,7 +90,7 @@ OPN128_BOOL(bid128SignBit, COMB128ARG(x); intBool ret = bid128_isSigned(x), DEF1
 
 //region Comparison
 
-DDFP_API(int32) PPCAT(API_PREFIX, bid128Compare) ( DEF128ARG(a), DEF128ARG(b)) {
+DDFP_API(int32) PPCAT(API_PREFIX, bid128Compare) (DEF128ARG(a), DEF128ARG(b)) {
     COMB128ARG(a);
     COMB128ARG(b);
     if (bid128_quiet_less(a, b))
@@ -101,7 +101,7 @@ DDFP_API(int32) PPCAT(API_PREFIX, bid128Compare) ( DEF128ARG(a), DEF128ARG(b)) {
         return 0;
     return bid128_isNaN(b) - bid128_isNaN(a);
 }
-JNI_API(int32) PPCAT(PPCAT(Java_, JAVA_PREFIX), bid128Compare) (void *jEnv, void *jClass,  DEF128ARG(a), DEF128ARG(b)) {
+JNI_API(int32) PPCAT(PPCAT(Java_, JAVA_PREFIX), bid128Compare) (JNIEnv* jEnv, jclass jClass, DEF128ARG(a), DEF128ARG(b)) {
     COMB128ARG(a);
     COMB128ARG(b);
     if (bid128_quiet_less(a, b))
@@ -112,7 +112,7 @@ JNI_API(int32) PPCAT(PPCAT(Java_, JAVA_PREFIX), bid128Compare) (void *jEnv, void
         return 0;
     return bid128_isNaN(a) - bid128_isNaN(b);
 }
-JNI_API(int32) PPCAT(PPCAT(JavaCritical_, JAVA_PREFIX), bid128Compare) ( DEF128ARG(a), DEF128ARG(b)) {
+JNI_API(int32) PPCAT(PPCAT(JavaCritical_, JAVA_PREFIX), bid128Compare) (DEF128ARG(a), DEF128ARG(b)) {
     COMB128ARG(a);
     COMB128ARG(b);
     if (bid128_quiet_less(a, b))
@@ -151,23 +151,23 @@ OPN128(bid128RoundToNearestTiesAwayFromZero, COMB128ARG(a); BID_UINT128 ret = bi
 //region Minimum & Maximum
 
 OPN128(bid128Max2, COMB128ARG(a); COMB128ARG(b);
-    BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) ? bid128NanConst : bid128_maxnum(a, b),
-    DEF128ARG(a), DEF128ARG(b))
+BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) ? bid128NanConst : bid128_maxnum(a, b),
+DEF128ARG(a), DEF128ARG(b))
 OPN128(bid128Max3, COMB128ARG(a); COMB128ARG(b); COMB128ARG(c);
-    BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) || bid128_isNaN(c) ? bid128NanConst : bid128_maxnum(bid128_maxnum(a, b), c),
-    DEF128ARG(a), DEF128ARG(b), DEF128ARG(c))
+BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) || bid128_isNaN(c) ? bid128NanConst : bid128_maxnum(bid128_maxnum(a, b), c),
+DEF128ARG(a), DEF128ARG(b), DEF128ARG(c))
 OPN128(bid128Max4, COMB128ARG(a); COMB128ARG(b); COMB128ARG(c); COMB128ARG(d);
-    BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) || bid128_isNaN(c) || bid128_isNaN(d) ? bid128NanConst : bid128_maxnum(bid128_maxnum(a, b), bid128_maxnum(c, d)),
-    DEF128ARG(a), DEF128ARG(b), DEF128ARG(c), DEF128ARG(d))
+BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) || bid128_isNaN(c) || bid128_isNaN(d) ? bid128NanConst : bid128_maxnum(bid128_maxnum(a, b), bid128_maxnum(c, d)),
+DEF128ARG(a), DEF128ARG(b), DEF128ARG(c), DEF128ARG(d))
 OPN128(bid128Min2, COMB128ARG(a); COMB128ARG(b);
-    BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) ? bid128NanConst : bid128_minnum(a, b),
-    DEF128ARG(a), DEF128ARG(b))
+BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) ? bid128NanConst : bid128_minnum(a, b),
+DEF128ARG(a), DEF128ARG(b))
 OPN128(bid128Min3, COMB128ARG(a); COMB128ARG(b); COMB128ARG(c);
-    BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) || bid128_isNaN(c) ? bid128NanConst : bid128_minnum(bid128_minnum(a, b), c),
-    DEF128ARG(a), DEF128ARG(b), DEF128ARG(c))
+BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) || bid128_isNaN(c) ? bid128NanConst : bid128_minnum(bid128_minnum(a, b), c),
+DEF128ARG(a), DEF128ARG(b), DEF128ARG(c))
 OPN128(bid128Min4, COMB128ARG(a); COMB128ARG(b); COMB128ARG(c); COMB128ARG(d);
-    BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) || bid128_isNaN(c) || bid128_isNaN(d) ? bid128NanConst : bid128_minnum(bid128_minnum(a, b), bid128_minnum(c, d)),
-    DEF128ARG(a), DEF128ARG(b), DEF128ARG(c), DEF128ARG(d))
+BID_UINT128 ret = bid128_isNaN(a) || bid128_isNaN(b) || bid128_isNaN(c) || bid128_isNaN(d) ? bid128NanConst : bid128_minnum(bid128_minnum(a, b), bid128_minnum(c, d)),
+DEF128ARG(a), DEF128ARG(b), DEF128ARG(c), DEF128ARG(d))
 
 //endregion
 
@@ -233,7 +233,7 @@ OPN128(bid128Add, COMB128ARG(x); COMB128ARG(y); BID_UINT128 ret = bid128_add(x, 
 OPN128(bid128Sub, COMB128ARG(x); COMB128ARG(y); BID_UINT128 ret = bid128_sub(x, y), DEF128ARG(x), DEF128ARG(y))
 OPN128(bid128Mul, COMB128ARG(x); COMB128ARG(y); BID_UINT128 ret = bid128_mul(x, y), DEF128ARG(x), DEF128ARG(y))
 OPN128(bid128Div, COMB128ARG(x); COMB128ARG(y); BID_UINT128 ret = bid128_div(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128(bid128Fma, COMB128ARG(x); COMB128ARG(y); COMB128ARG(z); BID_UINT128 ret = bid128_fma(x, y, z), DEF128ARG(x),  DEF128ARG(y), DEF128ARG(z))
+OPN128(bid128Fma, COMB128ARG(x); COMB128ARG(y); COMB128ARG(z); BID_UINT128 ret = bid128_fma(x, y, z), DEF128ARG(x), DEF128ARG(y), DEF128ARG(z))
 OPN128(bid128Sqrt, COMB128ARG(x); BID_UINT128 ret = bid128_sqrt(x), DEF128ARG(x))
 OPN128(bid128Cbrt, COMB128ARG(x); BID_UINT128 ret = bid128_cbrt(x), DEF128ARG(x))
 
