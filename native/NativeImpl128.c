@@ -27,8 +27,6 @@ JNI_API(mcr__type) PPCAT(PPCAT(JavaCritical_, JAVA_PREFIX), mcr__name) (__VA_ARG
     return ret;                                                                                                         \
 }                                                                                                                       \
 
-#define OPN128_BOOL(mcr__name, mcr__body, ...)         OPNR128(mcr__name, intBool, mcr__body, __VA_ARGS__)
-
 #define DEF128ARG(arg__name)    BID_UINT64 arg__name##Low, BID_UINT64 arg__name##High
 #define COMB128ARG(arg__name)   BID_UINT128 arg__name = { {arg__name##Low, arg__name##High} }
 
@@ -37,20 +35,20 @@ jclass jDecimal128Class;
 jfieldID jDecimal128Low;
 jfieldID jDecimal128High;
 
-JNI_API(char*) PPCAT(PPCAT(Java_, JAVA_PREFIX), init) (JNIEnv* env, jclass jClass) {
+JNI_API(jstring) PPCAT(PPCAT(Java_, JAVA_PREFIX), init) (JNIEnv* env, jclass jClass) {
     jEnv = env;
 
     jDecimal128Class = (*env)->FindClass(jEnv, JAVA_DECIMAL128_CLASS_PATH);
     if (!jDecimal128Class)
-        return "Can't find '" JAVA_DECIMAL128_CLASS_PATH "' class";
+        return (*env)->NewStringUTF(env, "Can't find '" JAVA_DECIMAL128_CLASS_PATH "' class.");
 
     jDecimal128Low = (*env)->GetFieldID(jEnv, jDecimal128Class, JAVA_DECIMAL128_FIELD_LOW, "J");
     if (!jDecimal128Low)
-        return "Can't find '" JAVA_DECIMAL128_FIELD_LOW "' field of the '" JAVA_DECIMAL128_CLASS_PATH "' class.";
+        return (*env)->NewStringUTF(env, "Can't find '" JAVA_DECIMAL128_FIELD_LOW "' field of the '" JAVA_DECIMAL128_CLASS_PATH "' class.");
 
     jDecimal128High = (*env)->GetFieldID(jEnv, jDecimal128Class, JAVA_DECIMAL128_FIELD_HIGH, "J");
     if (!jDecimal128High)
-        return "Can't find '" JAVA_DECIMAL128_FIELD_HIGH "' field of the '" JAVA_DECIMAL128_CLASS_PATH "' class.";
+        return (*env)->NewStringUTF(env, "Can't find '" JAVA_DECIMAL128_FIELD_HIGH "' field of the '" JAVA_DECIMAL128_CLASS_PATH "' class.");
 
     return NULL;
 }
@@ -78,13 +76,13 @@ OPNR128(bid128ToFixedPoint, int64, COMB128ARG(x); int64 ret = bid128_to_int64_xi
 
 //region Classification
 
-OPN128_BOOL(bid128IsNaN, COMB128ARG(x); intBool ret = bid128_isNaN(x), DEF128ARG(x))
-OPN128_BOOL(bid128IsInfinity, COMB128ARG(x); intBool ret = bid128_isInf(x), DEF128ARG(x))
-OPN128_BOOL(bid128IsPositiveInfinity, COMB128ARG(x); intBool ret = (intBool)(bid128_isInf(x) && !bid128_isSigned(x)), DEF128ARG(x))
-OPN128_BOOL(bid128IsNegativeInfinity, COMB128ARG(x); intBool ret = (intBool)(bid128_isInf(x) && bid128_isSigned(x)), DEF128ARG(x))
-OPN128_BOOL(bid128IsFinite, COMB128ARG(x); intBool ret = bid128_isFinite(x), DEF128ARG(x))
-OPN128_BOOL(bid128IsNormal, COMB128ARG(x); intBool ret = bid128_isNormal(x), DEF128ARG(x))
-OPN128_BOOL(bid128SignBit, COMB128ARG(x); intBool ret = bid128_isSigned(x), DEF128ARG(x))
+OPNR128(bid128IsNaN, intBool, COMB128ARG(x); intBool ret = bid128_isNaN(x), DEF128ARG(x))
+OPNR128(bid128IsInfinity, intBool, COMB128ARG(x); intBool ret = bid128_isInf(x), DEF128ARG(x))
+OPNR128(bid128IsPositiveInfinity, intBool, COMB128ARG(x); intBool ret = (intBool)(bid128_isInf(x) && !bid128_isSigned(x)), DEF128ARG(x))
+OPNR128(bid128IsNegativeInfinity, intBool, COMB128ARG(x); intBool ret = (intBool)(bid128_isInf(x) && bid128_isSigned(x)), DEF128ARG(x))
+OPNR128(bid128IsFinite, intBool, COMB128ARG(x); intBool ret = bid128_isFinite(x), DEF128ARG(x))
+OPNR128(bid128IsNormal, intBool, COMB128ARG(x); intBool ret = bid128_isNormal(x), DEF128ARG(x))
+OPNR128(bid128SignBit, intBool, COMB128ARG(x); intBool ret = bid128_isSigned(x), DEF128ARG(x))
 
 //endregion
 
@@ -124,18 +122,18 @@ JNI_API(int32) PPCAT(PPCAT(JavaCritical_, JAVA_PREFIX), bid128Compare) (DEF128AR
     return bid128_isNaN(a) - bid128_isNaN(b);
 }
 
-OPN128_BOOL(bid128IsEqual, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_equal(a, b), DEF128ARG(a), DEF128ARG(b))
-OPN128_BOOL(bid128IsNotEqual, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_not_equal(a, b), DEF128ARG(a), DEF128ARG(b))
-OPN128_BOOL(bid128IsLess, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_less(a, b), DEF128ARG(a), DEF128ARG(b))
-OPN128_BOOL(bid128IsLessOrEqual, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_less_equal(a, b), DEF128ARG(a), DEF128ARG(b))
-OPN128_BOOL(bid128IsGreater, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_greater(a, b), DEF128ARG(a), DEF128ARG(b))
-OPN128_BOOL(bid128IsGreaterOrEqual, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_greater_equal(a, b), DEF128ARG(a), DEF128ARG(b))
-OPN128_BOOL(bid128IsZero, COMB128ARG(a); intBool ret = bid128_isZero(a), DEF128ARG(a))
-OPN128_BOOL(bid128IsNonZero, COMB128ARG(a); intBool ret = bid128_quiet_not_equal(a, bid128ZeroConst), DEF128ARG(a))
-OPN128_BOOL(bid128IsPositive, COMB128ARG(a); intBool ret = bid128_quiet_greater(a, bid128ZeroConst), DEF128ARG(a))
-OPN128_BOOL(bid128IsNegative, COMB128ARG(a); intBool ret = bid128_quiet_less(a, bid128ZeroConst), DEF128ARG(a))
-OPN128_BOOL(bid128IsNonPositive, COMB128ARG(a); intBool ret = bid128_quiet_less_equal(a, bid128ZeroConst), DEF128ARG(a))
-OPN128_BOOL(bid128IsNonNegative, COMB128ARG(a); intBool ret = bid128_quiet_greater_equal(a, bid128ZeroConst), DEF128ARG(a))
+OPNR128(bid128IsEqual, intBool, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_equal(a, b), DEF128ARG(a), DEF128ARG(b))
+OPNR128(bid128IsNotEqual, intBool, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_not_equal(a, b), DEF128ARG(a), DEF128ARG(b))
+OPNR128(bid128IsLess, intBool, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_less(a, b), DEF128ARG(a), DEF128ARG(b))
+OPNR128(bid128IsLessOrEqual, intBool, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_less_equal(a, b), DEF128ARG(a), DEF128ARG(b))
+OPNR128(bid128IsGreater, intBool, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_greater(a, b), DEF128ARG(a), DEF128ARG(b))
+OPNR128(bid128IsGreaterOrEqual, intBool, COMB128ARG(a); COMB128ARG(b); intBool ret = bid128_quiet_greater_equal(a, b), DEF128ARG(a), DEF128ARG(b))
+OPNR128(bid128IsZero, intBool, COMB128ARG(a); intBool ret = bid128_isZero(a), DEF128ARG(a))
+OPNR128(bid128IsNonZero, intBool, COMB128ARG(a); intBool ret = bid128_quiet_not_equal(a, bid128ZeroConst), DEF128ARG(a))
+OPNR128(bid128IsPositive, intBool, COMB128ARG(a); intBool ret = bid128_quiet_greater(a, bid128ZeroConst), DEF128ARG(a))
+OPNR128(bid128IsNegative, intBool, COMB128ARG(a); intBool ret = bid128_quiet_less(a, bid128ZeroConst), DEF128ARG(a))
+OPNR128(bid128IsNonPositive, intBool, COMB128ARG(a); intBool ret = bid128_quiet_less_equal(a, bid128ZeroConst), DEF128ARG(a))
+OPNR128(bid128IsNonNegative, intBool, COMB128ARG(a); intBool ret = bid128_quiet_greater_equal(a, bid128ZeroConst), DEF128ARG(a))
 
 //endregion
 
@@ -237,18 +235,18 @@ OPN128(bid128Fma, COMB128ARG(x); COMB128ARG(y); COMB128ARG(z); BID_UINT128 ret =
 OPN128(bid128Sqrt, COMB128ARG(x); BID_UINT128 ret = bid128_sqrt(x), DEF128ARG(x))
 OPN128(bid128Cbrt, COMB128ARG(x); BID_UINT128 ret = bid128_cbrt(x), DEF128ARG(x))
 
-OPN128_BOOL(bid128QuietEqual, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_equal(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietGreater, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_greater(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietGreaterEqual, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_greater_equal(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietGreaterUnordered, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_greater_unordered(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietLess, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_less(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietLessEqual, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_less_equal(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietLessUnordered, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_less_unordered(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietNotEqual, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_not_equal(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietNotGreater, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_not_greater(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietNotLess, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_not_less(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietOrdered, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_ordered(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128QuietUnordered, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_unordered(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietEqual, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_equal(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietGreater, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_greater(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietGreaterEqual, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_greater_equal(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietGreaterUnordered, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_greater_unordered(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietLess, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_less(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietLessEqual, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_less_equal(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietLessUnordered, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_less_unordered(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietNotEqual, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_not_equal(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietNotGreater, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_not_greater(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietNotLess, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_not_less(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietOrdered, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_ordered(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128QuietUnordered, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_quiet_unordered(x, y), DEF128ARG(x), DEF128ARG(y))
 
 OPN128(bid128RoundIntegralExact, COMB128ARG(x); BID_UINT128 ret = bid128_round_integral_exact(x), DEF128ARG(x))
 OPN128(bid128RoundIntegralNearestEven, COMB128ARG(x); BID_UINT128 ret = bid128_round_integral_nearest_even(x), DEF128ARG(x))
@@ -270,14 +268,14 @@ OPN128(bid128FromUint32, BID_UINT128 ret = bid128_from_uint32(x), uint32 x)
 //OPN128(bid128FromInt64, BID_UINT128 ret = bid128_from_int64(x), int64 x)
 OPN128(bid128FromUint64, BID_UINT128 ret = bid128_from_uint64(x), uint64 x)
 
-OPN128_BOOL(bid128IsSigned, COMB128ARG(x); intBool ret = bid128_isSigned(x), DEF128ARG(x))
+OPNR128(bid128IsSigned, intBool, COMB128ARG(x); intBool ret = bid128_isSigned(x), DEF128ARG(x))
 //OPN128_BOOL(bid128IsNormal, COMB128ARG(x); intBool ret = bid128_isNormal(x), DEF128ARG(x))
-OPN128_BOOL(bid128IsSubnormal, COMB128ARG(x); intBool ret = bid128_isSubnormal(x), DEF128ARG(x))
+OPNR128(bid128IsSubnormal, intBool, COMB128ARG(x); intBool ret = bid128_isSubnormal(x), DEF128ARG(x))
 //OPN128_BOOL(bid128IsFinite, COMB128ARG(x); intBool ret = bid128_isFinite(x), DEF128ARG(x))
 //OPN128_BOOL(bid128IsZero, COMB128ARG(x); intBool ret = bid128_isZero(x), DEF128ARG(x))
-OPN128_BOOL(bid128IsInf, COMB128ARG(x); intBool ret = bid128_isInf(x), DEF128ARG(x))
-OPN128_BOOL(bid128IsSignaling, COMB128ARG(x); intBool ret = bid128_isSignaling(x), DEF128ARG(x))
-OPN128_BOOL(bid128IsCanonical, COMB128ARG(x); intBool ret = bid128_isCanonical(x), DEF128ARG(x))
+OPNR128(bid128IsInf, intBool, COMB128ARG(x); intBool ret = bid128_isInf(x), DEF128ARG(x))
+OPNR128(bid128IsSignaling, intBool, COMB128ARG(x); intBool ret = bid128_isSignaling(x), DEF128ARG(x))
+OPNR128(bid128IsCanonical, intBool, COMB128ARG(x); intBool ret = bid128_isCanonical(x), DEF128ARG(x))
 //OPN128_BOOL(bid128IsNaN, COMB128ARG(x); intBool ret = bid128_isNaN(x), DEF128ARG(x))
 
 OPN128(bid128Copy, COMB128ARG(x); BID_UINT128 ret = bid128_copy(x), DEF128ARG(x))
@@ -286,9 +284,9 @@ OPN128(bid128Copy, COMB128ARG(x); BID_UINT128 ret = bid128_copy(x), DEF128ARG(x)
 OPN128(bid128CopySign, COMB128ARG(x); COMB128ARG(y); BID_UINT128 ret = bid128_copySign(x, y), DEF128ARG(x), DEF128ARG(y))
 
 OPNR128(bid128Class, int32, COMB128ARG(x); int32 ret = bid128_class(x), DEF128ARG(x))
-OPN128_BOOL(bid128SameQuantum, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_sameQuantum(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128TotalOrder, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_totalOrder(x, y), DEF128ARG(x), DEF128ARG(y))
-OPN128_BOOL(bid128TotalOrderMag, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_totalOrderMag(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128SameQuantum, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_sameQuantum(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128TotalOrder, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_totalOrder(x, y), DEF128ARG(x), DEF128ARG(y))
+OPNR128(bid128TotalOrderMag, intBool, COMB128ARG(x); COMB128ARG(y); intBool ret = bid128_totalOrderMag(x, y), DEF128ARG(x), DEF128ARG(y))
 OPNR128(bid128Radix, int32, COMB128ARG(x); int32 ret = bid128_radix(x), DEF128ARG(x))
 
 OPN128(bid128Rem, COMB128ARG(x); COMB128ARG(y); BID_UINT128 ret = bid128_rem(x, y), DEF128ARG(x), DEF128ARG(y))
@@ -313,6 +311,6 @@ OPNR128(bid128Llquantexp, int64, COMB128ARG(x); int64 ret = bid128_llquantexp(x)
 //region Special
 
 OPN128(bid128NextUp, COMB128ARG(x); BID_UINT128 ret = bid128_nextup(x), DEF128ARG(x))
-OPN128(bid128nextDown, COMB128ARG(x); BID_UINT128 ret = bid128_nextdown(x), DEF128ARG(x))
+OPN128(bid128NextDown, COMB128ARG(x); BID_UINT128 ret = bid128_nextdown(x), DEF128ARG(x))
 
 //endregion
