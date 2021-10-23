@@ -35,22 +35,14 @@ jclass jDecimal128Class;
 jfieldID jDecimal128Low;
 jfieldID jDecimal128High;
 
-JNI_API(jstring) PPCAT(PPCAT(Java_, JAVA_PREFIX), init) (JNIEnv* env, jclass jClass) {
+JNI_API(void) PPCAT(PPCAT(Java_, JAVA_PREFIX), init) (JNIEnv* env, jclass jClass) { // Managed exceprion autimatically will be generated on any error
     jEnv = env;
 
     jDecimal128Class = (*env)->FindClass(jEnv, JAVA_DECIMAL128_CLASS_PATH);
-    if (!jDecimal128Class)
-        return (*env)->NewStringUTF(env, "Can't find '" JAVA_DECIMAL128_CLASS_PATH "' class.");
 
     jDecimal128Low = (*env)->GetFieldID(jEnv, jDecimal128Class, JAVA_DECIMAL128_FIELD_LOW, "J");
-    if (!jDecimal128Low)
-        return (*env)->NewStringUTF(env, "Can't find '" JAVA_DECIMAL128_FIELD_LOW "' field of the '" JAVA_DECIMAL128_CLASS_PATH "' class.");
 
     jDecimal128High = (*env)->GetFieldID(jEnv, jDecimal128Class, JAVA_DECIMAL128_FIELD_HIGH, "J");
-    if (!jDecimal128High)
-        return (*env)->NewStringUTF(env, "Can't find '" JAVA_DECIMAL128_FIELD_HIGH "' field of the '" JAVA_DECIMAL128_CLASS_PATH "' class.");
-
-    return NULL;
 }
 
 static const BID_UINT128 bid128NanConst = { 0x0000000000000000ull, 0xfc00000000000000ull };
