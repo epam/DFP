@@ -3009,18 +3009,6 @@ public class Decimal64Utils {
     }
 
     /**
-     * Returns x * 10^N.
-     *
-     * @param x The mantissa part.
-     * @param n The exponent part.
-     * @return The combined value.
-     */
-    @Decimal
-    public static long scalbln(@Decimal final long x, final long n) {
-        return NativeImpl.bid64Scalbln(x, n);
-    }
-
-    /**
      * Rounds the floating-point argument arg to an integer value in floating-point format, using the current rounding mode.
      *
      * @param x Value to round.

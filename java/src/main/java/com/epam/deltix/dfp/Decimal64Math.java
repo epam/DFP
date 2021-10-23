@@ -667,17 +667,6 @@ public class Decimal64Math {
     }
 
     /**
-     * Returns x * 10^N.
-     *
-     * @param x The mantissa part.
-     * @param n The exponent part.
-     * @return The combined value.
-     */
-    public static Decimal64 scalbln(final Decimal64 x, final long n) {
-        return new Decimal64(Decimal64Utils.scalbln(x.value, n));
-    }
-
-    /**
      * Rounds the floating-point argument arg to an integer value in floating-point format, using the current rounding mode.
      *
      * @param x Value to round.

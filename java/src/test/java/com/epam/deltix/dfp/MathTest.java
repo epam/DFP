@@ -1003,16 +1003,6 @@ public class MathTest {
     }
 
     @Test
-    public void testScalbln() {
-        final Random random = new Random(getRandomSeed());
-        for (int i = 0; i < N; ++i) {
-            final int x = random.nextInt();
-            final int y = random.nextInt(200) - 100;
-            assertDecimalEqual(parse(x + "e" + y), scalbln(fromInt64(x), y), "x=" + x + "; y=" + y);
-        }
-    }
-
-    @Test
     public void testNearByInt() {
         testRoundFunc(new String[]{
             "0", "0", "1", // 0
