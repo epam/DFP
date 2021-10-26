@@ -1,8 +1,10 @@
 package com.epam.deltix.dfp;
 
-public class Decimal64Math {
-    private Decimal64Math() {
+public class Decimal64MathUtils {
+    private Decimal64MathUtils() {
     }
+
+    /// region Math functions
 
     /**
      * Returns the base-e exponential function of x, which is e raised to the power x.
@@ -10,8 +12,9 @@ public class Decimal64Math {
      * @param x Value of the exponent.
      * @return Exponential value of x.
      */
-    public static Decimal64 exp(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.exp(x.value));
+    @Decimal
+    public static long exp(@Decimal final long x) {
+        return NativeImpl.bid64Exp(x);
     }
 
     /**
@@ -20,8 +23,9 @@ public class Decimal64Math {
      * @param x Value of the exponent.
      * @return 2 raised to the power of x.
      */
-    public static Decimal64 exp2(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.exp2(x.value));
+    @Decimal
+    public static long exp2(@Decimal final long x) {
+        return NativeImpl.bid64Exp2(x);
     }
 
     /**
@@ -30,8 +34,9 @@ public class Decimal64Math {
      * @param x Value of the exponent.
      * @return 10 raised to the power of x.
      */
-    public static Decimal64 exp10(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.exp10(x.value));
+    @Decimal
+    public static long exp10(@Decimal final long x) {
+        return NativeImpl.bid64Exp10(x);
     }
 
     /**
@@ -40,8 +45,9 @@ public class Decimal64Math {
      * @param x Value of the exponent.
      * @return e raised to the power of x, minus one.
      */
-    public static Decimal64 expm1(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.expm1(x.value));
+    @Decimal
+    public static long expm1(@Decimal final long x) {
+        return NativeImpl.bid64Expm1(x);
     }
 
     /**
@@ -50,8 +56,9 @@ public class Decimal64Math {
      * @param x Value whose logarithm is calculated.
      * @return Natural logarithm of x.
      */
-    public static Decimal64 log(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.log(x.value));
+    @Decimal
+    public static long log(@Decimal final long x) {
+        return NativeImpl.bid64Log(x);
     }
 
     /**
@@ -60,8 +67,9 @@ public class Decimal64Math {
      * @param x Value whose logarithm is calculated.
      * @return The binary logarithm of x.
      */
-    public static Decimal64 log2(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.log2(x.value));
+    @Decimal
+    public static long log2(@Decimal final long x) {
+        return NativeImpl.bid64Log2(x);
     }
 
     /**
@@ -70,8 +78,9 @@ public class Decimal64Math {
      * @param x Value whose logarithm is calculated.
      * @return Common logarithm of x.
      */
-    public static Decimal64 log10(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.log10(x.value));
+    @Decimal
+    public static long log10(@Decimal final long x) {
+        return NativeImpl.bid64Log10(x);
     }
 
     /**
@@ -80,8 +89,9 @@ public class Decimal64Math {
      * @param x Value whose logarithm is calculated.
      * @return The natural logarithm of (1+x).
      */
-    public static Decimal64 log1p(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.log1p(x.value));
+    @Decimal
+    public static long log1p(@Decimal final long x) {
+        return NativeImpl.bid64Log1p(x);
     }
 
     /**
@@ -91,8 +101,9 @@ public class Decimal64Math {
      * @param y Exponent value.
      * @return The result of raising base to the power exponent.
      */
-    public static Decimal64 pow(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.pow(x.value, y.value));
+    @Decimal
+    public static long pow(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Pow(x, y);
     }
 
     /**
@@ -102,8 +113,9 @@ public class Decimal64Math {
      * @param y Value of the quotient denominator.
      * @return The remainder of dividing the arguments.
      */
-    public static Decimal64 fmod(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.fmod(x.value, y.value));
+    @Decimal
+    public static long fmod(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Fmod(x, y);
     }
 
     //OPN(bid64_modf, bid64_modf(x, iptr), BID_UINT64 x, BID_UINT64 *iptr)
@@ -115,8 +127,9 @@ public class Decimal64Math {
      * @param y The second leg.
      * @return The square root of (x*x+y*y).
      */
-    public static Decimal64 hypot(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.hypot(x.value, y.value));
+    @Decimal
+    public static long hypot(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Hypot(x, y);
     }
 
     /**
@@ -125,8 +138,9 @@ public class Decimal64Math {
      * @param x Value representing an angle expressed in radians.
      * @return Sine of x radians.
      */
-    public static Decimal64 sin(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.sin(x.value));
+    @Decimal
+    public static long sin(@Decimal final long x) {
+        return NativeImpl.bid64Sin(x);
     }
 
     /**
@@ -135,8 +149,9 @@ public class Decimal64Math {
      * @param x Value representing an angle expressed in radians.
      * @return Cosine of x radians.
      */
-    public static Decimal64 cos(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.cos(x.value));
+    @Decimal
+    public static long cos(@Decimal final long x) {
+        return NativeImpl.bid64Cos(x);
     }
 
     /**
@@ -145,8 +160,9 @@ public class Decimal64Math {
      * @param x Value representing an angle, expressed in radians.
      * @return Tangent of x radians.
      */
-    public static Decimal64 tan(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.tan(x.value));
+    @Decimal
+    public static long tan(@Decimal final long x) {
+        return NativeImpl.bid64Tan(x);
     }
 
     /**
@@ -155,8 +171,9 @@ public class Decimal64Math {
      * @param x Value whose arc sine is computed, in the interval [-1,+1].
      * @return Principal arc sine of x, in the interval [-pi/2,+pi/2] radians.
      */
-    public static Decimal64 asin(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.asin(x.value));
+    @Decimal
+    public static long asin(@Decimal final long x) {
+        return NativeImpl.bid64Asin(x);
     }
 
     /**
@@ -165,8 +182,9 @@ public class Decimal64Math {
      * @param x Value whose arc cosine is computed, in the interval [-1,+1].
      * @return Principal arc cosine of x, in the interval [0,pi] radians.
      */
-    public static Decimal64 acos(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.acos(x.value));
+    @Decimal
+    public static long acos(@Decimal final long x) {
+        return NativeImpl.bid64Acos(x);
     }
 
     /**
@@ -175,8 +193,9 @@ public class Decimal64Math {
      * @param x Value whose arc tangent is computed.
      * @return Principal arc tangent of x, in the interval [-pi/2,+pi/2] radians.
      */
-    public static Decimal64 atan(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.atan(x.value));
+    @Decimal
+    public static long atan(@Decimal final long x) {
+        return NativeImpl.bid64Atan(x);
     }
 
     /**
@@ -186,8 +205,9 @@ public class Decimal64Math {
      * @param x Value representing the proportion of the x-coordinate.
      * @return Principal arc tangent of y/x, in the interval [-pi,+pi] radians.
      */
-    public static Decimal64 atan2(final Decimal64 y, final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.atan2(y.value, x.value));
+    @Decimal
+    public static long atan2(@Decimal final long y, @Decimal final long x) {
+        return NativeImpl.bid64Atan2(y, x);
     }
 
     /**
@@ -196,8 +216,9 @@ public class Decimal64Math {
      * @param x Value representing a hyperbolic angle.
      * @return Hyperbolic sine of x.
      */
-    public static Decimal64 sinh(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.sinh(x.value));
+    @Decimal
+    public static long sinh(@Decimal final long x) {
+        return NativeImpl.bid64Sinh(x);
     }
 
     /**
@@ -206,8 +227,9 @@ public class Decimal64Math {
      * @param x Value representing a hyperbolic angle.
      * @return Hyperbolic cosine of x.
      */
-    public static Decimal64 cosh(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.cosh(x.value));
+    @Decimal
+    public static long cosh(@Decimal final long x) {
+        return NativeImpl.bid64Cosh(x);
     }
 
     /**
@@ -216,8 +238,9 @@ public class Decimal64Math {
      * @param x Value representing a hyperbolic angle.
      * @return Hyperbolic tangent of x.
      */
-    public static Decimal64 tanh(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.tanh(x.value));
+    @Decimal
+    public static long tanh(@Decimal final long x) {
+        return NativeImpl.bid64Tanh(x);
     }
 
     /**
@@ -226,8 +249,9 @@ public class Decimal64Math {
      * @param x Value whose area hyperbolic sine is computed.
      * @return Area hyperbolic sine of x.
      */
-    public static Decimal64 asinh(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.asinh(x.value));
+    @Decimal
+    public static long asinh(@Decimal final long x) {
+        return NativeImpl.bid64Asinh(x);
     }
 
     /**
@@ -236,8 +260,9 @@ public class Decimal64Math {
      * @param x Value whose area hyperbolic cosine is computed.
      * @return Nonnegative area hyperbolic cosine of x, in the interval [0,+INFINITY].
      */
-    public static Decimal64 acosh(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.acosh(x.value));
+    @Decimal
+    public static long acosh(@Decimal final long x) {
+        return NativeImpl.bid64Acosh(x);
     }
 
     /**
@@ -246,8 +271,9 @@ public class Decimal64Math {
      * @param x Value whose area hyperbolic tangent is computed, in the interval [-1,+1].
      * @return Area hyperbolic tangent of x.
      */
-    public static Decimal64 atanh(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.atanh(x.value));
+    @Decimal
+    public static long atanh(@Decimal final long x) {
+        return NativeImpl.bid64Atanh(x);
     }
 
     /**
@@ -256,8 +282,9 @@ public class Decimal64Math {
      * @param x Parameter for the error function.
      * @return Error function value for x.
      */
-    public static Decimal64 erf(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.erf(x.value));
+    @Decimal
+    public static long erf(@Decimal final long x) {
+        return NativeImpl.bid64Erf(x);
     }
 
     /**
@@ -266,8 +293,9 @@ public class Decimal64Math {
      * @param x Parameter for the complementary error function.
      * @return Complementary error function value for x.
      */
-    public static Decimal64 erfc(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.erfc(x.value));
+    @Decimal
+    public static long erfc(@Decimal final long x) {
+        return NativeImpl.bid64Erfc(x);
     }
 
     /**
@@ -276,8 +304,9 @@ public class Decimal64Math {
      * @param x Parameter for the gamma function.
      * @return Gamma function of x.
      */
-    public static Decimal64 tgamma(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.tgamma(x.value));
+    @Decimal
+    public static long tgamma(@Decimal final long x) {
+        return NativeImpl.bid64Tgamma(x);
     }
 
     /**
@@ -286,17 +315,48 @@ public class Decimal64Math {
      * @param x Parameter for the log-gamma function.
      * @return Log-gamma function of x.
      */
-    public static Decimal64 lgamma(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.lgamma(x.value));
+    @Decimal
+    public static long lgamma(@Decimal final long x) {
+        return NativeImpl.bid64Lgamma(x);
     }
 
-//public static Decimal64 add(final Decimal64 x, final Decimal64 y) { return new Decimal64(Decimal64Utils.add(x.value, y.value)); }
+    //@Decimal public static long add(@Decimal final long x, @Decimal final long y) { return NativeImpl.bid64Add(x, y); }
 
-//public static Decimal64 sub(final Decimal64 x, final Decimal64 y) { return new Decimal64(Decimal64Utils.sub(x.value, y.value)); }
+    /**
+     * Decimal floating-point subtraction.
+     *
+     * @param x Minuend value.
+     * @param y Subtrahend value.
+     * @return Difference of values.
+     */
+    @Decimal
+    public static long sub(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Sub(x, y);
+    }
 
-//public static Decimal64 mul(final Decimal64 x, final Decimal64 y) { return new Decimal64(Decimal64Utils.mul(x.value, y.value)); }
+    /**
+     * Decimal floating-point multiplication.
+     *
+     * @param x Values to be multiplied.
+     * @param y Values to be multiplied.
+     * @return Product of values.
+     */
+    @Decimal
+    public static long mul(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Mul(x, y);
+    }
 
-//public static Decimal64 div(final Decimal64 x, final Decimal64 y) { return new Decimal64(Decimal64Utils.div(x.value, y.value)); }
+    /**
+     * Decimal floating-point division.
+     *
+     * @param x Dividend value.
+     * @param y Divider value.
+     * @return Ratio of values.
+     */
+    @Decimal
+    public static long div(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Div(x, y);
+    }
 
     /**
      * Decimal floating-point fused multiply-add: x*y+z
@@ -306,8 +366,9 @@ public class Decimal64Math {
      * @param z Value to be added.
      * @return The result of x*y+z
      */
-    public static Decimal64 fma(final Decimal64 x, final Decimal64 y, final Decimal64 z) {
-        return new Decimal64(Decimal64MathUtils.fma(x.value, y.value, z.value));
+    @Decimal
+    public static long fma(@Decimal final long x, @Decimal final long y, @Decimal final long z) {
+        return NativeImpl.bid64Fma(x, y, z);
     }
 
     /**
@@ -316,8 +377,9 @@ public class Decimal64Math {
      * @param x Value whose square root is computed.
      * @return Square root of x.
      */
-    public static Decimal64 sqrt(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.sqrt(x.value));
+    @Decimal
+    public static long sqrt(@Decimal final long x) {
+        return NativeImpl.bid64Sqrt(x);
     }
 
     /**
@@ -326,8 +388,87 @@ public class Decimal64Math {
      * @param x Value whose cubic root is computed.
      * @return Cubic root of x.
      */
-    public static Decimal64 cbrt(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.cbrt(x.value));
+    @Decimal
+    public static long cbrt(@Decimal final long x) {
+        return NativeImpl.bid64Cbrt(x);
+    }
+
+    //public static boolean isEqual(@Decimal final long x, @Decimal final long y) { return NativeImpl.bid64QuietEqual(x, y) ; }
+
+    //public static boolean isGreater(@Decimal final long x, @Decimal final long y) { return NativeImpl.bid64QuietGreater(x, y) ; }
+
+    //public static boolean isGreaterEqual(@Decimal final long x, @Decimal final long y) { return NativeImpl.bid64QuietGreaterEqual(x, y); }
+
+    /**
+     * Compare 64-bit decimal floating-point numbers for specified relation.
+     *
+     * @param x First decimal number.
+     * @param y Second decimal number.
+     * @return The comparison sign.
+     */
+    public static boolean isGreaterUnordered(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64QuietGreaterUnordered(x, y);
+    }
+
+    //public static boolean isLess(@Decimal final long x, @Decimal final long y) { return NativeImpl.bid64QuietLess(x, y) ; }
+
+    //public static boolean isLessEqual(@Decimal final long x, @Decimal final long y) { return NativeImpl.bid64QuietLessEqual(x, y); }
+
+    /**
+     * Compare 64-bit decimal floating-point numbers for specified relation.
+     *
+     * @param x First decimal number.
+     * @param y Second decimal number.
+     * @return The comparison sign.
+     */
+    public static boolean isLessUnordered(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64QuietLessUnordered(x, y);
+    }
+
+    //public static boolean isNotEqual(@Decimal final long x, @Decimal final long y) { return NativeImpl.bid64QuietNotEqual(x, y) ; }
+
+    /**
+     * Compare 64-bit decimal floating-point numbers for specified relation.
+     *
+     * @param x First decimal number.
+     * @param y Second decimal number.
+     * @return The comparison sign.
+     */
+    public static boolean isNotGreater(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64QuietNotGreater(x, y);
+    }
+
+    /**
+     * Compare 64-bit decimal floating-point numbers for specified relation.
+     *
+     * @param x First decimal number.
+     * @param y Second decimal number.
+     * @return The comparison sign.
+     */
+    public static boolean isNotLess(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64QuietNotLess(x, y);
+    }
+
+    /**
+     * These function return a {@code true} value if both arguments are not NaN, otherwise  {@code false}.
+     *
+     * @param x First decimal number.
+     * @param y Second decimal number.
+     * @return {@code true} if both arguments are not NaN.
+     */
+    public static boolean isOrdered(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64QuietOrdered(x, y);
+    }
+
+    /**
+     * These function return a {@code true} value if either argument is NaN, otherwise {@code false}.
+     *
+     * @param x First decimal number.
+     * @param y Second decimal number.
+     * @return {@code true} if either argument is NaN.
+     */
+    public static boolean isUnordered(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64QuietUnordered(x, y);
     }
 
     /**
@@ -337,8 +478,9 @@ public class Decimal64Math {
      * @param x Rounding number.
      * @return The rounded value.
      */
-    public static Decimal64 roundIntegralExact(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.roundIntegralExact(x.value));
+    @Decimal
+    public static long roundIntegralExact(@Decimal final long x) {
+        return NativeImpl.bid64RoundIntegralExact(x);
     }
 
     /**
@@ -348,8 +490,9 @@ public class Decimal64Math {
      * @param x Rounding number.
      * @return The rounded value.
      */
-    public static Decimal64 roundIntegralNearestEven(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.roundIntegralNearestEven(x.value));
+    @Decimal
+    public static long roundIntegralNearestEven(@Decimal final long x) {
+        return NativeImpl.bid64RoundIntegralNearestEven(x);
     }
 
     /**
@@ -359,8 +502,9 @@ public class Decimal64Math {
      * @param x Rounding number.
      * @return The rounded value.
      */
-    public static Decimal64 roundIntegralNegative(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.roundIntegralNegative(x.value));
+    @Decimal
+    public static long roundIntegralNegative(@Decimal final long x) {
+        return NativeImpl.bid64RoundIntegralNegative(x);
     }
 
     /**
@@ -370,8 +514,9 @@ public class Decimal64Math {
      * @param x Rounding number.
      * @return The rounded value.
      */
-    public static Decimal64 roundIntegralPositive(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.roundIntegralPositive(x.value));
+    @Decimal
+    public static long roundIntegralPositive(@Decimal final long x) {
+        return NativeImpl.bid64RoundIntegralPositive(x);
     }
 
     /**
@@ -381,8 +526,9 @@ public class Decimal64Math {
      * @param x Rounding number.
      * @return The rounded value.
      */
-    public static Decimal64 roundIntegralZero(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.roundIntegralZero(x.value));
+    @Decimal
+    public static long roundIntegralZero(@Decimal final long x) {
+        return NativeImpl.bid64RoundIntegralZero(x);
     }
 
     /**
@@ -392,17 +538,14 @@ public class Decimal64Math {
      * @param x Rounding number.
      * @return The rounded value.
      */
-    public static Decimal64 roundIntegralNearestAway(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.roundIntegralNearestAway(x.value));
+    @Decimal
+    public static long roundIntegralNearestAway(@Decimal final long x) {
+        return NativeImpl.bid64RoundIntegralNearestAway(x);
     }
 
-    public static Decimal64 nextUp(final Decimal64 x) {
-        return new Decimal64(Decimal64Utils.nextUp(x.value));
-    }
+    //@Decimal public static long nextUp(@Decimal final long x) { return NativeImpl.bid64Nextup(x); }
 
-    public static Decimal64 nextDown(final Decimal64 x) {
-        return new Decimal64(Decimal64Utils.nextDown(x.value));
-    }
+    //@Decimal public static long nextDown(@Decimal final long x) { return NativeImpl.bid64Nextdown(x); }
 
     /**
      * Returns the next 64-bit decimal floating-point number that neighbors
@@ -412,8 +555,9 @@ public class Decimal64Math {
      * @param y Direction.
      * @return Starting point value adjusted in Direction way.
      */
-    public static Decimal64 nextAfter(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.nextAfter(x.value, y.value));
+    @Decimal
+    public static long nextAfter(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Nextafter(x, y);
     }
 
     /**
@@ -425,20 +569,22 @@ public class Decimal64Math {
      * @param y Second decimal number.
      * @return The minimal value.
      */
-    public static Decimal64 minNum(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.minNum(x.value, y.value));
+    @Decimal
+    public static long minNum(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Minnum(x, y);
     }
 
     /**
      * Returns the canonicalized floating-point number x if |x| &lt; |y|,
-     * y if |y| &lt; |x|, otherwise this function is identical to {@link #minNum(Decimal64, Decimal64)}.
+     * y if |y| &lt; |x|, otherwise this function is identical to {@link #minNum(long, long)}.
      *
      * @param x First decimal number.
      * @param y Second decimal number.
      * @return The value with minimal magnitude.
      */
-    public static Decimal64 minNumMag(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.minNumMag(x.value, y.value));
+    @Decimal
+    public static long minNumMag(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64MinnumMag(x, y);
     }
 
     /**
@@ -451,20 +597,22 @@ public class Decimal64Math {
      * @param y Second decimal number.
      * @return The maximal value.
      */
-    public static Decimal64 maxNum(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.maxNum(x.value, y.value));
+    @Decimal
+    public static long maxNum(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Maxnum(x, y);
     }
 
     /**
      * Returns the canonicalized floating-point number x if |x| &gt; |y|,
-     * y if |y| &gt; |x|, otherwise this function is identical to {@link #maxNum(Decimal64, Decimal64)}.
+     * y if |y| &gt; |x|, otherwise this function is identical to {@link #maxNum(long, long)}.
      *
      * @param x First decimal number.
      * @param y Second decimal number.
      * @return The value with maximal magnitude.
      */
-    public static Decimal64 maxNumMag(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.maxNumMag(x.value, y.value));
+    @Decimal
+    public static long maxNumMag(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64MaxnumMag(x, y);
     }
 
     /**
@@ -473,8 +621,9 @@ public class Decimal64Math {
      * @param x Value to convert.
      * @return The converted value.
      */
-    public static Decimal64 fromInt32(final int x) {
-        return new Decimal64(Decimal64MathUtils.fromInt32(x));
+    @Decimal
+    public static long fromInt32(final int x) {
+        return NativeImpl.bid64FromInt32(x);
     }
 
     /**
@@ -483,8 +632,9 @@ public class Decimal64Math {
      * @param x Value to convert.
      * @return The converted value.
      */
-    public static Decimal64 fromUInt32(final int x) {
-        return new Decimal64(Decimal64MathUtils.fromUInt32(x));
+    @Decimal
+    public static long fromUInt32(final int x) {
+        return NativeImpl.bid64FromUint32(x);
     }
 
     /**
@@ -493,8 +643,9 @@ public class Decimal64Math {
      * @param x Value to convert.
      * @return The converted value.
      */
-    public static Decimal64 fromInt64(final long x) {
-        return new Decimal64(Decimal64MathUtils.fromInt64(x));
+    @Decimal
+    public static long fromInt64(final long x) {
+        return NativeImpl.bid64FromInt64(x);
     }
 
     /**
@@ -503,21 +654,89 @@ public class Decimal64Math {
      * @param x Value to convert.
      * @return The converted value.
      */
-    public static Decimal64 fromUInt64(final long x) {
-        return new Decimal64(Decimal64MathUtils.fromUInt64(x));
+    @Decimal
+    public static long fromUInt64(final long x) {
+        return NativeImpl.bid64FromUint64(x);
     }
 
-    public static boolean isNaN(final Decimal64 x) {
-        return Decimal64Utils.isNaN(x.value);
+    /**
+     * Return {@code true} if and only if x has negative sign.
+     *
+     * @param x Test value.
+     * @return The sign.
+     */
+    public static boolean isSigned(@Decimal final long x) {
+        return NativeImpl.bid64IsSigned(x);
     }
 
-    public static boolean isInf(final Decimal64 x) {
-        return Decimal64MathUtils.isInf(x.value);
+    /**
+     * Return {@code true} if and only if x is subnormal.
+     *
+     * @param x Test value.
+     * @return The check flag.
+     */
+    public static boolean isSubnormal(@Decimal final long x) {
+        return NativeImpl.bid64IsSubnormal(x);
     }
 
-    public static Decimal64 abs(final Decimal64 x) {
-        return new Decimal64(Decimal64Utils.abs(x.value));
+//    /**
+//     * Return {@code true} if and only if x is zero, subnormal or normal (not infinite or NaN).
+//     *
+//     * @param x Test value.
+//     * @return The check flag.
+//     */
+//    public static boolean isFinite(@Decimal final long x) { return NativeImpl.bid64IsFinite(x) ; }
+
+//    /**
+//     * Return {@code true} if and only if x is +0 or -0.
+//     *
+//     * @param x Test value.
+//     * @return The check flag.
+//     */
+//    public static boolean isZero(@Decimal final long x) { return NativeImpl.bid64IsZero(x) ; }
+
+    /**
+     * Return {@code true} if and only if x is infinite.
+     *
+     * @param x Test value.
+     * @return The check flag.
+     */
+    public static boolean isInf(@Decimal final long x) {
+        return NativeImpl.bid64IsInf(x);
     }
+
+    /**
+     * Return {@code true} if and only if x is a signaling NaN.
+     *
+     * @param x Test value.
+     * @return The check flag.
+     */
+    public static boolean isSignaling(@Decimal final long x) {
+        return NativeImpl.bid64IsSignaling(x);
+    }
+
+    /**
+     * Return {@code true} if and only if x is a finite number, infinity, or
+     * NaN that is canonical.
+     *
+     * @param x Test value.
+     * @return The check flag.
+     */
+    public static boolean isCanonical(@Decimal final long x) {
+        return NativeImpl.bid64IsCanonical(x);
+    }
+
+//    /**
+//     * Return true if and only if x is a NaN.
+//     *
+//     * @param x Test value.
+//     * @return The check flag.
+//     */
+//    public static boolean isNaN(@Decimal final long x) { return NativeImpl.bid64IsNaN(x) ; }
+
+    //@Decimal public static long copy(@Decimal final long x) { return NativeImpl.bid64Copy(x); }
+    //@Decimal public static long negate(@Decimal final long x) { return NativeImpl.bid64Negate(x); }
+    //@Decimal public static long abs(@Decimal final long x) { return NativeImpl.bid64Abs(x); }
 
     /**
      * Copies a 64-bit decimal floating-point operand x to a destination
@@ -527,8 +746,9 @@ public class Decimal64Math {
      * @param y Sign value.
      * @return Combined value.
      */
-    public static Decimal64 copySign(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.copySign(x.value, y.value));
+    @Decimal
+    public static long copySign(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64CopySign(x, y);
     }
 
     /**
@@ -540,8 +760,8 @@ public class Decimal64Math {
      * @param x Test value.
      * @return The value class.
      */
-    public static int classOfValue(final Decimal64 x) {
-        return Decimal64MathUtils.classOfValue(x.value);
+    public static int classOfValue(@Decimal final long x) {
+        return NativeImpl.bid64Class(x);
     }
 
     /**
@@ -554,8 +774,8 @@ public class Decimal64Math {
      * @param y Second decimal value.
      * @return Comparison flag.
      */
-    public static boolean isSameQuantum(final Decimal64 x, final Decimal64 y) {
-        return Decimal64MathUtils.isSameQuantum(x.value, y.value);
+    public static boolean isSameQuantum(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64SameQuantum(x, y);
     }
 
     /**
@@ -565,8 +785,8 @@ public class Decimal64Math {
      * @param y Second decimal value.
      * @return Comparison flag.
      */
-    public static boolean isTotalOrder(final Decimal64 x, final Decimal64 y) {
-        return Decimal64MathUtils.isTotalOrder(x.value, y.value);
+    public static boolean isTotalOrder(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64TotalOrder(x, y);
     }
 
     /**
@@ -577,8 +797,8 @@ public class Decimal64Math {
      * @param y Second decimal value.
      * @return Comparison flag.
      */
-    public static boolean isTotalOrderMag(final Decimal64 x, final Decimal64 y) {
-        return Decimal64MathUtils.isTotalOrderMag(x.value, y.value);
+    public static boolean isTotalOrderMag(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64TotalOrderMag(x, y);
     }
 
     /**
@@ -587,8 +807,8 @@ public class Decimal64Math {
      * @param x The test value.
      * @return The value radix.
      */
-    public static int radix(final Decimal64 x) {
-        return Decimal64MathUtils.radix(x.value);
+    public static int radix(@Decimal final long x) {
+        return NativeImpl.bid64Radix(x);
     }
 
     /**
@@ -598,8 +818,9 @@ public class Decimal64Math {
      * @param y Value of the quotient denominator.
      * @return The remainder of dividing the arguments.
      */
-    public static Decimal64 rem(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.rem(x.value, y.value));
+    @Decimal
+    public static long rem(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Rem(x, y);
     }
 
     /**
@@ -609,8 +830,8 @@ public class Decimal64Math {
      * @param x Value whose ilogb is returned.
      * @return The integral part of the logarithm of |x|.
      */
-    public static int ilogb(final Decimal64 x) {
-        return Decimal64MathUtils.ilogb(x.value);
+    public static int ilogb(@Decimal final long x) {
+        return NativeImpl.bid64Ilogb(x);
     }
 
     /**
@@ -620,19 +841,21 @@ public class Decimal64Math {
      * @param n The exponent part.
      * @return The combined value.
      */
-    public static Decimal64 scalbn(final Decimal64 x, final int n) {
-        return new Decimal64(Decimal64MathUtils.scalbn(x.value, n));
+    @Decimal
+    public static long scalbn(@Decimal final long x, final int n) {
+        return NativeImpl.bid64Scalbn(x, n);
     }
 
     /**
-     * Returns the result of multiplying x (the significand) by 2 raised to the power of exp (the exponent).
+     * Returns the result of multiplying x (the significand) by 10 raised to the power of exp (the exponent).
      *
      * @param x Floating point value representing the significand.
      * @param n Value of the exponent.
-     * @return The x*2^exp value.
+     * @return The x*10^exp value.
      */
-    public static Decimal64 ldexp(final Decimal64 x, final int n) {
-        return new Decimal64(Decimal64MathUtils.ldexp(x.value, n));
+    @Decimal
+    public static long ldexp(@Decimal final long x, final int n) {
+        return NativeImpl.bid64Ldexp(x, n);
     }
 
     /**
@@ -652,18 +875,42 @@ public class Decimal64Math {
      * @param y The value for quantum.
      * @return The quantized value.
      */
-    public static Decimal64 quantize(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.quantize(x.value, y.value));
+    @Decimal
+    public static long quantize(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Quantize(x, y);
     }
 
     /**
-     * Returns the logarithm of |x|.
+     * Convert 64-bit decimal floating-point value (binary encoding)
+     * to 32-bit binary floating-point format.
+     *
+     * @param x The input decimal value.
+     * @return The converted value.
+     */
+    public static float toBinary32(@Decimal final long x) {
+        return NativeImpl.bid64ToBinary32(x);
+    }
+
+    /**
+     * Convert 64-bit decimal floating-point value (binary encoding)
+     * to 64-bit binary floating-point format.
+     *
+     * @param x The input decimal value.
+     * @return The converted value.
+     */
+    public static double toBinary64(@Decimal final long x) {
+        return NativeImpl.bid64ToBinary64(x);
+    }
+
+    /**
+     * Returns the adjusted exponent of the absolute value.
      *
      * @param x Value whose logarithm is calculated.
-     * @return The logarithm of x.
+     * @return The adjusted logarithm of |x|.
      */
-    public static Decimal64 logb(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.logb(x.value));
+    @Decimal
+    public static long logb(@Decimal final long x) {
+        return NativeImpl.bid64Logb(x);
     }
 
     /**
@@ -672,8 +919,9 @@ public class Decimal64Math {
      * @param x Value to round.
      * @return The rounded value.
      */
-    public static Decimal64 nearByInt(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.nearByInt(x.value));
+    @Decimal
+    public static long nearByInt(@Decimal final long x) {
+        return NativeImpl.bid64Nearbyint(x);
     }
 
     /**
@@ -683,8 +931,9 @@ public class Decimal64Math {
      * @param y Subtrahend value.
      * @return The positive difference.
      */
-    public static Decimal64 fdim(final Decimal64 x, final Decimal64 y) {
-        return new Decimal64(Decimal64MathUtils.fdim(x.value, y.value));
+    @Decimal
+    public static long fdim(@Decimal final long x, @Decimal final long y) {
+        return NativeImpl.bid64Fdim(x, y);
     }
 
     /**
@@ -696,8 +945,8 @@ public class Decimal64Math {
      * @param x The value for operation.
      * @return The quantum exponent.
      */
-    public static int quantExp(final Decimal64 x) {
-        return Decimal64MathUtils.quantExp(x.value);
+    public static int quantExp(@Decimal final long x) {
+        return NativeImpl.bid64Quantexp(x);
     }
 
     /**
@@ -709,7 +958,10 @@ public class Decimal64Math {
      * @param x The value for operation.
      * @return The quantum.
      */
-    public static Decimal64 quantum(final Decimal64 x) {
-        return new Decimal64(Decimal64MathUtils.quantum(x.value));
+    @Decimal
+    public static long quantum(@Decimal final long x) {
+        return NativeImpl.bid64Quantum(x);
     }
+
+    /// endregion
 }

@@ -8,6 +8,7 @@ import org.apache.commons.math3.special.Gamma;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import static com.epam.deltix.dfp.Decimal64MathUtils.*;
 import static com.epam.deltix.dfp.TestUtils.assertDecimalEqual;
 import static com.epam.deltix.dfp.Decimal64Utils.*;
 

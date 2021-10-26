@@ -971,7 +971,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The comparison sign.
      */
     public boolean isGreaterUnordered(final Decimal64 y) {
-        return Decimal64Utils.isGreaterUnordered(value, y.value);
+        return Decimal64MathUtils.isGreaterUnordered(value, y.value);
     }
 
     /**
@@ -981,7 +981,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The comparison sign.
      */
     public boolean isLessUnordered(final Decimal64 y) {
-        return Decimal64Utils.isLessUnordered(value, y.value);
+        return Decimal64MathUtils.isLessUnordered(value, y.value);
     }
 
     /**
@@ -991,7 +991,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The comparison sign.
      */
     public boolean isNotGreater(final Decimal64 y) {
-        return Decimal64Utils.isNotGreater(value, y.value);
+        return Decimal64MathUtils.isNotGreater(value, y.value);
     }
 
     /**
@@ -1001,7 +1001,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The comparison sign.
      */
     public boolean isNotLess(final Decimal64 y) {
-        return Decimal64Utils.isNotLess(value, y.value);
+        return Decimal64MathUtils.isNotLess(value, y.value);
     }
 
     /**
@@ -1011,7 +1011,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return {@code true} if both arguments are not NaN.
      */
     public boolean isOrdered(final Decimal64 y) {
-        return Decimal64Utils.isOrdered(value, y.value);
+        return Decimal64MathUtils.isOrdered(value, y.value);
     }
 
     /**
@@ -1021,7 +1021,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return {@code true} if either argument is NaN.
      */
     public boolean isUnordered(final Decimal64 y) {
-        return Decimal64Utils.isUnordered(value, y.value);
+        return Decimal64MathUtils.isUnordered(value, y.value);
     }
 
     /**
@@ -1030,7 +1030,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The sign.
      */
     public boolean isSigned() {
-        return Decimal64Utils.isSigned(value);
+        return Decimal64MathUtils.isSigned(value);
     }
 
     /**
@@ -1039,7 +1039,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The check flag.
      */
     public boolean isSubnormal() {
-        return Decimal64Utils.isSubnormal(value);
+        return Decimal64MathUtils.isSubnormal(value);
     }
 
     /**
@@ -1048,7 +1048,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The check flag.
      */
     public boolean isInf() {
-        return Decimal64Utils.isInf(value);
+        return Decimal64MathUtils.isInf(value);
     }
 
     /**
@@ -1057,7 +1057,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The check flag.
      */
     public boolean isSignaling() {
-        return Decimal64Utils.isSignaling(value);
+        return Decimal64MathUtils.isSignaling(value);
     }
 
     /**
@@ -1067,7 +1067,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The check flag.
      */
     public boolean isCanonical() {
-        return Decimal64Utils.isCanonical(value);
+        return Decimal64MathUtils.isCanonical(value);
     }
 
     /**
@@ -1077,7 +1077,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The converted value.
      */
     public float toBinary32() {
-        return Decimal64Utils.toBinary32(value);
+        return Decimal64MathUtils.toBinary32(value);
     }
 
     /**
@@ -1087,7 +1087,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @return The converted value.
      */
     public double toBinary64() {
-        return Decimal64Utils.toBinary64(value);
+        return Decimal64MathUtils.toBinary64(value);
     }
 
     /// endregion

@@ -794,17 +794,6 @@ namespace EPAM.Deltix.DFP
 		}
 
 		/// <summary>
-		/// Returns x * 10^N.
-		/// </summary>
-		/// <param name="x">The mantissa part.</param>
-		/// <param name="n">The exponent part.</param>
-		/// <returns>The combined value.</returns>
-		public static Decimal64 Scalbln(Decimal64 x, long n)
-		{
-			return new Decimal64(NativeImpl.bid64Scalbln(x.Bits, n));
-		}
-
-		/// <summary>
 		/// Rounds the floating-point argument arg to an integer value in floating-point format, using the current rounding mode.
 		/// </summary>
 		/// <param name="x">Value to round.</param>
