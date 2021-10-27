@@ -1051,4 +1051,18 @@ public class MathTest {
         assertDecimalEqual(parse("1e+5"), quantum(x));
         assertDecimalEqual(parse("1e-2"), quantum(y));
     }
+
+    @Test
+    public void testDecimal128() {
+        Decimal128 a = new Decimal128();
+        NativeImpl.bid128FromFloat64(3.0, a);
+
+        Decimal128 b = new Decimal128();
+        NativeImpl.bid128FromFloat64(4.0, b);
+
+        Decimal128 c = new Decimal128();
+        NativeImpl.bid128Add2(a.low, a.high, b.low, b.high, c);
+
+        NativeImpl.bid128ToFloat64(c.low, c.high);
+    }
 }

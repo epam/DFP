@@ -648,7 +648,7 @@ public class Decimal64Utils {
     }
 
     @Decimal
-    public static long scaleByPowerOfTen(@Decimal final long a, @Decimal final int n) {
+    public static long scaleByPowerOfTen(@Decimal final long a, final int n) {
         return NativeImpl.scaleByPowerOfTen(a, n);
     }
 

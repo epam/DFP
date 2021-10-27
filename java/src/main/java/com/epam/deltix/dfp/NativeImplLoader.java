@@ -35,5 +35,7 @@ class NativeImplLoader {
             //exception.printStackTrace();
             throw new RuntimeException(exception);
         }
+
+        NativeImpl.init();
     }
 }
