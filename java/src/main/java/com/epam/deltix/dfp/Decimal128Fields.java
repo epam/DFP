@@ -4,6 +4,22 @@ public class Decimal128Fields implements Comparable<Decimal128Fields> {
     long low;
     long high;
 
+    public Decimal128Fields() {
+    }
+
+    public Decimal128Fields(final long low, final long high) {
+        this.low = low;
+        this.high = high;
+    }
+
+    public long getUnderlyingLow() {
+        return low;
+    }
+
+    public long getUnderlyingHigh() {
+        return high;
+    }
+
     public void set(final long low, final long high) {
         this.low = low;
         this.high = high;

@@ -129,6 +129,14 @@ public class Decimal128Utils {
 //     */
 //    @Decimal
 //    public static final long NULL = JavaImpl.NULL;
+
+    public static final long NULL_LOW = 0xFFFF_FFFF_FFFF_FF80L;
+    public static final long NULL_HIGH = 0xFFFF_FFFF_FFFF_FFFFL;
+
+    public static boolean isNull(final long low, final long high) {
+        return low == NULL_LOW && high == NULL_HIGH;
+    }
+
 //
 //    /// endregion
 //
@@ -259,14 +267,13 @@ public class Decimal128Utils {
 //    }
 //
 //    /// endregion
-//
-//    /// region Conversion
-//
-//    @Decimal
-//    public static long fromUnderlying(final Decimal128Fields value) {
-//        return value;
-//    }
-//
+
+    /// region Conversion
+
+    public static void fromUnderlying(final long low, final long high, final Decimal128Fields r) {
+        r.set(low, high);
+    }
+
 //    @Decimal
 //    public static long toUnderlying(final Decimal128Fields value) {
 //        return value;
@@ -306,27 +313,26 @@ public class Decimal128Utils {
 //    public static BigDecimal toBigDecimal(final Decimal128Fields value) {
 //        return JavaImpl.toBigDecimal(value);
 //    }
-//
-//    /**
-//     * Converts fixed-point dfp to dfp floating-point value.
-//     * <p>
-//     * Essentially, the value behind the fixed-point dfp representation can be
-//     * computed as {@code mantissa} divided by 10 to the power of {@code numberOfDigits}.
-//     * <p>
-//     * E.g., 1.23 can be represented as pair (1230, 3), where 1230 is a mantissa, and 3 is a number of digits after
-//     * the dot. Thus, {@code Decimal128Utils.fromFixedPoint(1230, 3)} will return a dfp floating-point representation of
-//     * value {@code 1.23}.
-//     *
-//     * @param mantissa       Integer part of fixed-point dfp.
-//     * @param numberOfDigits Number of digits after the dot.
-//     * @return New 64-bit floating point dfp value.
-//     */
-//    @Decimal
-//    public static long fromFixedPoint(final long mantissa, final int numberOfDigits) {
-//        // TODO: Can also create java version for this one
-//        return NativeImpl.bid128FromFixedPoint64(mantissa, numberOfDigits);
-//    }
-//
+
+    /**
+     * Converts fixed-point dfp to dfp floating-point value.
+     * <p>
+     * Essentially, the value behind the fixed-point dfp representation can be
+     * computed as {@code mantissa} divided by 10 to the power of {@code numberOfDigits}.
+     * <p>
+     * E.g., 1.23 can be represented as pair (1230, 3), where 1230 is a mantissa, and 3 is a number of digits after
+     * the dot. Thus, {@code Decimal128Utils.fromFixedPoint(1230, 3)} will return a dfp floating-point representation of
+     * value {@code 1.23}.
+     *
+     * @param mantissa       Integer part of fixed-point dfp.
+     * @param numberOfDigits Number of digits after the dot.
+     * @param r              New 64-bit floating point dfp value.
+     */
+    public static void fromFixedPoint(final long mantissa, final int numberOfDigits, final Decimal128Fields r) {
+        // TODO: Can also create java version for this one
+        NativeImpl.bid128FromFixedPoint64(mantissa, numberOfDigits, r);
+    }
+
 //    /**
 //     * Overload of {@link #fromFixedPoint(long, int)} for mantissa representable by {@code int}.
 //     * Faster than the full-range version.
@@ -340,96 +346,94 @@ public class Decimal128Utils {
 //        return JavaImpl.fromFixedPoint32(mantissa, numberOfDigits);
 //    }
 //
-//
 //    @Decimal
 //    public static long fromDecimalDouble(final double value) {
 //        return JavaImpl.fromDecimalDouble(value);
 //    }
 //
-//    /**
-//     * Converts from floating-point dfp representation to fixed-point with given number of digits after the dot.
-//     * <p>
-//     * For example, dfp value of 1.23 can be represented as pair (1230, 3), where 1230 is a mantissa, and 3 is
-//     * a number of digits after the dot. Essentially, the value behind the fixed-point dfp representation can be
-//     * computed as {@code mantissa} divided by 10 to the power of {@code numberOfDigits}.
-//     *
-//     * @param value          64-bit floating point dfp value.
-//     * @param numberOfDigits Number of digits after the dot.
-//     * @return fixed-point decimal value represented as @{code long}
-//     */
-//    public static long toFixedPoint(final Decimal128Fields value, final int numberOfDigits) {
-//        return NativeImpl.bid128ToFixedPoint(value, numberOfDigits);
-//    }
-//
-//    /**
-//     * Create {@code DFP} value from 64-bit binary floating point ({@code double}) value.
-//     *
-//     * @param value source 64-bit binary floating point value
-//     * @return New {@code DFP} value.
-//     */
-//    @Decimal
-//    public static long fromDouble(final double value) {
-//        return NativeImpl.bid128FromFloat64(value);
-//    }
-//
-//    /**
-//     * Convert {@code DFP} value to 64-bit binary floating point ({@code double}) value.
-//     * <p>Note that not all decimal FP values can be exactly represented as binary FP values.
-//     *
-//     * @param value source {@code DFP} value
-//     * @return {@code double} value
-//     */
-//    public static double toDouble(final Decimal128Fields value) {
-//        return NativeImpl.bid128ToFloat64(value);
-//    }
-//
-//    /**
-//     * Create {@code DFP} value from {@code long} integer.
-//     *
-//     * @param value source {@code long} integer value
-//     * @return New {@code DFP} value.
-//     */
-//    @Decimal
-//    public static long fromLong(final long value) {
-//        return NativeImpl.bid128FromInt64(value);
-//    }
-//
-//    /**
-//     * Convert {@code DFP} value to {@code long} integer value by truncating fractional part towards zero.
-//     * <p>Does not throw exceptions on overflow or invalid data
-//     *
-//     * @param value {@code DFP} value
-//     * @return {@code long} integer value
-//     */
-//    public static long toLong(final Decimal128Fields value) {
-//        return NativeImpl.bid128ToInt64(value);
-//    }
-//
-//    /**
-//     * Create {@code DFP} value from 32-bit integer ({@code int}).
-//     * <p>faster than creating from ({@code long})
-//     *
-//     * @param value source integer value
-//     * @return new {@code DFP} value
-//     */
-//    @Decimal
-//    public static long fromInt(final int value) {
-//        return JavaImpl.fromInt32(value);
-//    }
-//
-//    /**
-//     * Convert {@code DFP} value to {@code int} value by truncating fractional part towards zero.
-//     * <p>Does not throw exceptions on overflow or invalid data
-//     *
-//     * @param value {@code DFP} value
-//     * @return {@code int} value
-//     */
-//    public static int toInt(final Decimal128Fields value) {
-//        return (int) NativeImpl.bid128ToInt64(value);
-//    }
-//
-//    /// endregion
-//
+
+    /**
+     * Converts from floating-point dfp representation to fixed-point with given number of digits after the dot.
+     * <p>
+     * For example, dfp value of 1.23 can be represented as pair (1230, 3), where 1230 is a mantissa, and 3 is
+     * a number of digits after the dot. Essentially, the value behind the fixed-point dfp representation can be
+     * computed as {@code mantissa} divided by 10 to the power of {@code numberOfDigits}.
+     *
+     * @param x              64-bit floating point dfp value.
+     * @param numberOfDigits Number of digits after the dot.
+     * @return fixed-point decimal value represented as @{code long}
+     */
+    public static long toFixedPoint(final Decimal128Fields x, final int numberOfDigits) {
+        return NativeImpl.bid128ToFixedPoint(x.low, x.high, numberOfDigits);
+    }
+
+    /**
+     * Create {@code DFP} value from 64-bit binary floating point ({@code double}) value.
+     *
+     * @param value source 64-bit binary floating point value
+     * @param r     New {@code DFP} value.
+     */
+    public static void fromDouble(final double value, final Decimal128Fields r) {
+        NativeImpl.bid128FromFloat64(value, r);
+    }
+
+    /**
+     * Convert {@code DFP} value to 64-bit binary floating point ({@code double}) value.
+     * <p>Note that not all decimal FP values can be exactly represented as binary FP values.
+     *
+     * @param x source {@code DFP} value
+     * @return {@code double} value
+     */
+    public static double toDouble(final Decimal128Fields x) {
+        return NativeImpl.bid128ToFloat64(x.low, x.high);
+    }
+
+    /**
+     * Create {@code DFP} value from {@code long} integer.
+     *
+     * @param value source {@code long} integer value
+     * @param r     New {@code DFP} value.
+     */
+    public static void fromLong(final long value, final Decimal128Fields r) {
+        NativeImpl.bid128FromInt64(value, r);
+    }
+
+    /**
+     * Convert {@code DFP} value to {@code long} integer value by truncating fractional part towards zero.
+     * <p>Does not throw exceptions on overflow or invalid data
+     *
+     * @param x {@code DFP} value
+     * @return {@code long} integer value
+     */
+    public static long toLong(final Decimal128Fields x) {
+        return NativeImpl.bid128ToInt64(x.low, x.high);
+    }
+
+    /**
+     * Create {@code DFP} value from 32-bit integer ({@code int}).
+     * <p>faster than creating from ({@code long})
+     *
+     * @param value source integer value
+     * @param r     new {@code DFP} value
+     */
+    @Decimal
+    public static void fromInt(final int value, final Decimal128Fields r) {
+        NativeImpl.bid128FromInt32(value, r);
+    }
+
+    /**
+     * Convert {@code DFP} value to {@code int} value by truncating fractional part towards zero.
+     * <p>Does not throw exceptions on overflow or invalid data
+     *
+     * @param x {@code DFP} value
+     * @return {@code int} value
+     */
+    public static int toInt(final Decimal128Fields x) {
+        return (int) NativeImpl.bid128ToInt64(x.low, x.high);
+    }
+
+    /// endregion
+
     /// region Classification
 
     public static boolean isNaN(final Decimal128Fields x) {
