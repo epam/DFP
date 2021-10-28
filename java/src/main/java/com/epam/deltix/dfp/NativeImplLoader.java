@@ -36,6 +36,6 @@ class NativeImplLoader {
             throw new RuntimeException(exception);
         }
 
-        NativeImpl.init();
+        NativeImpl.init(0);
     }
 }

@@ -9,9 +9,16 @@ DDFP_API(void) PPCAT(API_PREFIX, mcr__name) (__VA_ARGS__, BID_UINT64 *retLow, BI
 }                                                                                                                       \
 JNI_API(void) PPCAT(PPCAT(Java_, JAVA_PREFIX), mcr__name) (JNIEnv *jEnv, jclass jClass, __VA_ARGS__, jobject retObj) {  \
     mcr__body;                                                                                                          \
-    (*jEnv)->SetLongField(jEnv, retObj, jDecimal128Low, ret.w[0]);                                                      \
-    (*jEnv)->SetLongField(jEnv, retObj, jDecimal128High, ret.w[1]);                                                     \
+    if (!jReturnViaCallback) {                                                                                          \
+        (*jEnv)->SetLongField(jEnv, retObj, jDecimal128Low, ret.w[0]);                                                  \
+        (*jEnv)->SetLongField(jEnv, retObj, jDecimal128High, ret.w[1]);                                                 \
+    }                                                                                                                   \
+    else {                                                                                                              \
+        (*jEnv)->CallVoidMethod(jEnv, retObj, jDecimal128Set, ret.w[0], ret.w[1]);                                      \
+    }                                                                                                                   \
 }                                                                                                                       \
+
+//}                                                                                                                       
 
 #define OPNR128(mcr__name, mcr__type, mcr__body, ...)                                                                   \
 DDFP_API(mcr__type) PPCAT(API_PREFIX, mcr__name) (__VA_ARGS__) {                                                        \
@@ -34,8 +41,10 @@ JNIEnv* jEnv;
 jclass jDecimal128Class;
 jfieldID jDecimal128Low;
 jfieldID jDecimal128High;
+jmethodID jDecimal128Set;
+int32 jReturnViaCallback;
 
-JNI_API(void) PPCAT(PPCAT(Java_, JAVA_PREFIX), init) (JNIEnv* env, jclass jClass) { // Managed exceprion autimatically will be generated on any error
+JNI_API(void) PPCAT(PPCAT(Java_, JAVA_PREFIX), init) (JNIEnv* env, jclass jClass, int32 returnViaCallback) { // Managed exceprion autimatically will be generated on any error
     jEnv = env;
 
     jDecimal128Class = (*env)->FindClass(jEnv, JAVA_DECIMAL128_CLASS_PATH);
@@ -43,6 +52,10 @@ JNI_API(void) PPCAT(PPCAT(Java_, JAVA_PREFIX), init) (JNIEnv* env, jclass jClass
     jDecimal128Low = (*env)->GetFieldID(jEnv, jDecimal128Class, JAVA_DECIMAL128_FIELD_LOW, "J");
 
     jDecimal128High = (*env)->GetFieldID(jEnv, jDecimal128Class, JAVA_DECIMAL128_FIELD_HIGH, "J");
+
+    jDecimal128Set = (*env)->GetMethodID(jEnv, jDecimal128Class, "set", "(JJ)V");
+
+    jReturnViaCallback = returnViaCallback;
 }
 
 static const BID_UINT128 bid128NanConst = { 0x0000000000000000ull, 0xfc00000000000000ull };

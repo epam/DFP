@@ -4,6 +4,15 @@ public class Decimal128Utils {
     private Decimal128Utils() {
     }
 
+    public static enum ReturnValueFillType {
+        FIELD,
+        CALLBACK
+    }
+
+    public static void setReturnValueFillType(final ReturnValueFillType returnType) {
+        NativeImpl.init(returnType.ordinal());
+    }
+
 //    /// region Constants
 //
 //    /**
