@@ -18,8 +18,6 @@ JNI_API(void) PPCAT(PPCAT(Java_, JAVA_PREFIX), mcr__name) (JNIEnv *jEnv, jclass 
     }                                                                                                                   \
 }                                                                                                                       \
 
-//}                                                                                                                       
-
 #define OPNR128(mcr__name, mcr__type, mcr__body, ...)                                                                   \
 DDFP_API(mcr__type) PPCAT(API_PREFIX, mcr__name) (__VA_ARGS__) {                                                        \
     mcr__body;                                                                                                          \
