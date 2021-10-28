@@ -11,14 +11,14 @@ import static com.epam.deltix.dfp.TestUtils.*;
 import static org.junit.Assert.*;
 
 public class Decimal64UtilsTest {
-    private static final int COUNT = 1000;
+    static final int COUNT = 1000;
 
     private final Random random = new Random();
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    private static void assertSimilar(double expected, double actual, double epsilon) {
+    static void assertSimilar(double expected, double actual, double epsilon) {
         assertTrue(Math.abs(expected - actual) / Math.max(1.0, Math.abs(expected)) < epsilon);
     }
 

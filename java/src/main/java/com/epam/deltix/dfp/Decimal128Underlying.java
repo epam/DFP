@@ -1,22 +1,22 @@
 package com.epam.deltix.dfp;
 
-public class Decimal128Fields implements Comparable<Decimal128Fields> {
+public class Decimal128Underlying implements Comparable<Decimal128Underlying> {
     long low;
     long high;
 
-    public Decimal128Fields() {
+    public Decimal128Underlying() {
     }
 
-    public Decimal128Fields(final long low, final long high) {
+    public Decimal128Underlying(final long low, final long high) {
         this.low = low;
         this.high = high;
     }
 
-    public long getUnderlyingLow() {
+    public long getLow() {
         return low;
     }
 
-    public long getUnderlyingHigh() {
+    public long getHigh() {
         return high;
     }
 
@@ -25,18 +25,18 @@ public class Decimal128Fields implements Comparable<Decimal128Fields> {
         this.high = high;
     }
 
-    public void copyFrom(final Decimal128Fields src) {
+    public void copyFrom(final Decimal128Underlying src) {
         set(src.low, src.high);
     }
 
-    public void copyTo(final Decimal128Fields dst) {
+    public void copyTo(final Decimal128Underlying dst) {
         dst.copyFrom(this);
     }
 
     /// region Comparable<T> Interface Implementation
 
     @Override
-    public int compareTo(final Decimal128Fields o) {
+    public int compareTo(final Decimal128Underlying o) {
         return Decimal128Utils.compareTo(this, o);
     }
 
@@ -50,7 +50,7 @@ public class Decimal128Fields implements Comparable<Decimal128Fields> {
      * @param y Second decimal number.
      * @return The comparison sign.
      */
-    public boolean isGreaterUnordered(final Decimal128Fields y) {
+    public boolean isGreaterUnordered(final Decimal128Underlying y) {
         return Decimal128MathUtils.isGreaterUnordered(this, y);
     }
 
@@ -60,7 +60,7 @@ public class Decimal128Fields implements Comparable<Decimal128Fields> {
      * @param y Second decimal number.
      * @return The comparison sign.
      */
-    public boolean isLessUnordered(final Decimal128Fields y) {
+    public boolean isLessUnordered(final Decimal128Underlying y) {
         return Decimal128MathUtils.isLessUnordered(this, y);
     }
 
@@ -70,7 +70,7 @@ public class Decimal128Fields implements Comparable<Decimal128Fields> {
      * @param y Second decimal number.
      * @return The comparison sign.
      */
-    public boolean isNotGreater(final Decimal128Fields y) {
+    public boolean isNotGreater(final Decimal128Underlying y) {
         return Decimal128MathUtils.isNotGreater(this, y);
     }
 
@@ -80,7 +80,7 @@ public class Decimal128Fields implements Comparable<Decimal128Fields> {
      * @param y Second decimal number.
      * @return The comparison sign.
      */
-    public boolean isNotLess(final Decimal128Fields y) {
+    public boolean isNotLess(final Decimal128Underlying y) {
         return Decimal128MathUtils.isNotLess(this, y);
     }
 
@@ -90,7 +90,7 @@ public class Decimal128Fields implements Comparable<Decimal128Fields> {
      * @param y Second decimal number.
      * @return {@code true} if both arguments are not NaN.
      */
-    public boolean isOrdered(final Decimal128Fields y) {
+    public boolean isOrdered(final Decimal128Underlying y) {
         return Decimal128MathUtils.isOrdered(this, y);
     }
 
@@ -100,7 +100,7 @@ public class Decimal128Fields implements Comparable<Decimal128Fields> {
      * @param y Second decimal number.
      * @return {@code true} if either argument is NaN.
      */
-    public boolean isUnordered(final Decimal128Fields y) {
+    public boolean isUnordered(final Decimal128Underlying y) {
         return Decimal128MathUtils.isUnordered(this, y);
     }
 

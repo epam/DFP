@@ -13,7 +13,7 @@
 #define JAVA_PREFIX    com_epam_deltix_dfp_NativeImpl_
 #endif
 #ifndef JAVA_DECIMAL128_CLASS_PATH
-#define JAVA_DECIMAL128_CLASS_PATH  "com/epam/deltix/dfp/Decimal128Fields"
+#define JAVA_DECIMAL128_CLASS_PATH  "com/epam/deltix/dfp/Decimal128Underlying"
 #define JAVA_DECIMAL128_FIELD_LOW   "low"
 #define JAVA_DECIMAL128_FIELD_HIGH  "high"
 #endif

@@ -270,7 +270,7 @@ public class Decimal128Utils {
 
     /// region Conversion
 
-    public static void fromUnderlying(final long low, final long high, final Decimal128Fields r) {
+    public static void fromUnderlying(final long low, final long high, final Decimal128Underlying r) {
         r.set(low, high);
     }
 
@@ -328,7 +328,7 @@ public class Decimal128Utils {
      * @param numberOfDigits Number of digits after the dot.
      * @param r              New 64-bit floating point dfp value.
      */
-    public static void fromFixedPoint(final long mantissa, final int numberOfDigits, final Decimal128Fields r) {
+    public static void fromFixedPoint(final long mantissa, final int numberOfDigits, final Decimal128Underlying r) {
         // TODO: Can also create java version for this one
         NativeImpl.bid128FromFixedPoint64(mantissa, numberOfDigits, r);
     }
@@ -363,7 +363,7 @@ public class Decimal128Utils {
      * @param numberOfDigits Number of digits after the dot.
      * @return fixed-point decimal value represented as @{code long}
      */
-    public static long toFixedPoint(final Decimal128Fields x, final int numberOfDigits) {
+    public static long toFixedPoint(final Decimal128Underlying x, final int numberOfDigits) {
         return NativeImpl.bid128ToFixedPoint(x.low, x.high, numberOfDigits);
     }
 
@@ -373,7 +373,7 @@ public class Decimal128Utils {
      * @param value source 64-bit binary floating point value
      * @param r     New {@code DFP} value.
      */
-    public static void fromDouble(final double value, final Decimal128Fields r) {
+    public static void fromDouble(final double value, final Decimal128Underlying r) {
         NativeImpl.bid128FromFloat64(value, r);
     }
 
@@ -384,7 +384,7 @@ public class Decimal128Utils {
      * @param x source {@code DFP} value
      * @return {@code double} value
      */
-    public static double toDouble(final Decimal128Fields x) {
+    public static double toDouble(final Decimal128Underlying x) {
         return NativeImpl.bid128ToFloat64(x.low, x.high);
     }
 
@@ -394,7 +394,7 @@ public class Decimal128Utils {
      * @param value source {@code long} integer value
      * @param r     New {@code DFP} value.
      */
-    public static void fromLong(final long value, final Decimal128Fields r) {
+    public static void fromLong(final long value, final Decimal128Underlying r) {
         NativeImpl.bid128FromInt64(value, r);
     }
 
@@ -405,7 +405,7 @@ public class Decimal128Utils {
      * @param x {@code DFP} value
      * @return {@code long} integer value
      */
-    public static long toLong(final Decimal128Fields x) {
+    public static long toLong(final Decimal128Underlying x) {
         return NativeImpl.bid128ToInt64(x.low, x.high);
     }
 
@@ -417,7 +417,7 @@ public class Decimal128Utils {
      * @param r     new {@code DFP} value
      */
     @Decimal
-    public static void fromInt(final int value, final Decimal128Fields r) {
+    public static void fromInt(final int value, final Decimal128Underlying r) {
         NativeImpl.bid128FromInt32(value, r);
     }
 
@@ -428,7 +428,7 @@ public class Decimal128Utils {
      * @param x {@code DFP} value
      * @return {@code int} value
      */
-    public static int toInt(final Decimal128Fields x) {
+    public static int toInt(final Decimal128Underlying x) {
         return (int) NativeImpl.bid128ToInt64(x.low, x.high);
     }
 
@@ -436,27 +436,27 @@ public class Decimal128Utils {
 
     /// region Classification
 
-    public static boolean isNaN(final Decimal128Fields x) {
+    public static boolean isNaN(final Decimal128Underlying x) {
         return NativeImpl.bid128IsNaN(x.low, x.high);
     }
 
-    public static boolean isInfinity(final Decimal128Fields x) {
+    public static boolean isInfinity(final Decimal128Underlying x) {
         return NativeImpl.bid128IsInfinity(x.low, x.high);
     }
 
-    public static boolean isPositiveInfinity(final Decimal128Fields x) {
+    public static boolean isPositiveInfinity(final Decimal128Underlying x) {
         return NativeImpl.bid128IsPositiveInfinity(x.low, x.high);
     }
 
-    public static boolean isNegativeInfinity(final Decimal128Fields x) {
+    public static boolean isNegativeInfinity(final Decimal128Underlying x) {
         return NativeImpl.bid128IsNegativeInfinity(x.low, x.high);
     }
 
-    public static boolean isFinite(final Decimal128Fields x) {
+    public static boolean isFinite(final Decimal128Underlying x) {
         return NativeImpl.bid128IsFinite(x.low, x.high);
     }
 
-    public static boolean isNormal(final Decimal128Fields x) {
+    public static boolean isNormal(final Decimal128Underlying x) {
         return NativeImpl.bid128IsNormal(x.low, x.high);
     }
 
@@ -464,55 +464,55 @@ public class Decimal128Utils {
 
     /// region Comparison
 
-    public static int compareTo(final Decimal128Fields a, final Decimal128Fields b) {
+    public static int compareTo(final Decimal128Underlying a, final Decimal128Underlying b) {
         return NativeImpl.bid128Compare(a.low, a.high, b.low, b.high);
     }
 
-    public static boolean isEqual(final Decimal128Fields a, final Decimal128Fields b) {
+    public static boolean isEqual(final Decimal128Underlying a, final Decimal128Underlying b) {
         return NativeImpl.bid128IsEqual(a.low, a.high, b.low, b.high);
     }
 
-    public static boolean isNotEqual(final Decimal128Fields a, final Decimal128Fields b) {
+    public static boolean isNotEqual(final Decimal128Underlying a, final Decimal128Underlying b) {
         return NativeImpl.bid128IsNotEqual(a.low, a.high, b.low, b.high);
     }
 
-    public static boolean isLess(final Decimal128Fields a, final Decimal128Fields b) {
+    public static boolean isLess(final Decimal128Underlying a, final Decimal128Underlying b) {
         return NativeImpl.bid128IsLess(a.low, a.high, b.low, b.high);
     }
 
-    public static boolean isLessOrEqual(final Decimal128Fields a, final Decimal128Fields b) {
+    public static boolean isLessOrEqual(final Decimal128Underlying a, final Decimal128Underlying b) {
         return NativeImpl.bid128IsLessOrEqual(a.low, a.high, b.low, b.high);
     }
 
-    public static boolean isGreater(final Decimal128Fields a, final Decimal128Fields b) {
+    public static boolean isGreater(final Decimal128Underlying a, final Decimal128Underlying b) {
         return NativeImpl.bid128IsGreater(a.low, a.high, b.low, b.high);
     }
 
-    public static boolean isGreaterOrEqual(final Decimal128Fields a, final Decimal128Fields b) {
+    public static boolean isGreaterOrEqual(final Decimal128Underlying a, final Decimal128Underlying b) {
         return NativeImpl.bid128IsGreaterOrEqual(a.low, a.high, b.low, b.high);
     }
 
-    public static boolean isZero(final Decimal128Fields x) {
+    public static boolean isZero(final Decimal128Underlying x) {
         return NativeImpl.bid128IsZero(x.low, x.high);
     }
 
-    public static boolean isNonZero(final Decimal128Fields x) {
+    public static boolean isNonZero(final Decimal128Underlying x) {
         return NativeImpl.bid128IsNonZero(x.low, x.high);
     }
 
-    public static boolean isPositive(final Decimal128Fields x) {
+    public static boolean isPositive(final Decimal128Underlying x) {
         return NativeImpl.bid128IsPositive(x.low, x.high);
     }
 
-    public static boolean isNegative(final Decimal128Fields x) {
+    public static boolean isNegative(final Decimal128Underlying x) {
         return NativeImpl.bid128IsNegative(x.low, x.high);
     }
 
-    public static boolean isNonPositive(final Decimal128Fields x) {
+    public static boolean isNonPositive(final Decimal128Underlying x) {
         return NativeImpl.bid128IsNonPositive(x.low, x.high);
     }
 
-    public static boolean isNonNegative(final Decimal128Fields x) {
+    public static boolean isNonNegative(final Decimal128Underlying x) {
         return NativeImpl.bid128IsNonNegative(x.low, x.high);
     }
 
@@ -520,27 +520,27 @@ public class Decimal128Utils {
 
     /// region Minimum & Maximum
 
-    public static void max(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields r) {
+    public static void max(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying r) {
         NativeImpl.bid128Max2(a.low, a.high, b.low, b.high, r);
     }
 
-    public static void max(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields c, final Decimal128Fields r) {
+    public static void max(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying c, final Decimal128Underlying r) {
         NativeImpl.bid128Max3(a.low, a.high, b.low, b.high, c.low, c.high, r);
     }
 
-    public static void max(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields c, final Decimal128Fields d, final Decimal128Fields r) {
+    public static void max(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying c, final Decimal128Underlying d, final Decimal128Underlying r) {
         NativeImpl.bid128Max4(a.low, a.high, b.low, b.high, c.low, c.high, d.low, d.high, r);
     }
 
-    public static void min(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields r) {
+    public static void min(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying r) {
         NativeImpl.bid128Min2(a.low, a.high, b.low, b.high, r);
     }
 
-    public static void min(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields c, final Decimal128Fields r) {
+    public static void min(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying c, final Decimal128Underlying r) {
         NativeImpl.bid128Min3(a.low, a.high, b.low, b.high, c.low, c.high, r);
     }
 
-    public static void min(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields c, final Decimal128Fields d, final Decimal128Fields r) {
+    public static void min(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying c, final Decimal128Underlying d, final Decimal128Underlying r) {
         NativeImpl.bid128Min4(a.low, a.high, b.low, b.high, c.low, c.high, d.low, d.high, r);
     }
 
@@ -548,59 +548,59 @@ public class Decimal128Utils {
 
     /// region Arithmetic
 
-    public static void negate(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void negate(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128Negate(x.low, x.high, r);
     }
 
-    public static void abs(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void abs(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128Abs(x.low, x.high, r);
     }
 
-    public static void add(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields r) {
+    public static void add(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying r) {
         NativeImpl.bid128Add2(a.low, a.high, b.low, b.high, r);
     }
 
-    public static void add(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields c, final Decimal128Fields r) {
+    public static void add(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying c, final Decimal128Underlying r) {
         NativeImpl.bid128Add3(a.low, a.high, b.low, b.high, c.low, c.high, r);
     }
 
-    public static void add(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields c, final Decimal128Fields d, final Decimal128Fields r) {
+    public static void add(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying c, final Decimal128Underlying d, final Decimal128Underlying r) {
         NativeImpl.bid128Add4(a.low, a.high, b.low, b.high, c.low, c.high, d.low, d.high, r);
     }
 
-    public static void subtract(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields r) {
+    public static void subtract(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying r) {
         NativeImpl.bid128Subtract(a.low, a.high, b.low, b.high, r);
     }
 
-    public static void multiply(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields r) {
+    public static void multiply(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying r) {
         NativeImpl.bid128Multiply2(a.low, a.high, b.low, b.high, r);
     }
 
-    public static void multiply(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields c, final Decimal128Fields r) {
+    public static void multiply(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying c, final Decimal128Underlying r) {
         NativeImpl.bid128Multiply3(a.low, a.high, b.low, b.high, c.low, c.high, r);
     }
 
-    public static void multiply(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields c, final Decimal128Fields d, final Decimal128Fields r) {
+    public static void multiply(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying c, final Decimal128Underlying d, final Decimal128Underlying r) {
         NativeImpl.bid128Multiply4(a.low, a.high, b.low, b.high, c.low, c.high, d.low, d.high, r);
     }
 
-    public static void multiplyByInteger(final Decimal128Fields a, final int b, final Decimal128Fields r) {
+    public static void multiplyByInteger(final Decimal128Underlying a, final int b, final Decimal128Underlying r) {
         NativeImpl.bid128MultiplyByInt32(a.low, a.high, b, r);
     }
 
-    public static void multiplyByInteger(final Decimal128Fields a, final long b, final Decimal128Fields r) {
+    public static void multiplyByInteger(final Decimal128Underlying a, final long b, final Decimal128Underlying r) {
         NativeImpl.bid128MultiplyByInt64(a.low, a.high, b, r);
     }
 
-    public static void divide(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields r) {
+    public static void divide(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying r) {
         NativeImpl.bid128Divide(a.low, a.high, b.low, b.high, r);
     }
 
-    public static void divideByInteger(final Decimal128Fields a, final int b, final Decimal128Fields r) {
+    public static void divideByInteger(final Decimal128Underlying a, final int b, final Decimal128Underlying r) {
         NativeImpl.bid128DivideByInt32(a.low, a.high, b, r);
     }
 
-    public static void divideByInteger(final Decimal128Fields a, final long b, final Decimal128Fields r) {
+    public static void divideByInteger(final Decimal128Underlying a, final long b, final Decimal128Underlying r) {
         NativeImpl.bid128DivideByInt64(a.low, a.high, b, r);
     }
 
@@ -615,19 +615,19 @@ public class Decimal128Utils {
      * @param c summand represented as {@code DFP}
      * @param r The value of {@code (a * b) + c} rounded once to {@code DFP} format.
      */
-    public static void multiplyAndAdd(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields c, final Decimal128Fields r) {
+    public static void multiplyAndAdd(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying c, final Decimal128Underlying r) {
         NativeImpl.bid128MultiplyAndAdd(a.low, a.high, b.low, b.high, c.low, c.high, r);
     }
 
-    public static void scaleByPowerOfTen(final Decimal128Fields a, final int n, final Decimal128Fields r) {
+    public static void scaleByPowerOfTen(final Decimal128Underlying a, final int n, final Decimal128Underlying r) {
         NativeImpl.bid128ScaleByPowerOfTen(a.low, a.high, n, r);
     }
 
-    public static void average(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields r) {
+    public static void average(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying r) {
         NativeImpl.bid128Mean2(a.low, a.high, b.low, b.high, r);
     }
 
-    public static void mean(final Decimal128Fields a, final Decimal128Fields b, final Decimal128Fields r) {
+    public static void mean(final Decimal128Underlying a, final Decimal128Underlying b, final Decimal128Underlying r) {
         NativeImpl.bid128Mean2(a.low, a.high, b.low, b.high, r);
     }
 
@@ -658,7 +658,7 @@ public class Decimal128Utils {
      * @see Decimal128Utils#roundTowardsPositiveInfinity
      */
     @Deprecated
-    public static void ceil(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void ceil(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128RoundTowardsPositiveInfinity(x.low, x.high, r);
     }
 
@@ -674,7 +674,7 @@ public class Decimal128Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
-    public static void ceiling(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void ceiling(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128RoundTowardsPositiveInfinity(x.low, x.high, r);
     }
 
@@ -687,7 +687,7 @@ public class Decimal128Utils {
      * @param r If {@code DFP value} is finite, returns {@code value} rounded up to a mathematical integer,
      *          otherwise {@code value} is returned unchanged.
      */
-    public static void roundTowardsPositiveInfinity(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void roundTowardsPositiveInfinity(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128RoundTowardsPositiveInfinity(x.low, x.high, r);
     }
 
@@ -701,7 +701,7 @@ public class Decimal128Utils {
      * @see Decimal128Utils#roundTowardsNegativeInfinity
      */
     @Decimal
-    public static void floor(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void floor(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128RoundTowardsNegativeInfinity(x.low, x.high, r);
     }
 
@@ -714,7 +714,7 @@ public class Decimal128Utils {
      *          otherwise {@code value} is returned unchanged.
      */
     @Decimal
-    public static void roundTowardsNegativeInfinity(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void roundTowardsNegativeInfinity(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128RoundTowardsNegativeInfinity(x.low, x.high, r);
     }
 
@@ -727,7 +727,7 @@ public class Decimal128Utils {
      *          otherwise {@code value} is returned unchanged.
      * @see Decimal128Utils#roundTowardsZero
      */
-    public static void truncate(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void truncate(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128RoundTowardsZero(x.low, x.high, r);
     }
 
@@ -739,7 +739,7 @@ public class Decimal128Utils {
      * @param r If {@code DFP value} is finite, returns {@code value} rounded towards zero to an integer,
      *          otherwise {@code value} is returned unchanged.
      */
-    public static void roundTowardsZero(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void roundTowardsZero(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128RoundTowardsZero(x.low, x.high, r);
     }
 
@@ -755,7 +755,7 @@ public class Decimal128Utils {
      *                 otherwise {@code value} is returned unchanged.
      * @see Decimal128Utils#roundToNearestTiesAwayFromZero
      */
-    public static void round(final Decimal128Fields value, final Decimal128Fields multiple, final Decimal128Fields r) {
+    public static void round(final Decimal128Underlying value, final Decimal128Underlying multiple, final Decimal128Underlying r) {
         roundToNearestTiesAwayFromZero(value, multiple, r);
     }
 
@@ -767,7 +767,7 @@ public class Decimal128Utils {
      * @param r the value of the argument rounded to the nearest mathematical integer
      * @see Decimal128Utils#roundToNearestTiesAwayFromZero
      */
-    public static void round(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void round(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128RoundToNearestTiesAwayFromZero(x.low, x.high, r);
     }
 
@@ -778,7 +778,7 @@ public class Decimal128Utils {
      * @param x {@code DFP} argument
      * @param r the value of the argument rounded to the nearest mathematical integer
      */
-    public static void roundToNearestTiesAwayFromZero(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void roundToNearestTiesAwayFromZero(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128RoundToNearestTiesAwayFromZero(x.low, x.high, r);
     }
 
@@ -805,7 +805,7 @@ public class Decimal128Utils {
      * @param r        If {@code DFP value} is finite, returns {@code value} rounded up to a multiple of {@code multiple},
      *                 otherwise {@code value} is returned unchanged.
      */
-    public static void roundTowardsPositiveInfinity(final Decimal128Fields value, final Decimal128Fields multiple, final Decimal128Fields r) {
+    public static void roundTowardsPositiveInfinity(final Decimal128Underlying value, final Decimal128Underlying multiple, final Decimal128Underlying r) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
         if (isNaN(value)) {
@@ -841,7 +841,7 @@ public class Decimal128Utils {
      * @param r        If {@code DFP value} is finite, returns {@code value} rounded down to a multiple of {@code multiple},
      *                 otherwise {@code value} is returned unchanged.
      */
-    public static void roundTowardsNegativeInfinity(final Decimal128Fields value, final Decimal128Fields multiple, final Decimal128Fields r) {
+    public static void roundTowardsNegativeInfinity(final Decimal128Underlying value, final Decimal128Underlying multiple, final Decimal128Underlying r) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
         if (isNaN(value)) {
@@ -865,7 +865,7 @@ public class Decimal128Utils {
      * @param r        If {@code DFP value} is finite, returns {@code value} rounded to a multiple of {@code multiple},
      *                 otherwise {@code value} is returned unchanged.
      */
-    public static void roundToNearestTiesAwayFromZero(final Decimal128Fields value, final Decimal128Fields multiple, final Decimal128Fields r) {
+    public static void roundToNearestTiesAwayFromZero(final Decimal128Underlying value, final Decimal128Underlying multiple, final Decimal128Underlying r) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
         if (isNaN(value)) {
@@ -888,7 +888,7 @@ public class Decimal128Utils {
      * @param x {@code DFP} argument as long
      * @param r adjacent DFP value in the direction of positive infinity
      */
-    public static void nextUp(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void nextUp(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128NextUp(x.low, x.high, r);
     }
 
@@ -898,7 +898,7 @@ public class Decimal128Utils {
      * @param x {@code Decimal64} argument
      * @param r adjacent DFP value in the direction of negative infinity
      */
-    public static void nextDown(final Decimal128Fields x, final Decimal128Fields r) {
+    public static void nextDown(final Decimal128Underlying x, final Decimal128Underlying r) {
         NativeImpl.bid128NextDown(x.low, x.high, r);
     }
 

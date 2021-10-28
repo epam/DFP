@@ -1,9 +1,6 @@
 package com.epam.deltix.dfp;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-
-public class Decimal128 extends Decimal128Fields {
+public class Decimal128 extends Decimal128Underlying {
     @Override
     public void set(long low, long high) {
         throw new UnsupportedOperationException("The Decimal128 class must be considered as immutable. For mutable operations please use Decimal128Fields class.");
