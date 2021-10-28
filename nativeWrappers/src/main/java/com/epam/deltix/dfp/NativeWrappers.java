@@ -372,7 +372,7 @@ public class NativeWrappers {
             case "void":
                 return "void";
             case "jobject":
-                return "Decimal128Fields";
+                return "Decimal128Underlying";
             default:
                 throw new RuntimeException("Can't convert C++ type (='" + type + "') to Java type.");
         }
