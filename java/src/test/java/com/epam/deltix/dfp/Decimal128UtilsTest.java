@@ -13,9 +13,9 @@ public class Decimal128UtilsTest {
 //        final Random random = new Random();
         final double x = Math.PI;
 
-        Decimal128Utils.setReturnValueFillType(Decimal128Utils.ReturnValueFillType.CALLBACK);
+        //Decimal128Utils.setReturnValueFillType(Decimal128Utils.ReturnValueFillType.CALLBACK);
 
-        Decimal128Underlying d128 = new Decimal128();
+        Decimal128Underlying d128 = new Decimal128Underlying();
         for (int i = 0; i < 10_000_000; ++i) {
 //            final double x = random.nextDouble();
             Decimal128Utils.fromDouble(x, d128);
