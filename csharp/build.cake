@@ -51,6 +51,7 @@ Task("Build")
         buildSettings.Framework = "netstandard2.0";
 
     DotNetCoreBuild("./EPAM.Deltix.DFP/EPAM.Deltix.DFP.csproj", buildSettings);
+    DotNetCoreBuild("./EPAM.Deltix.DFP/EPAM.Deltix.DFP.Math.csproj", buildSettings);
 
     if (!IsRunningOnWindows())
         buildSettings.Framework = "netcoreapp3.1";

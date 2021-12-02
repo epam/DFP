@@ -5,13 +5,13 @@
 		<LangVersion>6</LangVersion>
 		<RootNamespace>EPAM.Deltix.DFP</RootNamespace>
 		<AssemblyName>EPAM.Deltix.DFP</AssemblyName>
-		<Authors>Vitali Haravy &lt;vharavy@deltixlab.com&gt;Barys Chupryn &lt;bchupryn@deltixlab.com&gt;</Authors>
-		<Company>EPAM.Deltix Inc.</Company>
-		<Description>An implementation of decimal floating-point arithmetic.</Description>
-		<Copyright>Copyright (C) 2017-2021, EPAM Systems Inc.</Copyright>
-		<PackageProjectUrl>https://github.com/DeltixInc/DFP</PackageProjectUrl>
+		<Authors>Andrei Davydov &lt;agdavydov81@gmail.com&gt;</Authors>
+		<Company>EPAM Systems</Company>
+		<Description>Deltix Decimal Floating-Point Arithmetic Library.</Description>
+		<Copyright>Copyright(C), EPAM Systems Inc.</Copyright>
+		<PackageProjectUrl>https://github.com/epam/DFP</PackageProjectUrl>
 		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>git@github.com:DeltixInc/DFP.git $(VersionSha)</RepositoryUrl>
+		<RepositoryUrl>git@github.com:epam/DFP.git $(VersionSha)</RepositoryUrl>
 		<PackageTags>.NET Decimal</PackageTags>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>

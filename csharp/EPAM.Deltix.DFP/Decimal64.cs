@@ -1,7 +1,10 @@
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
+
+[assembly: InternalsVisibleTo("EPAM.Deltix.DFP.Math")]
 
 namespace EPAM.Deltix.DFP
 {

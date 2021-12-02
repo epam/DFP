@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\EPAM.Deltix.DFP\Version.targets" />
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
+		<LangVersion>6</LangVersion>
+		<RootNamespace>EPAM.Deltix.DFP.Math</RootNamespace>
+		<AssemblyName>EPAM.Deltix.DFP.Math</AssemblyName>
+		<Authors>Andrei Davydov &lt;agdavydov81@gmail.com&gt;</Authors>
+		<Company>EPAM Systems</Company>
+		<Description>Deltix Decimal Floating-Point Math Arithmetic Library.</Description>
+		<Copyright>Copyright(C), EPAM Systems Inc.</Copyright>
+		<PackageProjectUrl>https://github.com/epam/DFP</PackageProjectUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>git@github.com:epam/DFP.git $(VersionSha)</RepositoryUrl>
+		<PackageTags>.NET Decimal</PackageTags>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\EPAM.Deltix.DFP\EPAM.Deltix.DFP.csproj" />
+	</ItemGroup>
+</Project>
