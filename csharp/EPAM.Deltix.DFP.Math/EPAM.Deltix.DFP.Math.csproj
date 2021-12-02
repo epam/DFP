@@ -16,6 +16,6 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\EPAM.Deltix.DFP\EPAM.Deltix.DFP.csproj" />
+		<ProjectReference Include="..\EPAM.Deltix.DFP\EPAM.Deltix.DFP.csproj" />
 	</ItemGroup>
 </Project>
