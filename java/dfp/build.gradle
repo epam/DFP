@@ -1,0 +1,164 @@
+plugins {
+    id "me.champeau.gradle.jmh" version "0.5.0" apply false
+}
+
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+apply plugin: 'me.champeau.gradle.jmh'
+
+if (isReleaseVersion) {
+    apply plugin: 'signing'
+}
+
+group = 'com.epam.deltix'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "$projectDir/dfp/src/main/java"
+            srcDir "$projectDir/build/generated/sources/nativeWrappers"
+            srcDir "$rootDir/NativeUtils/java/main/src/main/java"
+            srcDir "$rootDir/NativeUtils/Zstandard/java/src/main/java"
+
+            resources {
+                srcDirs = ["$rootDir/native/bin/Release/"]
+                include '**/*.zst'
+            }
+        }
+    }
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/java')
+        }
+
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.+'
+    testImplementation 'org.apache.commons:commons-math3:3.6.1'
+    integrationTestCompile 'junit:junit:4.+'
+    integrationTestCompile 'org.apache.commons:commons-math3:3.6.1'
+}
+
+def rUser = findProperty('SONATYPE_NEXUS_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: "FakeUser"
+def rPass = findProperty('SONATYPE_NEXUS_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: "FakePass"
+
+publishing {
+    repositories {
+        maven {
+            url = findProperty('SONATYPE_REPOSITORY') ?: System.getenv('SONATYPE_REPOSITORY') ?: "FakeRepo"
+
+            credentials {
+                username rUser
+                password rPass
+            }
+        }
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = 'dfp'
+                packaging = 'jar'
+                description = 'Deltix Decimal Floating-Point Arithmetic Library.'
+                url = 'https://github.com/epam/DFP'
+
+                scm {
+                    connection = 'scm:git:https://github.com/epam/DFP.git'
+                    developerConnection = 'scm:git:https://github.com/epam/DFP.git'
+                    url = 'https://github.com/epam/DFP.git'
+                }
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'AndreiDavydov'
+                        name = 'Andrei Davydov'
+                        email = 'agdavydov81@gmail.com'
+                        url = 'https://github.com/agdavydov81'
+                        organization = 'EPAM Systems'
+                        organizationUrl = 'https://www.epam.com/'
+                    }
+                }
+            }
+        }
+    }
+}
+
+if (isReleaseVersion) {
+    signing {
+        def signingKey = findProperty('SIGNING_PRIVATE_KEY') ?: System.getenv('SIGNING_PRIVATE_KEY') ?: "FakeUser"
+        def signingPassword = findProperty('SIGNING_PASSWORD') ?: System.getenv('SIGNING_PASSWORD') ?: "FakePass"
+
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.mavenJava
+
+        required { isReleaseVersion }
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Deltix Decimal Floating-Point Arithmetic Library',
+            'Implementation-Version': archiveVersion
+    }
+    from("$rootDir") {
+        include 'LICENSE'
+    }
+    from("$rootDir") {
+        include 'intel-eula.txt'
+    }
+    setEntryCompression ZipEntryCompression.STORED
+}
+
+jmh {
+    include = '.*Benchmark.*'
+}
+
+test.outputs.upToDateWhen { false }
+
+task integrationTest(type: Test) {
+    group = 'verification'
+    systemProperty "com.epam.deltix.dfp.dataFiles.parsingAndFormatting", "$projectDir/data/Decimal64.FormattingAndParsing.txt"
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    // Assume that test are never up-to-date.
+    outputs.upToDateWhen { false }
+}
+
+// Ensures that test reports for unit tests and integrations tests are kept separate.
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+

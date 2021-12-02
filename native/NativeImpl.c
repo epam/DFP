@@ -304,7 +304,6 @@ OPNR(bid64ToBinary32, float, bid64_to_binary32(x), BID_UINT64 x)
 OPNR(bid64ToBinary64, double, bid64_to_binary64(x), BID_UINT64 x)
 //BID_EXTERN_C BID_UINT64 bid64_frexp (BID_UINT64 x, int *exp);
 OPN(bid64Logb, bid64_logb(x), BID_UINT64 x)
-OPN(bid64Scalbln, bid64_scalbln(x, n), BID_UINT64 x, int64 n)
 OPN(bid64Nearbyint, bid64_nearbyint(x), BID_UINT64 x)
 //BID_EXTERN_C long int bid64_lrint (BID_UINT64 x
 OPNR(bid64Llrint, int64, bid64_llrint(x), BID_UINT64 x)

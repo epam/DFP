@@ -43,7 +43,7 @@ jobs:
           name: build-native-linux
           path: |
             ./*native/bin*
-            ./*java/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
           retention-days: 7
@@ -115,7 +115,7 @@ jobs:
           path: |
             ./gradle.properties
             ./*native/bin*
-            ./*java/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
           retention-days: 7
@@ -143,8 +143,9 @@ jobs:
         with:
           name: java-jars
           path: |
-            ./*java/build/libs/*
-            ./*javaDecimalDemo/build/libs/*
+            ./*java/dfp/build/libs/*
+            ./*java/dfp-math/build/libs/*
+            ./*java/dfp/decimalDemo/build/libs/*
           retention-days: 7
 
   build-dotnet:

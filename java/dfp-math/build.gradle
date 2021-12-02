@@ -1,0 +1,102 @@
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+if (isReleaseVersion) {
+    apply plugin: 'signing'
+}
+
+group = 'com.epam.deltix'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+dependencies {
+    implementation project(":java:dfp")
+    testImplementation 'junit:junit:4.+'
+    testImplementation 'org.apache.commons:commons-math3:3.6.1'
+}
+
+def rUser = findProperty('SONATYPE_NEXUS_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: "FakeUser"
+def rPass = findProperty('SONATYPE_NEXUS_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: "FakePass"
+
+publishing {
+    repositories {
+        maven {
+            url = findProperty('SONATYPE_REPOSITORY') ?: System.getenv('SONATYPE_REPOSITORY') ?: "FakeRepo"
+
+            credentials {
+                username rUser
+                password rPass
+            }
+        }
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = 'dfp-math'
+                packaging = 'jar'
+                description = 'Deltix Decimal Floating-Point Math Arithmetic Library.'
+                url = 'https://github.com/epam/DFP'
+
+                scm {
+                    connection = 'scm:git:https://github.com/epam/DFP.git'
+                    developerConnection = 'scm:git:https://github.com/epam/DFP.git'
+                    url = 'https://github.com/epam/DFP.git'
+                }
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'AndreiDavydov'
+                        name = 'Andrei Davydov'
+                        email = 'agdavydov81@gmail.com'
+                        url = 'https://github.com/agdavydov81'
+                        organization = 'EPAM Systems'
+                        organizationUrl = 'https://www.epam.com/'
+                    }
+                }
+            }
+        }
+    }
+}
+
+if (isReleaseVersion) {
+    signing {
+        def signingKey = findProperty('SIGNING_PRIVATE_KEY') ?: System.getenv('SIGNING_PRIVATE_KEY') ?: "FakeUser"
+        def signingPassword = findProperty('SIGNING_PASSWORD') ?: System.getenv('SIGNING_PASSWORD') ?: "FakePass"
+
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.mavenJava
+
+        required { isReleaseVersion }
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Deltix Decimal Floating-Point Math Arithmetic Library',
+            'Implementation-Version': archiveVersion
+    }
+    from("$rootDir") {
+        include 'LICENSE'
+    }
+}

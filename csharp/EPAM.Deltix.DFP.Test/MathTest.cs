@@ -1005,18 +1005,6 @@ namespace EPAM.Deltix.DFP.Test
 		}
 
 		[Test]
-		public void TestScalbln()
-		{
-			var random = new Random(GetRandomSeed());
-			for (int i = 0; i < N; ++i)
-			{
-				var x = random.Next(int.MinValue, int.MaxValue);
-				var y = random.Next(-100, 100);
-				AssertDecimalEqual(Scalbn(FromInt32(x), y), Scalbln(FromInt64(x), y), "x=" + x + "; y=" + y);
-			}
-		}
-
-		[Test]
 		public void TestNearByInt()
 		{
 			TestRoundFunc(new String[]{
