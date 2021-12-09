@@ -691,7 +691,7 @@ public class Decimal64Utils {
     @Decimal
     @Deprecated
     public static long ceil(@Decimal final long value) {
-        return round(value, 0, RoundType.CEIL);
+        return NativeImpl.roundTowardsPositiveInfinity(value);
     }
 
     /**
@@ -707,7 +707,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long ceiling(@Decimal final long value) {
-        return round(value, 0, RoundType.CEIL);
+        return NativeImpl.roundTowardsPositiveInfinity(value);
     }
 
     /**
@@ -721,7 +721,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsPositiveInfinity(@Decimal final long value) {
-        return round(value, 0, RoundType.CEIL);
+        return NativeImpl.roundTowardsPositiveInfinity(value);
     }
 
     /**
@@ -735,7 +735,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long floor(@Decimal final long value) {
-        return round(value, 0, RoundType.FLOOR);
+        return NativeImpl.roundTowardsNegativeInfinity(value);
     }
 
     /**
@@ -748,7 +748,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsNegativeInfinity(@Decimal final long value) {
-        return round(value, 0, RoundType.FLOOR);
+        return NativeImpl.roundTowardsNegativeInfinity(value);
     }
 
     /**
@@ -762,7 +762,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long truncate(@Decimal final long value) {
-        return round(value, 0, RoundType.TRUNC);
+        return NativeImpl.roundTowardsZero(value);
     }
 
 
@@ -776,7 +776,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsZero(@Decimal final long value) {
-        return round(value, 0, RoundType.TRUNC);
+        return NativeImpl.roundTowardsZero(value);
     }
 
     /**
@@ -806,7 +806,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long round(@Decimal final long value) {
-        return round(value, 0, RoundType.ROUND);
+        return NativeImpl.roundToNearestTiesAwayFromZero(value);
     }
 
     /**
@@ -818,7 +818,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundToNearestTiesAwayFromZero(@Decimal final long value) {
-        return round(value, 0, RoundType.ROUND);
+        return NativeImpl.roundToNearestTiesAwayFromZero(value);
     }
 
     /**
@@ -907,7 +907,7 @@ public class Decimal64Utils {
         if (isNaN(value))
             return value;
 
-        @Decimal final long ratio = round(divide(value, multiple), 0, RoundType.ROUND);
+        @Decimal final long ratio = NativeImpl.roundToNearestTiesAwayFromZero(divide(value, multiple));
         return multiply(ratio, multiple);
     }
 

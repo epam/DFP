@@ -526,4 +526,13 @@ public class JavaImplTest {
             throw new RuntimeException("Case checkRound(" + inValue + "L, " + roundPoint + ", RoundType." + roundType +
                 "); error: input value (=" + inStr + ") string rounding (=" + roundStr + ") != decimal rounding (=" + testStr + ")");
     }
+
+    @Test
+    public void unCanonizedRound() {
+        final long zeroU = 0x2FE0000000000000L;
+        final long f = 0x2F638D7EA4C68000L; // 0.0001
+        final long zeroP = Decimal64Utils.multiply(zeroU, f);
+
+        assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.round(zeroP, 0, RoundType.CEIL));
+    }
 }

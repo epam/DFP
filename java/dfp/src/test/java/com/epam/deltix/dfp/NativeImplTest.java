@@ -46,4 +46,14 @@ public class NativeImplTest {
         assertDecimalEqual(NativeImpl.fromFloat64(0.1), Decimal64Utils.ONE_TENTH);
         assertDecimalEqual(NativeImpl.fromFloat64(0.01), Decimal64Utils.ONE_HUNDREDTH);
     }
+
+    @Test
+    public void unCanonizedRound() {
+        final long zeroU = 0x2FE0000000000000L;
+        final long f = 0x2F638D7EA4C68000L; // 0.0001
+        final long zeroP = Decimal64Utils.multiply(zeroU, f);
+
+        assertDecimalEqual(Decimal64Utils.ZERO, NativeImpl.roundTowardsPositiveInfinity(zeroP));
+        assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.ceil(zeroP));
+    }
 }
