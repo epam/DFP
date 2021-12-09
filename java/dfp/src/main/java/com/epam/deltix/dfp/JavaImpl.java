@@ -1347,9 +1347,50 @@ class JavaImpl {
         if (n < JavaImpl.MIN_EXPONENT)
             return JavaImpl.ZERO;
 
-        final Decimal64Parts parts = tlsDecimal64Parts.get();
-        JavaImpl.toParts(value, parts);
-        final int exponent = parts.exponent - JavaImpl.EXPONENT_BIAS + n;
+//        final Decimal64Parts parts = tlsDecimal64Parts.get();
+//        JavaImpl.toParts(value, parts);
+        long partsCoefficient;
+        long partsSignMask;
+        int partsExponent;
+        { // Copy-paste the toParts method for speedup
+            partsSignMask = value & MASK_SIGN;
+
+            if (isSpecial(value)) {
+                if (isNonFinite(value)) {
+                    partsExponent = 0;
+
+                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
+                    if (UnsignedLong.compare(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT) > 0)
+                        partsCoefficient = value & ~MASK_COEFFICIENT;
+                    if (isInfinity(value))
+                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+                }
+                else {
+                    // Check for non-canonical values.
+                    final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
+                    partsCoefficient = UnsignedLong.compare(coefficient, MAX_COEFFICIENT) > 0 ? 0 : coefficient;
+
+                    // Extract exponent.
+                    final long tmp = value >> EXPONENT_SHIFT_LARGE;
+                    partsExponent = (int) (tmp & EXPONENT_MASK);
+                }
+            }
+            else {
+
+                // Extract exponent. Maximum biased value for "small exponent" is 0x2FF(*2=0x5FE), signed: []
+                // upper 1/4 of the mask range is "special", as checked in the code above
+                final long tmp = value >> EXPONENT_SHIFT_SMALL;
+                partsExponent = (int) (tmp & EXPONENT_MASK);
+
+                // Extract coefficient.
+                partsCoefficient = (value & SMALL_COEFFICIENT_MASK);
+            }
+        }
+
+        if (partsCoefficient == 0)
+            return Decimal64Utils.ZERO;
+
+        final int exponent = partsExponent - JavaImpl.EXPONENT_BIAS + n;
 
         if (exponent >= 0) // value is already rounded
             return value;
@@ -1362,7 +1403,7 @@ class JavaImpl {
             long tenPower = 10;
             int expPower = 1;
 
-            long coefficient = parts.coefficient;
+            long coefficient = partsCoefficient;
 
             int absPower = -exponent;
             if (absPower >= 16) {
@@ -1387,35 +1428,34 @@ class JavaImpl {
         // Process last digit
         switch (roundType) {
             case ROUND:
-                parts.coefficient = addExponent == 0 ? ((parts.coefficient + divFactor / 2) / divFactor) * divFactor : 0;
+                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
                 break;
 
             case TRUNC:
-                parts.coefficient = addExponent == 0 ? (parts.coefficient / divFactor) * divFactor : 0;
+                partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
                 break;
 
             case FLOOR:
-                if (!parts.isNegative())
-                    parts.coefficient = addExponent == 0 ? (parts.coefficient / divFactor) * divFactor : 0;
+                if (partsSignMask >= 0/*!parts.isNegative()*/)
+                    partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
                 else
-                    parts.coefficient = addExponent == 0 ? ((parts.coefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                    partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
                 break;
 
             case CEIL:
-                if (!parts.isNegative())
-                    parts.coefficient = addExponent == 0 ? ((parts.coefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                if (partsSignMask >= 0/*!parts.isNegative()*/)
+                    partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
                 else
-                    parts.coefficient = addExponent == 0 ? (parts.coefficient / divFactor) * divFactor : 0;
+                    partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
                 break;
 
             default:
                 throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
         }
-        parts.exponent += addExponent;
-        if (parts.coefficient == 0)
+        partsExponent += addExponent;
+        if (partsCoefficient == 0)
             return JavaImpl.ZERO;
 
-
-        return JavaImpl.fromParts(parts);
+        return pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST); // JavaImpl.fromParts(parts)
     }
 }
