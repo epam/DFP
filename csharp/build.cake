@@ -1,6 +1,6 @@
 #tool nuget:?package=NUnit.ConsoleRunner&version=3.7.0
-#addin "Cake.Powershell"
-#addin "Cake.FileHelpers"
+#addin nuget:?package=Cake.Powershell&version=1.0.1
+#addin nuget:?package=Cake.FileHelpers&version=4.0.1
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
