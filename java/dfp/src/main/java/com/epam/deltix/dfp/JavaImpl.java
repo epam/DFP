@@ -1,7 +1,5 @@
 package com.epam.deltix.dfp;
 
-import sun.misc.Unsafe;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -244,50 +242,23 @@ class JavaImpl {
         return BigDecimal.valueOf(partsSignMask == 0 ? partsCoefficient : -partsCoefficient, -(partsExponent - EXPONENT_BIAS));
     }
 
-    private static class BigDecimalAccessHelper {
-        public static sun.misc.Unsafe unsafe;
-        public static long intCompactOffset;
-
-        static {
-            try {
-                final Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-                theUnsafe.setAccessible(true);
-                unsafe = (Unsafe) theUnsafe.get(null);
-                intCompactOffset = unsafe.objectFieldOffset(BigDecimal.class.getDeclaredField("intCompact"));
-            } catch (final Exception ex) {
-                unsafe = null;
-                intCompactOffset = Long.MIN_VALUE;
-            }
-        }
-
-        static long getIntCompact(final BigDecimal bd) {
-            return unsafe.getLong(bd, intCompactOffset);
-        }
-    }
-
     public static long fromBigDecimal(final BigDecimal value, final int roundingMode) {
         if (value == null)
             return JavaImpl.NULL;
 
         long signMask = 0;
         int scale = value.scale();
-        long intCompact = Long.MIN_VALUE;
 
-        if (BigDecimalAccessHelper.unsafe != null)
-            intCompact = BigDecimalAccessHelper.getIntCompact(value);
-
-        if (intCompact == Long.MIN_VALUE) {
-            BigInteger unscaledValue = value.unscaledValue();
-            final int unscaledBits = unscaledValue.bitLength();
-            if (unscaledBits > 62) {
-                if (roundingMode == BID_ROUNDING_EXCEPTION)
-                    throw new IllegalArgumentException("The BigDecimal(=" + value + ") can't be converted to Decimal64 without precision loss.");
-                final int baseTenShiftSize = (int) Math.ceil((unscaledBits - 62) * log10Tolog2Ratio);
-                unscaledValue = unscaledValue.divide(BigInteger.TEN.pow(baseTenShiftSize));
-                scale -= baseTenShiftSize;
-            }
-            intCompact = unscaledValue.longValueExact();
+        BigInteger unscaledValue = value.unscaledValue();
+        final int unscaledBits = unscaledValue.bitLength();
+        if (unscaledBits > 62) {
+            if (roundingMode == BID_ROUNDING_EXCEPTION)
+                throw new IllegalArgumentException("The BigDecimal(=" + value + ") can't be converted to Decimal64 without precision loss.");
+            final int baseTenShiftSize = (int) Math.ceil((unscaledBits - 62) * log10Tolog2Ratio);
+            unscaledValue = unscaledValue.divide(BigInteger.TEN.pow(baseTenShiftSize));
+            scale -= baseTenShiftSize;
         }
+        long intCompact = unscaledValue.longValueExact();
 
         if (intCompact < 0) {
             signMask = MASK_SIGN;
