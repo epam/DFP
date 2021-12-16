@@ -1339,18 +1339,6 @@ class JavaImpl {
         return signMask + ((long) exponent << EXPONENT_SHIFT_SMALL) + coefficient;
     }
 
-    private static long[] divFactors = initDivFactors();
-
-    private static long[] initDivFactors() {
-        final long[] tensFactors = new long[19];
-
-        tensFactors[0] = 1;
-        for (int i=1; i<tensFactors.length; ++i)
-            tensFactors[i] = tensFactors[i-1]*10;
-
-        return tensFactors;
-    }
-
     public static long round(final long value, final int n, final RoundType roundType) {
         if (isNonFinite(value))
             return value;
@@ -1418,7 +1406,7 @@ class JavaImpl {
                 addExponent = absPower - expShift;
 
             } else {
-                divFactor = divFactors[absPower];
+                divFactor = POWERS_OF_TEN[absPower];
             }
         }
 
