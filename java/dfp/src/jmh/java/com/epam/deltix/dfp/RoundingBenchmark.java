@@ -27,6 +27,16 @@ public class RoundingBenchmark {
     }
 
     @Benchmark
+    public long roundCeil() {
+        return Decimal64Utils.ceiling(decimalValue);
+    }
+
+    @Benchmark
+    public long roundCeilJava() {
+        return Decimal64Utils.round(decimalValue, 0, RoundType.CEIL);
+    }
+
+    @Benchmark
     public long roundToNearestTiesAwayFromZero() {
         return Decimal64Utils.roundToNearestTiesAwayFromZero(decimalValue);
     }
