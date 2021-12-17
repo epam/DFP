@@ -535,4 +535,41 @@ public class JavaImplTest {
 
         assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.round(zeroP, 0, RoundType.CEIL));
     }
+
+    @Test
+    public void testToStringRandomly() throws InterruptedException {
+        final Thread[] threads = new Thread[Runtime.getRuntime().availableProcessors()];
+
+        for (int ti = 0; ti < threads.length; ++ti) {
+            threads[ti] = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final Random random = new Random();
+                    for (int ri = 0; ri < 10_000_000; ++ri) {
+                        final double mantissa = random.nextDouble() * 2 - 1;
+                        final int tenPower = random.nextInt(30 * 2 + 1) - 30;
+
+                        final long inValue = Decimal64Utils.fromDouble(mantissa * Math.pow(10, tenPower));
+
+                        final String inStr = Decimal64Utils.toString(inValue);
+                        final String testStr = JavaImpl.toStringFast(inValue);
+                        if (!inStr.equals(testStr))
+                            throw new RuntimeException("Case toString(" + inValue + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
+                    }
+                }
+            });
+            threads[ti].start();
+        }
+
+        for (final Thread thread : threads)
+            thread.join();
+    }
+
+    @Test
+    public void testToString() {
+        final long inValue = -5767602876822923908L;
+        final String decimalStr = Decimal64Utils.toString(inValue);
+        final String doubleStr = String.format("%.19g", Decimal64Utils.toDouble(inValue));
+        final String fastStr = JavaImpl.toStringFast(inValue);
+    }
 }

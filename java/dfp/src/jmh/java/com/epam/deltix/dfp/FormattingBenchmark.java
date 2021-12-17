@@ -7,6 +7,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -19,10 +20,19 @@ public class FormattingBenchmark {
     private long decimalValue;
     @Param({"0.072876024093886854"})
     private double doubleValue;
+    private long[] decimalValues;
 
     @Setup
     public void setUp() {
         decimalValue = Decimal64Utils.fromDouble(doubleValue);
+
+        final Random random = new Random();
+
+        decimalValues = new long[1000];
+        for (int i = 0; i < decimalValues.length; ++i)
+            decimalValues[i] = Decimal64Utils.scaleByPowerOfTen(
+                Decimal64Utils.fromDouble(random.nextDouble() * 2 - 1),
+                random.nextInt(30 * 2 + 1) - 30);
     }
 
     @Benchmark
@@ -46,9 +56,21 @@ public class FormattingBenchmark {
         return string;
     }
 
+    @Benchmark
+    public void javaImplToString() {
+        for (int i=0; i<decimalValues.length; ++i)
+            Decimal64Utils.toString(decimalValues[i]);
+    }
+
+    @Benchmark
+    public void javaImplToStringFast() {
+        for (int i=0; i<decimalValues.length; ++i)
+            JavaImpl.toStringFast(decimalValues[i]);
+    }
+
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-            .include(".*" + UnaryOperationBenchmark.class.getSimpleName() + ".*")
+            .include(".*" + FormattingBenchmark.class.getSimpleName() + ".*")
             .forks(1)
             .build();
         new Runner(opt).run();
