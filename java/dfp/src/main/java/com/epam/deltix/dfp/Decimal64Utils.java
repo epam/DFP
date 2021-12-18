@@ -185,7 +185,7 @@ public class Decimal64Utils {
 
 
     public static String toString(@Decimal final long value) {
-        return NULL == value ? "null" : appendTo(value, new StringBuilder()).toString();
+        return JavaImpl.toStringFast(value);
     }
 
     static String toDebugString(@Decimal final long value) {
