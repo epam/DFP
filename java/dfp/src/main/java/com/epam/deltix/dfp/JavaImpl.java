@@ -1,9 +1,9 @@
 package com.epam.deltix.dfp;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 
 class JavaImpl {
     public static final long POSITIVE_INFINITY = 0x7800_0000_0000_0000L;
@@ -470,6 +470,39 @@ class JavaImpl {
 
     private static final ThreadLocal<char[]> charsBuffer = ThreadLocal.withInitial(() -> new char[512]);
 
+    private static final int BCD_TABLE_DIGITS = 3;
+    private static final int BCD_DIVIDER = 1000_000_000;
+    private static final int BCD_DIVIDER_GROUPS = 3; // log10(BCD_DIVIDER) / BCD_TABLE_DIGITS must be natural value
+
+    private static final char[] bcdTable = makeBcdTable(BCD_TABLE_DIGITS);
+
+    private static char[] makeBcdTable(final int tenPowerMaxIndex) {
+        int n = 1;
+        for (int i = 0; i < tenPowerMaxIndex; ++i)
+            n *= 10;
+
+        final char[] table = new char[n * tenPowerMaxIndex];
+
+        final char[] value = new char[tenPowerMaxIndex];
+        Arrays.fill(value, '0');
+
+        for (int i = 0, ib = 0; i < n; ++i) {
+            for (int j = 0; j < tenPowerMaxIndex; ++j)
+                table[ib++] = value[j];
+            value[0] += 1;
+            for (int j = 0; j < tenPowerMaxIndex - 1; ++j) {
+                if (value[j] <= '9')
+                    break;
+                else {
+                    value[j] -= 10;
+                    value[j + 1] += 1;
+                }
+            }
+        }
+
+        return table;
+    }
+
     public static String toStringFast(final long value) {
         if (isNull(value))
             return "null";
@@ -535,10 +568,12 @@ class JavaImpl {
                 buffer[i] = '0';
 
             while (partsCoefficient > 0) {
-                int d = (int) (partsCoefficient % 10);
-                partsCoefficient /= 10;
-                buffer[--bi] = (char) ('0' + d);
+                bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
+                partsCoefficient /= BCD_DIVIDER;
             }
+
+            while (buffer[bi] == '0')
+                ++bi;
 
             if (value < 0)
                 buffer[--bi] = '-';
@@ -555,38 +590,52 @@ class JavaImpl {
                 long integralPart = partsCoefficient / POWERS_OF_TEN[-exponent];
                 long fractionalPart = partsCoefficient % POWERS_OF_TEN[-exponent];
 
-                for (int ei = 0, ee = -exponent; ei < ee; ++ei) {
-                    int d = (int) (fractionalPart % 10);
-                    fractionalPart /= 10;
-                    if (d != 0 || bi != buffer.length)
-                        buffer[--bi] = (char) ('0' + d);
+                while (fractionalPart > 0) {
+                    bi = formatUIntFromBcdTable((int) (fractionalPart % BCD_DIVIDER), buffer, bi);
+                    fractionalPart /= BCD_DIVIDER;
                 }
 
-                if (bi != buffer.length)
-                    buffer[--bi] = '.';
+                final int written = buffer.length - bi /* already written */;
+                //if (written < -exponent /* must be written */)
+                for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
+                    buffer[--bi] = '0';
+
+                bi = buffer.length + exponent; /* buffer.length - (-exponent) */
+
+                buffer[--bi] = '.';
 
                 while (integralPart > 0) {
-                    int d = (int) (integralPart % 10);
-                    integralPart /= 10;
-                    buffer[--bi] = (char) ('0' + d);
+                    bi = formatUIntFromBcdTable((int) (integralPart % BCD_DIVIDER), buffer, bi);
+                    integralPart /= BCD_DIVIDER;
                 }
+
+                while (buffer[bi] == '0')
+                    ++bi;
 
                 if (value < 0)
                     buffer[--bi] = '-';
 
-                return new String(buffer, bi, buffer.length - bi);
+                int be = buffer.length;
+                while (buffer[be - 1] == '0')
+                    --be;
+
+                if (buffer[be - 1] == '.')
+                    --be;
+
+                return new String(buffer, bi, be - bi);
 
             } else {
                 while (partsCoefficient > 0) {
-                    int d = (int) (partsCoefficient % 10);
-                    partsCoefficient /= 10;
-                    ++exponent;
-                    if (d != 0 || bi != buffer.length)
-                        buffer[--bi] = (char) ('0' + d);
+                    bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
+                    partsCoefficient /= BCD_DIVIDER;
                 }
 
-                for (int i = 0; i < -exponent; ++i)
+                final int written = buffer.length - bi /* already written */;
+                //if (written < -exponent /* must be written */)
+                for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
                     buffer[--bi] = '0';
+
+                bi = buffer.length + exponent; /* buffer.length - (-exponent) */
 
                 buffer[--bi] = '.';
                 buffer[--bi] = '0';
@@ -594,9 +643,27 @@ class JavaImpl {
                 if (value < 0)
                     buffer[--bi] = '-';
 
-                return new String(buffer, bi, buffer.length - bi);
+                int be = buffer.length;
+                while (buffer[be - 1] == '0')
+                    --be;
+
+                return new String(buffer, bi, be - bi);
             }
         }
+    }
+
+    private static int formatUIntFromBcdTable(int value, final char[] buffer, int bi) {
+        for (int blockIndex = 0; blockIndex < BCD_DIVIDER_GROUPS; ++blockIndex) {
+            final int newValue = (int) (2199023256L * value >>> 41);
+            final int remainder = value - newValue * 1000;
+            //final int remainder = value - ((newValue << 10) - (newValue << 4) - (newValue << 3));
+            value = newValue;
+
+            for (int j = 0, ti = remainder * BCD_TABLE_DIGITS /* (remainder << 1) + remainder */; j < BCD_TABLE_DIGITS; ++j, ++ti)
+                buffer[--bi] = bcdTable[ti];
+        }
+
+        return bi;
     }
 
     private static long dropTrailingZeros(long value) {

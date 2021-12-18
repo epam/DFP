@@ -551,10 +551,7 @@ public class JavaImplTest {
 
                         final long inValue = Decimal64Utils.fromDouble(mantissa * Math.pow(10, tenPower));
 
-                        final String inStr = Decimal64Utils.toString(inValue);
-                        final String testStr = JavaImpl.toStringFast(inValue);
-                        if (!inStr.equals(testStr))
-                            throw new RuntimeException("Case toString(" + inValue + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
+                        checkStrEq(inValue);
                     }
                 }
             });
@@ -565,11 +562,17 @@ public class JavaImplTest {
             thread.join();
     }
 
+    private static void checkStrEq(final long value) {
+        final String inStr = Decimal64Utils.toString(value);
+        final String testStr = JavaImpl.toStringFast(value);
+        if (!inStr.equals(testStr))
+            throw new RuntimeException("Case toString(" + value + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
+    }
+
     @Test
     public void testToString() {
-        final long inValue = -5767602876822923908L;
-        final String decimalStr = Decimal64Utils.toString(inValue);
-        final String doubleStr = String.format("%.19g", Decimal64Utils.toDouble(inValue));
-        final String fastStr = JavaImpl.toStringFast(inValue);
+        checkStrEq(Decimal64Utils.parse("-3220237490000000"));
+        checkStrEq(Decimal64Utils.parse("-6.0123980000"));
+        checkStrEq(Decimal64Utils.parse("-0.1239867"));
     }
 }

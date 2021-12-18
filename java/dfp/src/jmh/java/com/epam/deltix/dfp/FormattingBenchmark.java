@@ -1,6 +1,7 @@
 package com.epam.deltix.dfp;
 
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -57,15 +58,15 @@ public class FormattingBenchmark {
     }
 
     @Benchmark
-    public void javaImplToString() {
+    public void javaImplToString(Blackhole bh) {
         for (int i=0; i<decimalValues.length; ++i)
-            Decimal64Utils.toString(decimalValues[i]);
+            bh.consume(Decimal64Utils.toString(decimalValues[i]));
     }
 
     @Benchmark
-    public void javaImplToStringFast() {
+    public void javaImplToStringFast(Blackhole bh) {
         for (int i=0; i<decimalValues.length; ++i)
-            JavaImpl.toStringFast(decimalValues[i]);
+            bh.consume(JavaImpl.toStringFast(decimalValues[i]));
     }
 
     public static void main(String[] args) throws RunnerException {
