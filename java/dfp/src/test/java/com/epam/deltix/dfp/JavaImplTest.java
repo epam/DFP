@@ -563,7 +563,7 @@ public class JavaImplTest {
     }
 
     private static void checkStrEq(final long value) {
-        final String inStr = Decimal64Utils.toString(value);
+        final String inStr = Decimal64Utils.appendTo(value, new StringBuilder()).toString();
         final String testStr = JavaImpl.toStringFast(value);
         if (!inStr.equals(testStr))
             throw new RuntimeException("Case toString(" + value + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
