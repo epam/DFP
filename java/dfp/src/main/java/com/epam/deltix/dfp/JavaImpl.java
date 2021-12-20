@@ -376,14 +376,14 @@ class JavaImpl {
         }
     }
 
-    private final static ThreadLocal<Decimal64Parts> tlsDecimal64Parts = new ThreadLocal<Decimal64Parts>() {
-        @Override
-        protected Decimal64Parts initialValue() {
-            return new Decimal64Parts();
-        }
-    };
+//    private final static ThreadLocal<Decimal64Parts> tlsDecimal64Parts = new ThreadLocal<Decimal64Parts>() {
+//        @Override
+//        protected Decimal64Parts initialValue() {
+//            return new Decimal64Parts();
+//        }
+//    };
 
-    public static Appendable appendTo(final long value, final Appendable appendable) throws IOException {
+    public static Appendable appendToRefImpl(final long value, final Appendable appendable) throws IOException {
         if (isNull(value)) {
             return appendable.append("null");
         }
@@ -474,7 +474,7 @@ class JavaImpl {
     private static final int BCD_DIVIDER = 1000_000_000;
     private static final int BCD_DIVIDER_GROUPS = 3; // log10(BCD_DIVIDER) / BCD_TABLE_DIGITS must be natural value
 
-    private static final char[] bcdTable = makeBcdTable(BCD_TABLE_DIGITS);
+    private static final char[] BCD_TABLE = makeBcdTable(BCD_TABLE_DIGITS);
 
     private static char[] makeBcdTable(final int tenPowerMaxIndex) {
         int n = 1;
@@ -503,7 +503,7 @@ class JavaImpl {
         return table;
     }
 
-    public static String toStringFast(final long value) {
+    public static String fastToString(final long value) {
         if (isNull(value))
             return "null";
 
@@ -560,9 +560,9 @@ class JavaImpl {
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
-        if (exponent >= 0) {
-            final char[] buffer = charsBuffer.get();
+        final char[] buffer = charsBuffer.get();
 
+        if (exponent >= 0) {
             int bi = buffer.length - exponent;
             for (int i = buffer.length - exponent; i < buffer.length; ++i)
                 buffer[i] = '0';
@@ -581,7 +581,6 @@ class JavaImpl {
             return new String(buffer, bi, buffer.length - bi);
 
         } else { // exponent < 0
-            final char[] buffer = charsBuffer.get();
             int bi = buffer.length;
 
             final int digits = numberOfDigits(partsCoefficient);
@@ -652,6 +651,304 @@ class JavaImpl {
         }
     }
 
+    // Copy-paste of the fastToString
+    public static StringBuilder fastAppendToStringBuilder(final long value, final StringBuilder stringBuilder) {
+        if (isNull(value))
+            return stringBuilder.append("null");
+
+        if (isNonFinite(value)) {
+            // Value is either Inf or NaN
+            // TODO: Do we need SNaN?
+            return stringBuilder.append(isNaN(value) ? "NaN" : value < 0 ? "-Infinity" : "Infinity");
+        }
+
+        //final Decimal64Parts parts = tlsDecimal64Parts.get();
+        //final long coefficient = toParts(value, parts);
+        long partsCoefficient;
+        long partsSignMask;
+        int partsExponent;
+        {
+            partsSignMask = value & MASK_SIGN;
+
+            if (isSpecial(value)) {
+//                if (isNonFinite(value)) {
+//                    partsExponent = 0;
+//
+//                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
+//                    if (UnsignedLong.compare(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT) > 0)
+//                        partsCoefficient = value & ~MASK_COEFFICIENT;
+//                    if (isInfinity(value))
+//                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+////                return 0;
+//                } else
+                {
+                    // Check for non-canonical values.
+                    final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
+                    partsCoefficient = UnsignedLong.compare(coefficient, MAX_COEFFICIENT) > 0 ? 0 : coefficient;
+
+                    // Extract exponent.
+                    final long tmp = value >> EXPONENT_SHIFT_LARGE;
+                    partsExponent = (int) (tmp & EXPONENT_MASK);
+
+//                return parts.coefficient;
+                }
+            } else {
+                // Extract exponent. Maximum biased value for "small exponent" is 0x2FF(*2=0x5FE), signed: []
+                // upper 1/4 of the mask range is "special", as checked in the code above
+                final long tmp = value >> EXPONENT_SHIFT_SMALL;
+                partsExponent = (int) (tmp & EXPONENT_MASK);
+
+                // Extract coefficient.
+//            return
+                partsCoefficient = (value & SMALL_COEFFICIENT_MASK);
+            }
+        }
+
+        if (partsCoefficient == 0)
+            return stringBuilder.append('0');
+
+        int exponent = partsExponent - EXPONENT_BIAS;
+
+        final char[] buffer = charsBuffer.get();
+
+        if (exponent >= 0) {
+            int bi = buffer.length - exponent;
+            for (int i = buffer.length - exponent; i < buffer.length; ++i)
+                buffer[i] = '0';
+
+            while (partsCoefficient > 0) {
+                bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
+                partsCoefficient /= BCD_DIVIDER;
+            }
+
+            while (buffer[bi] == '0')
+                ++bi;
+
+            if (value < 0)
+                buffer[--bi] = '-';
+
+            return stringBuilder.append(buffer, bi, buffer.length - bi);
+
+        } else { // exponent < 0
+            int bi = buffer.length;
+
+            final int digits = numberOfDigits(partsCoefficient);
+
+            if (digits + exponent > 0) {
+                long integralPart = partsCoefficient / POWERS_OF_TEN[-exponent];
+                long fractionalPart = partsCoefficient % POWERS_OF_TEN[-exponent];
+
+                while (fractionalPart > 0) {
+                    bi = formatUIntFromBcdTable((int) (fractionalPart % BCD_DIVIDER), buffer, bi);
+                    fractionalPart /= BCD_DIVIDER;
+                }
+
+                final int written = buffer.length - bi /* already written */;
+                //if (written < -exponent /* must be written */)
+                for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
+                    buffer[--bi] = '0';
+
+                bi = buffer.length + exponent; /* buffer.length - (-exponent) */
+
+                buffer[--bi] = '.';
+
+                while (integralPart > 0) {
+                    bi = formatUIntFromBcdTable((int) (integralPart % BCD_DIVIDER), buffer, bi);
+                    integralPart /= BCD_DIVIDER;
+                }
+
+                while (buffer[bi] == '0')
+                    ++bi;
+
+                if (value < 0)
+                    buffer[--bi] = '-';
+
+                int be = buffer.length;
+                while (buffer[be - 1] == '0')
+                    --be;
+
+                if (buffer[be - 1] == '.')
+                    --be;
+
+                return stringBuilder.append(buffer, bi, be - bi);
+
+            } else {
+                while (partsCoefficient > 0) {
+                    bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
+                    partsCoefficient /= BCD_DIVIDER;
+                }
+
+                final int written = buffer.length - bi /* already written */;
+                //if (written < -exponent /* must be written */)
+                for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
+                    buffer[--bi] = '0';
+
+                bi = buffer.length + exponent; /* buffer.length - (-exponent) */
+
+                buffer[--bi] = '.';
+                buffer[--bi] = '0';
+
+                if (value < 0)
+                    buffer[--bi] = '-';
+
+                int be = buffer.length;
+                while (buffer[be - 1] == '0')
+                    --be;
+
+                return stringBuilder.append(buffer, bi, be - bi);
+            }
+        }
+    }
+
+    // Copy-paste of the fastToString
+    public static Appendable fastAppendToAppendable(final long value, final Appendable appendable) throws IOException {
+        if (isNull(value))
+            return appendable.append("null");
+
+        if (isNonFinite(value)) {
+            // Value is either Inf or NaN
+            // TODO: Do we need SNaN?
+            return appendable.append(isNaN(value) ? "NaN" : value < 0 ? "-Infinity" : "Infinity");
+        }
+
+        //final Decimal64Parts parts = tlsDecimal64Parts.get();
+        //final long coefficient = toParts(value, parts);
+        long partsCoefficient;
+        long partsSignMask;
+        int partsExponent;
+        {
+            partsSignMask = value & MASK_SIGN;
+
+            if (isSpecial(value)) {
+//                if (isNonFinite(value)) {
+//                    partsExponent = 0;
+//
+//                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
+//                    if (UnsignedLong.compare(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT) > 0)
+//                        partsCoefficient = value & ~MASK_COEFFICIENT;
+//                    if (isInfinity(value))
+//                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+////                return 0;
+//                } else
+                {
+                    // Check for non-canonical values.
+                    final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
+                    partsCoefficient = UnsignedLong.compare(coefficient, MAX_COEFFICIENT) > 0 ? 0 : coefficient;
+
+                    // Extract exponent.
+                    final long tmp = value >> EXPONENT_SHIFT_LARGE;
+                    partsExponent = (int) (tmp & EXPONENT_MASK);
+
+//                return parts.coefficient;
+                }
+            } else {
+                // Extract exponent. Maximum biased value for "small exponent" is 0x2FF(*2=0x5FE), signed: []
+                // upper 1/4 of the mask range is "special", as checked in the code above
+                final long tmp = value >> EXPONENT_SHIFT_SMALL;
+                partsExponent = (int) (tmp & EXPONENT_MASK);
+
+                // Extract coefficient.
+//            return
+                partsCoefficient = (value & SMALL_COEFFICIENT_MASK);
+            }
+        }
+
+        if (partsCoefficient == 0)
+            return appendable.append('0');
+
+        int exponent = partsExponent - EXPONENT_BIAS;
+
+        final char[] buffer = charsBuffer.get();
+
+        if (exponent >= 0) {
+            int bi = buffer.length - exponent;
+            for (int i = buffer.length - exponent; i < buffer.length; ++i)
+                buffer[i] = '0';
+
+            while (partsCoefficient > 0) {
+                bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
+                partsCoefficient /= BCD_DIVIDER;
+            }
+
+            while (buffer[bi] == '0')
+                ++bi;
+
+            if (value < 0)
+                buffer[--bi] = '-';
+
+            return appendable.append(new String(buffer, bi, buffer.length - bi));
+
+        } else { // exponent < 0
+            int bi = buffer.length;
+
+            final int digits = numberOfDigits(partsCoefficient);
+
+            if (digits + exponent > 0) {
+                long integralPart = partsCoefficient / POWERS_OF_TEN[-exponent];
+                long fractionalPart = partsCoefficient % POWERS_OF_TEN[-exponent];
+
+                while (fractionalPart > 0) {
+                    bi = formatUIntFromBcdTable((int) (fractionalPart % BCD_DIVIDER), buffer, bi);
+                    fractionalPart /= BCD_DIVIDER;
+                }
+
+                final int written = buffer.length - bi /* already written */;
+                //if (written < -exponent /* must be written */)
+                for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
+                    buffer[--bi] = '0';
+
+                bi = buffer.length + exponent; /* buffer.length - (-exponent) */
+
+                buffer[--bi] = '.';
+
+                while (integralPart > 0) {
+                    bi = formatUIntFromBcdTable((int) (integralPart % BCD_DIVIDER), buffer, bi);
+                    integralPart /= BCD_DIVIDER;
+                }
+
+                while (buffer[bi] == '0')
+                    ++bi;
+
+                if (value < 0)
+                    buffer[--bi] = '-';
+
+                int be = buffer.length;
+                while (buffer[be - 1] == '0')
+                    --be;
+
+                if (buffer[be - 1] == '.')
+                    --be;
+
+                return appendable.append(new String(buffer, bi, be - bi));
+
+            } else {
+                while (partsCoefficient > 0) {
+                    bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
+                    partsCoefficient /= BCD_DIVIDER;
+                }
+
+                final int written = buffer.length - bi /* already written */;
+                //if (written < -exponent /* must be written */)
+                for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
+                    buffer[--bi] = '0';
+
+                bi = buffer.length + exponent; /* buffer.length - (-exponent) */
+
+                buffer[--bi] = '.';
+                buffer[--bi] = '0';
+
+                if (value < 0)
+                    buffer[--bi] = '-';
+
+                int be = buffer.length;
+                while (buffer[be - 1] == '0')
+                    --be;
+
+                return appendable.append(new String(buffer, bi, be - bi));
+            }
+        }
+    }
+
     private static int formatUIntFromBcdTable(int value, final char[] buffer, int bi) {
         for (int blockIndex = 0; blockIndex < BCD_DIVIDER_GROUPS; ++blockIndex) {
             final int newValue = (int) (2199023256L * value >>> 41);
@@ -660,7 +957,7 @@ class JavaImpl {
             value = newValue;
 
             for (int j = 0, ti = remainder * BCD_TABLE_DIGITS /* (remainder << 1) + remainder */; j < BCD_TABLE_DIGITS; ++j, ++ti)
-                buffer[--bi] = bcdTable[ti];
+                buffer[--bi] = BCD_TABLE[ti];
         }
 
         return bi;

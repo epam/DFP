@@ -125,25 +125,25 @@ public class JavaImplTest {
         final StringBuilder string = new StringBuilder();
 
         string.setLength(0);
-        assertTrue("NaN".equals(JavaImpl.appendTo(Decimal64Utils.NaN, string).toString()));
+        assertTrue("NaN".equals(JavaImpl.appendToRefImpl(Decimal64Utils.NaN, string).toString()));
 
         string.setLength(0);
-        assertTrue("Infinity".equals(JavaImpl.appendTo(Decimal64Utils.POSITIVE_INFINITY, string).toString()));
+        assertTrue("Infinity".equals(JavaImpl.appendToRefImpl(Decimal64Utils.POSITIVE_INFINITY, string).toString()));
 
         string.setLength(0);
-        assertTrue("-Infinity".equals(JavaImpl.appendTo(Decimal64Utils.NEGATIVE_INFINITY, string).toString()));
+        assertTrue("-Infinity".equals(JavaImpl.appendToRefImpl(Decimal64Utils.NEGATIVE_INFINITY, string).toString()));
 
         string.setLength(0);
-        assertTrue("100000010000".equals(JavaImpl.appendTo(Decimal64Utils.fromDouble(10000001E+04), string).toString()));
+        assertTrue("100000010000".equals(JavaImpl.appendToRefImpl(Decimal64Utils.fromDouble(10000001E+04), string).toString()));
 
         string.setLength(0);
-        assertTrue("10000001".equals(JavaImpl.appendTo(Decimal64Utils.fromDouble(10000001), string).toString()));
+        assertTrue("10000001".equals(JavaImpl.appendToRefImpl(Decimal64Utils.fromDouble(10000001), string).toString()));
 
         string.setLength(0);
-        assertTrue("1000.0001".equals(JavaImpl.appendTo(Decimal64Utils.fromDouble(10000001E-04), string).toString()));
+        assertTrue("1000.0001".equals(JavaImpl.appendToRefImpl(Decimal64Utils.fromDouble(10000001E-04), string).toString()));
 
         string.setLength(0);
-        assertTrue("9.2".equals(JavaImpl.appendTo(Decimal64Utils.fromDecimalDouble(92E-01), string).toString()));
+        assertTrue("9.2".equals(JavaImpl.appendToRefImpl(Decimal64Utils.fromDecimalDouble(92E-01), string).toString()));
     }
 
     @Test
@@ -563,10 +563,15 @@ public class JavaImplTest {
     }
 
     private static void checkStrEq(final long value) {
-        final String inStr = Decimal64Utils.appendTo(value, new StringBuilder()).toString();
-        final String testStr = JavaImpl.toStringFast(value);
-        if (!inStr.equals(testStr))
-            throw new RuntimeException("Case toString(" + value + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
+        try {
+            final String inStr = JavaImpl.appendToRefImpl(value, new StringBuilder()).toString();
+            final String testStr = JavaImpl.fastToString(value);
+            if (!inStr.equals(testStr))
+                throw new RuntimeException("Case toString(" + value + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
+        }
+        catch (final IOException e) {
+            throw new RuntimeException( e);
+        }
     }
 
     @Test
