@@ -396,10 +396,10 @@ class JavaImpl {
         //final Decimal64Parts parts = tlsDecimal64Parts.get();
         //final long coefficient = toParts(value, parts);
         long partsCoefficient;
-        long partsSignMask;
+//        long partsSignMask;
         int partsExponent;
         {
-            partsSignMask = value & MASK_SIGN;
+//            partsSignMask = value & MASK_SIGN;
 
             if (isSpecial(value)) {
 //                if (isNonFinite(value)) {
@@ -468,7 +468,7 @@ class JavaImpl {
         return appendable;
     }
 
-    private static final ThreadLocal<char[]> charsBuffer = ThreadLocal.withInitial(() -> new char[512]);
+    private static final ThreadLocal<char[]> CHAR_BUFFER = ThreadLocal.withInitial(() -> new char[512]);
 
     private static final int BCD_TABLE_DIGITS = 3;
     private static final int BCD_DIVIDER = 1000_000_000;
@@ -516,10 +516,10 @@ class JavaImpl {
         //final Decimal64Parts parts = tlsDecimal64Parts.get();
         //final long coefficient = toParts(value, parts);
         long partsCoefficient;
-        long partsSignMask;
+//        long partsSignMask;
         int partsExponent;
         {
-            partsSignMask = value & MASK_SIGN;
+//            partsSignMask = value & MASK_SIGN;
 
             if (isSpecial(value)) {
 //                if (isNonFinite(value)) {
@@ -560,7 +560,7 @@ class JavaImpl {
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
-        final char[] buffer = charsBuffer.get();
+        final char[] buffer = CHAR_BUFFER.get();
 
         if (exponent >= 0) {
             int bi = buffer.length - exponent;
@@ -665,10 +665,10 @@ class JavaImpl {
         //final Decimal64Parts parts = tlsDecimal64Parts.get();
         //final long coefficient = toParts(value, parts);
         long partsCoefficient;
-        long partsSignMask;
+//        long partsSignMask;
         int partsExponent;
         {
-            partsSignMask = value & MASK_SIGN;
+//            partsSignMask = value & MASK_SIGN;
 
             if (isSpecial(value)) {
 //                if (isNonFinite(value)) {
@@ -709,7 +709,7 @@ class JavaImpl {
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
-        final char[] buffer = charsBuffer.get();
+        final char[] buffer = CHAR_BUFFER.get();
 
         if (exponent >= 0) {
             int bi = buffer.length - exponent;
@@ -800,6 +800,56 @@ class JavaImpl {
         }
     }
 
+    private static class MutableCharBuffer implements CharSequence {
+        public final char[] buffer;
+        public int offset;
+        public int length;
+
+        public MutableCharBuffer() {
+            buffer = CHAR_BUFFER.get();
+            offset = 0;
+            length = 0;
+        }
+
+        MutableCharBuffer(final char[] buffer, final int offset, final int length) {
+            this.buffer = buffer;
+            this.offset = offset;
+            this.length = length;
+        }
+
+        public MutableCharBuffer setRange(final int offset, final int length) {
+            this.offset = offset;
+            this.length = length;
+            return this;
+        }
+
+        @Override
+        public int length() {
+            return length;
+        }
+
+        @Override
+        public char charAt(int index) {
+            if (index < 0 || index >= length)
+                throw new IndexOutOfBoundsException("Wrong argument index(=" + index + ") on the string with length(=" + length + ").");
+            return buffer[offset + index];
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            if (start < 0 || end > length || start > end)
+                throw new IndexOutOfBoundsException("Wrong arguments start(=" + start + "), end(=" + end + ") on the string with length(=" + length + ").");
+            return new MutableCharBuffer(buffer, offset + start, end - start);
+        }
+
+        @Override
+        public String toString() {
+            return new String(buffer, offset, length);
+        }
+    }
+
+    private static final ThreadLocal<MutableCharBuffer> MUTABLE_CHAR_BUFFER = ThreadLocal.withInitial(MutableCharBuffer::new);
+
     // Copy-paste of the fastToString
     public static Appendable fastAppendToAppendable(final long value, final Appendable appendable) throws IOException {
         if (isNull(value))
@@ -814,10 +864,10 @@ class JavaImpl {
         //final Decimal64Parts parts = tlsDecimal64Parts.get();
         //final long coefficient = toParts(value, parts);
         long partsCoefficient;
-        long partsSignMask;
+//        long partsSignMask;
         int partsExponent;
         {
-            partsSignMask = value & MASK_SIGN;
+//            partsSignMask = value & MASK_SIGN;
 
             if (isSpecial(value)) {
 //                if (isNonFinite(value)) {
@@ -858,7 +908,8 @@ class JavaImpl {
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
-        final char[] buffer = charsBuffer.get();
+        final MutableCharBuffer charBuffer = MUTABLE_CHAR_BUFFER.get();
+        final char[] buffer = charBuffer.buffer;
 
         if (exponent >= 0) {
             int bi = buffer.length - exponent;
@@ -876,7 +927,7 @@ class JavaImpl {
             if (value < 0)
                 buffer[--bi] = '-';
 
-            return appendable.append(new String(buffer, bi, buffer.length - bi));
+            return appendable.append(charBuffer.setRange(bi, buffer.length - bi));
 
         } else { // exponent < 0
             int bi = buffer.length;
@@ -919,7 +970,7 @@ class JavaImpl {
                 if (buffer[be - 1] == '.')
                     --be;
 
-                return appendable.append(new String(buffer, bi, be - bi));
+                return appendable.append(charBuffer.setRange(bi, be - bi));
 
             } else {
                 while (partsCoefficient > 0) {
@@ -944,7 +995,7 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                return appendable.append(new String(buffer, bi, be - bi));
+                return appendable.append(charBuffer.setRange(bi, be - bi));
             }
         }
     }
