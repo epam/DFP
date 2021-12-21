@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 @Measurement(time = 3, iterations = 3)
 @State(Scope.Thread)
 public class FormattingBenchmark {
-    private final StringBuilder string = new StringBuilder();
+    private final StringBuilder stringBuilder = new StringBuilder();
     private long decimalValue;
     @Param({"0.072876024093886854"})
     private double doubleValue;
@@ -37,36 +37,63 @@ public class FormattingBenchmark {
     }
 
     @Benchmark
-    public Appendable javaImpl() throws IOException {
-        string.setLength(0);
-        JavaImpl.appendTo(decimalValue, string);
-        return string;
+    public Appendable appendToRefImplRet() throws IOException {
+        stringBuilder.setLength(0);
+        JavaImpl.appendToRefImpl(decimalValue, stringBuilder);
+        return stringBuilder;
     }
 
     @Benchmark
-    public Appendable viaDouble() throws IOException {
-        string.setLength(0);
-        string.append(Decimal64Utils.toDouble(decimalValue));
-        return string;
+    public void appendToRefImplBlackHole(Blackhole bh) throws IOException {
+        stringBuilder.setLength(0);
+        bh.consume(JavaImpl.appendToRefImpl(decimalValue, stringBuilder));
     }
 
     @Benchmark
-    public Appendable justDouble() throws IOException {
-        string.setLength(0);
-        string.append(doubleValue);
-        return string;
+    public void fastAppendToAppendable(Blackhole bh) throws IOException {
+        stringBuilder.setLength(0);
+        bh.consume(JavaImpl.fastAppendToAppendable(decimalValue, stringBuilder));
     }
 
     @Benchmark
-    public void javaImplToString(Blackhole bh) {
-        for (int i=0; i<decimalValues.length; ++i)
-            bh.consume(Decimal64Utils.toString(decimalValues[i]));
+    public void fastAppendToStringBuilder(Blackhole bh) {
+        stringBuilder.setLength(0);
+        bh.consume(JavaImpl.fastAppendToStringBuilder(decimalValue, stringBuilder));
     }
 
     @Benchmark
-    public void javaImplToStringFast(Blackhole bh) {
-        for (int i=0; i<decimalValues.length; ++i)
-            bh.consume(JavaImpl.toStringFast(decimalValues[i]));
+    public void appendDecimal(Blackhole bh) {
+        stringBuilder.setLength(0);
+        bh.consume(stringBuilder.append(Decimal64Utils.toString(decimalValue)));
+    }
+
+    @Benchmark
+    public void appendViaDouble(Blackhole bh) {
+        stringBuilder.setLength(0);
+        bh.consume(stringBuilder.append(Decimal64Utils.toDouble(decimalValue)));
+    }
+
+    @Benchmark
+    public void appendJustDouble(Blackhole bh) {
+        stringBuilder.setLength(0);
+        bh.consume(stringBuilder.append(doubleValue));
+    }
+
+    @Benchmark
+    public void toStringJavaImpl(Blackhole bh) {
+        for (int i = 0; i < decimalValues.length; ++i) {
+            try {
+                bh.consume(JavaImpl.appendToRefImpl(decimalValues[i], new StringBuilder()).toString());
+            } catch (final Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Benchmark
+    public void toStringJavaFastImpl(Blackhole bh) {
+        for (int i = 0; i < decimalValues.length; ++i)
+            bh.consume(JavaImpl.fastToString(decimalValues[i]));
     }
 
     public static void main(String[] args) throws RunnerException {

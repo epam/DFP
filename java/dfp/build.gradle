@@ -62,6 +62,8 @@ dependencies {
     integrationTestCompile 'org.apache.commons:commons-math3:3.6.1'
 }
 
+compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappers"
+
 def rUser = findProperty('SONATYPE_NEXUS_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: "FakeUser"
 def rPass = findProperty('SONATYPE_NEXUS_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: "FakePass"
 

@@ -14,4 +14,8 @@ task makeNativeWrappers(dependsOn: compileJava, type: JavaExec) {
     workingDir = "$rootDir"
     def ver = versioning()
     args = [ver["three"], ver["suffix"], ver["sha"]]
+    onlyIf {
+        !file("$rootDir/java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp/NativeImpl.java").exists() ||
+            !file("$rootDir/csharp/EPAM.Deltix.DFP/NativeImpl.cs").exists()
+    }
 }

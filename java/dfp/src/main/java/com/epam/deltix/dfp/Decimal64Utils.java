@@ -185,7 +185,7 @@ public class Decimal64Utils {
 
 
     public static String toString(@Decimal final long value) {
-        return JavaImpl.toStringFast(value);
+        return JavaImpl.fastToString(value);
     }
 
     static String toDebugString(@Decimal final long value) {
@@ -975,7 +975,7 @@ public class Decimal64Utils {
      * @throws IOException from {@link Appendable#append(char)}
      */
     public static Appendable appendTo(@Decimal final long value, final Appendable appendable) throws IOException {
-        return JavaImpl.appendTo(value, appendable);
+        return JavaImpl.fastAppendToAppendable(value, appendable);
     }
 
     /**
@@ -988,12 +988,7 @@ public class Decimal64Utils {
      * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
      */
     public static StringBuilder appendTo(@Decimal final long value, final StringBuilder sb) {
-        try {
-            JavaImpl.appendTo(value, sb);
-            return sb;
-        } catch (final IOException exception) {
-            throw new RuntimeException("IO exception was unexpected.", exception);
-        }
+        return JavaImpl.fastAppendToStringBuilder(value, sb);
     }
 
     /**
