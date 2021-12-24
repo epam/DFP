@@ -1066,9 +1066,9 @@ class JavaImpl {
         return sb.toString();
     }
 
-    private static final char[] DECIMAL_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    public static final char[] DECIMAL_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
-    private static final long[] POWERS_OF_TEN = {
+    public static final long[] POWERS_OF_TEN = {
         /*  0 */ 1L,
         /*  1 */ 10L,
         /*  2 */ 100L,
@@ -1096,7 +1096,7 @@ class JavaImpl {
      * @param value Non-negative value.
      * @return Number of digits required.
      */
-    private static int numberOfDigits(final long value) {
+    public static int numberOfDigits(final long value) {
         for (int i = 1; i < POWERS_OF_TEN.length; i += 1)
             if (value < POWERS_OF_TEN[i])
                 return i;
@@ -1714,7 +1714,7 @@ class JavaImpl {
     static final int BID_ROUNDING_TIES_AWAY = 0x00004;
     static final int BID_ROUNDING_EXCEPTION = 0x00005;
 
-    private static long pack(final long signMask, final int exponentIn, final long coefficientIn, int roundingMode) {
+    public static long pack(final long signMask, final int exponentIn, final long coefficientIn, int roundingMode) {
         final long Q_low_0;
         final long Q_low_1;
         final long QH;
@@ -1915,7 +1915,7 @@ class JavaImpl {
      * @param coefficient
      * @return
      */
-    private static long packBasic(final long signMask, final int exponent, final long coefficient) {
+    public static long packBasic(final long signMask, final int exponent, final long coefficient) {
         assert (0 == (~Long.MIN_VALUE & signMask));
         assert (exponent >= 0);
         assert (exponent <= BIASED_EXPONENT_MAX_VALUE);
