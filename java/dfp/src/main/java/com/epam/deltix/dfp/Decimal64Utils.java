@@ -463,6 +463,10 @@ public class Decimal64Utils {
         return JavaImpl.isFinite(value);
     }
 
+    public static boolean isNonFinite(@Decimal final long value) {
+        return JavaImpl.isNonFinite(value);
+    }
+
     public static boolean isNormal(@Decimal final long value) {
         return NativeImpl.isNormal(value);
     }
@@ -504,7 +508,7 @@ public class Decimal64Utils {
     }
 
     public static boolean isNonZero(@Decimal final long value) {
-        return !JavaImpl.isZero(value);
+        return NativeImpl.isNonZero(value);
     }
 
     public static boolean isPositive(@Decimal final long value) {
