@@ -508,7 +508,7 @@ public class Decimal64Utils {
     }
 
     public static boolean isNonZero(@Decimal final long value) {
-        return NativeImpl.isNonZero(value);
+        return !JavaImpl.isZero(value);
     }
 
     public static boolean isPositive(@Decimal final long value) {
