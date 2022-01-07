@@ -568,9 +568,8 @@ public class JavaImplTest {
             final String testStr = JavaImpl.fastToString(value);
             if (!inStr.equals(testStr))
                 throw new RuntimeException("Case toString(" + value + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
-        }
-        catch (final IOException e) {
-            throw new RuntimeException( e);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -579,5 +578,15 @@ public class JavaImplTest {
         checkStrEq(Decimal64Utils.parse("-3220237490000000"));
         checkStrEq(Decimal64Utils.parse("-6.0123980000"));
         checkStrEq(Decimal64Utils.parse("-0.1239867"));
+    }
+
+    @Test
+    public void testAdd() {
+        final long x = Decimal64Utils.fromDouble(Math.PI);
+        final long y = Decimal64Utils.fromDouble(-Math.E);
+
+        final long j = JavaImplAdd.add(x, y);
+
+        final long n = NativeImpl.add2(x, y);
     }
 }
