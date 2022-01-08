@@ -582,11 +582,31 @@ public class JavaImplTest {
 
     @Test
     public void testAdd() {
-        final long x = Decimal64Utils.fromDouble(Math.PI);
-        final long y = Decimal64Utils.fromDouble(-Math.E);
+        final Random random = new Random();
+        for (int ti = 0; ti < 1000; ++ti) {
+            final long x = makeRandomDecimal(random);
+            final long y = makeRandomDecimal(random);
 
-        final long j = JavaImplAdd.add(x, y);
+            testAddCase(x, y);
+        }
+    }
 
-        final long n = NativeImpl.add2(x, y);
+    @Decimal
+    private static long makeRandomDecimal(final Random random) {
+        return Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40));
+    }
+
+    @Test
+    public void testAddCases() {
+        testAddCase(0x335bb3b1068d9bd8L, 0x32ee619e7226bc85L);
+    }
+
+    private void testAddCase(final long x, final long y) {
+        final long javaRet = JavaImplAdd.add(x, y);
+        final long nativeRet = NativeImpl.add2(x, y);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L + 0x" + Long.toHexString(y) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
     }
 }

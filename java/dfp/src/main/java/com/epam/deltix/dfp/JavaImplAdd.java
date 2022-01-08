@@ -52,6 +52,8 @@ class JavaImplAdd {
     static final long LARGEST_BID64 = 0x77fb86f26fc0ffffL;
     static final long SMALLEST_BID64 = 0xf7fb86f26fc0ffffL;
 
+    static final long LONG_LOW_PART = 0xFFFFFFFFL;
+
 
     static class Bid64Parts {
         public long sign;
@@ -438,20 +440,20 @@ class JavaImplAdd {
                 long CX = coefficient_a;
                 long CY = bid_reciprocals10_64[extra_digits];
                 long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = (CX) >>> 32;
-                CXL = (int) (CX);
-                CYH = (CY) >>> 32;
-                CYL = (int) (CY);
+                CXH = CX >>> 32;
+                CXL = LONG_LOW_PART & CX;
+                CYH = CY >>> 32;
+                CYL = LONG_LOW_PART & CY;
 
                 PM = CXH * CYL;
                 PH = CXH * CYH;
                 PL = CXL * CYL;
                 PM2 = CXL * CYH;
                 PH += (PM >>> 32);
-                PM = (long) ((int) PM) + PM2 + (PL >>> 32);
+                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
 
-                CT1 = PH | (PM >>> 32);
-                CT0 = (PM << 32) | (int) PL;
+                CT1 = PH + (PM >>> 32);
+                CT0 = (PM << 32) + (LONG_LOW_PART & PL);
             }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
@@ -498,20 +500,20 @@ class JavaImplAdd {
                 final long CX = coefficient_b;
                 final long CY = bid_reciprocals10_64[extra_digits];
                 long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = (CX) >>> 32;
-                CXL = (int) (CX);
-                CYH = (CY) >>> 32;
-                CYL = (int) (CY);
+                CXH = CX >>> 32;
+                CXL = LONG_LOW_PART & CX;
+                CYH = CY >>> 32;
+                CYL = LONG_LOW_PART & CY;
 
                 PM = CXH * CYL;
                 PH = CXH * CYH;
                 PL = CXL * CYL;
                 PM2 = CXL * CYH;
                 PH += (PM >>> 32);
-                PM = (long) ((int) PM) + PM2 + (PL >>> 32);
+                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
 
-                CT1 = PH | (PM >>> 32);
-                CT0 = (PM << 32) | (int) PL;
+                CT1 = PH + (PM >>> 32);
+                CT0 = (PM << 32) + (LONG_LOW_PART & PL);
             }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
@@ -534,20 +536,20 @@ class JavaImplAdd {
                             final long CX = saved_ca;
                             final long CY = 0x3333333333333334L;
                             long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                            CXH = (CX) >>> 32;
-                            CXL = (int) (CX);
-                            CYH = (CY) >>> 32;
-                            CYL = (int) (CY);
+                            CXH = CX >>> 32;
+                            CXL = LONG_LOW_PART & CX;
+                            CYH = CY >>> 32;
+                            CYL = LONG_LOW_PART & CY;
 
                             PM = CXH * CYL;
                             PH = CXH * CYH;
                             PL = CXL * CYL;
                             PM2 = CXL * CYH;
                             PH += (PM >>> 32);
-                            PM = (long) ((int) PM) + PM2 + (PL >>> 32);
+                            PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
 
-                            CA1 = PH | (PM >>> 32);
-                            CA0 = (PM << 32) | (int) PL;
+                            CA1 = PH + (PM >>> 32);
+                            CA0 = (PM << 32) + (LONG_LOW_PART & PL);
                         }
                         //reciprocals10_64[1]);
                         coefficient_a = CA1 >>> 1;
@@ -568,20 +570,20 @@ class JavaImplAdd {
                         final long CX = coefficient_b;
                         final long CY = bid_reciprocals10_64[extra_digits];
                         long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                        CXH = (CX) >>> 32;
-                        CXL = (int) (CX);
-                        CYH = (CY) >>> 32;
-                        CYL = (int) (CY);
+                        CXH = CX >>> 32;
+                        CXL = LONG_LOW_PART & CX;
+                        CYH = CY >>> 32;
+                        CYL = LONG_LOW_PART & CY;
 
                         PM = CXH * CYL;
                         PH = CXH * CYH;
                         PL = CXL * CYL;
                         PM2 = CXL * CYH;
                         PH += (PM >>> 32);
-                        PM = (long) ((int) PM) + PM2 + (PL >>> 32);
+                        PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
 
-                        CT1 = PH | (PM >>> 32);
-                        CT0 = (PM << 32) | (int) PL;
+                        CT1 = PH + (PM >>> 32);
+                        CT0 = (PM << 32) + (LONG_LOW_PART & PL);
                     }
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[extra_digits];
@@ -603,20 +605,20 @@ class JavaImplAdd {
                         final long CX = coefficient_b;
                         final long CY = bid_reciprocals10_64[extra_digits];
                         long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                        CXH = (CX) >>> 32;
-                        CXL = (int) (CX);
-                        CYH = (CY) >>> 32;
-                        CYL = (int) (CY);
+                        CXH = CX >>> 32;
+                        CXL = LONG_LOW_PART & CX;
+                        CYH = CY >>> 32;
+                        CYL = LONG_LOW_PART & CY;
 
                         PM = CXH * CYL;
                         PH = CXH * CYH;
                         PL = CXL * CYL;
                         PM2 = CXL * CYH;
                         PH += (PM >>> 32);
-                        PM = (long) ((int) PM) + PM2 + (PL >>> 32);
+                        PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
 
-                        CT_new1 = PH | (PM >>> 32);
-                        CT_new0 = (PM << 32) | (int) PL;
+                        CT_new1 = PH + (PM >>> 32);
+                        CT_new0 = (PM << 32) + (LONG_LOW_PART & PL);
                     }
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[extra_digits];
