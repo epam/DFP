@@ -583,7 +583,7 @@ public class JavaImplTest {
     @Test
     public void testAdd() {
         final Random random = new Random();
-        for (int ti = 0; ti < 1000; ++ti) {
+        for (int ti = 0; ti < 1000_000; ++ti) {
             final long x = makeRandomDecimal(random);
             final long y = makeRandomDecimal(random);
 
@@ -598,6 +598,7 @@ public class JavaImplTest {
 
     @Test
     public void testAddCases() {
+        testAddCase(0xecb08366cd530a32L, 0xb2fc7ab89d54c15dL);
         testAddCase(0x335bb3b1068d9bd8L, 0x32ee619e7226bc85L);
     }
 
