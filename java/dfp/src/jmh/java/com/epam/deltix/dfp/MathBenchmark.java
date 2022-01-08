@@ -25,9 +25,7 @@ public class MathBenchmark {
 
         decimalValues = new long[1003];
         for (int i = 0; i < decimalValues.length; ++i)
-            decimalValues[i] = Decimal64Utils.scaleByPowerOfTen(
-                Decimal64Utils.fromDouble(random.nextDouble() * 2 - 1),
-                random.nextInt(30 * 2 + 1) - 30);
+            decimalValues[i] = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40));
     }
 
     @Benchmark

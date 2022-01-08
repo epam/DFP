@@ -584,16 +584,11 @@ public class JavaImplTest {
     public void testAdd() {
         final Random random = new Random();
         for (int ti = 0; ti < 1000_000; ++ti) {
-            final long x = makeRandomDecimal(random);
-            final long y = makeRandomDecimal(random);
+            final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40));
+            final long y = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40));
 
             testAddCase(x, y);
         }
-    }
-
-    @Decimal
-    private static long makeRandomDecimal(final Random random) {
-        return Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40));
     }
 
     @Test
