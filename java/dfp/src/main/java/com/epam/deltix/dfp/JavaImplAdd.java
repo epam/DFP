@@ -322,12 +322,12 @@ class JavaImplAdd {
             // normalize a to a 16-digit coefficient
 
             scale_ca = bid_estimate_decimal_digits[bin_expon_ca];
-            if (Long.compareUnsigned(coefficient_a, bid_power10_table_128[scale_ca][0]) >= 0)
+            if (Long.compareUnsigned(coefficient_a, bid_power10_table_128_low[scale_ca]) >= 0)
                 scale_ca++;
 
             scale_k = 16 - scale_ca;
 
-            coefficient_a *= bid_power10_table_128[scale_k][0];
+            coefficient_a *= bid_power10_table_128_low[scale_k];
 
             diff_dec_expon -= scale_k;
             exponent_a -= scale_k;
@@ -395,7 +395,7 @@ class JavaImplAdd {
             // coefficient_a*10^(exponent_a-exponent_b)<2^63
 
             // multiply by 10^(exponent_a-exponent_b)
-            coefficient_a *= bid_power10_table_128[diff_dec_expon][0];
+            coefficient_a *= bid_power10_table_128_low[diff_dec_expon];
 
             // sign mask
             sign_b = sign_b >> 63;  // @AD: signed value shift
@@ -413,7 +413,7 @@ class JavaImplAdd {
             sign_s &= 0x8000000000000000L;
 
             // coefficient_a < 10^16 ?
-            if (Long.compareUnsigned(coefficient_a, bid_power10_table_128[MAX_FORMAT_DIGITS][0]) < 0) {
+            if (Long.compareUnsigned(coefficient_a, bid_power10_table_128_low[MAX_FORMAT_DIGITS]) < 0) {
                 if (rnd_mode == BID_ROUNDING_DOWN && (coefficient_a == 0) && sign_a != sign_b)
                     sign_s = 0x8000000000000000L;
                 return very_fast_get_BID64(sign_s, exponent_b, coefficient_a);
@@ -422,9 +422,9 @@ class JavaImplAdd {
 
             // already know coefficient_a<10^19
             // coefficient_a < 10^17 ?
-            if (Long.compareUnsigned(coefficient_a, bid_power10_table_128[17][0]) < 0)
+            if (Long.compareUnsigned(coefficient_a, bid_power10_table_128_low[17]) < 0)
                 extra_digits = 1;
-            else if (Long.compareUnsigned(coefficient_a, bid_power10_table_128[18][0]) < 0)
+            else if (Long.compareUnsigned(coefficient_a, bid_power10_table_128_low[18]) < 0)
                 extra_digits = 2;
             else
                 extra_digits = 3;
@@ -475,10 +475,10 @@ class JavaImplAdd {
             sign_ab = sign_ab >> 63;  // @AD: signed value shift
 
             // T1 = 10^(16-diff_dec_expon)
-            T1 = bid_power10_table_128[16 - diff_dec_expon][0];
+            T1 = bid_power10_table_128_low[16 - diff_dec_expon];
 
             // get number of digits in coefficient_a
-            if (Long.compareUnsigned(coefficient_a, bid_power10_table_128[scale_ca][0]) >= 0) {
+            if (Long.compareUnsigned(coefficient_a, bid_power10_table_128_low[scale_ca]) >= 0) {
                 scale_ca++;
             }
 
@@ -486,7 +486,7 @@ class JavaImplAdd {
 
             // addition
             saved_ca = coefficient_a - T1;
-            coefficient_a = saved_ca * bid_power10_table_128[scale_k][0];
+            coefficient_a = saved_ca * bid_power10_table_128_low[scale_k];
             extra_digits = diff_dec_expon - scale_k;
 
             // apply sign
@@ -557,9 +557,9 @@ class JavaImplAdd {
                             saved_ca - (coefficient_a << 3) - (coefficient_a << 1);
                         coefficient_a = coefficient_a - T1;
 
-                        saved_cb += rem_a * bid_power10_table_128[diff_dec_expon][0];
+                        saved_cb += rem_a * bid_power10_table_128_low[diff_dec_expon];
                     } else
-                        coefficient_a = (saved_ca - T1 - (T1 << 3)) * bid_power10_table_128[scale_k - 1][0];
+                        coefficient_a = (saved_ca - T1 - (T1 << 3)) * bid_power10_table_128_low[scale_k - 1];
 
                     extra_digits++;
                     coefficient_b = saved_cb + 100000000000000000L + bid_round_const_table[rmode][extra_digits];
@@ -593,7 +593,7 @@ class JavaImplAdd {
                     C64 = C0_64 + coefficient_a;
                 } else if (Long.compareUnsigned(C64, 1000000000000000L) <= 0) {
                     // less than 16 digits in result
-                    coefficient_a = saved_ca * bid_power10_table_128[scale_k + 1][0];
+                    coefficient_a = saved_ca * bid_power10_table_128_low[scale_k + 1];
                     //extra_digits --;
                     exponent_b--;
                     coefficient_b = (saved_cb << 3) + (saved_cb << 1) + 100000000000000000L
@@ -918,46 +918,46 @@ class JavaImplAdd {
         39    // 2^128
     };
 
-    static final long[][] bid_power10_table_128 = {
-        {0x0000000000000001L, 0x0000000000000000L},    // 10^0
-        {0x000000000000000aL, 0x0000000000000000L},    // 10^1
-        {0x0000000000000064L, 0x0000000000000000L},    // 10^2
-        {0x00000000000003e8L, 0x0000000000000000L},    // 10^3
-        {0x0000000000002710L, 0x0000000000000000L},    // 10^4
-        {0x00000000000186a0L, 0x0000000000000000L},    // 10^5
-        {0x00000000000f4240L, 0x0000000000000000L},    // 10^6
-        {0x0000000000989680L, 0x0000000000000000L},    // 10^7
-        {0x0000000005f5e100L, 0x0000000000000000L},    // 10^8
-        {0x000000003b9aca00L, 0x0000000000000000L},    // 10^9
-        {0x00000002540be400L, 0x0000000000000000L},    // 10^10
-        {0x000000174876e800L, 0x0000000000000000L},    // 10^11
-        {0x000000e8d4a51000L, 0x0000000000000000L},    // 10^12
-        {0x000009184e72a000L, 0x0000000000000000L},    // 10^13
-        {0x00005af3107a4000L, 0x0000000000000000L},    // 10^14
-        {0x00038d7ea4c68000L, 0x0000000000000000L},    // 10^15
-        {0x002386f26fc10000L, 0x0000000000000000L},    // 10^16
-        {0x016345785d8a0000L, 0x0000000000000000L},    // 10^17
-        {0x0de0b6b3a7640000L, 0x0000000000000000L},    // 10^18
-        {0x8ac7230489e80000L, 0x0000000000000000L},    // 10^19
-        {0x6bc75e2d63100000L, 0x0000000000000005L},    // 10^20
-        {0x35c9adc5dea00000L, 0x0000000000000036L},    // 10^21
-        {0x19e0c9bab2400000L, 0x000000000000021eL},    // 10^22
-        {0x02c7e14af6800000L, 0x000000000000152dL},    // 10^23
-        {0x1bcecceda1000000L, 0x000000000000d3c2L},    // 10^24
-        {0x161401484a000000L, 0x0000000000084595L},    // 10^25
-        {0xdcc80cd2e4000000L, 0x000000000052b7d2L},    // 10^26
-        {0x9fd0803ce8000000L, 0x00000000033b2e3cL},    // 10^27
-        {0x3e25026110000000L, 0x00000000204fce5eL},    // 10^28
-        {0x6d7217caa0000000L, 0x00000001431e0faeL},    // 10^29
-        {0x4674edea40000000L, 0x0000000c9f2c9cd0L},    // 10^30
-        {0xc0914b2680000000L, 0x0000007e37be2022L},    // 10^31
-        {0x85acef8100000000L, 0x000004ee2d6d415bL},    // 10^32
-        {0x38c15b0a00000000L, 0x0000314dc6448d93L},    // 10^33
-        {0x378d8e6400000000L, 0x0001ed09bead87c0L},    // 10^34
-        {0x2b878fe800000000L, 0x0013426172c74d82L},    // 10^35
-        {0xb34b9f1000000000L, 0x00c097ce7bc90715L},    // 10^36
-        {0x00f436a000000000L, 0x0785ee10d5da46d9L},    // 10^37
-        {0x098a224000000000L, 0x4b3b4ca85a86c47aL},    // 10^38
+    static final long[] bid_power10_table_128_low = {
+        0x0000000000000001L,
+        0x000000000000000aL,
+        0x0000000000000064L,
+        0x00000000000003e8L,
+        0x0000000000002710L,
+        0x00000000000186a0L,
+        0x00000000000f4240L,
+        0x0000000000989680L,
+        0x0000000005f5e100L,
+        0x000000003b9aca00L,
+        0x00000002540be400L,
+        0x000000174876e800L,
+        0x000000e8d4a51000L,
+        0x000009184e72a000L,
+        0x00005af3107a4000L,
+        0x00038d7ea4c68000L,
+        0x002386f26fc10000L,
+        0x016345785d8a0000L,
+        0x0de0b6b3a7640000L,
+        0x8ac7230489e80000L,
+        0x6bc75e2d63100000L,
+        0x35c9adc5dea00000L,
+        0x19e0c9bab2400000L,
+        0x02c7e14af6800000L,
+        0x1bcecceda1000000L,
+        0x161401484a000000L,
+        0xdcc80cd2e4000000L,
+        0x9fd0803ce8000000L,
+        0x3e25026110000000L,
+        0x6d7217caa0000000L,
+        0x4674edea40000000L,
+        0xc0914b2680000000L,
+        0x85acef8100000000L,
+        0x38c15b0a00000000L,
+        0x378d8e6400000000L,
+        0x2b878fe800000000L,
+        0xb34b9f1000000000L,
+        0x00f436a000000000L,
+        0x098a224000000000L,
     };
 
     static final int[] bid_estimate_bin_expon = {
