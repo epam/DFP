@@ -1,7 +1,6 @@
 package com.epam.deltix.dfp;
 
 import org.junit.Assert;
-import sun.jvm.hotspot.utilities.soql.Callable;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
