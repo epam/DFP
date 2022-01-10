@@ -577,22 +577,22 @@ public class Decimal64Utils {
 
     @Decimal
     public static long add(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.add2(a, b);
+        return JavaImplAdd.add(a, b);
     }
 
     @Decimal
     public static long add(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
-        return NativeImpl.add3(a, b, c);
+        return JavaImplAdd.add(JavaImplAdd.add(a, b), c);
     }
 
     @Decimal
     public static long add(@Decimal final long a, @Decimal final long b, @Decimal final long c, @Decimal final long d) {
-        return NativeImpl.add4(a, b, c, d);
+        return JavaImplAdd.add(JavaImplAdd.add(a, b), JavaImplAdd.add(c, d));
     }
 
     @Decimal
     public static long subtract(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.subtract(a, b);
+        return JavaImplAdd.add(a, JavaImpl.negate(b));
     }
 
     @Decimal
