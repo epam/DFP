@@ -1,15 +1,12 @@
 package com.epam.deltix.dfp;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.*;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static com.epam.deltix.dfp.JavaImpl.MASK_SIGN;
+import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
 import static com.epam.deltix.dfp.TestUtils.checkInMultipleThreads;
 import static org.junit.Assert.*;
@@ -49,8 +46,6 @@ public class JavaImplTest {
 
     @Test
     public void testConstants() {
-        final int EXPONENT_BIAS = 398;
-
         // Relationships between internal representation constants
         assertTrue((JavaImpl.MASK_STEERING_BITS & JavaImpl.MASK_INFINITY_AND_NAN) == JavaImpl.MASK_STEERING_BITS);
         assertTrue((JavaImpl.MASK_STEERING_BITS | JavaImpl.MASK_INFINITY_AND_NAN) == JavaImpl.MASK_INFINITY_AND_NAN);
@@ -577,7 +572,10 @@ public class JavaImplTest {
     };
 
     @Test
-    public void testAdd() throws Exception {
+    public void testAddWithCoverage() throws Exception {
+        testAddCase(((long)EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long)(EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
+
         for (final long x : specialValues)
             for (final long y : specialValues)
                 testAddCase(x, y);

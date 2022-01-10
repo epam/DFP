@@ -1126,7 +1126,7 @@ class JavaImpl {
     static final long EXPONENT_MASK_SMALL = (long) EXPONENT_MASK << EXPONENT_SHIFT_SMALL;
     static final long EXPONENT_MASK_LARGE = (long) EXPONENT_MASK << EXPONENT_SHIFT_LARGE;
 
-    private static final int MAX_FORMAT_DIGITS = 16;
+    static final int MAX_FORMAT_DIGITS = 16;
 
     static final long MASK_STEERING_BITS = 0x6000_0000_0000_0000L;
     private static final long MASK_BINARY_EXPONENT1 = 0x7FE0_0000_0000_0000L;
