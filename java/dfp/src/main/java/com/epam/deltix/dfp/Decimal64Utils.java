@@ -678,6 +678,7 @@ public class Decimal64Utils {
      * @param roundType {@code RoundType} type of rounding
      * @return {@code DFP} the rounded value
      */
+    @Decimal
     public static long round(@Decimal final long value, final int n, final RoundType roundType) {
         return JavaImpl.round(value, n, roundType);
     }
