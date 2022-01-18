@@ -3,6 +3,7 @@ package com.epam.deltix.dfp;
 import org.junit.Test;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -573,8 +574,8 @@ public class JavaImplTest {
 
     @Test
     public void testAddWithCoverage() throws Exception {
-        testAddCase(((long)EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
-            MASK_SIGN | ((long)(EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
+        testAddCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
 
         for (final long x : specialValues)
             for (final long y : specialValues)
@@ -604,5 +605,20 @@ public class JavaImplTest {
         if (javaRet != nativeRet)
             throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L + 0x" + Long.toHexString(y) +
                 "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
+    public void testToStringScientific() throws Exception {
+        checkInMultipleThreads(() -> {
+            final Random random = new Random();
+            for (int i = 0; i < 10_000_000; ++i) {
+                final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+                final String xs = Decimal64Utils.toScientificString(x);
+                final long y = Decimal64Utils.parse(xs);
+
+                if (!Decimal64Utils.equals(x, y))
+                    throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L = " + Decimal64Utils.toString(x) + " != " + xs + "(" + Decimal64Utils.toString(y) + ")");
+            }
+        });
     }
 }

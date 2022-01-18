@@ -188,6 +188,10 @@ public class Decimal64Utils {
         return JavaImpl.fastToString(value);
     }
 
+    public static String toScientificString(@Decimal final long value) {
+        return JavaImpl.fastToScientificString(value);
+    }
+
     static String toDebugString(@Decimal final long value) {
         return JavaImpl.toDebugString(value);
     }
@@ -984,6 +988,20 @@ public class Decimal64Utils {
     }
 
     /**
+     * Append string representation of {@code DFP} {@code value} to {@link Appendable} {@code appendable}
+     * <p>
+     * Same as {@code appendable.append(value.toString())}, but more efficient.
+     *
+     * @param value      {@code DFP64} argument
+     * @param appendable {@link Appendable} instance to which the string representation of the {@code value} will be appended
+     * @return the 2nd argument ({@link Appendable} {@code appendable})
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    public static Appendable scientificAppendTo(@Decimal final long value, final Appendable appendable) throws IOException {
+        return JavaImpl.fastScientificAppendToAppendable(value, appendable);
+    }
+
+    /**
      * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
      * <p>
      * Same as {@code sb.append(value.toString());}, but more efficient.
@@ -994,6 +1012,19 @@ public class Decimal64Utils {
      */
     public static StringBuilder appendTo(@Decimal final long value, final StringBuilder sb) {
         return JavaImpl.fastAppendToStringBuilder(value, sb);
+    }
+
+    /**
+     * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
+     * <p>
+     * Same as {@code sb.append(value.toString());}, but more efficient.
+     *
+     * @param value {@code DFP64} argument
+     * @param sb    {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
+     * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
+     */
+    public static StringBuilder scientificAppendTo(@Decimal final long value, final StringBuilder sb) {
+        return JavaImpl.fastScientificAppendToStringBuilder(value, sb);
     }
 
     /**

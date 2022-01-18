@@ -96,6 +96,12 @@ public class FormattingBenchmark {
             bh.consume(JavaImpl.fastToString(decimalValues[i]));
     }
 
+    @Benchmark
+    public void toScientificStringJavaFastImpl(Blackhole bh) {
+        for (int i = 0; i < decimalValues.length; ++i)
+            bh.consume(JavaImpl.fastToScientificString(decimalValues[i]));
+    }
+
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
             .include(".*" + FormattingBenchmark.class.getSimpleName() + ".*")

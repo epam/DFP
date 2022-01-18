@@ -753,20 +753,40 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return null == decimal64 ? "null" : Decimal64Utils.toString(decimal64.value);
     }
 
+    public static String toScientificString(final Decimal64 decimal64) {
+        return null == decimal64 ? "null" : Decimal64Utils.toScientificString(decimal64.value);
+    }
+
     public Appendable appendTo(final Appendable appendable) throws IOException {
         return Decimal64Utils.appendTo(value, appendable);
+    }
+
+    public Appendable scientificAppendTo(final Appendable appendable) throws IOException {
+        return Decimal64Utils.scientificAppendTo(value, appendable);
     }
 
     public StringBuilder appendTo(final StringBuilder builder) {
         return Decimal64Utils.appendTo(value, builder);
     }
 
+    public StringBuilder scientificAppendTo(final StringBuilder builder) {
+        return Decimal64Utils.scientificAppendTo(value, builder);
+    }
+
     public static Appendable appendTo(final Decimal64 decimal64, final Appendable appendable) throws IOException {
         return null == decimal64 ? appendable.append("null") : Decimal64Utils.appendTo(decimal64.value, appendable);
     }
 
+    public static Appendable scientificAppendTo(final Decimal64 decimal64, final Appendable appendable) throws IOException {
+        return null == decimal64 ? appendable.append("null") : Decimal64Utils.scientificAppendTo(decimal64.value, appendable);
+    }
+
     public static StringBuilder appendTo(final Decimal64 decimal64, final StringBuilder builder) {
         return null == decimal64 ? builder.append("null") : Decimal64Utils.appendTo(decimal64.value, builder);
+    }
+
+    public static StringBuilder scientificAppendTo(final Decimal64 decimal64, final StringBuilder builder) {
+        return null == decimal64 ? builder.append("null") : Decimal64Utils.scientificAppendTo(decimal64.value, builder);
     }
 
     /**
