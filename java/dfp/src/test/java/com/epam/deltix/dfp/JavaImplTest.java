@@ -621,4 +621,61 @@ public class JavaImplTest {
             }
         });
     }
+
+    @Test
+    public void testFormatting() throws Exception {
+        checkInMultipleThreads(() -> {
+            final Random random = new Random();
+            for (int i = 0; i < 10_000_000; ++i) {
+                final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+
+                {
+                    final String xs = Decimal64Utils.toString(x);
+                    final long y = Decimal64Utils.parse(xs);
+                    if (!Decimal64Utils.equals(x, y))
+                        throw new RuntimeException("toString error: The decimal " + xs + "(0x" + Long.toHexString(x) + "L) != " + Decimal64Utils.toString(y) + "(0x" + Long.toHexString(y) + "L)");
+                }
+
+                {
+                    final String xs = Decimal64Utils.toScientificString(x);
+                    final long y = Decimal64Utils.parse(xs);
+                    if (!Decimal64Utils.equals(x, y))
+                        throw new RuntimeException("toScientificString error: The decimal " + xs + "(0x" + Long.toHexString(x) + "L) != " + Decimal64Utils.toScientificString(y) + "(0x" + Long.toHexString(y) + "L)");
+                }
+
+                {
+                    final String xs = Decimal64Utils.appendTo(x, new StringBuilder()).toString();
+                    final long y = Decimal64Utils.parse(xs);
+                    if (!Decimal64Utils.equals(x, y))
+                        throw new RuntimeException("appendTo error: The decimal " + xs + "(0x" + Long.toHexString(x) + "L) != " + Decimal64Utils.toScientificString(y) + "(0x" + Long.toHexString(y) + "L)");
+                }
+
+                {
+                    final String xs = Decimal64Utils.scientificAppendTo(x, new StringBuilder()).toString();
+                    final long y = Decimal64Utils.parse(xs);
+                    if (!Decimal64Utils.equals(x, y))
+                        throw new RuntimeException("scientificAppendTo error: The decimal " + xs + "(0x" + Long.toHexString(x) + "L) != " + Decimal64Utils.toScientificString(y) + "(0x" + Long.toHexString(y) + "L)");
+                }
+
+                try {
+                    {
+                        final String xs = Decimal64Utils.appendTo(x, (Appendable) new StringBuilder()).toString();
+                        final long y = Decimal64Utils.parse(xs);
+                        if (!Decimal64Utils.equals(x, y))
+                            throw new RuntimeException("Appendable appendTo error: The decimal " + xs + "(0x" + Long.toHexString(x) + "L) != " + Decimal64Utils.toScientificString(y) + "(0x" + Long.toHexString(y) + "L)");
+                    }
+
+                    {
+                        final String xs = Decimal64Utils.scientificAppendTo(x, (Appendable) new StringBuilder()).toString();
+                        final long y = Decimal64Utils.parse(xs);
+                        if (!Decimal64Utils.equals(x, y))
+                            throw new RuntimeException("Appendable scientificAppendTo error: The decimal " + xs + "(0x" + Long.toHexString(x) + "L) != " + Decimal64Utils.toScientificString(y) + "(0x" + Long.toHexString(y) + "L)");
+                    }
+                }
+                catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
 }
