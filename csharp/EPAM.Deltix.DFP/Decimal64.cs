@@ -769,10 +769,19 @@ namespace EPAM.Deltix.DFP
 			return true;
 		}
 
+		public String ToScientificString()
+		{
+			return DotNetImpl.ToScientificString(Bits);
+		}
+
 		public StringBuilder AppendTo(StringBuilder text)
 		{
-			text.Append(ToDouble());
-			return text;
+			return DotNetImpl.AppendTo(Bits, text);
+		}
+
+		public StringBuilder ScientificAppendTo(StringBuilder text)
+		{
+			return DotNetImpl.ScientificAppendTo(Bits, text);
 		}
 
 		#endregion

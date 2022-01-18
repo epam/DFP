@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 [assembly: InternalsVisibleToAttribute("EPAM.Deltix.DFP.Test")]
@@ -445,6 +446,256 @@ namespace EPAM.Deltix.DFP
 					return new string(p + 1, 0, (int)(e - p));
 				}
 #pragma warning restore CS0162
+			}
+		}
+
+		public static string ToScientificString(UInt64 value)
+		{
+			if (IsNull(value))
+				return "null";
+
+
+			if (!IsFinite(value))
+			{
+				// Value is either Inf or NaN
+				// TODO: Do we need SNaN?
+				return IsNaN(value) ? "NaN" : SignBit(value) ? "-Infinity" : "Infinity";
+			}
+
+			bool sign;
+			int exponent;
+			UInt64 coefficient = Unpack(value, out sign, out exponent);
+
+			if (coefficient == 0)
+				return "0.000000000000000e+000";
+
+			exponent -= BaseExponent;
+
+			unsafe
+			{
+				char* buffer = stackalloc char[MaxFormatDigits * 4];
+
+				char *bi = buffer + MaxFormatDigits * 2 + 2, be = bi;
+				while (coefficient > 0)
+				{
+					var c = coefficient;
+					coefficient /= 10;
+					*--bi = (char)(c - coefficient * 10 + '0');
+				}
+
+				exponent += (int)(be - bi - 1);
+
+				for (char* bee = MaxFormatDigits + bi; be < bee; ++be)
+					*be = '0';
+
+				bi--;
+				*bi = *(bi + 1);
+				*(bi + 1) = '.';
+
+				if (sign)
+					*--bi = '-';
+
+				*be++ = 'e';
+				*be++ = exponent >= 0 ? '+' : '-';
+				{
+					be += 3;
+					for (int j = 0, exp = Math.Abs(exponent); j < 3; ++j)
+					{
+						var e = exp;
+						exp /= 10;
+						*(be - 1 - j) = (char)(e - exp * 10 + '0');
+					}
+				}
+
+				return new string(bi, 0, (int)(be - bi));
+			}
+		}
+
+		public static StringBuilder AppendTo(UInt64 value, StringBuilder text)
+		{
+			if (!IsFinite(value))
+			{
+				return text.Append(
+					IsInfinity(value) ?
+						(SignBit(value) ? "-Infinity" : "Infinity")
+					: IsNaN(value) ?
+						(SignBit(value) ? "SNaN" : "NaN")
+					: "?");
+			}
+
+			Int32 exponent;
+			Boolean isNegative = (Int64)value < 0;
+			Int64 coefficient; // Unsigned div by constant in not optimized by .NET
+			if ((~value & SpecialEncodingMask) == 0) //if ((x & SpecialEncodingMask) == SpecialEncodingMask)
+			{
+				Int32 exp2;
+				coefficient = (Int64)UnpackSpecial(value, out exp2);
+				exponent = exp2;
+
+			}
+			else
+			{
+				// Extract the exponent.
+				exponent = (int)(value >> ExponentShiftSmall) & (int)ShiftedExponentMask;
+				// Extract the coefficient.
+				coefficient = (Int64)(value & SmallCoefficientMask);
+			}
+
+			unsafe
+			{
+				// TODO: Special case possible for mantissa = 0, otherwise will be printed according to common rules, w/o normalization
+#pragma warning disable CS0162 // Unreachable code detected
+				if (ToStringRemoveTrailingZeroes)
+					if (0 == coefficient)
+						return text.Append("0");
+
+				if (exponent >= BaseExponent)
+				{
+					if (!ToStringRemoveTrailingZeroes)
+						if (0 == coefficient)
+							return text.Append("0");
+
+					int nZeros = exponent - BaseExponent;
+					int nAlloc = exponent + (20 - BaseExponent);
+					char* s = stackalloc char[nAlloc];
+					char* e = s + nAlloc - 2, p = e - nZeros;
+
+					for (int i = nZeros; i != 0; --i)
+						p[i] = '0';
+
+					do
+					{
+						// This is to make the code generator generate 1 DIV instead of 2
+						Int64 old = coefficient + '0';
+						coefficient /= 10;
+						*p-- = (char)(old - coefficient * 10); // = [old - new * 10]
+					} while (coefficient != 0);
+
+					if ((Int64)value < 0)
+						*p-- = '-';
+
+#if NET40
+					char[] heapBuffer = new char[(int)(e - p)];
+					Marshal.Copy((IntPtr)(p + 1), heapBuffer, 0, heapBuffer.Length);
+					return text.Append(heapBuffer);
+#else
+					return text.Append(p + 1, (int)(e - p));
+#endif
+				}
+				else
+				{
+					int dotPos = BaseExponent - exponent;
+					int nAlloc = (20 + BaseExponent) - exponent;
+					char* s = stackalloc char[nAlloc];
+					char* p = s + nAlloc - 2, e = p;
+
+					do
+					{
+						Int64 old = coefficient + '0';
+						coefficient /= 10;
+						*p = '.';
+						p += 0 == dotPos-- ? -1 : 0; // Hopefully branch-free method to insert decimal dot
+						*p-- = (char)(old - coefficient * 10); // = [old - new * 10]
+					} while (coefficient != 0);
+					// Haven't placed the dot yet?
+					if (dotPos >= 0)
+					{
+						for (; dotPos > 0; --dotPos)
+							*p-- = '0';
+						p[0] = '.';
+						p[-1] = '0';
+						p -= 2;
+					}
+
+					if ((Int64)value < 0)
+						*p-- = '-';
+
+					if (ToStringRemoveTrailingZeroes)
+					{
+						if ('0' == *e)
+						{
+							while ('0' == *--e) { }
+							if ('.' == *e)
+								--e;
+						}
+					}
+
+#if NET40
+					char[] heapBuffer = new char[(int)(e - p)];
+					Marshal.Copy((IntPtr)(p + 1), heapBuffer, 0, heapBuffer.Length);
+					return text.Append(heapBuffer);
+#else
+					return text.Append(p + 1, (int)(e - p));
+#endif
+				}
+#pragma warning restore CS0162
+			}
+		}
+
+		public static StringBuilder ScientificAppendTo(UInt64 value, StringBuilder text)
+		{
+			if (IsNull(value))
+				return text.Append("null");
+
+			if (!IsFinite(value))
+			{
+				// Value is either Inf or NaN
+				// TODO: Do we need SNaN?
+				return text.Append(IsNaN(value) ? "NaN" : SignBit(value) ? "-Infinity" : "Infinity");
+			}
+
+			bool sign;
+			int exponent;
+			UInt64 coefficient = Unpack(value, out sign, out exponent);
+
+			if (coefficient == 0)
+				return text.Append("0.000000000000000e+000");
+
+			exponent -= BaseExponent;
+
+			unsafe
+			{
+				char* buffer = stackalloc char[MaxFormatDigits * 4];
+
+				char* bi = buffer + MaxFormatDigits * 2 + 2, be = bi;
+				while (coefficient > 0)
+				{
+					var c = coefficient;
+					coefficient /= 10;
+					*--bi = (char)(c - coefficient * 10 + '0');
+				}
+
+				exponent += (int)(be - bi - 1);
+
+				for (char* bee = MaxFormatDigits + bi; be < bee; ++be)
+					*be = '0';
+
+				bi--;
+				*bi = *(bi + 1);
+				*(bi + 1) = '.';
+
+				if (sign)
+					*--bi = '-';
+
+				*be++ = 'e';
+				*be++ = exponent >= 0 ? '+' : '-';
+				{
+					be += 3;
+					for (int j = 0, exp = Math.Abs(exponent); j < 3; ++j)
+					{
+						var e = exp;
+						exp /= 10;
+						*(be - 1 - j) = (char)(e - exp * 10 + '0');
+					}
+				}
+
+#if NET40
+				char[] heapBuffer = new char[(int)(be - bi)];
+				Marshal.Copy((IntPtr)bi, heapBuffer, 0, heapBuffer.Length);
+				return text.Append(heapBuffer);
+#else
+				return text.Append(bi, (int)(be - bi));
+#endif
 			}
 		}
 
