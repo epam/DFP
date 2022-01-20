@@ -860,11 +860,7 @@
 #if defined (_MSC_VER) //Windows
 #define BID_THREAD __declspec(thread)
 #else
-#if !defined(__APPLE__) //Linux, FreeBSD
 #define BID_THREAD __thread
-#else //Mac OSX, TBD
-#define BID_THREAD
-#endif //Linux or Mac
 #endif //Windows
 #endif //BID_THREAD
 
