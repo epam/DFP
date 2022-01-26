@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace EPAM.Deltix.DFP.Test
 {
@@ -169,5 +170,32 @@ namespace EPAM.Deltix.DFP.Test
 		};
 
 		readonly static Random rng = new Random(55);
+
+		public static void CheckInMultipleThreads(ThreadStart target)
+		{
+			Thread[] threads = new Thread[Environment.ProcessorCount];
+			Exception lastException = null;
+
+			for (int ti = 0; ti<threads.Length; ++ti) {
+				threads[ti] = new Thread(() =>
+				{
+					try
+					{
+						target();
+					}
+					catch(Exception e)
+					{
+						lastException = e;
+					}
+				});
+				threads[ti].Start();
+			}
+
+			foreach (var thread in threads)
+				thread.Join();
+
+			if (lastException != null)
+				throw lastException;
+		}
 	}
 }

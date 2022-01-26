@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using NUnit.Framework;
 
 using static EPAM.Deltix.DFP.Test.TestUtils;
@@ -579,6 +580,67 @@ namespace EPAM.Deltix.DFP.Test
 				CheckValues(testValue, NativeImpl.isNonZero(testValue.Bits), testValue.CompareTo( Decimal64.Zero) != 0);
 				CheckValues(negTestValue, NativeImpl.isNonZero(negTestValue.Bits), negTestValue.CompareTo(Decimal64.Zero) != 0);
 			}
+		}
+
+		[Test]
+		public void TestFormatting()
+		{
+			CheckInMultipleThreads(() => {
+				Random random = new Random();
+				for (int i = 0; i < 10000000; ++i) {
+					var x = Decimal64.FromFixedPoint(random.Next() << 32 | random.Next(), -(random.Next(80) - 40 - 15));
+
+					CheckFormattingValue(x);
+	            }
+			});
+		}
+
+		[Test]
+		public void TestFormattingCase()
+		{
+			CheckFormattingValue(Decimal64.FromUnderlying(0x3420000037ffff73UL));
+		}
+
+		private void CheckFormattingValue(Decimal64 x)
+		{
+			throw new Exception("Test");
+
+			{
+				var xs = x.ToString();
+				var y = Decimal64.Parse(xs);
+				if (!Decimal64.Equals(x, y))
+					throw new Exception("ToString error: The decimal " + xs + "(0x" + Convert.ToString((long)x.Bits, 16) + "L) != " + y.ToString() + "(0x" + Convert.ToString((long)y.Bits, 16) + "L)");
+			}
+
+			{
+				var xs = x.ToScientificString();
+				var y = Decimal64.Parse(xs);
+				if (!Decimal64.Equals(x, y))
+					throw new Exception("ToScientificString error: The decimal " + xs + "(0x" + Convert.ToString((long)x.Bits, 16) + "L) != " + y.ToScientificString() + "(0x" + Convert.ToString((long)y.Bits, 16) + "L)");
+			}
+
+			{
+				var xs = x.AppendTo(new StringBuilder()).ToString();
+				var y = Decimal64.Parse(xs);
+				if (!Decimal64.Equals(x, y))
+					throw new Exception("AppendTo error: The decimal " + xs + "(0x" + Convert.ToString((long)x.Bits, 16) + "L) != " + y.ToScientificString() + "(0x" + Convert.ToString((long)y.Bits, 16) + "L)");
+			}
+
+			{
+				var xs = x.ScientificAppendTo(new StringBuilder()).ToString();
+				var y = Decimal64.Parse(xs);
+				if (!Decimal64.Equals(x, y))
+					throw new Exception("ScientificAppendTo error: The decimal " + xs + "(0x" + Convert.ToString((long)x.Bits, 16) + "L) != " + y.ToScientificString() + "(0x" + Convert.ToString((long)y.Bits, 16) + "L)");
+			}
+		}
+
+
+		[Test]
+		public void TestParseReImpl()
+		{
+			uint fpsf = DotNetReImpl.BID_EXACT_STATUS;
+			var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string("123.456e-12", DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf));
+			var s = value.ToString();
 		}
 
 		private static void CheckValues(Decimal64 value, bool refCond, bool testCond)

@@ -753,7 +753,8 @@ namespace EPAM.Deltix.DFP
 
 		public static Decimal64 Parse(String text)
 		{
-			return FromDecimalDouble(Double.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture));
+			uint fpsf = DotNetReImpl.BID_EXACT_STATUS;
+			return Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(text, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf));
 		}
 
 		public static Boolean TryParse(String text, out Decimal64 result)

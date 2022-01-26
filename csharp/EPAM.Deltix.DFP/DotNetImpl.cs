@@ -7,7 +7,7 @@ using System.Text;
 [assembly: InternalsVisibleToAttribute("EPAM.Deltix.DFP.Test")]
 namespace EPAM.Deltix.DFP
 {
-	internal class DotNetImpl
+	internal static class DotNetImpl
 	{
 		private const bool ToStringRemoveTrailingZeroes = true; // Controls if ToString removes trailing zeroes or not
 
