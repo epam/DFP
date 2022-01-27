@@ -603,8 +603,6 @@ namespace EPAM.Deltix.DFP.Test
 
 		private void CheckFormattingValue(Decimal64 x)
 		{
-			throw new Exception("Test");
-
 			{
 				var xs = x.ToString();
 				var y = Decimal64.Parse(xs);
