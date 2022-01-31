@@ -35,6 +35,7 @@ namespace EPAM.Deltix.DFP
 		public const uint BID_INVALID_EXCEPTION = DEC_FE_INVALID;
 		public const uint BID_UNDERFLOW_INEXACT_EXCEPTION = (DEC_FE_UNDERFLOW | DEC_FE_INEXACT);
 		public const uint BID_OVERFLOW_INEXACT_EXCEPTION = (DEC_FE_OVERFLOW | DEC_FE_INEXACT);
+		public const uint BID_INVALID_FORMAT = 0x10000;
 
 		public const int MAX_FORMAT_DIGITS = 16;
 		public const int DECIMAL_EXPONENT_BIAS = 398;
@@ -55,105 +56,89 @@ namespace EPAM.Deltix.DFP
 			return (fpsc & BID_INEXACT_EXCEPTION) != 0;
 		}
 
-		public unsafe static BID_UINT64 bid64_from_string(string s, int rnd_mode /*= BID_ROUNDING_TO_NEAREST*/, ref _IDEC_flags pfpsf /* _EXC_MASKS_PARAM _EXC_INFO_PARAM*/)
+		private unsafe static bool IsStrEq(char* ptr, string str)
+		{
+			fixed (char* fixedStr = str)
+			{
+				char* pStr = fixedStr;
+
+				while (*ptr != '\0' && *pStr != '\0')
+				{
+					if (*ptr != *pStr)
+						return false;
+					ptr++;
+					pStr++;
+				}
+
+				return *ptr == *pStr;
+			}
+		}
+
+		public unsafe static BID_UINT64 bid64_from_string(string s, out _IDEC_flags pfpsf, int rnd_mode = BID_ROUNDING_TO_NEAREST/*, _EXC_MASKS_PARAM _EXC_INFO_PARAM*/)
 		{
 
-			BID_UINT64 sign_x, coefficient_x = 0, rounded = 0;
+			BID_UINT64 coefficient_x = 0, rounded = 0;
 			int expon_x = 0, sgn_expon, ndigits, add_expon = 0, midpoint = 0, rounded_up = 0;
-			int dec_expon_scale = 0, right_radix_leading_zeros = 0, rdx_pt_enc = 0;
-			char c;
+			int dec_expon_scale = 0;
 
-			fixed (char* fixedS = s)
+			fixed (char* fixedS = s.Trim().ToLowerInvariant())
 			{
 				char* ps = fixedS;
 
+				if (*ps == '\0')
+				{
+					pfpsf = BID_INVALID_FORMAT;
+					return 0x7c00000000000000UL;                    // return qNaN
+				}
 
-				// eliminate leading whitespace
-				while (((*ps == ' ') || (*ps == '\t')) && (*ps != '\0'))
+
+				// determine sign
+				BID_UINT64 sign_x = *ps == '-' ? 0x8000000000000000UL : 0;
+				// get next character if leading +/- sign
+				if (*ps == '-' || *ps == '+')
+				{
 					ps++;
-
-				// get first non-whitespace character
-				c = *ps;
+					if (*ps == '\0')
+					{
+						pfpsf = BID_INVALID_FORMAT;
+						return 0x7c00000000000000UL;                    // return qNaN
+					}
+				}
 
 				// detect special cases (INF or NaN)
-				if (c == '\0' || (c != '.' && c != '-' && c != '+' && (c < '0' || c > '9')))
+				if (*ps != '.' && (*ps < '0' || *ps > '9'))
 				{
-					// Infinity?
-					if ((tolower_macro(ps[0]) == 'i' && tolower_macro(ps[1]) == 'n' &&
-						tolower_macro(ps[2]) == 'f') && (ps[3] == '\0' ||
-						(tolower_macro(ps[3]) == 'i' &&
-						tolower_macro(ps[4]) == 'n' && tolower_macro(ps[5]) == 'i' &&
-						tolower_macro(ps[6]) == 't' && tolower_macro(ps[7]) == 'y' &&
-						ps[8] == '\0')))
+					if (IsStrEq(ps, "inf") || IsStrEq(ps, "infinity")) // Infinity?
 					{
-						return 0x7800000000000000UL;
+						pfpsf = BID_EXACT_STATUS;
+						return 0x7800000000000000UL | sign_x;
 					}
 					// return sNaN
-					if (tolower_macro(ps[0]) == 's' && tolower_macro(ps[1]) == 'n' &&
-						tolower_macro(ps[2]) == 'a' && tolower_macro(ps[3]) == 'n')
+					if (IsStrEq(ps, "snan")) // case insensitive check for snan
 					{
-						// case insensitive check for snan
-						return 0x7e00000000000000UL;
+						pfpsf = BID_EXACT_STATUS;
+						return 0x7e00000000000000UL | sign_x;
 					}
-					else
+					if (IsStrEq(ps, "nan")) // return qNaN
 					{
-						// return qNaN
-						return 0x7c00000000000000UL;
+						pfpsf = BID_EXACT_STATUS;
+						return 0x7c00000000000000UL | sign_x;
 					}
-				}
-				// detect +INF or -INF
-				if ((tolower_macro(ps[1]) == 'i' && tolower_macro(ps[2]) == 'n' &&
-					tolower_macro(ps[3]) == 'f') && (ps[4] == '\0' ||
-					(tolower_macro(ps[4]) == 'i' && tolower_macro(ps[5]) == 'n' &&
-					tolower_macro(ps[6]) == 'i' && tolower_macro(ps[7]) == 't' &&
-					tolower_macro(ps[8]) == 'y' && ps[9] == '\0')))
-				{
-					BID_UINT64 res;
-					if (c == '+')
-						res = 0x7800000000000000UL;
-					else if (c == '-')
-						res = 0xf800000000000000UL;
-					else
-						res = 0x7c00000000000000UL;
-					return res;
-				}
-				// if +sNaN, +SNaN, -sNaN, or -SNaN
-				if (tolower_macro(ps[1]) == 's' && tolower_macro(ps[2]) == 'n'
-					&& tolower_macro(ps[3]) == 'a' && tolower_macro(ps[4]) == 'n')
-				{
-					BID_UINT64 res;
-					if (c == '-')
-						res = 0xfe00000000000000UL;
-					else
-						res = 0x7e00000000000000UL;
-					return res;
-				}
-				// determine sign
-				if (c == '-')
-					sign_x = 0x8000000000000000UL;
-				else
-					sign_x = 0;
-
-				// get next character if leading +/- sign
-				if (c == '-' || c == '+')
-				{
-					ps++;
-					c = *ps;
-				}
-				// if c isn't a decimal point or a decimal digit, return NaN
-				if (c != '.' && (c < '0' || c > '9'))
-				{
-					// return NaN
-					return 0x7c00000000000000UL | sign_x;
+					else // if c isn't a decimal point or a decimal digit, return NaN
+					{
+						pfpsf = BID_INVALID_FORMAT;
+						return 0x7c00000000000000UL;                    // return qNaN
+					}
 				}
 
-				rdx_pt_enc = 0;
+				int rdx_pt_enc = 0;
+				int right_radix_leading_zeros = 0;
 
 				// detect zero (and eliminate/ignore leading zeros)
-				if (*(ps) == '0' || *(ps) == '.')
+				if (*ps == '0' || *ps == '.')
 				{
 
-					if (*(ps) == '.')
+					if (*ps == '.')
 					{
 						rdx_pt_enc = 1;
 						ps++;
@@ -171,7 +156,7 @@ namespace EPAM.Deltix.DFP
 						}
 						// if this character is a radix point, make sure we haven't already 
 						// encountered one
-						if (*(ps) == '.')
+						if (*ps == '.')
 						{
 							if (rdx_pt_enc == 0)
 							{
@@ -180,25 +165,26 @@ namespace EPAM.Deltix.DFP
 								// we have a zero
 								if (*(ps + 1) == '\0')
 								{
-									return ((BID_UINT64)(398 - right_radix_leading_zeros) << 53) | sign_x;
+									pfpsf = BID_EXACT_STATUS;
+									return DotNetImpl.Zero | sign_x; // ((BID_UINT64)(398 - right_radix_leading_zeros) << 53) | sign_x;
 								}
-								ps = ps + 1;
+								ps++;
 							}
 							else
 							{
-								// if 2 radix points, return NaN
-								return 0x7c00000000000000UL | sign_x;
+								pfpsf = BID_INVALID_FORMAT;
+								return DotNetImpl.NaN; // 0x7c00000000000000UL | sign_x; // if 2 radix points, return NaN
 							}
 						}
-						else if (*(ps) == '\0')
+						else if (*ps == '\0')
 						{
-							//pres->w[1] = 0x3040000000000000UL | sign_x;
-							return ((BID_UINT64)(398 - right_radix_leading_zeros) << 53) | sign_x;
+							pfpsf = BID_EXACT_STATUS;
+							return DotNetImpl.Zero | sign_x; // ((BID_UINT64)(398 - right_radix_leading_zeros) << 53) | sign_x; //pres->w[1] = 0x3040000000000000UL | sign_x;
 						}
 					}
 				}
 
-				c = *ps;
+				char c = *ps;
 
 				ndigits = 0;
 				while ((c >= '0' && c <= '9') || c == '.')
@@ -207,8 +193,8 @@ namespace EPAM.Deltix.DFP
 					{
 						if (rdx_pt_enc != 0)
 						{
-							// return NaN
-							return 0x7c00000000000000UL | sign_x;
+							pfpsf = BID_INVALID_FORMAT;
+							return DotNetImpl.NaN; // 0x7c00000000000000UL | sign_x; // return NaN
 						}
 						rdx_pt_enc = 1;
 						ps++;
@@ -280,17 +266,18 @@ namespace EPAM.Deltix.DFP
 
 				if (c == '\0')
 				{
+					pfpsf = BID_EXACT_STATUS;
 					if (rounded != 0)
 						__set_status_flags(ref pfpsf, BID_INEXACT_EXCEPTION);
-					return fast_get_BID64_check_OF(sign_x,
+					return /*fast_get_BID64_check_OF*/get_BID64(sign_x,
 								   add_expon + DECIMAL_EXPONENT_BIAS,
 								   coefficient_x, 0, ref pfpsf);
 				}
 
 				if (c != 'E' && c != 'e')
 				{
-					// return NaN
-					return 0x7c00000000000000UL | sign_x;
+					pfpsf = BID_INVALID_FORMAT;
+					return DotNetImpl.NaN; // 0x7c00000000000000UL | sign_x; // return NaN
 				}
 				ps++;
 				c = *ps;
@@ -302,8 +289,8 @@ namespace EPAM.Deltix.DFP
 				}
 				if (c == '\0' || c < '0' || c > '9')
 				{
-					// return NaN
-					return 0x7c00000000000000UL | sign_x;
+					pfpsf = BID_INVALID_FORMAT;
+					return DotNetImpl.NaN; // 0x7c00000000000000UL | sign_x; // return NaN
 				}
 
 				while ((c >= '0') && (c <= '9'))
@@ -320,12 +307,15 @@ namespace EPAM.Deltix.DFP
 
 				if (c != '\0')
 				{
-					// return NaN
-					return 0x7c00000000000000UL | sign_x;
+					pfpsf = BID_INVALID_FORMAT;
+					return DotNetImpl.NaN; // 0x7c00000000000000UL | sign_x; // return NaN
 				}
 
 				if (rounded != 0)
+				{
+					pfpsf = BID_EXACT_STATUS;
 					__set_status_flags(ref pfpsf, BID_INEXACT_EXCEPTION);
+				}
 
 				if (sgn_expon != 0)
 					expon_x = -expon_x;
@@ -337,8 +327,10 @@ namespace EPAM.Deltix.DFP
 					if (rounded_up != 0)
 						coefficient_x--;
 					rnd_mode = 0;
+					pfpsf = BID_EXACT_STATUS;
 					return get_BID64_UF(sign_x, expon_x, coefficient_x, rounded, rnd_mode, ref pfpsf);
 				}
+				pfpsf = BID_EXACT_STATUS;
 				return get_BID64(sign_x, expon_x, coefficient_x, rnd_mode, ref pfpsf);
 			}
 		}
@@ -349,15 +341,15 @@ namespace EPAM.Deltix.DFP
 
 		public const BID_UINT64 SPECIAL_ENCODING_MASK64 = 0x6000000000000000UL;
 		public const BID_UINT64 INFINITY_MASK64 = 0x7800000000000000UL;
-		//public const BID_UINT64 SINFINITY_MASK64 = 0xf800000000000000UL;
+		public const BID_UINT64 SINFINITY_MASK64 = 0xf800000000000000UL;
 		//public const BID_UINT64 SSNAN_MASK64 = 0xfc00000000000000UL;
-		//public const BID_UINT64 NAN_MASK64 = 0x7c00000000000000UL;
+		public const BID_UINT64 NAN_MASK64 = 0x7c00000000000000UL;
 		//public const BID_UINT64 SNAN_MASK64 = 0x7e00000000000000UL;
 		//public const BID_UINT64 QUIET_MASK64 = 0xfdffffffffffffffUL;
-		//public const BID_UINT64 LARGE_COEFF_MASK64 = 0x0007ffffffffffffUL;
-		//public const BID_UINT64 LARGE_COEFF_HIGH_BIT64 = 0x0020000000000000UL;
-		//public const BID_UINT64 SMALL_COEFF_MASK64 = 0x001fffffffffffffUL;
-		//public const uint EXPONENT_MASK64 = 0x3ff;
+		public const BID_UINT64 LARGE_COEFF_MASK64 = 0x0007ffffffffffffUL;
+		public const BID_UINT64 LARGE_COEFF_HIGH_BIT64 = 0x0020000000000000UL;
+		public const BID_UINT64 SMALL_COEFF_MASK64 = 0x001fffffffffffffUL;
+		public const uint EXPONENT_MASK64 = 0x3ff;
 		public const int EXPONENT_SHIFT_LARGE64 = 51;
 		public const int EXPONENT_SHIFT_SMALL64 = 53;
 		public const BID_UINT64 LARGEST_BID64 = 0x77fb86f26fc0ffffUL;
@@ -476,196 +468,196 @@ namespace EPAM.Deltix.DFP
 		}
 
 		public static readonly BID_UINT64[,] bid_round_const_table = {
-  {	// RN
-   0UL,	// 0 extra digits
-   5UL,	// 1 extra digits
-   50UL,	// 2 extra digits
-   500UL,	// 3 extra digits
-   5000UL,	// 4 extra digits
-   50000UL,	// 5 extra digits
-   500000UL,	// 6 extra digits
-   5000000UL,	// 7 extra digits
-   50000000UL,	// 8 extra digits
-   500000000UL,	// 9 extra digits
-   5000000000UL,	// 10 extra digits
-   50000000000UL,	// 11 extra digits
-   500000000000UL,	// 12 extra digits
-   5000000000000UL,	// 13 extra digits
-   50000000000000UL,	// 14 extra digits
-   500000000000000UL,	// 15 extra digits
-   5000000000000000UL,	// 16 extra digits
-   50000000000000000UL,	// 17 extra digits
-   500000000000000000UL	// 18 extra digits
-   }
-  ,
-  {	// RD
-   0UL,	// 0 extra digits
-   0UL,	// 1 extra digits
-   0UL,	// 2 extra digits
-   00UL,	// 3 extra digits
-   000UL,	// 4 extra digits
-   0000UL,	// 5 extra digits
-   00000UL,	// 6 extra digits
-   000000UL,	// 7 extra digits
-   0000000UL,	// 8 extra digits
-   00000000UL,	// 9 extra digits
-   000000000UL,	// 10 extra digits
-   0000000000UL,	// 11 extra digits
-   00000000000UL,	// 12 extra digits
-   000000000000UL,	// 13 extra digits
-   0000000000000UL,	// 14 extra digits
-   00000000000000UL,	// 15 extra digits
-   000000000000000UL,	// 16 extra digits
-   0000000000000000UL,	// 17 extra digits
-   00000000000000000UL	// 18 extra digits
-   }
-  ,
-  {	// round to Inf
-   0UL,	// 0 extra digits
-   9UL,	// 1 extra digits
-   99UL,	// 2 extra digits
-   999UL,	// 3 extra digits
-   9999UL,	// 4 extra digits
-   99999UL,	// 5 extra digits
-   999999UL,	// 6 extra digits
-   9999999UL,	// 7 extra digits
-   99999999UL,	// 8 extra digits
-   999999999UL,	// 9 extra digits
-   9999999999UL,	// 10 extra digits
-   99999999999UL,	// 11 extra digits
-   999999999999UL,	// 12 extra digits
-   9999999999999UL,	// 13 extra digits
-   99999999999999UL,	// 14 extra digits
-   999999999999999UL,	// 15 extra digits
-   9999999999999999UL,	// 16 extra digits
-   99999999999999999UL,	// 17 extra digits
-   999999999999999999UL	// 18 extra digits
-   }
-  ,
-  {	// RZ
-   0UL,	// 0 extra digits
-   0UL,	// 1 extra digits
-   0UL,	// 2 extra digits
-   00UL,	// 3 extra digits
-   000UL,	// 4 extra digits
-   0000UL,	// 5 extra digits
-   00000UL,	// 6 extra digits
-   000000UL,	// 7 extra digits
-   0000000UL,	// 8 extra digits
-   00000000UL,	// 9 extra digits
-   000000000UL,	// 10 extra digits
-   0000000000UL,	// 11 extra digits
-   00000000000UL,	// 12 extra digits
-   000000000000UL,	// 13 extra digits
-   0000000000000UL,	// 14 extra digits
-   00000000000000UL,	// 15 extra digits
-   000000000000000UL,	// 16 extra digits
-   0000000000000000UL,	// 17 extra digits
-   00000000000000000UL	// 18 extra digits
-   }
-  ,
-  {	// round ties away from 0
-   0UL,	// 0 extra digits
-   5UL,	// 1 extra digits
-   50UL,	// 2 extra digits
-   500UL,	// 3 extra digits
-   5000UL,	// 4 extra digits
-   50000UL,	// 5 extra digits
-   500000UL,	// 6 extra digits
-   5000000UL,	// 7 extra digits
-   50000000UL,	// 8 extra digits
-   500000000UL,	// 9 extra digits
-   5000000000UL,	// 10 extra digits
-   50000000000UL,	// 11 extra digits
-   500000000000UL,	// 12 extra digits
-   5000000000000UL,	// 13 extra digits
-   50000000000000UL,	// 14 extra digits
-   500000000000000UL,	// 15 extra digits
-   5000000000000000UL,	// 16 extra digits
-   50000000000000000UL,	// 17 extra digits
-   500000000000000000UL	// 18 extra digits
-   }
-  ,
-};
+			{	// RN
+				0UL,	// 0 extra digits
+				5UL,	// 1 extra digits
+				50UL,	// 2 extra digits
+				500UL,	// 3 extra digits
+				5000UL,	// 4 extra digits
+				50000UL,	// 5 extra digits
+				500000UL,	// 6 extra digits
+				5000000UL,	// 7 extra digits
+				50000000UL,	// 8 extra digits
+				500000000UL,	// 9 extra digits
+				5000000000UL,	// 10 extra digits
+				50000000000UL,	// 11 extra digits
+				500000000000UL,	// 12 extra digits
+				5000000000000UL,	// 13 extra digits
+				50000000000000UL,	// 14 extra digits
+				500000000000000UL,	// 15 extra digits
+				5000000000000000UL,	// 16 extra digits
+				50000000000000000UL,	// 17 extra digits
+				500000000000000000UL	// 18 extra digits
+			}
+			,
+			{	// RD
+				0UL,	// 0 extra digits
+				0UL,	// 1 extra digits
+				0UL,	// 2 extra digits
+				00UL,	// 3 extra digits
+				000UL,	// 4 extra digits
+				0000UL,	// 5 extra digits
+				00000UL,	// 6 extra digits
+				000000UL,	// 7 extra digits
+				0000000UL,	// 8 extra digits
+				00000000UL,	// 9 extra digits
+				000000000UL,	// 10 extra digits
+				0000000000UL,	// 11 extra digits
+				00000000000UL,	// 12 extra digits
+				000000000000UL,	// 13 extra digits
+				0000000000000UL,	// 14 extra digits
+				00000000000000UL,	// 15 extra digits
+				000000000000000UL,	// 16 extra digits
+				0000000000000000UL,	// 17 extra digits
+				00000000000000000UL	// 18 extra digits
+			}
+			,
+			{	// round to Inf
+				0UL,	// 0 extra digits
+				9UL,	// 1 extra digits
+				99UL,	// 2 extra digits
+				999UL,	// 3 extra digits
+				9999UL,	// 4 extra digits
+				99999UL,	// 5 extra digits
+				999999UL,	// 6 extra digits
+				9999999UL,	// 7 extra digits
+				99999999UL,	// 8 extra digits
+				999999999UL,	// 9 extra digits
+				9999999999UL,	// 10 extra digits
+				99999999999UL,	// 11 extra digits
+				999999999999UL,	// 12 extra digits
+				9999999999999UL,	// 13 extra digits
+				99999999999999UL,	// 14 extra digits
+				999999999999999UL,	// 15 extra digits
+				9999999999999999UL,	// 16 extra digits
+				99999999999999999UL,	// 17 extra digits
+				999999999999999999UL	// 18 extra digits
+			}
+			,
+			{	// RZ
+				0UL,	// 0 extra digits
+				0UL,	// 1 extra digits
+				0UL,	// 2 extra digits
+				00UL,	// 3 extra digits
+				000UL,	// 4 extra digits
+				0000UL,	// 5 extra digits
+				00000UL,	// 6 extra digits
+				000000UL,	// 7 extra digits
+				0000000UL,	// 8 extra digits
+				00000000UL,	// 9 extra digits
+				000000000UL,	// 10 extra digits
+				0000000000UL,	// 11 extra digits
+				00000000000UL,	// 12 extra digits
+				000000000000UL,	// 13 extra digits
+				0000000000000UL,	// 14 extra digits
+				00000000000000UL,	// 15 extra digits
+				000000000000000UL,	// 16 extra digits
+				0000000000000000UL,	// 17 extra digits
+				00000000000000000UL	// 18 extra digits
+			}
+			,
+			{	// round ties away from 0
+				0UL,	// 0 extra digits
+				5UL,	// 1 extra digits
+				50UL,	// 2 extra digits
+				500UL,	// 3 extra digits
+				5000UL,	// 4 extra digits
+				50000UL,	// 5 extra digits
+				500000UL,	// 6 extra digits
+				5000000UL,	// 7 extra digits
+				50000000UL,	// 8 extra digits
+				500000000UL,	// 9 extra digits
+				5000000000UL,	// 10 extra digits
+				50000000000UL,	// 11 extra digits
+				500000000000UL,	// 12 extra digits
+				5000000000000UL,	// 13 extra digits
+				50000000000000UL,	// 14 extra digits
+				500000000000000UL,	// 15 extra digits
+				5000000000000000UL,	// 16 extra digits
+				50000000000000000UL,	// 17 extra digits
+				500000000000000000UL	// 18 extra digits
+			}
+			,
+		};
 
 		public static BID_UINT128[] bid_reciprocals10_128 =  {
-  new BID_UINT128(0UL, 0UL)  ,	// 0 extra digits
-  new BID_UINT128(0x3333333333333334UL, 0x3333333333333333UL),	// 1 extra digit
-  new BID_UINT128(0x51eb851eb851eb86UL, 0x051eb851eb851eb8UL),	// 2 extra digits
-  new BID_UINT128(0x3b645a1cac083127UL, 0x0083126e978d4fdfUL),	// 3 extra digits
-  new BID_UINT128(0x4af4f0d844d013aaUL, 0x00346dc5d6388659UL),	//  10^(-4) * 2^131
-  new BID_UINT128(0x08c3f3e0370cdc88UL, 0x0029f16b11c6d1e1UL),	//  10^(-5) * 2^134
-  new BID_UINT128(0x6d698fe69270b06dUL, 0x00218def416bdb1aUL),	//  10^(-6) * 2^137
-  new BID_UINT128(0xaf0f4ca41d811a47UL, 0x0035afe535795e90UL),	//  10^(-7) * 2^141
-  new BID_UINT128(0xbf3f70834acdaea0UL, 0x002af31dc4611873UL),	//  10^(-8) * 2^144
-  new BID_UINT128(0x65cc5a02a23e254dUL, 0x00225c17d04dad29UL),	//  10^(-9) * 2^147
-  new BID_UINT128(0x6fad5cd10396a214UL, 0x0036f9bfb3af7b75UL),	// 10^(-10) * 2^151
-  new BID_UINT128(0xbfbde3da69454e76UL, 0x002bfaffc2f2c92aUL),	// 10^(-11) * 2^154
-  new BID_UINT128(0x32fe4fe1edd10b92UL, 0x00232f33025bd422UL),	// 10^(-12) * 2^157
-  new BID_UINT128(0x84ca19697c81ac1cUL, 0x00384b84d092ed03UL),	// 10^(-13) * 2^161
-  new BID_UINT128(0x03d4e1213067bce4UL, 0x002d09370d425736UL),	// 10^(-14) * 2^164
-  new BID_UINT128(0x3643e74dc052fd83UL, 0x0024075f3dceac2bUL),	// 10^(-15) * 2^167
-  new BID_UINT128(0x56d30baf9a1e626bUL, 0x0039a5652fb11378UL),	// 10^(-16) * 2^171
-  new BID_UINT128(0x12426fbfae7eb522UL, 0x002e1dea8c8da92dUL),	// 10^(-17) * 2^174
-  new BID_UINT128(0x41cebfcc8b9890e8UL, 0x0024e4bba3a48757UL),	// 10^(-18) * 2^177
-  new BID_UINT128(0x694acc7a78f41b0dUL, 0x003b07929f6da558UL),	// 10^(-19) * 2^181
-  new BID_UINT128(0xbaa23d2ec729af3eUL, 0x002f394219248446UL),	// 10^(-20) * 2^184
-  new BID_UINT128(0xfbb4fdbf05baf298UL, 0x0025c768141d369eUL),	// 10^(-21) * 2^187
-  new BID_UINT128(0x2c54c931a2c4b759UL, 0x003c7240202ebdcbUL),	// 10^(-22) * 2^191
-  new BID_UINT128(0x89dd6dc14f03c5e1UL, 0x00305b66802564a2UL),	// 10^(-23) * 2^194
-  new BID_UINT128(0xd4b1249aa59c9e4eUL, 0x0026af8533511d4eUL),	// 10^(-24) * 2^197
-  new BID_UINT128(0x544ea0f76f60fd49UL, 0x003de5a1ebb4fbb1UL),	// 10^(-25) * 2^201
-  new BID_UINT128(0x76a54d92bf80caa1UL, 0x00318481895d9627UL),	// 10^(-26) * 2^204
-  new BID_UINT128(0x921dd7a89933d54eUL, 0x00279d346de4781fUL),	// 10^(-27) * 2^207
-  new BID_UINT128(0x8362f2a75b862215UL, 0x003f61ed7ca0c032UL),	// 10^(-28) * 2^211
-  new BID_UINT128(0xcf825bb91604e811UL, 0x0032b4bdfd4d668eUL),	// 10^(-29) * 2^214
-  new BID_UINT128(0x0c684960de6a5341UL, 0x00289097fdd7853fUL),	// 10^(-30) * 2^217
-  new BID_UINT128(0x3d203ab3e521dc34UL, 0x002073accb12d0ffUL),	// 10^(-31) * 2^220
-  new BID_UINT128(0x2e99f7863b696053UL, 0x0033ec47ab514e65UL),	// 10^(-32) * 2^224
-  new BID_UINT128(0x587b2c6b62bab376UL, 0x002989d2ef743eb7UL),	// 10^(-33) * 2^227
-  new BID_UINT128(0xad2f56bc4efbc2c5UL, 0x00213b0f25f69892UL),	// 10^(-34) * 2^230
-  new BID_UINT128(0x0f2abc9d8c9689d1UL, 0x01a95a5b7f87a0efUL),	// 35 extra digits
-};
+			new BID_UINT128(0UL, 0UL)  ,	// 0 extra digits
+			new BID_UINT128(0x3333333333333334UL, 0x3333333333333333UL),	// 1 extra digit
+			new BID_UINT128(0x51eb851eb851eb86UL, 0x051eb851eb851eb8UL),	// 2 extra digits
+			new BID_UINT128(0x3b645a1cac083127UL, 0x0083126e978d4fdfUL),	// 3 extra digits
+			new BID_UINT128(0x4af4f0d844d013aaUL, 0x00346dc5d6388659UL),	//  10^(-4) * 2^131
+			new BID_UINT128(0x08c3f3e0370cdc88UL, 0x0029f16b11c6d1e1UL),	//  10^(-5) * 2^134
+			new BID_UINT128(0x6d698fe69270b06dUL, 0x00218def416bdb1aUL),	//  10^(-6) * 2^137
+			new BID_UINT128(0xaf0f4ca41d811a47UL, 0x0035afe535795e90UL),	//  10^(-7) * 2^141
+			new BID_UINT128(0xbf3f70834acdaea0UL, 0x002af31dc4611873UL),	//  10^(-8) * 2^144
+			new BID_UINT128(0x65cc5a02a23e254dUL, 0x00225c17d04dad29UL),	//  10^(-9) * 2^147
+			new BID_UINT128(0x6fad5cd10396a214UL, 0x0036f9bfb3af7b75UL),	// 10^(-10) * 2^151
+			new BID_UINT128(0xbfbde3da69454e76UL, 0x002bfaffc2f2c92aUL),	// 10^(-11) * 2^154
+			new BID_UINT128(0x32fe4fe1edd10b92UL, 0x00232f33025bd422UL),	// 10^(-12) * 2^157
+			new BID_UINT128(0x84ca19697c81ac1cUL, 0x00384b84d092ed03UL),	// 10^(-13) * 2^161
+			new BID_UINT128(0x03d4e1213067bce4UL, 0x002d09370d425736UL),	// 10^(-14) * 2^164
+			new BID_UINT128(0x3643e74dc052fd83UL, 0x0024075f3dceac2bUL),	// 10^(-15) * 2^167
+			new BID_UINT128(0x56d30baf9a1e626bUL, 0x0039a5652fb11378UL),	// 10^(-16) * 2^171
+			new BID_UINT128(0x12426fbfae7eb522UL, 0x002e1dea8c8da92dUL),	// 10^(-17) * 2^174
+			new BID_UINT128(0x41cebfcc8b9890e8UL, 0x0024e4bba3a48757UL),	// 10^(-18) * 2^177
+			new BID_UINT128(0x694acc7a78f41b0dUL, 0x003b07929f6da558UL),	// 10^(-19) * 2^181
+			new BID_UINT128(0xbaa23d2ec729af3eUL, 0x002f394219248446UL),	// 10^(-20) * 2^184
+			new BID_UINT128(0xfbb4fdbf05baf298UL, 0x0025c768141d369eUL),	// 10^(-21) * 2^187
+			new BID_UINT128(0x2c54c931a2c4b759UL, 0x003c7240202ebdcbUL),	// 10^(-22) * 2^191
+			new BID_UINT128(0x89dd6dc14f03c5e1UL, 0x00305b66802564a2UL),	// 10^(-23) * 2^194
+			new BID_UINT128(0xd4b1249aa59c9e4eUL, 0x0026af8533511d4eUL),	// 10^(-24) * 2^197
+			new BID_UINT128(0x544ea0f76f60fd49UL, 0x003de5a1ebb4fbb1UL),	// 10^(-25) * 2^201
+			new BID_UINT128(0x76a54d92bf80caa1UL, 0x00318481895d9627UL),	// 10^(-26) * 2^204
+			new BID_UINT128(0x921dd7a89933d54eUL, 0x00279d346de4781fUL),	// 10^(-27) * 2^207
+			new BID_UINT128(0x8362f2a75b862215UL, 0x003f61ed7ca0c032UL),	// 10^(-28) * 2^211
+			new BID_UINT128(0xcf825bb91604e811UL, 0x0032b4bdfd4d668eUL),	// 10^(-29) * 2^214
+			new BID_UINT128(0x0c684960de6a5341UL, 0x00289097fdd7853fUL),	// 10^(-30) * 2^217
+			new BID_UINT128(0x3d203ab3e521dc34UL, 0x002073accb12d0ffUL),	// 10^(-31) * 2^220
+			new BID_UINT128(0x2e99f7863b696053UL, 0x0033ec47ab514e65UL),	// 10^(-32) * 2^224
+			new BID_UINT128(0x587b2c6b62bab376UL, 0x002989d2ef743eb7UL),	// 10^(-33) * 2^227
+			new BID_UINT128(0xad2f56bc4efbc2c5UL, 0x00213b0f25f69892UL),	// 10^(-34) * 2^230
+			new BID_UINT128(0x0f2abc9d8c9689d1UL, 0x01a95a5b7f87a0efUL),	// 35 extra digits
+		};
 
 		public static int[] bid_recip_scale = {
-  129 - 128,	// 1
-  129 - 128,	// 1/10
-  129 - 128,	// 1/10^2
-  129 - 128,	// 1/10^3
-  3,	// 131 - 128
-  6,	// 134 - 128
-  9,	// 137 - 128
-  13,	// 141 - 128
-  16,	// 144 - 128
-  19,	// 147 - 128
-  23,	// 151 - 128
-  26,	// 154 - 128
-  29,	// 157 - 128
-  33,	// 161 - 128
-  36,	// 164 - 128
-  39,	// 167 - 128
-  43,	// 171 - 128
-  46,	// 174 - 128
-  49,	// 177 - 128
-  53,	// 181 - 128
-  56,	// 184 - 128
-  59,	// 187 - 128
-  63,	// 191 - 128
+			129 - 128,	// 1
+			129 - 128,	// 1/10
+			129 - 128,	// 1/10^2
+			129 - 128,	// 1/10^3
+			3,	// 131 - 128
+			6,	// 134 - 128
+			9,	// 137 - 128
+			13,	// 141 - 128
+			16,	// 144 - 128
+			19,	// 147 - 128
+			23,	// 151 - 128
+			26,	// 154 - 128
+			29,	// 157 - 128
+			33,	// 161 - 128
+			36,	// 164 - 128
+			39,	// 167 - 128
+			43,	// 171 - 128
+			46,	// 174 - 128
+			49,	// 177 - 128
+			53,	// 181 - 128
+			56,	// 184 - 128
+			59,	// 187 - 128
+			63,	// 191 - 128
 
-  66,	// 194 - 128
-  69,	// 197 - 128
-  73,	// 201 - 128
-  76,	// 204 - 128
-  79,	// 207 - 128
-  83,	// 211 - 128
-  86,	// 214 - 128
-  89,	// 217 - 128
-  92,	// 220 - 128
-  96,	// 224 - 128
-  99,	// 227 - 128
-  102,	// 230 - 128
-  109,	// 237 - 128, 1/10^35
-};
+			66,	// 194 - 128
+			69,	// 197 - 128
+			73,	// 201 - 128
+			76,	// 204 - 128
+			79,	// 207 - 128
+			83,	// 211 - 128
+			86,	// 214 - 128
+			89,	// 217 - 128
+			92,	// 220 - 128
+			96,	// 224 - 128
+			99,	// 227 - 128
+			102,	// 230 - 128
+			109,	// 237 - 128, 1/10^35
+		};
 
 
 		public static void __mul_64x128_full(out BID_UINT64 Ph, out BID_UINT128 Ql, BID_UINT64 A, BID_UINT128 B)
@@ -1006,6 +998,46 @@ namespace EPAM.Deltix.DFP
 			r |= coeff;
 
 			return r;
+		}
+
+		public static BID_UINT64 unpack_BID64(out BID_UINT64 psign_x, out int pexponent_x, out BID_UINT64 pcoefficient_x, BID_UINT64 x)
+		{
+			BID_UINT64 tmp, coeff;
+
+			psign_x = x & 0x8000000000000000UL;
+
+			if ((x & SPECIAL_ENCODING_MASK64) == SPECIAL_ENCODING_MASK64)
+			{
+				// special encodings
+				// coefficient
+				coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
+
+				if ((x & INFINITY_MASK64) == INFINITY_MASK64)
+				{
+					pexponent_x = 0;
+					pcoefficient_x = x & 0xfe03ffffffffffffUL;
+					if ((x & 0x0003ffffffffffffUL) >= 1000000000000000UL)
+						pcoefficient_x = x & 0xfe00000000000000UL;
+					if ((x & NAN_MASK64) == INFINITY_MASK64)
+						pcoefficient_x = x & SINFINITY_MASK64;
+					return 0;   // NaN or Infinity
+				}
+				// check for non-canonical values
+				if (coeff >= 10000000000000000UL)
+					coeff = 0;
+				pcoefficient_x = coeff;
+				// get exponent
+				tmp = x >> EXPONENT_SHIFT_LARGE64;
+				pexponent_x = (int)(tmp & EXPONENT_MASK64);
+				return coeff;
+			}
+			// exponent
+			tmp = x >> EXPONENT_SHIFT_SMALL64;
+			pexponent_x = (int)(tmp & EXPONENT_MASK64);
+			// coefficient
+			pcoefficient_x = (x & SMALL_COEFF_MASK64);
+
+			return pcoefficient_x;
 		}
 	}
 }

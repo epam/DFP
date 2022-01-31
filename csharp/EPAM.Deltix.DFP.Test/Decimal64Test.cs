@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
@@ -632,22 +633,105 @@ namespace EPAM.Deltix.DFP.Test
 			}
 		}
 
+		private static bool DecimalParseOk(uint fpsf)
+		{
+			return (fpsf & DotNetReImpl.BID_INVALID_FORMAT) == 0;
+		}
 
 		[Test]
 		public void TestParseReImpl()
 		{
-			//try
-			//{
-			//	Double.Parse("   ");
-			//}
-			//catch(Exception e)
-			//{
-			//	e = e;
-			//}
-
-			uint fpsf = 0;
-			var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string("0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005", DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf));
-			var s = value.ToString();
+			int roundMode = 10; // DotNetReImpl.BID_ROUNDING_TO_NEAREST;
+			{
+				var testStr = "000";
+				uint fpsf;
+				var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(testStr, out fpsf, roundMode));
+				double doubleValue;
+				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
+				Assert.AreEqual(Decimal64.Zero, value);
+				Assert.AreEqual(fpsf, DotNetReImpl.BID_EXACT_STATUS);
+				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
+			}
+			{
+				var testStr = "00..";
+				uint fpsf;
+				var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(testStr, out fpsf, roundMode));
+				double doubleValue;
+				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
+				Assert.AreEqual(Decimal64.NaN, value);
+				Assert.AreEqual(fpsf, DotNetReImpl.BID_INVALID_FORMAT);
+				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
+			}
+			{
+				var testStr = "000235";
+				uint fpsf;
+				var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(testStr, out fpsf, roundMode));
+				double doubleValue;
+				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
+				Assert.AreEqual(Decimal64.FromInt(235), value);
+				Assert.AreEqual(fpsf, DotNetReImpl.BID_EXACT_STATUS);
+				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
+			}
+			{
+				var testStr = "00.0000235";
+				uint fpsf;
+				var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(testStr, out fpsf, roundMode));
+				double doubleValue;
+				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
+				Assert.AreEqual(Decimal64.FromFixedPoint(235, 7), value);
+				Assert.AreEqual(fpsf, DotNetReImpl.BID_EXACT_STATUS);
+				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
+			}
+			{
+				var testStr = "1234512345123451234500000";
+				uint fpsf;
+				var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(testStr, out fpsf, roundMode));
+				double doubleValue;
+				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
+				Assert.AreEqual(Decimal64.FromFixedPoint(1234512345123451, -9), value);
+				Assert.AreEqual(fpsf, DotNetReImpl.BID_INEXACT_EXCEPTION);
+				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
+			}
+			{
+				var testStr = "1234512345123451234500000e+12345123451234512345";
+				uint fpsf;
+				var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(testStr, out fpsf, roundMode));
+				double doubleValue;
+				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
+				Assert.AreEqual(Decimal64.PositiveInfinity, value);
+				Assert.AreEqual(fpsf, DotNetReImpl.BID_INEXACT_EXCEPTION | DotNetReImpl.BID_OVERFLOW_EXCEPTION);
+				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
+			}
+			{
+				var testStr = "-5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+				uint fpsf;
+				var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(testStr, out fpsf, roundMode));
+				double doubleValue;
+				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
+				Assert.AreEqual(Decimal64.NegativeInfinity, value);
+				Assert.AreEqual(fpsf, DotNetReImpl.BID_INEXACT_EXCEPTION | DotNetReImpl.BID_OVERFLOW_EXCEPTION);
+				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
+			}
+			{
+				var testStr = "0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005";
+				uint fpsf;
+				var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(testStr, out fpsf, roundMode));
+				double doubleValue;
+				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
+				Assert.AreEqual(Decimal64.Zero, value);
+				Assert.AreEqual(fpsf, DotNetReImpl.BID_INEXACT_EXCEPTION | DotNetReImpl.BID_UNDERFLOW_EXCEPTION);
+				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
+			}
+			{
+				var testStr = "123 x99";
+				uint fpsf;
+				var value = Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(testStr, out fpsf, roundMode));
+				double doubleValue;
+				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
+				Assert.AreEqual(Decimal64.NaN, value);
+				Assert.AreEqual(fpsf, DotNetReImpl.BID_INVALID_FORMAT);
+				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
+			}
 		}
 
 		private static void CheckValues(Decimal64 value, bool refCond, bool testCond)
@@ -660,7 +744,6 @@ namespace EPAM.Deltix.DFP.Test
 
 		static void Main()
 		{
-			new Decimal64Test().TestParseReImpl();
 		}
 	}
 }

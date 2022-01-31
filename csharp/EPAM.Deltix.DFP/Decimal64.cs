@@ -753,20 +753,25 @@ namespace EPAM.Deltix.DFP
 
 		public static Decimal64 Parse(String text)
 		{
-			uint fpsf = DotNetReImpl.BID_EXACT_STATUS;
-			return Decimal64.FromUnderlying(DotNetReImpl.bid64_from_string(text, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf));
+			uint fpsf;
+			var ret = DotNetReImpl.bid64_from_string(text, out fpsf);
+			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
+				throw new FormatException("Input string is not in a correct format.");
+			//else if ((fpsf & DotNetReImpl.BID_INEXACT_EXCEPTION) != 0)
+			//	throw new FormatException("Can't convert input string to value without precision loss.");
+			return FromUnderlying(ret);
 		}
 
 		public static Boolean TryParse(String text, out Decimal64 result)
 		{
-			Double value;
-			if (!Double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+			uint fpsf;
+			var ret = DotNetReImpl.bid64_from_string(text, out fpsf);
+			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
 			{
 				result = NaN;
 				return false;
 			}
-
-			result = FromDecimalDouble(value);
+			result = FromUnderlying(ret);
 			return true;
 		}
 
