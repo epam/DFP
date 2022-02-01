@@ -1048,8 +1048,16 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long parse(final CharSequence text, final int startIndex, final int endIndex) {
-        return JavaImpl.parse(text, startIndex, endIndex, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        if ((fpsf.value & JavaImplParse.BID_INVALID_FORMAT) != 0)
+            throw new NumberFormatException("Input string is not in a correct format.");
+//        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
+//        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
+        return ret;
     }
+
+    private static ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst = ThreadLocal.withInitial(JavaImplParse.FloatingPointStatusFlag::new);
 
     /**
      * Parses a dfp floating-point value from the given textual representation.
@@ -1108,15 +1116,13 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long tryParse(final CharSequence text, final int startIndex, final int endIndex, @Decimal final long defaultValue) {
-        @Decimal long value = defaultValue;
-
-        try {
-            value = parse(text, startIndex, endIndex);
-        } catch (final NumberFormatException ignore) {
-            // ignore
-        }
-
-        return value;
+        JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        if ((fpsf.value & JavaImplParse.BID_INVALID_FORMAT) != 0)
+            return defaultValue;
+//        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
+//        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
+        return ret;
     }
 
     /**
@@ -1700,6 +1706,20 @@ public class Decimal64Utils {
     public static long minChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return min(a, b);
+    }
+
+    /**
+     * Implements {@link Decimal64#round()}, adds null check; do not use directly.
+     *
+     * @param value     {@code DFP} argument to round
+     * @param n         the number of decimals to use when rounding the number
+     * @param roundType {@code RoundType} type of rounding
+     * @return {@code DFP} the rounded value
+     */
+    @Decimal
+    public static long roundChecked(@Decimal final long value, final int n, final RoundType roundType) {
+        checkNull(value);
+        return round(value, n, roundType);
     }
 
     /**
