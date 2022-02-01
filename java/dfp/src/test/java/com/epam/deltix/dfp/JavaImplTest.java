@@ -687,4 +687,120 @@ public class JavaImplTest {
             throw new RuntimeException(e);
         }
     }
+
+    private static boolean decimalParseOk(JavaImplParse.FloatingPointStatusFlag fpsf)
+    {
+        return (fpsf.value & JavaImplParse.BID_INVALID_FORMAT) == 0;
+    }
+
+    private static class DoubleHolder {
+        public double value;
+    }
+
+    private static boolean doubleTryParse(final String str, final DoubleHolder out) {
+        try {
+            out.value = Double.parseDouble(str);
+            return true;
+        }
+        catch (NumberFormatException e) {
+            out.value = Double.NaN;
+            return false;
+        }
+    }
+
+    @Test
+    public void TestParseReImpl()
+    {
+        int roundMode = 10; // JavaImplParse.BID_ROUNDING_TO_NEAREST;
+        {
+            final String testStr = "   000   ";
+            JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+            Decimal64 value = Decimal64.fromUnderlying(JavaImplParse.bid64_from_string(testStr, 0, testStr.length(), fpsf, roundMode));
+            DoubleHolder doubleHolder = new DoubleHolder();
+            final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
+            assertEquals(Decimal64.ZERO, value);
+            assertEquals(fpsf.value, JavaImplParse.BID_EXACT_STATUS);
+            assertEquals(doubleParseOk, decimalParseOk(fpsf));
+        }
+        {
+            final String testStr = "00..";
+            JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+            Decimal64 value = Decimal64.fromUnderlying(JavaImplParse.bid64_from_string(testStr, 0, testStr.length(), fpsf, roundMode));
+            DoubleHolder doubleHolder = new DoubleHolder();
+            final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
+            assertEquals(Decimal64.NaN, value);
+            assertEquals(fpsf.value, JavaImplParse.BID_INVALID_FORMAT);
+            assertEquals(doubleParseOk, decimalParseOk(fpsf));
+        }
+        {
+            final String testStr = "000235";
+            JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+            Decimal64 value = Decimal64.fromUnderlying(JavaImplParse.bid64_from_string(testStr, 0, testStr.length(), fpsf, roundMode));
+            DoubleHolder doubleHolder = new DoubleHolder();
+            final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
+            assertEquals(Decimal64.fromInt(235), value);
+            assertEquals(fpsf.value, JavaImplParse.BID_EXACT_STATUS);
+            assertEquals(doubleParseOk, decimalParseOk(fpsf));
+        }
+        {
+            final String testStr = "00.0000235";
+            JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+            Decimal64 value = Decimal64.fromUnderlying(JavaImplParse.bid64_from_string(testStr, 0, testStr.length(), fpsf, roundMode));
+            DoubleHolder doubleHolder = new DoubleHolder();
+            final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
+            assertEquals(Decimal64.fromFixedPoint(235, 7), value);
+            assertEquals(fpsf.value, JavaImplParse.BID_EXACT_STATUS);
+            assertEquals(doubleParseOk, decimalParseOk(fpsf));
+        }
+        {
+            final String testStr = "1234512345123451234500000";
+            JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+            Decimal64 value = Decimal64.fromUnderlying(JavaImplParse.bid64_from_string(testStr, 0, testStr.length(), fpsf, roundMode));
+            DoubleHolder doubleHolder = new DoubleHolder();
+            final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
+            assertEquals(Decimal64.fromFixedPoint(1234512345123451L, -9), value);
+            assertEquals(fpsf.value, JavaImplParse.BID_INEXACT_EXCEPTION);
+            assertEquals(doubleParseOk, decimalParseOk(fpsf));
+        }
+        {
+            final String testStr = "1234512345123451234500000e+12345123451234512345";
+            JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+            Decimal64 value = Decimal64.fromUnderlying(JavaImplParse.bid64_from_string(testStr, 0, testStr.length(), fpsf, roundMode));
+            DoubleHolder doubleHolder = new DoubleHolder();
+            final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
+            assertEquals(Decimal64.POSITIVE_INFINITY, value);
+            assertEquals(fpsf.value, JavaImplParse.BID_INEXACT_EXCEPTION | JavaImplParse.BID_OVERFLOW_EXCEPTION);
+            assertEquals(doubleParseOk, decimalParseOk(fpsf));
+        }
+        {
+            final String testStr = "  -5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000  ";
+            JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+            Decimal64 value = Decimal64.fromUnderlying(JavaImplParse.bid64_from_string(testStr, 0, testStr.length(), fpsf, roundMode));
+            DoubleHolder doubleHolder = new DoubleHolder();
+            final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
+            assertEquals(Decimal64.NEGATIVE_INFINITY, value);
+            assertEquals(fpsf.value, JavaImplParse.BID_INEXACT_EXCEPTION | JavaImplParse.BID_OVERFLOW_EXCEPTION);
+            assertEquals(doubleParseOk, decimalParseOk(fpsf));
+        }
+        {
+            final String testStr = "0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005";
+            JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+            Decimal64 value = Decimal64.fromUnderlying(JavaImplParse.bid64_from_string(testStr, 0, testStr.length(), fpsf, roundMode));
+            DoubleHolder doubleHolder = new DoubleHolder();
+            final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
+            assertEquals(Decimal64.ZERO, value);
+            assertEquals(fpsf.value, JavaImplParse.BID_INEXACT_EXCEPTION | JavaImplParse.BID_UNDERFLOW_EXCEPTION);
+            assertEquals(doubleParseOk, decimalParseOk(fpsf));
+        }
+        {
+            final String testStr = "  123 x99  ";
+            JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+            Decimal64 value = Decimal64.fromUnderlying(JavaImplParse.bid64_from_string(testStr, 0, testStr.length(), fpsf, roundMode));
+            DoubleHolder doubleHolder = new DoubleHolder();
+            final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
+            assertEquals(Decimal64.NaN, value);
+            assertEquals(fpsf.value, JavaImplParse.BID_INVALID_FORMAT);
+            assertEquals(doubleParseOk, decimalParseOk(fpsf));
+        }
+    }
 }

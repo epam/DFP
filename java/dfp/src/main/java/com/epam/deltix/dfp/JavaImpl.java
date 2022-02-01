@@ -6,6 +6,9 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 class JavaImpl {
+    private JavaImpl() {
+    }
+
     public static final long POSITIVE_INFINITY = 0x7800_0000_0000_0000L;
     public static final long NEGATIVE_INFINITY = 0xF800_0000_0000_0000L;
     public static final long NaN = 0x7C00_0000_0000_0000L;
