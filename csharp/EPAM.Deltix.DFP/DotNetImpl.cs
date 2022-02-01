@@ -4,6 +4,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
+using BID_UINT64 = System.UInt64;
+using BID_UINT32 = System.UInt32;
+using _IDEC_flags = System.UInt32;
+
 [assembly: InternalsVisibleToAttribute("EPAM.Deltix.DFP.Test")]
 namespace EPAM.Deltix.DFP
 {
@@ -33,6 +37,28 @@ namespace EPAM.Deltix.DFP
 
 		public const UInt64 OneTenth				= 0x31A0000000000000UL + 1;
 		public const UInt64 OneHundredth			= 0x3180000000000000UL + 1;
+
+		public static BID_UINT64[] PowersOfTen = {
+			/*  0 */ 1L,
+			/*  1 */ 10L,
+			/*  2 */ 100L,
+			/*  3 */ 1000L,
+			/*  4 */ 10000L,
+			/*  5 */ 100000L,
+			/*  6 */ 1000000L,
+			/*  7 */ 10000000L,
+			/*  8 */ 100000000L,
+			/*  9 */ 1000000000L,
+			/* 10 */ 10000000000L,
+			/* 11 */ 100000000000L,
+			/* 12 */ 1000000000000L,
+			/* 13 */ 10000000000000L,
+			/* 14 */ 100000000000000L,
+			/* 15 */ 1000000000000000L,
+			/* 16 */ 10000000000000000L,
+			/* 17 */ 100000000000000000L,
+			/* 18 */ 1000000000000000000L
+		};
 
 		#endregion
 
@@ -338,6 +364,120 @@ namespace EPAM.Deltix.DFP
 		#endregion
 
 		#region Rounding
+
+		public static UInt64 Round(UInt64 value, int n, RoundType roundType)
+		{
+			if (!IsFinite(value))
+				return value;
+			if (n > MaxExponent)
+				return value;
+			if (n < MinExponent)
+				return Zero;
+
+			BID_UINT64 partsSignMask;
+			int partsExponent;
+			BID_UINT64 partsCoefficient;
+			// DotNetReImpl.unpack_BID64(out partsSignMask, out partsExponent, out partsCoefficient, value);
+			{ // Copy-paste the toParts method for speedup
+				partsSignMask = value & 0x8000000000000000UL;
+
+				if ((value & DotNetReImpl.SPECIAL_ENCODING_MASK64) == DotNetReImpl.SPECIAL_ENCODING_MASK64)
+				{
+					//if ((value & DotNetReImpl.INFINITY_MASK64) == DotNetReImpl.INFINITY_MASK64) - Non finite values are already checked
+					//{
+					//	partsExponent = 0;
+					//	partsCoefficient = value & 0xfe03ffffffffffffUL;
+					//	if ((value & 0x0003ffffffffffffUL) >= 1000000000000000UL)
+					//		partsCoefficient = value & 0xfe00000000000000UL;
+					//	if ((value & DotNetReImpl.NAN_MASK64) == DotNetReImpl.INFINITY_MASK64)
+					//		partsCoefficient = value & DotNetReImpl.SINFINITY_MASK64;
+					//	return 0;   // NaN or Infinity
+					//} else
+					{
+						// Check for non-canonical values.
+						BID_UINT64 coeff = (value & DotNetReImpl.LARGE_COEFF_MASK64) | DotNetReImpl.LARGE_COEFF_HIGH_BIT64;
+
+						// check for non-canonical values
+						if (coeff >= 10000000000000000UL)
+							coeff = 0;
+						partsCoefficient = coeff;
+						// get exponent
+						BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_LARGE64;
+						partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					}
+				}
+				else
+				{
+					// exponent
+					BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_SMALL64;
+					partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					// coefficient
+					partsCoefficient = (value & DotNetReImpl.SMALL_COEFF_MASK64);
+				}
+			}
+
+			if (partsCoefficient == 0)
+				return Zero;
+
+			int exponent = partsExponent - DotNetReImpl.DECIMAL_EXPONENT_BIAS + n;
+
+			if (exponent >= 0) // value is already rounded
+				return value;
+			// All next - negative exponent case
+
+			BID_UINT64 divFactor;
+			int addExponent = 0;
+			{ // Truncate all digits except last one
+				int absPower = -exponent;
+				if (absPower >= 16)
+				{
+					divFactor = MaxCoefficient + 1;
+					int expShift = 16;
+					addExponent = absPower - expShift;
+
+				}
+				else
+				{
+					divFactor = PowersOfTen[absPower];
+				}
+			}
+
+			// Process last digit
+			switch (roundType)
+			{
+				case RoundType.Round:
+					partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
+					break;
+
+				case RoundType.Trunc:
+					partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+					break;
+
+				case RoundType.Floor:
+					if (partsSignMask == 0/*!parts.isNegative()*/)
+						partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+					else
+						partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+					break;
+
+				case RoundType.Ceil:
+					if (partsSignMask == 0/*!parts.isNegative()*/)
+						partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+					else
+						partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+					break;
+
+				default:
+					throw new ArgumentException("Unsupported roundType(=" + roundType + ") value.");
+			}
+			partsExponent += addExponent;
+			if (partsCoefficient == 0)
+				return Zero;
+
+			BID_UINT32 fpsf = DotNetReImpl.BID_EXACT_STATUS;
+			return DotNetReImpl.get_BID64(partsSignMask, partsExponent, partsCoefficient, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf);
+		}
+
 		#endregion
 		#region Special
 		#endregion
@@ -719,45 +859,45 @@ namespace EPAM.Deltix.DFP
 
 	#region Private constants
 
-		private const UInt64 SignMask				= 0x8000000000000000UL;
+		public const UInt64 SignMask				= 0x8000000000000000UL;
 
-		private const UInt64 InfinityMask			= 0x7800000000000000UL;
-		private const UInt64 SignedInfinityMask		= 0xF800000000000000UL;
+		public const UInt64 InfinityMask			= 0x7800000000000000UL;
+		public const UInt64 SignedInfinityMask		= 0xF800000000000000UL;
 
-		private const UInt64 NaNMask				= 0x7C00000000000000UL;
-		private const UInt64 SignalingNaNMask		= 0xFC00000000000000UL;
+		public const UInt64 NaNMask				= 0x7C00000000000000UL;
+		public const UInt64 SignalingNaNMask		= 0xFC00000000000000UL;
 
-		private const UInt64 SteeringBitsMask		= 0x6000000000000000UL;
-		private const UInt64 MaskBinarySig1			= 0x001FFFFFFFFFFFFFUL;
-		private const UInt64 MaskBinarySig2			= 0x0007FFFFFFFFFFFFUL;
-		private const UInt64 MaskBinaryOr2			= 0x0020000000000000UL;
+		public const UInt64 SteeringBitsMask		= 0x6000000000000000UL;
+		public const UInt64 MaskBinarySig1			= 0x001FFFFFFFFFFFFFUL;
+		public const UInt64 MaskBinarySig2			= 0x0007FFFFFFFFFFFFUL;
+		public const UInt64 MaskBinaryOr2			= 0x0020000000000000UL;
 
-		private const UInt64 SpecialEncodingMask	= 0x6000000000000000UL;
+		public const UInt64 SpecialEncodingMask	= 0x6000000000000000UL;
 
-		private const UInt64 LargeCoefficientMask	= 0x0007FFFFFFFFFFFFUL;
-		private const UInt64 LargeCoefficientHighBits = 0x0020000000000000UL;
-		private const UInt64 SmallCoefficientMask	= 0x001FFFFFFFFFFFFFUL;
+		public const UInt64 LargeCoefficientMask	= 0x0007FFFFFFFFFFFFUL;
+		public const UInt64 LargeCoefficientHighBits = 0x0020000000000000UL;
+		public const UInt64 SmallCoefficientMask	= 0x001FFFFFFFFFFFFFUL;
 
-		private const UInt64 MinCoefficient			= 0UL;
-		private const UInt64 MaxCoefficient			= 9999999999999999UL;
+		public const UInt64 MinCoefficient			= 0UL;
+		public const UInt64 MaxCoefficient			= 9999999999999999UL;
 
-		private const UInt64 ShiftedExponentMask	= 0x3FF;
-		private const Int32 ExponentShiftLarge		= 51;
-		private const Int32 ExponentShiftSmall		= 53;
-		private const UInt64 LargeCoefficientExponentMask = ShiftedExponentMask << ExponentShiftLarge;
-		private const UInt64 SmallCoefficientExponentMask = ShiftedExponentMask << ExponentShiftSmall;
+		public const UInt64 ShiftedExponentMask	= 0x3FF;
+		public const Int32 ExponentShiftLarge		= 51;
+		public const Int32 ExponentShiftSmall		= 53;
+		public const UInt64 LargeCoefficientExponentMask = ShiftedExponentMask << ExponentShiftLarge;
+		public const UInt64 SmallCoefficientExponentMask = ShiftedExponentMask << ExponentShiftSmall;
 
-		private const Int32 MinExponent				= -383;
-		private const Int32 MaxExponent				= 384;
-		private const Int32 BiasedExponentMaxValue	= 767;
-		private const Int32 BaseExponent			= 0x18E;
+		public const Int32 MinExponent				= -383;
+		public const Int32 MaxExponent				= 384;
+		public const Int32 BiasedExponentMaxValue	= 767;
+		public const Int32 BaseExponent			= 0x18E;
 
-		private const Int32 MaxFormatDigits			= 16;
-		private const Int32 BidRoundingToNearest	= 0x00000;
-		private const Int32 BidRoundingDown			= 0x00001;
-		private const Int32 BidRoundingUp			= 0x00002;
-		private const Int32 BidRoundingToZero		= 0x00003;
-		private const Int32 BidRoundingTiesAway		= 0x00004;
+		public const Int32 MaxFormatDigits			= 16;
+		public const Int32 BidRoundingToNearest	= 0x00000;
+		public const Int32 BidRoundingDown			= 0x00001;
+		public const Int32 BidRoundingUp			= 0x00002;
+		public const Int32 BidRoundingToZero		= 0x00003;
+		public const Int32 BidRoundingTiesAway		= 0x00004;
 
 		private static readonly UInt64[,] BidRoundConstTable = new UInt64[,]
 		{
