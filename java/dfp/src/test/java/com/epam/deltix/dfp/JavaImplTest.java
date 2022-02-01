@@ -803,4 +803,10 @@ public class JavaImplTest {
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
     }
+
+    @Test
+    public void tryParseInvalidString() {
+        final @Decimal long value = Decimal64Utils.tryParse("INVALID", Decimal64Utils.NaN);
+        assertTrue(Decimal64Utils.isNaN(value));
+    }
 }

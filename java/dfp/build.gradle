@@ -39,27 +39,11 @@ sourceSets {
             }
         }
     }
-    integrationTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/integration-test/java')
-        }
-
-        resources.srcDir file('src/integration-test/resources')
-    }
-}
-
-configurations {
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
     testImplementation 'junit:junit:4.+'
     testImplementation 'org.apache.commons:commons-math3:3.6.1'
-    integrationTestCompile 'junit:junit:4.+'
-    integrationTestCompile 'org.apache.commons:commons-math3:3.6.1'
 }
 
 compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappers"
@@ -145,22 +129,5 @@ jar {
 
 jmh {
     include = '.*Benchmark.*'
-}
-
-test.outputs.upToDateWhen { false }
-
-task integrationTest(type: Test) {
-    group = 'verification'
-    systemProperty "com.epam.deltix.dfp.dataFiles.parsingAndFormatting", "$projectDir/data/Decimal64.FormattingAndParsing.txt"
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
-
-    // Assume that test are never up-to-date.
-    outputs.upToDateWhen { false }
-}
-
-// Ensures that test reports for unit tests and integrations tests are kept separate.
-tasks.withType(Test) {
-    reports.html.destination = file("${reporting.baseDir}/${name}")
 }
 
