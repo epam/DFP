@@ -9,7 +9,7 @@ repositories {
 sourceCompatibility = 1.8
 
 task makeNativeWrappers(dependsOn: compileJava, type: JavaExec) {
-    main = "com.epam.deltix.dfp.NativeWrappers"
+    mainClass = "com.epam.deltix.dfp.NativeWrappers"
     classpath = sourceSets.main.runtimeClasspath
     workingDir = "$rootDir"
     def ver = versioning()

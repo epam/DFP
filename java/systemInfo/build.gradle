@@ -17,7 +17,7 @@ jar {
 }
 
 task runSystemInfo(dependsOn: compileJava, type: JavaExec) {
-    main = "com.epam.deltix.dfp.SystemInfo"
+    mainClass = "com.epam.deltix.dfp.SystemInfo"
     classpath = sourceSets.main.runtimeClasspath
     workingDir = "$rootDir"
 }
