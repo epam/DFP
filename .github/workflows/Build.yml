@@ -44,7 +44,9 @@ jobs:
           path: |
             ./*native/bin*
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
           retention-days: 7
 
@@ -109,6 +111,7 @@ jobs:
         run: |
           zstd --version
           zstd -19 --rm -r ./native/bin
+          zstd -19 --rm -r ./native/binmath
       - uses: actions/upload-artifact@v2
         with:
           name: compress-native
