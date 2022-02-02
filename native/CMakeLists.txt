@@ -49,9 +49,14 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory (../thirdparty/IntelRDFPMathLib20U2/LIBRARY LIBRARY)
 add_subdirectory (../thirdparty/IntelRDFPMathLib20U2/EXAMPLES EXAMPLES)
 
-add_definitions(-DAPI_PREFIX=${API_PREFIX}_)
 add_library(dfp SHARED NativeImpl.c)
+target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_)
 target_link_libraries (dfp LINK_PUBLIC bid)
-set_target_properties(dfp PROPERTIES OUTPUT_NAME ${API_PREFIX})
-
+set_target_properties(dfp PROPERTIES OUTPUT_NAME "ddfp${VERSION_SUFFIX}")
 install(TARGETS dfp DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
+
+add_library(dfpmath SHARED NativeMathImpl.c)
+target_compile_definitions(dfpmath PRIVATE API_PREFIX=ddfpmath${VERSION_SUFFIX}_)
+target_link_libraries (dfpmath LINK_PUBLIC bid)
+set_target_properties(dfpmath PROPERTIES OUTPUT_NAME "ddfpmath${VERSION_SUFFIX}")
+install(TARGETS dfpmath DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})

@@ -1,18 +1,14 @@
 task makeNativeWindows(type: Exec) {
-    commandLine "$rootDir/native/buildWindows.bat", 'ddfp' + versioning()["suffix"]
+    commandLine "$rootDir/native/buildWindows.bat", versioning()["suffix"]
     workingDir("$rootDir/native")
 }
 
 task makeNativeLinux(type: Exec) {
-    commandLine "$rootDir/native/buildLinux.sh", 'ddfp' + versioning()["suffix"]
+    commandLine "$rootDir/native/buildLinux.sh", versioning()["suffix"]
     workingDir("$rootDir/native")
 }
 
 task makeNativeDarwin(type: Exec) {
-    commandLine "$rootDir/native/buildDarwin.sh", 'ddfp' + versioning()["suffix"], "apple-darwin20.4", "$rootDir/osxcross/target"
+    commandLine "$rootDir/native/buildDarwin.sh", versioning()["suffix"], "apple-darwin20.4", "$rootDir/osxcross/target"
     workingDir("$rootDir/native")
-}
-
-task makeNative64(type: Exec) {
-    commandLine 'make', 'Configuration=Release', 'Architecture=64', 'VersionSuffix=' + versioning()["suffix"]
 }
