@@ -73,8 +73,9 @@ jobs:
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
             ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
-            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/Version.targets
           retention-days: 7
 
 
@@ -163,8 +164,11 @@ jobs:
             ./gradle.properties
             ./*native/bin*
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/Version.targets
           retention-days: 7
 
 
@@ -221,6 +225,7 @@ jobs:
           name: dotnet-build
           path: |
             ./*csharp/EPAM.Deltix.DFP/bin/Release/*
+            ./*csharp/EPAM.Deltix.DFPMath/bin/Release/*
             ./*csharp/EPAM.Deltix.DFP.Demo/bin/Release/*
           retention-days: 7
 
