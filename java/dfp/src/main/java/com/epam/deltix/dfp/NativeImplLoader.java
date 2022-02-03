@@ -2,6 +2,7 @@ package com.epam.deltix.dfp;
 
 import com.epam.deltix.utilities.ResourceLoader;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.Locale;
 
@@ -25,9 +26,11 @@ class NativeImplLoader {
                     osArch = "aarch64";
             }
 
+            final String packageName = NativeImplLoader.class.getPackage().getName();
+
             ResourceLoader
-                .from(NativeImpl.class, osName + "/" + osArch + "/*") // This version now also works, but is probably less efficient
-                .to(Paths.get(System.getProperty("java.io.tmpdir"), "com", "EPAM", "Deltix", "DFP", version, osArch).toString())
+                .from(NativeImplLoader.class, "resources_" + packageName.replace('.', '_') + '/' + osName + "/" + osArch + "/*") // This version now also works, but is probably less efficient
+                .to(Paths.get(System.getProperty("java.io.tmpdir"), packageName.replace('.', File.separatorChar), version, osArch).toString())
                 .alwaysOverwrite(isSnapshot)
                 .tryRandomFallbackSubDirectory(true)
                 .load();
