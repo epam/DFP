@@ -36,11 +36,11 @@ task makeNativeWrappersDfpMath(dependsOn: compileJava, type: JavaExec) {
             "com_epam_deltix_dfpmath_NativeMathImpl_",
             "$rootDir/native/NativeMathImpl.c",
             "$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath/NativeMathImpl.java",
-            "$rootDir/csharp/EPAM.Deltix.DFP.Math/NativeMathImpl.cs"
+            "$rootDir/csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs"
     ]
     onlyIf {
         !file("$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath/NativeMathImpl.java").exists() ||
-            !file("$rootDir/csharp/EPAM.Deltix.DFP.Math/NativeMathImpl.cs").exists()
+            !file("$rootDir/csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs").exists()
     }
 }
 

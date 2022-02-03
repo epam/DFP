@@ -826,14 +826,5 @@ namespace EPAM.Deltix.DFP
 		}
 
 		#endregion
-
-		/// <summary>
-		/// Return <c>true</c> if and only if x is infinite.
-		/// </summary>
-		/// <returns>The check flag.</returns>
-		public bool IsInf()
-		{
-			return NativeImpl.bid64IsInf(Bits);
-		}
 	}
 }
