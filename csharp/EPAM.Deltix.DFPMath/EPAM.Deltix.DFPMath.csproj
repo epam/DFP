@@ -42,7 +42,7 @@
 		<Compile Include="..\..\NativeUtils\csharp\NativeUtils\ResourceLoaderUtils.cs" Link="NativeUtils\ResourceLoaderUtils.cs" />
 	</ItemGroup>
 	<ItemGroup>
-		<EmbeddedResource Include="..\..\native\binmath\Release\**\*" />
+		<EmbeddedResource Include="..\..\native\binmathCs\Release\**\*" />
     </ItemGroup>
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec WorkingDirectory="..\.." Command="./gradlew :java:nativeWrappers:makeNativeWrappers" />

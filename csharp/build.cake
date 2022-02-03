@@ -16,15 +16,23 @@ var configuration = Argument("configuration", "Release");
 Task("Native-Rename")
     .Does(() =>
 {
-	foreach(var file in GetFiles("../native/bin/Release/**/*.zst"))
-	{
-		MoveFile(file, file.ToString().Replace('.', '_'));
-	}
+    if (!DirectoryExists("../native/binCs"))
+    {
+        CopyDirectory("../native/bin", "../native/binCs");
+        foreach(var file in GetFiles("../native/binCs/Release/**/*.zst"))
+        {
+            MoveFile(file, file.ToString().Replace('.', '_'));
+        }
+    }
 
-	foreach(var file in GetFiles("../native/binmath/Release/**/*.zst"))
-	{
-		MoveFile(file, file.ToString().Replace('.', '_'));
-	}
+    if (!DirectoryExists("../native/binmathCs"))
+    {
+        CopyDirectory("../native/binmath", "../native/binmathCs");
+        foreach(var file in GetFiles("../native/binmathCs/Release/**/*.zst"))
+        {
+            MoveFile(file, file.ToString().Replace('.', '_'));
+        }
+    }
 });
 
 Task("Clean")
