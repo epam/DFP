@@ -152,7 +152,7 @@ jobs:
           path: |
             ./*java/dfp/build/libs/*
             ./*java/dfp-math/build/libs/*
-            ./*java/dfp/decimalDemo/build/libs/*
+            ./*java/decimalDemo/build/libs/*
           retention-days: 7
 
   build-dotnet:
