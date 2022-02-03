@@ -8,14 +8,41 @@ repositories {
 
 sourceCompatibility = 1.8
 
-task makeNativeWrappers(dependsOn: compileJava, type: JavaExec) {
+task makeNativeWrappersDfp(dependsOn: compileJava, type: JavaExec) {
     mainClass = "com.epam.deltix.dfp.NativeWrappers"
     classpath = sourceSets.main.runtimeClasspath
     workingDir = "$rootDir"
     def ver = versioning()
-    args = [ver["three"], ver["suffix"], ver["sha"]]
+    args = [ver["three"], ver["suffix"], ver["sha"],
+            "ddfp" + ver["suffix"] + "_",
+            "com_epam_deltix_dfp_NativeImpl_",
+            "$rootDir/native/NativeImpl.c",
+            "$rootDir/java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp/NativeImpl.java",
+            "$rootDir/csharp/EPAM.Deltix.DFP/NativeImpl.cs"
+    ]
     onlyIf {
         !file("$rootDir/java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp/NativeImpl.java").exists() ||
             !file("$rootDir/csharp/EPAM.Deltix.DFP/NativeImpl.cs").exists()
     }
+}
+
+task makeNativeWrappersDfpMath(dependsOn: compileJava, type: JavaExec) {
+    mainClass = "com.epam.deltix.dfp.NativeWrappers"
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = "$rootDir"
+    def ver = versioning()
+    args = [ver["three"], ver["suffix"], ver["sha"],
+            "ddfpmath" + ver["suffix"] + "_",
+            "com_epam_deltix_dfpmath_NativeMathImpl_",
+            "$rootDir/native/NativeMathImpl.c",
+            "$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath/NativeMathImpl.java",
+            "$rootDir/csharp/EPAM.Deltix.DFP.Math/NativeMathImpl.cs"
+    ]
+    onlyIf {
+        !file("$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath/NativeMathImpl.java").exists() ||
+            !file("$rootDir/csharp/EPAM.Deltix.DFP.Math/NativeMathImpl.cs").exists()
+    }
+}
+
+task makeNativeWrappers(dependsOn: [makeNativeWrappersDfp, makeNativeWrappersDfpMath]) {
 }

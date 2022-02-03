@@ -12,20 +12,29 @@ import java.util.regex.Pattern;
 
 public class NativeWrappers {
     public static void main(final String[] args) throws IOException, InterruptedException {
-        if (args.length != 3 || args[0].isEmpty() || args[1].isEmpty()) {
-            System.err.println("Usage: NativeWrappers <versionThreeDigits> <versionSuffix> <versionSha>");
+        if (args.length != 8) {
+            System.err.println("Usage: NativeWrappers <versionThreeDigits> <versionSuffix> <versionSha> <apiPrefix> <javaPrefix> <inputFile> <outputJava> <outputCs>");
             System.exit(-1);
         }
-        final String apiPrefix = "ddfp" + args[1] + "_";
+        final String versionThreeDigits = args[0];
+        final String versionSuffix = args[1];
+        final String versionSha = args[2];
+        final String apiPrefix = args[3];
+        final String javaPrefix = args[4];
+        final String inputFile = args[5];
+        final String outputJava = args[6];
+        final String outputCs = args[7];
 
-//        final List<Path> processList = Files.walk(Paths.get("./native-gcc"))
-//            .filter(Files::isRegularFile)
-//            .filter(p -> p.toString().endsWith(".c"))
-//            .collect(Collectors.toList());
-//
-//        for (final Path path : processList)
-//            processNativeFile(path, apiPrefix);
-        processNativeFile(Paths.get(".", "native", "NativeImpl.c").toAbsolutePath(), apiPrefix, args[0], args[1], args[2]);
+        final String preprocess = callPreprocess(inputFile, apiPrefix, javaPrefix);
+
+        final List<ApiEntry> api = collectApi(preprocess, apiPrefix);
+
+        makeCsWrappers(outputCs, api, apiPrefix);
+        makeCsVersion(outputCs, versionThreeDigits, versionSuffix, versionSha);
+
+        final String javaPrefixJni = "Java_" + javaPrefix;
+        final List<ApiEntry> javaApi = collectApi(preprocess, javaPrefixJni);
+        makeJavaWrappers(outputJava, versionThreeDigits, javaApi, javaPrefixJni);
     }
 
     private static class StreamCollector implements Runnable {
@@ -71,23 +80,8 @@ public class NativeWrappers {
         }
     }
 
-    private static void processNativeFile(final Path path, final String apiPrefix, final String versionThreeDigits,
-                                          final String versionSuffix, final String versionSha) throws IOException, InterruptedException {
-
-        final String preprocess = callPreprocess(path, apiPrefix);
-
-        final List<ApiEntry> api = collectApi(preprocess, apiPrefix);
-
-        makeCsWrappers(api, apiPrefix);
-        makeCsVersion(versionThreeDigits, versionSuffix, versionSha);
-
-        final String javaPrefix = "Java_com_epam_deltix_dfp_NativeImpl_";
-        final List<ApiEntry> javaApi = collectApi(preprocess, javaPrefix);
-        makeJavaWrappers(versionThreeDigits, javaApi, javaPrefix);
-    }
-
-    private static String callPreprocess(final Path path, final String apiPrefix) throws IOException, InterruptedException {
-        final Process process = new ProcessBuilder().command("clang", "-DAPI_PREFIX=" + apiPrefix, "-E", path.toString()).start();
+    private static String callPreprocess(final String inputFilename, final String apiPrefix, final String javaPrefix) throws IOException, InterruptedException {
+        final Process process = new ProcessBuilder().command("clang", "-DAPI_PREFIX=" + apiPrefix, "-DJAVA_PREFIX=" + javaPrefix, "-E", inputFilename).start();
 
         final StreamCollector stdOutCollector = new StreamCollector(process, process.getInputStream());
         final StreamCollector stdErrCollector = new StreamCollector(process, process.getErrorStream());
@@ -131,19 +125,27 @@ public class NativeWrappers {
 
     private static final Pattern cppArgRegEx = Pattern.compile("^(.*?)(\\w+)$");
 
-    private static void makeCsWrappers(final List<ApiEntry> api, final String apiPrefix) throws IOException {
+    private static void makeCsWrappers(final String outputFile, final List<ApiEntry> api, final String apiPrefix) throws IOException {
         final int apiPrefixLength = apiPrefix.length();
 
-        try (final BufferedWriter writer =
-                 Files.newBufferedWriter(Paths.get("csharp", "EPAM.Deltix.DFP", "NativeImpl.cs"),
-                     StandardCharsets.UTF_8)) {
+        final Path outputPath = Paths.get(outputFile);
+
+        String outputClass = outputPath.getFileName().toString();
+        if (!outputClass.endsWith(".cs"))
+            throw new RuntimeException("Can't determine C# the output class name for the outputFile(=" + outputFile + ").");
+        else
+            outputClass = outputClass.substring(0, outputClass.length() - 3);
+
+        final String outputNamespace = outputPath.getParent().getFileName().toString();
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8)) {
             writer.write("using System;\n" +
                     "using System.Runtime.InteropServices;\n" +
                     "\n" +
-                    "namespace EPAM.Deltix.DFP\n" +
+                    "namespace " + outputNamespace + "\n" +
                     "{\n" +
                     "\t//Just entries\n" +
-                    "\tinternal static class NativeImplImport\n" +
+                    "\tinternal static class " + outputClass + "Import\n" +
                     "\t{\n" +
                     "\t\tinternal const string libName = \"" + apiPrefix.substring(0, apiPrefixLength - 1) + "\";\n" +
                     "\t\tinternal const CallingConvention callType = CallingConvention.Cdecl;\n"
@@ -151,13 +153,13 @@ public class NativeWrappers {
             );
 
             final StringBuilder objClassBody = new StringBuilder();
-            objClassBody.append("\t\tstatic NativeImplObj()\n" +
+            objClassBody.append("\t\tstatic " + outputClass + "Obj()\n" +
                 "\t\t{\n" +
-                "\t\t\tNativeImplLoader.Load();\n" +
+                "\t\t\t" + outputClass + "Loader.Load();\n" +
                 "\t\t}\n");
 
             final StringBuilder nativeClassBody = new StringBuilder();
-            nativeClassBody.append("\t\tinternal static readonly NativeImplObj impl = new NativeImplObj();\n");
+            nativeClassBody.append("\t\tinternal static readonly " + outputClass + "Obj impl = new " + outputClass + "Obj();\n");
 
             for (final ApiEntry entry : api) {
                 writer.write("\n\t\t[DllImport(libName, CallingConvention = callType)]\n");
@@ -190,7 +192,7 @@ public class NativeWrappers {
                 writer.write(csArgsStr);
                 writer.write(");\n");
 
-                objClassBody.append(csArgsStr).append(") =>\n\t\t\tNativeImplImport.")
+                objClassBody.append(csArgsStr).append(") =>\n\t\t\t" + outputClass + "Import.")
                     .append(entry.name).append("(").append(csCallStr).append(");\n");
 
                 nativeClassBody.append(csArgsStr).append(") =>\n\t\t\timpl.")
@@ -200,13 +202,13 @@ public class NativeWrappers {
             writer.write("\t}\n\n");
 
             writer.write("\t//Mono problem workaround\n");
-            writer.write("\tinternal class NativeImplObj\n" +
+            writer.write("\tinternal class " + outputClass + "Obj\n" +
                 "\t{\n");
             writer.write(objClassBody.toString());
             writer.write("\t}\n\n");
 
             writer.write("\t//Actual API class\n");
-            writer.write("\tinternal static class NativeImpl\n" +
+            writer.write("\tinternal static class " + outputClass + "\n" +
                 "\t{\n");
             writer.write(nativeClassBody.toString());
             writer.write("\t}\n");
@@ -260,9 +262,9 @@ public class NativeWrappers {
         }
     }
 
-    private static void makeCsVersion(final String versionThreeDigits, final String versionSuffix, final String versionSha) throws IOException {
+    private static void makeCsVersion(final String outputFile, final String versionThreeDigits, final String versionSuffix, final String versionSha) throws IOException {
         try (final BufferedWriter writer =
-                 Files.newBufferedWriter(Paths.get("csharp", "EPAM.Deltix.DFP", "Version.targets"),
+                 Files.newBufferedWriter(Paths.get(outputFile).getParent().resolve("Version.targets"),
                      StandardCharsets.UTF_8)) {
             writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                 "<Project>\n" +
@@ -275,19 +277,40 @@ public class NativeWrappers {
         }
     }
 
-    private static void makeJavaWrappers(final String versionThreeDigits, final List<ApiEntry> javaApi, final String javaPrefix) throws IOException {
+    private static void makeJavaWrappers(final String outputFile, final String versionThreeDigits, final List<ApiEntry> javaApi, final String javaPrefix) throws IOException {
         final int prefixLength = javaPrefix.length();
 
-        final Path outPath =
-            Paths.get("java", "dfp", "build", "generated", "sources", "nativeWrappers", "com", "epam", "deltix", "dfp");
-        Files.createDirectories(outPath);
+        final Path outputPath = Paths.get(outputFile);
+        Files.createDirectories(outputPath.getParent());
 
-        try (final BufferedWriter writer = Files.newBufferedWriter(outPath.resolve("NativeImpl.java"), StandardCharsets.UTF_8)) {
-            writer.write("package com.epam.deltix.dfp;\n" +
+        String outputClass = outputPath.getFileName().toString();
+        if (!outputClass.endsWith(".java"))
+            throw new RuntimeException("Can't determine Java the output class name for the outputFile(=" + outputFile + ").");
+        else
+            outputClass = outputClass.substring(0, outputClass.length() - 5);
+
+        String outputNamespace = outputPath.getParent().toString().replace(File.separatorChar,'.');
+        String generatorPackage = NativeWrappers.class.getPackage().getName();
+        while(true) {
+            final int namespaceIndex = outputNamespace.lastIndexOf(generatorPackage);
+            if (namespaceIndex >= 0) {
+                outputNamespace = outputNamespace.substring(namespaceIndex);
+                break;
+            }
+            final int cutPoint = generatorPackage.lastIndexOf('.');
+            if (cutPoint <= 0)
+                throw new RuntimeException("Can't guess the output namespace for the outputFile(=" + outputFile + ").");
+            generatorPackage = generatorPackage.substring(0, cutPoint);
+            if (generatorPackage.lastIndexOf('.') < 0)
+                throw new RuntimeException("Can't guess the output namespace for the outputFile(=" + outputFile + "): the guess namespace in too short.");
+        }
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8)) {
+            writer.write("package " + outputNamespace + ";\n" +
                 "\n" +
-                "final class NativeImpl {\n" +
+                "final class " + outputClass + " {\n" +
                 "    static {\n" +
-                "        NativeImplLoader.load();\n" +
+                "        " + outputClass + "Loader.load();\n" +
                 "    }\n" +
                 "\n" +
                 "    public static final String version = \"" + versionThreeDigits + "\";\n"

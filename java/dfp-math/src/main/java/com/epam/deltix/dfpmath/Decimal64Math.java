@@ -1,4 +1,7 @@
-package com.epam.deltix.dfp;
+package com.epam.deltix.dfpmath;
+
+import com.epam.deltix.dfp.Decimal64;
+import com.epam.deltix.dfp.Decimal64Utils;
 
 public class Decimal64Math {
     private Decimal64Math() {

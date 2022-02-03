@@ -43,6 +43,14 @@ public class Decimal64Parts {
         this.exponent = exponent;
     }
 
+    public int getUnbiasedExponent() {
+        return this.exponent - JavaImpl.EXPONENT_BIAS;
+    }
+
+    public void setUnbiasedExponent(final int exponent) {
+        this.exponent = exponent + JavaImpl.EXPONENT_BIAS;
+    }
+
     public long getSignMask() {
         return signMask;
     }

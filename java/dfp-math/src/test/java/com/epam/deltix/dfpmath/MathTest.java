@@ -1,5 +1,7 @@
-package com.epam.deltix.dfp;
+package com.epam.deltix.dfpmath;
 
+import com.epam.deltix.dfp.Decimal64Utils;
+import com.epam.deltix.dfp.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.apache.commons.math3.special.Erf;
@@ -8,7 +10,8 @@ import org.apache.commons.math3.special.Gamma;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import static com.epam.deltix.dfp.Decimal64MathUtils.*;
+import static com.epam.deltix.dfp.TestUtils.toParts;
+import static com.epam.deltix.dfpmath.Decimal64MathUtils.*;
 import static com.epam.deltix.dfp.TestUtils.assertDecimalEqual;
 import static com.epam.deltix.dfp.Decimal64Utils.*;
 
@@ -963,12 +966,12 @@ public class MathTest {
     public void testQuantize() {
         final long x = scalbn(fromInt32(1234), 5);
         final long y = scalbn(fromInt32(56789), -2);
-        Assert.assertEquals(5, JavaImpl.toParts(x).exponent - JavaImpl.EXPONENT_BIAS);
-        Assert.assertEquals(-2, JavaImpl.toParts(y).exponent - JavaImpl.EXPONENT_BIAS);
+        Assert.assertEquals(5, toParts(x).getUnbiasedExponent());
+        Assert.assertEquals(-2, toParts(y).getUnbiasedExponent());
         final long z = quantize(x, y);
         assertDecimalEqual(x, z);
-        Assert.assertEquals(JavaImpl.toParts(y).exponent - JavaImpl.EXPONENT_BIAS,
-            JavaImpl.toParts(z).exponent - JavaImpl.EXPONENT_BIAS);
+        Assert.assertEquals(toParts(y).getUnbiasedExponent(),
+            toParts(z).getUnbiasedExponent());
     }
 
     @Test
