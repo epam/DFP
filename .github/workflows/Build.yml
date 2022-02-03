@@ -46,8 +46,9 @@ jobs:
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
             ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
-            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/Version.targets
           retention-days: 7
 
   build-native-windows:
@@ -119,8 +120,11 @@ jobs:
             ./gradle.properties
             ./*native/bin*
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/Version.targets
           retention-days: 7
 
   build-java:
@@ -175,6 +179,7 @@ jobs:
           name: dotnet-build
           path: |
             ./*csharp/EPAM.Deltix.DFP/bin/Release/*
+            ./*csharp/EPAM.Deltix.DFPMath/bin/Release/*
             ./*csharp/EPAM.Deltix.DFP.Demo/bin/Release/*
           retention-days: 7
 
@@ -206,7 +211,8 @@ jobs:
         if: ${{ failure() }}
         with:
           path: |
-            java/build/reports/*
+            java/dfp/build/reports/*
+            java/dfp-math/build/reports/*
           name: Java-8-${{ matrix.os }}-TestReports
 
   test-dotnet:
@@ -244,6 +250,7 @@ jobs:
         with:
           path: |
             csharp/EPAM.Deltix.DFP/bin/*
+            csharp/EPAM.Deltix.DFPMath/bin/*
             csharp/*.txt
             csharp/*.xml
           name: Dotnet-3.1-${{ matrix.os }}-TestReports
