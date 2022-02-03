@@ -76,11 +76,11 @@ public class MathBenchmark {
             bh.consume(Decimal64Utils.max(Decimal64Utils.ZERO, Decimal64Utils.add(decimalValues[i], decimalValues[i + 1])));
     }
 
-    @Benchmark
-    public void fdimNew(Blackhole bh) {
-        for (int i = 0; i < 1000; ++i)
-            bh.consume(NativeImpl.bid64Fdim(decimalValues[i], Decimal64Utils.negate(decimalValues[i + 1])));
-    }
+//    @Benchmark
+//    public void fdimNew(Blackhole bh) {
+//        for (int i = 0; i < 1000; ++i)
+//            bh.consume(NativeImpl.bid64Fdim(decimalValues[i], Decimal64Utils.negate(decimalValues[i + 1])));
+//    }
 
 
     public static void main(String[] args) throws RunnerException {
