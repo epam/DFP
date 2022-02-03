@@ -44,7 +44,7 @@
 	<ItemGroup>
 		<EmbeddedResource Include="..\..\native\binmathCs\Release\**\*" />
     </ItemGroup>
-	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="!Exists('NativeMathImpl.cs')">
 		<Exec WorkingDirectory="..\.." Command="./gradlew :java:nativeWrappers:makeNativeWrappers" />
 	</Target>
 </Project>

@@ -41,7 +41,7 @@
 	<ItemGroup>
 		<EmbeddedResource Include="..\..\native\binCs\Release\**\*" />
     </ItemGroup>
-	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="!Exists('NativeImpl.cs')">
 		<Exec WorkingDirectory="..\.." Command="./gradlew :java:nativeWrappers:makeNativeWrappers" />
 	</Target>
 </Project>
