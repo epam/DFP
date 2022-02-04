@@ -358,6 +358,18 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     }
 
     /**
+     * Returns {@code true} if the value equals to null reference of type {@link Decimal64}
+     * or corresponds special {@code NULL} constant.
+     *
+     * @param value the DFP value being checked
+     * @return {@code true}, if {@code NULL}
+     * {@code false} otherwise
+     */
+    public static boolean isNull(final Decimal64 value) {
+        return value == NULL || Decimal64Utils.isNull(value.value);
+    }
+
+    /**
      * Check, if this instance and the specified {@code Decimal64} instance have exactly the same underlying representation.
      * <p>
      * This method returns {@code true} if and only if the other {@code Decimal64} is exactly the same

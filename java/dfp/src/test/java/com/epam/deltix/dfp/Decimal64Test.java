@@ -20,6 +20,19 @@ public class Decimal64Test {
         Decimal64 b = Decimal64.fromDouble(42);
         String s = "12345.6789";
 
+        Assert.assertTrue(Decimal64.isNull(null));
+        Assert.assertTrue(Decimal64.isNull(Decimal64.NULL));
+        Assert.assertTrue(Decimal64.isNull(Decimal64.fromUnderlying(Decimal64Utils.NULL)));
+        Assert.assertFalse(Decimal64.isNull(Decimal64.NaN));
+        Assert.assertFalse(Decimal64.isNull(Decimal64.fromUnderlying(Decimal64Utils.NaN)));
+        Assert.assertFalse(Decimal64.isNull(Decimal64.POSITIVE_INFINITY));
+        Assert.assertFalse(Decimal64.isNull(Decimal64.fromUnderlying(Decimal64Utils.POSITIVE_INFINITY)));
+        Assert.assertFalse(Decimal64.isNull(Decimal64.NEGATIVE_INFINITY));
+        Assert.assertFalse(Decimal64.isNull(Decimal64.fromUnderlying(Decimal64Utils.NEGATIVE_INFINITY)));
+        Assert.assertFalse(Decimal64.isNull(Decimal64.ONE));
+        Assert.assertFalse(Decimal64.isNull(Decimal64.fromDouble(-2.0)));
+
+
         Assert.assertTrue("null == null", Decimal64.equals(null, (Object) null));
         Assert.assertTrue("null == null", Decimal64.equals(null, (Decimal64) null));
         Assert.assertTrue("null == null", Decimal64.isIdentical(null, (Object) null));
