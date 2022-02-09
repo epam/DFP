@@ -1002,6 +1002,19 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#scientificAppendTo(Appendable)}, adds null check; do not use directly.
+     *
+     * @param value      DFP argument
+     * @param appendable an object, implementing Appendable interface
+     * @return ..
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    public static Appendable scientificAppendToChecked(@Decimal final long value, final Appendable appendable) throws IOException {
+        checkNull(value);
+        return scientificAppendTo(value, appendable);
+    }
+
+    /**
      * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
      * <p>
      * Same as {@code sb.append(value.toString());}, but more efficient.
@@ -1025,6 +1038,18 @@ public class Decimal64Utils {
      */
     public static StringBuilder scientificAppendTo(@Decimal final long value, final StringBuilder sb) {
         return JavaImpl.fastScientificAppendToStringBuilder(value, sb);
+    }
+
+    /**
+     * Implements {@link Decimal64#scientificAppendTo(StringBuilder)}, adds null check; do not use directly.
+     *
+     * @param value      DFP argument
+     * @param appendable an object, implementing Appendable interface
+     * @return ..
+     */
+    public static StringBuilder scientificAppendToChecked(@Decimal final long value, final StringBuilder sb) {
+        checkNull(value);
+        return scientificAppendTo(value, sb);
     }
 
     /**
@@ -1057,7 +1082,7 @@ public class Decimal64Utils {
         return ret;
     }
 
-    private static ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst = ThreadLocal.withInitial(JavaImplParse.FloatingPointStatusFlag::new);
+    private static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst = ThreadLocal.withInitial(JavaImplParse.FloatingPointStatusFlag::new);
 
     /**
      * Parses a dfp floating-point value from the given textual representation.
