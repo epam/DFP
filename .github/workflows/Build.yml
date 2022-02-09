@@ -156,7 +156,7 @@ jobs:
           retention-days: 7
 
   build-dotnet:
-    runs-on: windows-latest
+    runs-on: windows-2019
     needs: [compress-native]
     steps:
       - uses: actions/checkout@v2
@@ -189,7 +189,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-latest', 'windows-latest', 'macos-latest']
+        os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
     steps:
       - uses: actions/checkout@v2
         with:
@@ -221,7 +221,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-latest', 'windows-latest', 'macos-latest']
+        os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
     steps:
       - uses: actions/checkout@v2
         with:
@@ -235,7 +235,7 @@ jobs:
         with:
           dotnet-version: '3.1.x'
       - name: test windows
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-2019' }}
         run: |
           cd csharp
           ./build --target=Run-Unit-Tests
