@@ -452,36 +452,40 @@ public class JavaImplTest {
 
     @Test
     public void TestRoundRandomly() throws Exception {
-        checkInMultipleThreads(() -> {
-            final Random random = new Random();
-            for (int ri = 0; ri < 1_000_000; ++ri) {
-                final double mantissa = random.nextDouble() * 2 - 1;
-                final int tenPower = random.nextInt(308 * 2 + 1) - 308;
-                final int randomOffset = random.nextInt(20 * 2 + 1) - 20;
+        checkInMultipleThreads(
+            new Runnable() {
+                @Override
+                public void run() {
+                    final Random random = new Random();
+                    for (int ri = 0; ri < 1_000_000; ++ri) {
+                        final double mantissa = random.nextDouble() * 2 - 1;
+                        final int tenPower = random.nextInt(308 * 2 + 1) - 308;
+                        final int randomOffset = random.nextInt(20 * 2 + 1) - 20;
 
-                final long inValue = Decimal64Utils.fromDouble(mantissa * Math.pow(10, tenPower));
-                final int roundPoint = tenPower + randomOffset;
-                final RoundType roundType;
-                switch (random.nextInt(4)) {
-                    case 0:
-                        roundType = RoundType.ROUND;
-                        break;
-                    case 1:
-                        roundType = RoundType.TRUNC;
-                        break;
-                    case 2:
-                        roundType = RoundType.FLOOR;
-                        break;
-                    case 3:
-                        roundType = RoundType.CEIL;
-                        break;
-                    default:
-                        throw new RuntimeException("Unsupported case for round type generation.");
+                        final long inValue = Decimal64Utils.fromDouble(mantissa * Math.pow(10, tenPower));
+                        final int roundPoint = tenPower + randomOffset;
+                        final RoundType roundType;
+                        switch (random.nextInt(4)) {
+                            case 0:
+                                roundType = RoundType.ROUND;
+                                break;
+                            case 1:
+                                roundType = RoundType.TRUNC;
+                                break;
+                            case 2:
+                                roundType = RoundType.FLOOR;
+                                break;
+                            case 3:
+                                roundType = RoundType.CEIL;
+                                break;
+                            default:
+                                throw new RuntimeException("Unsupported case for round type generation.");
+                        }
+
+                        checkRound(inValue, -roundPoint, roundType);
+                    }
                 }
-
-                checkRound(inValue, -roundPoint, roundType);
-            }
-        });
+            });
     }
 
     @Test
@@ -523,17 +527,21 @@ public class JavaImplTest {
 
     @Test
     public void testToStringRandomly() throws Exception {
-        checkInMultipleThreads(() -> {
-            final Random random = new Random();
-            for (int ri = 0; ri < 10_000_000; ++ri) {
-                final double mantissa = random.nextDouble() * 2 - 1;
-                final int tenPower = random.nextInt(30 * 2 + 1) - 30;
+        checkInMultipleThreads(
+            new Runnable() {
+                @Override
+                public void run() {
+                    final Random random = new Random();
+                    for (int ri = 0; ri < 10_000_000; ++ri) {
+                        final double mantissa = random.nextDouble() * 2 - 1;
+                        final int tenPower = random.nextInt(30 * 2 + 1) - 30;
 
-                final long inValue = Decimal64Utils.fromDouble(mantissa * Math.pow(10, tenPower));
+                        final long inValue = Decimal64Utils.fromDouble(mantissa * Math.pow(10, tenPower));
 
-                checkStrEq(inValue);
-            }
-        });
+                        checkStrEq(inValue);
+                    }
+                }
+            });
     }
 
     private static void checkStrEq(final long value) {
@@ -581,15 +589,19 @@ public class JavaImplTest {
             for (final long y : specialValues)
                 testAddCase(x, y);
 
-        checkInMultipleThreads(() -> {
-            final Random random = new Random();
-            for (int i = 0; i < 10_000_000; ++i) {
-                final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
-                final long y = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+        checkInMultipleThreads(
+            new Runnable() {
+                @Override
+                public void run() {
+                    final Random random = new Random();
+                    for (int i = 0; i < 10_000_000; ++i) {
+                        final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+                        final long y = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
 
-                testAddCase(x, y);
-            }
-        });
+                        testAddCase(x, y);
+                    }
+                }
+            });
     }
 
     @Test
@@ -609,34 +621,41 @@ public class JavaImplTest {
 
     @Test
     public void testToStringScientific() throws Exception {
-        checkInMultipleThreads(() -> {
-            final Random random = new Random();
-            for (int i = 0; i < 10_000_000; ++i) {
-                final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
-                final String xs = Decimal64Utils.toScientificString(x);
-                final long y = Decimal64Utils.parse(xs);
+        checkInMultipleThreads(
+            new Runnable() {
+                @Override
+                public void run() {
+                    final Random random = new Random();
+                    for (int i = 0; i < 10_000_000; ++i) {
+                        final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+                        final String xs = Decimal64Utils.toScientificString(x);
+                        final long y = Decimal64Utils.parse(xs);
 
-                if (!Decimal64Utils.equals(x, y))
-                    throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L = " + Decimal64Utils.toString(x) + " != " + xs + "(" + Decimal64Utils.toString(y) + ")");
-            }
-        });
+                        if (!Decimal64Utils.equals(x, y))
+                            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L = " + Decimal64Utils.toString(x) + " != " + xs + "(" + Decimal64Utils.toString(y) + ")");
+                    }
+                }
+            });
     }
 
     @Test
     public void testFormatting() throws Exception {
-        checkInMultipleThreads(() -> {
-            final Random random = new Random();
-            for (int i = 0; i < 10_000_000; ++i) {
-                final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+        checkInMultipleThreads(
+            new Runnable() {
+                @Override
+                public void run() {
+                    final Random random = new Random();
+                    for (int i = 0; i < 10_000_000; ++i) {
+                        final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
 
-                checkFormattingValue(x);
-            }
-        });
+                        checkFormattingValue(x);
+                    }
+                }
+            });
     }
 
     @Test
-    public void testFormattingCase()
-    {
+    public void testFormattingCase() {
         checkFormattingValue(0x3420000037ffff73L);
     }
 
@@ -688,8 +707,7 @@ public class JavaImplTest {
         }
     }
 
-    private static boolean decimalParseOk(JavaImplParse.FloatingPointStatusFlag fpsf)
-    {
+    private static boolean decimalParseOk(JavaImplParse.FloatingPointStatusFlag fpsf) {
         return (fpsf.value & JavaImplParse.BID_INVALID_FORMAT) == 0;
     }
 
@@ -701,16 +719,14 @@ public class JavaImplTest {
         try {
             out.value = Double.parseDouble(str);
             return true;
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             out.value = Double.NaN;
             return false;
         }
     }
 
     @Test
-    public void TestParseReImpl()
-    {
+    public void TestParseReImpl() {
         int roundMode = 10; // JavaImplParse.BID_ROUNDING_TO_NEAREST;
         {
             final String testStr = "   000   ";

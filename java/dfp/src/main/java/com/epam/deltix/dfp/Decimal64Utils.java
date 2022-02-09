@@ -1082,7 +1082,13 @@ public class Decimal64Utils {
         return ret;
     }
 
-    private static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst = ThreadLocal.withInitial(JavaImplParse.FloatingPointStatusFlag::new);
+    private static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst =
+        new ThreadLocal<JavaImplParse.FloatingPointStatusFlag>() {
+            @Override
+            protected JavaImplParse.FloatingPointStatusFlag initialValue() {
+                return new JavaImplParse.FloatingPointStatusFlag();
+            }
+        };
 
     /**
      * Parses a dfp floating-point value from the given textual representation.

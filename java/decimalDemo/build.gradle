@@ -6,7 +6,7 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.7
 
 dependencies {
     implementation project(":java:dfp")

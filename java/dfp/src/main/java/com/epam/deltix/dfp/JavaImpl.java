@@ -471,7 +471,13 @@ class JavaImpl {
         return appendable;
     }
 
-    private static final ThreadLocal<char[]> CHAR_BUFFER = ThreadLocal.withInitial(() -> new char[512]);
+    private static final ThreadLocal<char[]> CHAR_BUFFER =
+        new ThreadLocal<char[]>() {
+            @Override
+            protected char[] initialValue() {
+                return new char[512];
+            }
+        };
 
     private static final int BCD_TABLE_DIGITS = 3;
     private static final int BCD_DIVIDER = 1000_000_000;
@@ -1034,7 +1040,13 @@ class JavaImpl {
         }
     }
 
-    private static final ThreadLocal<MutableCharBuffer> MUTABLE_CHAR_BUFFER = ThreadLocal.withInitial(MutableCharBuffer::new);
+    private static final ThreadLocal<MutableCharBuffer> MUTABLE_CHAR_BUFFER =
+        new ThreadLocal<MutableCharBuffer>() {
+            @Override
+            protected MutableCharBuffer initialValue() {
+                return new MutableCharBuffer();
+            }
+        };
 
     // Copy-paste of the fastToString
     public static Appendable fastAppendToAppendable(final long value, final Appendable appendable) throws IOException {
