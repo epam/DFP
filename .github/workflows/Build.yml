@@ -190,6 +190,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
+        java: [ '8', '11', '15']
     steps:
       - uses: actions/checkout@v2
         with:
@@ -202,7 +203,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '8'
+          java-version: ${{ matrix.java }}
       - name: test
         run: |
           ./gradlew check
@@ -213,7 +214,7 @@ jobs:
           path: |
             java/dfp/build/reports/*
             java/dfp-math/build/reports/*
-          name: Java-8-${{ matrix.os }}-TestReports
+          name: Java-{{ matrix.java }}-${{ matrix.os }}-TestReports
 
   test-dotnet:
     runs-on: ${{ matrix.os }}
