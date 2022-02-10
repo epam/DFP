@@ -258,4 +258,8 @@ public class TestUtils {
     };
 
     static final Random rng = new Random();
+
+    public static Decimal64Parts toParts(final long value) {
+        return JavaImpl.toParts(value);
+    }
 }

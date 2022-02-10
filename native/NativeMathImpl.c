@@ -1,0 +1,121 @@
+#include "NativeImpl.h"
+
+//region Math
+
+OPN(bid64Exp, bid64_exp(x), BID_UINT64 x)
+OPN(bid64Exp2, bid64_exp2(x), BID_UINT64 x)
+OPN(bid64Exp10, bid64_exp10(x), BID_UINT64 x)
+OPN(bid64Expm1, bid64_expm1(x), BID_UINT64 x)
+OPN(bid64Log, bid64_log(x), BID_UINT64 x)
+OPN(bid64Log2, bid64_log2(x), BID_UINT64 x)
+OPN(bid64Log10, bid64_log10(x), BID_UINT64 x)
+OPN(bid64Log1p, bid64_log1p(x), BID_UINT64 x)
+OPN(bid64Pow, bid64_pow(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64Fmod, bid64_fmod(x, y), BID_UINT64 x, BID_UINT64 y)
+//OPN(bid64Modf, bid64_modf(x, iptr), BID_UINT64 x, BID_UINT64 *iptr)
+OPN(bid64Hypot, bid64_hypot(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64Sin, bid64_sin(x), BID_UINT64 x)
+OPN(bid64Cos, bid64_cos(x), BID_UINT64 x)
+OPN(bid64Tan, bid64_tan(x), BID_UINT64 x)
+OPN(bid64Asin, bid64_asin(x), BID_UINT64 x)
+OPN(bid64Acos, bid64_acos(x), BID_UINT64 x)
+OPN(bid64Atan, bid64_atan(x), BID_UINT64 x)
+OPN(bid64Atan2, bid64_atan2(y, x), BID_UINT64 y, BID_UINT64 x)
+OPN(bid64Sinh, bid64_sinh(x), BID_UINT64 x)
+OPN(bid64Cosh, bid64_cosh(x), BID_UINT64 x)
+OPN(bid64Tanh, bid64_tanh(x), BID_UINT64 x)
+OPN(bid64Asinh, bid64_asinh(x), BID_UINT64 x)
+OPN(bid64Acosh, bid64_acosh(x), BID_UINT64 x)
+OPN(bid64Atanh, bid64_atanh(x), BID_UINT64 x)
+OPN(bid64Erf, bid64_erf(x), BID_UINT64 x)
+OPN(bid64Erfc, bid64_erfc(x), BID_UINT64 x)
+OPN(bid64Tgamma, bid64_tgamma(x), BID_UINT64 x)
+OPN(bid64Lgamma, bid64_lgamma(x), BID_UINT64 x)
+OPN(bid64Add, bid64_add(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64Sub, bid64_sub(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64Mul, bid64_mul(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64Div, bid64_div(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64Fma, bid64_fma(x, y, z), BID_UINT64 x,  BID_UINT64 y, BID_UINT64 z)
+OPN(bid64Sqrt, bid64_sqrt(x), BID_UINT64 x)
+OPN(bid64Cbrt, bid64_cbrt(x), BID_UINT64 x)
+
+OPN_BOOL(bid64QuietEqual, bid64_quiet_equal(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietGreater, bid64_quiet_greater(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietGreaterEqual, bid64_quiet_greater_equal(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietGreaterUnordered, bid64_quiet_greater_unordered(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietLess, bid64_quiet_less(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietLessEqual, bid64_quiet_less_equal(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietLessUnordered, bid64_quiet_less_unordered(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietNotEqual, bid64_quiet_not_equal(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietNotGreater, bid64_quiet_not_greater(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietNotLess, bid64_quiet_not_less(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietOrdered, bid64_quiet_ordered(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64QuietUnordered, bid64_quiet_unordered(x, y), BID_UINT64 x, BID_UINT64 y)
+
+OPN(bid64RoundIntegralExact, bid64_round_integral_exact(x), BID_UINT64 x)
+OPN(bid64RoundIntegralNearestEven, bid64_round_integral_nearest_even(x), BID_UINT64 x)
+OPN(bid64RoundIntegralNegative, bid64_round_integral_negative(x), BID_UINT64 x)
+OPN(bid64RoundIntegralPositive, bid64_round_integral_positive(x), BID_UINT64 x)
+OPN(bid64RoundIntegralZero, bid64_round_integral_zero(x), BID_UINT64 x)
+OPN(bid64RoundIntegralNearestAway, bid64_round_integral_nearest_away(x), BID_UINT64 x)
+
+OPN(bid64Nextup, bid64_nextup(x), BID_UINT64 x)
+OPN(bid64Nextdown, bid64_nextdown(x), BID_UINT64 x)
+OPN(bid64Nextafter, bid64_nextafter(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64Minnum, bid64_minnum(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64MinnumMag, bid64_minnum_mag(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64Maxnum, bid64_maxnum(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN(bid64MaxnumMag, bid64_maxnum_mag(x, y), BID_UINT64 x, BID_UINT64 y)
+
+OPN(bid64FromInt32, bid64_from_int32(x), int32 x)
+OPN(bid64FromUint32, bid64_from_uint32(x), uint32 x)
+OPN(bid64FromInt64, bid64_from_int64(x), int64 x)
+OPN(bid64FromUint64, bid64_from_uint64(x), uint64 x)
+
+OPN_BOOL(bid64IsSigned, bid64_isSigned(x), BID_UINT64 x)
+OPN_BOOL(bid64IsNormal, bid64_isNormal(x), BID_UINT64 x)
+OPN_BOOL(bid64IsSubnormal, bid64_isSubnormal(x), BID_UINT64 x)
+OPN_BOOL(bid64IsFinite, bid64_isFinite(x), BID_UINT64 x)
+OPN_BOOL(bid64IsZero, bid64_isZero(x), BID_UINT64 x)
+OPN_BOOL(bid64IsInf, bid64_isInf(x), BID_UINT64 x)
+OPN_BOOL(bid64IsSignaling, bid64_isSignaling(x), BID_UINT64 x)
+OPN_BOOL(bid64IsCanonical, bid64_isCanonical(x), BID_UINT64 x)
+OPN_BOOL(bid64IsNaN, bid64_isNaN(x), BID_UINT64 x)
+
+OPN(bid64Copy, bid64_copy(x), BID_UINT64 x)
+OPN(bid64Negate, bid64_negate(x), BID_UINT64 x)
+OPN(bid64Abs, bid64_abs(x), BID_UINT64 x)
+OPN(bid64CopySign, bid64_copySign(x, y), BID_UINT64 x, BID_UINT64 y)
+
+OPNR(bid64Class, int32, bid64_class(x), BID_UINT64 x)
+OPN_BOOL(bid64SameQuantum, bid64_sameQuantum(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64TotalOrder, bid64_totalOrder(x, y), BID_UINT64 x, BID_UINT64 y)
+OPN_BOOL(bid64TotalOrderMag, bid64_totalOrderMag(x, y), BID_UINT64 x, BID_UINT64 y)
+OPNR(bid64Radix, int32, bid64_radix(x), BID_UINT64 x)
+
+OPN(bid64Rem, bid64_rem(x, y), BID_UINT64 x, BID_UINT64 y)
+OPNR(bid64Ilogb, int32, bid64_ilogb(x), BID_UINT64 x)
+OPN(bid64Scalbn, bid64_scalbn(x, n), BID_UINT64 x, int32 n)
+OPN(bid64Ldexp, bid64_ldexp(x, n), BID_UINT64 x, int32 n)
+
+//BID_EXTERN_C void bid64_to_string (char *ps, BID_UINT64 x
+//BID_EXTERN_C BID_UINT64 bid64_from_string (char *ps
+
+OPN(bid64Quantize, bid64_quantize(x, y), BID_UINT64 x, BID_UINT64 y)
+OPNR(bid64ToBinary32, float, bid64_to_binary32(x), BID_UINT64 x)
+OPNR(bid64ToBinary64, double, bid64_to_binary64(x), BID_UINT64 x)
+//BID_EXTERN_C BID_UINT64 bid64_frexp (BID_UINT64 x, int *exp);
+OPN(bid64Logb, bid64_logb(x), BID_UINT64 x)
+OPN(bid64Nearbyint, bid64_nearbyint(x), BID_UINT64 x)
+//BID_EXTERN_C long int bid64_lrint (BID_UINT64 x
+OPNR(bid64Llrint, int64, bid64_llrint(x), BID_UINT64 x)
+//BID_EXTERN_C long int bid64_lround (BID_UINT64 x
+OPNR(bid64Llround, int64, bid64_llround(x), BID_UINT64 x)
+//BID_EXTERN_C BID_UINT64 bid64_nan (const char *tagp);
+OPN(bid64Fdim, bid64_fdim(x, y), BID_UINT64 x, BID_UINT64 y)
+OPNR(bid64Quantexp, int32, bid64_quantexp(x), BID_UINT64 x)
+OPN(bid64Quantum, bid64_quantum(x), BID_UINT64 x)
+OPNR(bid64Llquantexp, int64, bid64_llquantexp(x), BID_UINT64 x)
+//BID_EXTERN_C BID_UINT64 bid64_inf (void);
+
+//endregion

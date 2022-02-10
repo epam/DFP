@@ -44,12 +44,15 @@ jobs:
           path: |
             ./*native/bin*
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/Version.targets
           retention-days: 7
 
   build-native-windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       - uses: actions/checkout@v2
         with:
@@ -109,6 +112,7 @@ jobs:
         run: |
           zstd --version
           zstd -19 --rm -r ./native/bin
+          zstd -19 --rm -r ./native/binmath
       - uses: actions/upload-artifact@v2
         with:
           name: compress-native
@@ -116,8 +120,11 @@ jobs:
             ./gradle.properties
             ./*native/bin*
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/Version.targets
           retention-days: 7
 
   build-java:
@@ -145,11 +152,11 @@ jobs:
           path: |
             ./*java/dfp/build/libs/*
             ./*java/dfp-math/build/libs/*
-            ./*java/dfp/decimalDemo/build/libs/*
+            ./*java/decimalDemo/build/libs/*
           retention-days: 7
 
   build-dotnet:
-    runs-on: windows-latest
+    runs-on: windows-2019
     needs: [compress-native]
     steps:
       - uses: actions/checkout@v2
@@ -172,6 +179,7 @@ jobs:
           name: dotnet-build
           path: |
             ./*csharp/EPAM.Deltix.DFP/bin/Release/*
+            ./*csharp/EPAM.Deltix.DFPMath/bin/Release/*
             ./*csharp/EPAM.Deltix.DFP.Demo/bin/Release/*
           retention-days: 7
 
@@ -181,7 +189,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-latest', 'windows-latest', 'macos-latest']
+        os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
         java: [ '8', '11', '15']
     steps:
       - uses: actions/checkout@v2
@@ -204,7 +212,8 @@ jobs:
         if: ${{ failure() }}
         with:
           path: |
-            java/build/reports/*
+            java/dfp/build/reports/*
+            java/dfp-math/build/reports/*
           name: Java-{{ matrix.java }}-${{ matrix.os }}-TestReports
 
   test-dotnet:
@@ -213,7 +222,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-latest', 'windows-latest', 'macos-latest']
+        os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
     steps:
       - uses: actions/checkout@v2
         with:
@@ -227,7 +236,7 @@ jobs:
         with:
           dotnet-version: '3.1.x'
       - name: test windows
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-2019' }}
         run: |
           cd csharp
           ./build --target=Run-Unit-Tests
@@ -242,6 +251,7 @@ jobs:
         with:
           path: |
             csharp/EPAM.Deltix.DFP/bin/*
+            csharp/EPAM.Deltix.DFPMath/bin/*
             csharp/*.txt
             csharp/*.xml
           name: Dotnet-3.1-${{ matrix.os }}-TestReports

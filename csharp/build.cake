@@ -1,6 +1,6 @@
 #tool nuget:?package=NUnit.ConsoleRunner&version=3.7.0
-#addin "Cake.Powershell"
-#addin "Cake.FileHelpers"
+#addin nuget:?package=Cake.Powershell&version=1.0.1
+#addin nuget:?package=Cake.FileHelpers&version=4.0.1
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -16,11 +16,23 @@ var configuration = Argument("configuration", "Release");
 Task("Native-Rename")
     .Does(() =>
 {
-	var files = GetFiles("../native/bin/Release/**/*.zst");
-	foreach(var file in files)
-	{
-		MoveFile(file, file.ToString().Replace('.', '_'));
-	}
+    if (!DirectoryExists("../native/binCs"))
+    {
+        CopyDirectory("../native/bin", "../native/binCs");
+        foreach(var file in GetFiles("../native/binCs/Release/**/*.zst"))
+        {
+            MoveFile(file, file.ToString().Replace('.', '_'));
+        }
+    }
+
+    if (!DirectoryExists("../native/binmathCs"))
+    {
+        CopyDirectory("../native/binmath", "../native/binmathCs");
+        foreach(var file in GetFiles("../native/binmathCs/Release/**/*.zst"))
+        {
+            MoveFile(file, file.ToString().Replace('.', '_'));
+        }
+    }
 });
 
 Task("Clean")
@@ -51,6 +63,7 @@ Task("Build")
         buildSettings.Framework = "netstandard2.0";
 
     DotNetCoreBuild("./EPAM.Deltix.DFP/EPAM.Deltix.DFP.csproj", buildSettings);
+    DotNetCoreBuild("./EPAM.Deltix.DFPMath/EPAM.Deltix.DFPMath.csproj", buildSettings);
 
     if (!IsRunningOnWindows())
         buildSettings.Framework = "netcoreapp3.1";

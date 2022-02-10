@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package com.epam.deltix.dfpmath;
 
 import com.epam.deltix.utilities.ResourceLoader;
 
@@ -6,10 +6,10 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.Locale;
 
-class NativeImplLoader {
+class NativeMathImplLoader {
     public static void load() {
         try {
-            String version = NativeImpl.version;
+            String version = NativeMathImpl.version;
 
             final boolean isSnapshot = version.endsWith("-SNAPSHOT");
             if (isSnapshot)
@@ -26,10 +26,10 @@ class NativeImplLoader {
                     osArch = "aarch64";
             }
 
-            final String packageName = NativeImplLoader.class.getPackage().getName();
+            final String packageName = NativeMathImplLoader.class.getPackage().getName();
 
             ResourceLoader
-                .from(NativeImplLoader.class, "resources_" + packageName.replace('.', '_') + '/' + osName + "/" + osArch + "/*") // This version now also works, but is probably less efficient
+                .from(NativeMathImplLoader.class, "resources_" + packageName.replace('.', '_') + '/' + osName + '/' + osArch + "/*")
                 .to(Paths.get(System.getProperty("java.io.tmpdir"), packageName.replace('.', File.separatorChar), version, osArch).toString())
                 .alwaysOverwrite(isSnapshot)
                 .tryRandomFallbackSubDirectory(true)

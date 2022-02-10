@@ -185,7 +185,11 @@ public class Decimal64Utils {
 
 
     public static String toString(@Decimal final long value) {
-        return NULL == value ? "null" : appendTo(value, new StringBuilder()).toString();
+        return JavaImpl.fastToString(value);
+    }
+
+    public static String toScientificString(@Decimal final long value) {
+        return JavaImpl.fastToScientificString(value);
     }
 
     static String toDebugString(@Decimal final long value) {
@@ -463,6 +467,10 @@ public class Decimal64Utils {
         return JavaImpl.isFinite(value);
     }
 
+    public static boolean isNonFinite(@Decimal final long value) {
+        return JavaImpl.isNonFinite(value);
+    }
+
     public static boolean isNormal(@Decimal final long value) {
         return NativeImpl.isNormal(value);
     }
@@ -573,22 +581,22 @@ public class Decimal64Utils {
 
     @Decimal
     public static long add(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.add2(a, b);
+        return JavaImplAdd.add(a, b);
     }
 
     @Decimal
     public static long add(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
-        return NativeImpl.add3(a, b, c);
+        return JavaImplAdd.add(JavaImplAdd.add(a, b), c);
     }
 
     @Decimal
     public static long add(@Decimal final long a, @Decimal final long b, @Decimal final long c, @Decimal final long d) {
-        return NativeImpl.add4(a, b, c, d);
+        return JavaImplAdd.add(JavaImplAdd.add(a, b), JavaImplAdd.add(c, d));
     }
 
     @Decimal
     public static long subtract(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.subtract(a, b);
+        return JavaImplAdd.add(a, JavaImpl.negate(b));
     }
 
     @Decimal
@@ -674,6 +682,7 @@ public class Decimal64Utils {
      * @param roundType {@code RoundType} type of rounding
      * @return {@code DFP} the rounded value
      */
+    @Decimal
     public static long round(@Decimal final long value, final int n, final RoundType roundType) {
         return JavaImpl.round(value, n, roundType);
     }
@@ -691,7 +700,7 @@ public class Decimal64Utils {
     @Decimal
     @Deprecated
     public static long ceil(@Decimal final long value) {
-        return round(value, 0, RoundType.CEIL);
+        return NativeImpl.roundTowardsPositiveInfinity(value);
     }
 
     /**
@@ -707,7 +716,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long ceiling(@Decimal final long value) {
-        return round(value, 0, RoundType.CEIL);
+        return NativeImpl.roundTowardsPositiveInfinity(value);
     }
 
     /**
@@ -721,7 +730,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsPositiveInfinity(@Decimal final long value) {
-        return round(value, 0, RoundType.CEIL);
+        return NativeImpl.roundTowardsPositiveInfinity(value);
     }
 
     /**
@@ -735,7 +744,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long floor(@Decimal final long value) {
-        return round(value, 0, RoundType.FLOOR);
+        return NativeImpl.roundTowardsNegativeInfinity(value);
     }
 
     /**
@@ -748,7 +757,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsNegativeInfinity(@Decimal final long value) {
-        return round(value, 0, RoundType.FLOOR);
+        return NativeImpl.roundTowardsNegativeInfinity(value);
     }
 
     /**
@@ -762,7 +771,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long truncate(@Decimal final long value) {
-        return round(value, 0, RoundType.TRUNC);
+        return NativeImpl.roundTowardsZero(value);
     }
 
 
@@ -776,7 +785,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsZero(@Decimal final long value) {
-        return round(value, 0, RoundType.TRUNC);
+        return NativeImpl.roundTowardsZero(value);
     }
 
     /**
@@ -806,7 +815,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long round(@Decimal final long value) {
-        return round(value, 0, RoundType.ROUND);
+        return NativeImpl.roundToNearestTiesAwayFromZero(value);
     }
 
     /**
@@ -818,7 +827,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundToNearestTiesAwayFromZero(@Decimal final long value) {
-        return round(value, 0, RoundType.ROUND);
+        return NativeImpl.roundToNearestTiesAwayFromZero(value);
     }
 
     /**
@@ -907,7 +916,7 @@ public class Decimal64Utils {
         if (isNaN(value))
             return value;
 
-        @Decimal final long ratio = round(divide(value, multiple), 0, RoundType.ROUND);
+        @Decimal final long ratio = NativeImpl.roundToNearestTiesAwayFromZero(divide(value, multiple));
         return multiply(ratio, multiple);
     }
 
@@ -975,7 +984,34 @@ public class Decimal64Utils {
      * @throws IOException from {@link Appendable#append(char)}
      */
     public static Appendable appendTo(@Decimal final long value, final Appendable appendable) throws IOException {
-        return JavaImpl.appendTo(value, appendable);
+        return JavaImpl.fastAppendToAppendable(value, appendable);
+    }
+
+    /**
+     * Append string representation of {@code DFP} {@code value} to {@link Appendable} {@code appendable}
+     * <p>
+     * Same as {@code appendable.append(value.toString())}, but more efficient.
+     *
+     * @param value      {@code DFP64} argument
+     * @param appendable {@link Appendable} instance to which the string representation of the {@code value} will be appended
+     * @return the 2nd argument ({@link Appendable} {@code appendable})
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    public static Appendable scientificAppendTo(@Decimal final long value, final Appendable appendable) throws IOException {
+        return JavaImpl.fastScientificAppendToAppendable(value, appendable);
+    }
+
+    /**
+     * Implements {@link Decimal64#scientificAppendTo(Appendable)}, adds null check; do not use directly.
+     *
+     * @param value      DFP argument
+     * @param appendable an object, implementing Appendable interface
+     * @return ..
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    public static Appendable scientificAppendToChecked(@Decimal final long value, final Appendable appendable) throws IOException {
+        checkNull(value);
+        return scientificAppendTo(value, appendable);
     }
 
     /**
@@ -988,12 +1024,32 @@ public class Decimal64Utils {
      * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
      */
     public static StringBuilder appendTo(@Decimal final long value, final StringBuilder sb) {
-        try {
-            JavaImpl.appendTo(value, sb);
-            return sb;
-        } catch (final IOException exception) {
-            throw new RuntimeException("IO exception was unexpected.", exception);
-        }
+        return JavaImpl.fastAppendToStringBuilder(value, sb);
+    }
+
+    /**
+     * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
+     * <p>
+     * Same as {@code sb.append(value.toString());}, but more efficient.
+     *
+     * @param value {@code DFP64} argument
+     * @param sb    {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
+     * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
+     */
+    public static StringBuilder scientificAppendTo(@Decimal final long value, final StringBuilder sb) {
+        return JavaImpl.fastScientificAppendToStringBuilder(value, sb);
+    }
+
+    /**
+     * Implements {@link Decimal64#scientificAppendTo(StringBuilder)}, adds null check; do not use directly.
+     *
+     * @param value      DFP argument
+     * @param appendable an object, implementing Appendable interface
+     * @return ..
+     */
+    public static StringBuilder scientificAppendToChecked(@Decimal final long value, final StringBuilder sb) {
+        checkNull(value);
+        return scientificAppendTo(value, sb);
     }
 
     /**
@@ -1017,8 +1073,22 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long parse(final CharSequence text, final int startIndex, final int endIndex) {
-        return JavaImpl.parse(text, startIndex, endIndex, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        if ((fpsf.value & JavaImplParse.BID_INVALID_FORMAT) != 0)
+            throw new NumberFormatException("Input string is not in a correct format.");
+//        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
+//        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
+        return ret;
     }
+
+    private static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst =
+        new ThreadLocal<JavaImplParse.FloatingPointStatusFlag>() {
+            @Override
+            protected JavaImplParse.FloatingPointStatusFlag initialValue() {
+                return new JavaImplParse.FloatingPointStatusFlag();
+            }
+        };
 
     /**
      * Parses a dfp floating-point value from the given textual representation.
@@ -1077,15 +1147,13 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long tryParse(final CharSequence text, final int startIndex, final int endIndex, @Decimal final long defaultValue) {
-        @Decimal long value = defaultValue;
-
-        try {
-            value = parse(text, startIndex, endIndex);
-        } catch (final NumberFormatException ignore) {
-            // ignore
-        }
-
-        return value;
+        JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        if ((fpsf.value & JavaImplParse.BID_INVALID_FORMAT) != 0)
+            return defaultValue;
+//        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
+//        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
+        return ret;
     }
 
     /**
@@ -1669,6 +1737,20 @@ public class Decimal64Utils {
     public static long minChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return min(a, b);
+    }
+
+    /**
+     * Implements {@link Decimal64#round()}, adds null check; do not use directly.
+     *
+     * @param value     {@code DFP} argument to round
+     * @param n         the number of decimals to use when rounding the number
+     * @param roundType {@code RoundType} type of rounding
+     * @return {@code DFP} the rounded value
+     */
+    @Decimal
+    public static long roundChecked(@Decimal final long value, final int n, final RoundType roundType) {
+        checkNull(value);
+        return round(value, n, roundType);
     }
 
     /**

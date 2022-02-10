@@ -20,11 +20,37 @@ java {
     withSourcesJar()
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir "$projectDir/build/generated/sources/nativeWrappers"
+            srcDir "$rootDir/NativeUtils/java/main/src/main/java"
+            srcDir "$rootDir/NativeUtils/Zstandard/java/src/main/java"
+
+            resources {
+                srcDirs = ["$rootDir/native/binmathJava/Release/"]
+                include '**/*.zst'
+            }
+        }
+    }
+}
+
 dependencies {
     implementation project(":java:dfp")
     testImplementation 'junit:junit:4.+'
     testImplementation 'org.apache.commons:commons-math3:3.6.1'
 }
+
+compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfpMath"
+
+task copyNativeDfpMathResources(type: Copy) {
+    from("$rootDir/native/binmath/Release")
+    destinationDir(file("$rootDir/native/binmathJava/Release/resources_com_epam_deltix_dfpmath"))
+    onlyIf {
+        !file("$rootDir/native/binmathJava/Release/resources_com_epam_deltix_dfpmath").exists()
+    }
+}
+compileJava.dependsOn(copyNativeDfpMathResources)
 
 def rUser = findProperty('SONATYPE_NEXUS_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: "FakeUser"
 def rPass = findProperty('SONATYPE_NEXUS_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: "FakePass"
@@ -99,4 +125,8 @@ jar {
     from("$rootDir") {
         include 'LICENSE'
     }
+    from("$rootDir") {
+        include 'intel-eula.txt'
+    }
+    setEntryCompression ZipEntryCompression.STORED
 }

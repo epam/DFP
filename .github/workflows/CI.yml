@@ -63,7 +63,6 @@ jobs:
           cd ../DFP/
           ls -al
           ./gradlew makeNativeLinux
-
           ./gradlew makeNativeWrappers
 
       - uses: actions/upload-artifact@v2
@@ -72,8 +71,11 @@ jobs:
           path: |
             ./*native/bin*
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/Version.targets
           retention-days: 7
 
 
@@ -154,6 +156,7 @@ jobs:
         run: |
           zstd --version
           zstd -19 --rm -r ./native/bin
+          zstd -19 --rm -r ./native/binmath
       - uses: actions/upload-artifact@v2
         with:
           name: compress-native
@@ -161,8 +164,11 @@ jobs:
             ./gradle.properties
             ./*native/bin*
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/Version.targets
           retention-days: 7
 
 
@@ -196,7 +202,7 @@ jobs:
 
 
   build-dotnet:
-    runs-on: windows-latest
+    runs-on: windows-2019
     needs: [compress-native]
     steps:
       - uses: actions/checkout@v2
@@ -219,6 +225,7 @@ jobs:
           name: dotnet-build
           path: |
             ./*csharp/EPAM.Deltix.DFP/bin/Release/*
+            ./*csharp/EPAM.Deltix.DFPMath/bin/Release/*
             ./*csharp/EPAM.Deltix.DFP.Demo/bin/Release/*
           retention-days: 7
 
@@ -245,7 +252,7 @@ jobs:
 
 
   test-dotnet:
-    runs-on: windows-latest
+    runs-on: windows-2019
     needs: [compress-native]
     steps:
       - uses: actions/checkout@v2
@@ -319,7 +326,7 @@ jobs:
   publish-dotnet:
     if: ${{ startsWith(github.ref, 'refs/heads/release') }}
     needs: [release]
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       - uses: actions/checkout@v2
         with:

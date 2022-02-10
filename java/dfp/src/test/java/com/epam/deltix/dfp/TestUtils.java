@@ -3,6 +3,7 @@ package com.epam.deltix.dfp;
 import org.junit.Assert;
 
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.epam.deltix.dfp.Decimal64Utils.toDebugString;
 import static org.junit.Assert.assertEquals;
@@ -258,4 +259,30 @@ public class TestUtils {
     };
 
     static final Random rng = new Random();
+
+    public static void checkInMultipleThreads(final Runnable target) throws Exception {
+        final Thread[] threads = new Thread[Runtime.getRuntime().availableProcessors()];
+        final AtomicReference<Exception> lastException = new AtomicReference<>(null);
+
+        for (int ti = 0; ti < threads.length; ++ti) {
+            threads[ti] = new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            target.run();
+                        } catch (final Exception e) {
+                            lastException.set(e);
+                        }
+                    }
+                });
+            threads[ti].start();
+        }
+
+        for (final Thread thread : threads)
+            thread.join();
+
+        if (lastException.get() != null)
+            throw lastException.get();
+    }
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 
 using static EPAM.Deltix.DFP.Decimal64;
-using static EPAM.Deltix.DFP.Decimal64Math;
+using static EPAM.Deltix.DFPMath.Decimal64Math;
 using static EPAM.Deltix.DFP.Test.TestUtils;
 
 namespace EPAM.Deltix.DFP.Test
@@ -817,14 +817,14 @@ namespace EPAM.Deltix.DFP.Test
 		[Test]
 		public void TestIsInf()
 		{
-			Assert.False(Scalbn(FromInt32(314), -2).IsInf());
-			Assert.False(Scalbn(FromInt32(-314), -2).IsInf());
+			Assert.False(Scalbn(FromInt32(314), -2).IsInfinity());
+			Assert.False(Scalbn(FromInt32(-314), -2).IsInfinity());
 
-			Assert.False(Zero.IsInf());
+			Assert.False(Zero.IsInfinity());
 
-			Assert.False(NaN.IsInf());
-			Assert.True(PositiveInfinity.IsInf());
-			Assert.True(NegativeInfinity.IsInf());
+			Assert.False(NaN.IsInfinity());
+			Assert.True(PositiveInfinity.IsInfinity());
+			Assert.True(NegativeInfinity.IsInfinity());
 		}
 
 		[Test]
