@@ -1043,8 +1043,8 @@ public class Decimal64Utils {
     /**
      * Implements {@link Decimal64#scientificAppendTo(StringBuilder)}, adds null check; do not use directly.
      *
-     * @param value      DFP argument
-     * @param appendable an object, implementing Appendable interface
+     * @param value DFP argument
+     * @param sb    {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
      * @return ..
      */
     public static StringBuilder scientificAppendToChecked(@Decimal final long value, final StringBuilder sb) {
