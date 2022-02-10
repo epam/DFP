@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPAM.Deltix.DFP.Demo", "EPA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPAM.Deltix.DFP.Benchmark", "EPAM.Deltix.DFP.Benchmark\EPAM.Deltix.DFP.Benchmark.csproj", "{3DC6860F-084B-4B68-BCF0-A2F57C7E478F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPAM.Deltix.DFPMath", "EPAM.Deltix.DFPMath\EPAM.Deltix.DFPMath.csproj", "{EF891ADC-045B-4C25-863C-040BE30AE6D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{3DC6860F-084B-4B68-BCF0-A2F57C7E478F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DC6860F-084B-4B68-BCF0-A2F57C7E478F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DC6860F-084B-4B68-BCF0-A2F57C7E478F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF891ADC-045B-4C25-863C-040BE30AE6D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF891ADC-045B-4C25-863C-040BE30AE6D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF891ADC-045B-4C25-863C-040BE30AE6D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF891ADC-045B-4C25-863C-040BE30AE6D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -15,6 +15,21 @@ Ideal data type for this purpose:
 
 DFP uses Java long to represent base-10 floating point numbers. DFP is based on [IEEE 754-2008 standard](https://en.wikipedia.org/wiki/IEEE_754).
 
+# How to use
+
+Add dependency (Gradle):
+```
+compile 'com.epam.deltix:dfp:0.11.21'
+```
+Use:
+```
+import deltix.dfp.Decimal64Utils;
+
+@Decimal long price = Decimal64Utils.parse ("123.45");
+@Decimal long halfPrice = Decimal64Utils.divideByInteger (price, 2);
+```
+
+
 ## Description/Usage
 
 * [Quick Start Guide](docs/quickstart.md)

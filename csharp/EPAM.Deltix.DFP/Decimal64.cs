@@ -1,7 +1,10 @@
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
+
+[assembly: InternalsVisibleTo("EPAM.Deltix.DFP.Math")]
 
 namespace EPAM.Deltix.DFP
 {
@@ -82,6 +85,21 @@ namespace EPAM.Deltix.DFP
 				0 == (mantissa & (-1L << 53))
 				? DotNetImpl.FromFixedPointLimitedU64((UInt64)mantissa, numberOfDigits)
 				: NativeImpl.fromFixedPoint64(mantissa, numberOfDigits));
+		}
+
+		public static Decimal64 FromFixedPoint(int mantissa, uint numberOfDigits)
+		{
+			return numberOfDigits < Int32.MaxValue ? FromFixedPoint(mantissa, (int)numberOfDigits) : Decimal64.Zero;
+		}
+
+		public static Decimal64 FromFixedPoint(uint mantissa, uint numberOfDigits)
+		{
+			return numberOfDigits < Int32.MaxValue ? FromFixedPoint(mantissa, (int)numberOfDigits) : Decimal64.Zero;
+		}
+
+		public static Decimal64 FromFixedPoint(long mantissa, uint numberOfDigits)
+		{
+			return numberOfDigits < Int32.MaxValue ? FromFixedPoint(mantissa, (int)numberOfDigits) : Decimal64.Zero;
 		}
 
 		public Int64 ToFixedPoint(int numberOfDigits)
@@ -700,6 +718,11 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
+		public Decimal64 Round(int n, RoundType roundType)
+		{
+			return new Decimal64(DotNetImpl.Round(Bits, n, roundType));
+		}
+
 		#endregion
 
 		#region Special
@@ -750,26 +773,41 @@ namespace EPAM.Deltix.DFP
 
 		public static Decimal64 Parse(String text)
 		{
-			return FromDecimalDouble(Double.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture));
+			uint fpsf;
+			var ret = DotNetReImpl.bid64_from_string(text, out fpsf);
+			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
+				throw new FormatException("Input string is not in a correct format.");
+			//else if ((fpsf & DotNetReImpl.BID_INEXACT_EXCEPTION) != 0)
+			//	throw new FormatException("Can't convert input string to value without precision loss.");
+			return FromUnderlying(ret);
 		}
 
 		public static Boolean TryParse(String text, out Decimal64 result)
 		{
-			Double value;
-			if (!Double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+			uint fpsf;
+			var ret = DotNetReImpl.bid64_from_string(text, out fpsf);
+			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
 			{
 				result = NaN;
 				return false;
 			}
-
-			result = FromDecimalDouble(value);
+			result = FromUnderlying(ret);
 			return true;
+		}
+
+		public String ToScientificString()
+		{
+			return DotNetImpl.ToScientificString(Bits);
 		}
 
 		public StringBuilder AppendTo(StringBuilder text)
 		{
-			text.Append(ToDouble());
-			return text;
+			return DotNetImpl.AppendTo(Bits, text);
+		}
+
+		public StringBuilder ScientificAppendTo(StringBuilder text)
+		{
+			return DotNetImpl.ScientificAppendTo(Bits, text);
 		}
 
 		#endregion
@@ -803,14 +841,5 @@ namespace EPAM.Deltix.DFP
 		}
 
 		#endregion
-
-		/// <summary>
-		/// Return <c>true</c> if and only if x is infinite.
-		/// </summary>
-		/// <returns>The check flag.</returns>
-		public bool IsInf()
-		{
-			return NativeImpl.bid64IsInf(Bits);
-		}
 	}
 }

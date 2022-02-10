@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 
 using static EPAM.Deltix.DFP.Decimal64;
-using static EPAM.Deltix.DFP.Decimal64Math;
+using static EPAM.Deltix.DFPMath.Decimal64Math;
 using static EPAM.Deltix.DFP.Test.TestUtils;
 
 namespace EPAM.Deltix.DFP.Test
@@ -817,14 +817,14 @@ namespace EPAM.Deltix.DFP.Test
 		[Test]
 		public void TestIsInf()
 		{
-			Assert.False(Scalbn(FromInt32(314), -2).IsInf());
-			Assert.False(Scalbn(FromInt32(-314), -2).IsInf());
+			Assert.False(Scalbn(FromInt32(314), -2).IsInfinity());
+			Assert.False(Scalbn(FromInt32(-314), -2).IsInfinity());
 
-			Assert.False(Zero.IsInf());
+			Assert.False(Zero.IsInfinity());
 
-			Assert.False(NaN.IsInf());
-			Assert.True(PositiveInfinity.IsInf());
-			Assert.True(NegativeInfinity.IsInf());
+			Assert.False(NaN.IsInfinity());
+			Assert.True(PositiveInfinity.IsInfinity());
+			Assert.True(NegativeInfinity.IsInfinity());
 		}
 
 		[Test]
@@ -1002,18 +1002,6 @@ namespace EPAM.Deltix.DFP.Test
 			AssertDecimalEqual(FromInt32(7), Logb(Scalbn(FromInt32(314), 5)));
 			AssertDecimalEqual(FromInt32(-3), Logb(Scalbn(FromInt32(314), -5)));
 			AssertDecimalEqual(FromInt32(-3), Logb(Scalbn(FromInt32(-314), -5)));
-		}
-
-		[Test]
-		public void TestScalbln()
-		{
-			var random = new Random(GetRandomSeed());
-			for (int i = 0; i < N; ++i)
-			{
-				var x = random.Next(int.MinValue, int.MaxValue);
-				var y = random.Next(-100, 100);
-				AssertDecimalEqual(Scalbn(FromInt32(x), y), Scalbln(FromInt64(x), y), "x=" + x + "; y=" + y);
-			}
 		}
 
 		[Test]
