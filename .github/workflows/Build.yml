@@ -146,6 +146,7 @@ jobs:
       - name: build
         run: |
           ./gradlew jar
+          ./gradlew javadocJar
       - uses: actions/upload-artifact@v2
         with:
           name: java-jars
