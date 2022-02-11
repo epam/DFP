@@ -364,13 +364,13 @@ class JavaImplParse {
     public static long fast_get_BID64_check_OF(final long sgn, int expon, long coeff, final int rmode, final FloatingPointStatusFlag fpsc) {
         long r, mask;
 
-        if (Integer.compareUnsigned(expon, 3 * 256 - 1) >= 0) {
+        if (UnsignedInteger.compare(expon, 3 * 256 - 1) >= 0) {
             if ((expon == 3 * 256 - 1) && coeff == 10000000000000000L) {
                 expon = 3 * 256;
                 coeff = 1000000000000000L;
             }
 
-            if (Integer.compareUnsigned(expon, 3 * 256) >= 0) {
+            if (UnsignedInteger.compare(expon, 3 * 256) >= 0) {
                 while (coeff < 1000000000000000L && expon >= 3 * 256) {
                     expon--;
                     coeff = (coeff << 3) + (coeff << 1);
@@ -888,7 +888,7 @@ class JavaImplParse {
                     carry = ((Stempw1 < X1) || (X1 < CI)) ? 1L : 0;
                 }
 
-                if (Long.compareUnsigned((remainder_h >>> (64 - amount)) + carry, 1L << amount) >= 0)
+                if (UnsignedLong.compare((remainder_h >>> (64 - amount)) + carry, 1L << amount) >= 0)
                     status = BID_EXACT_STATUS;
                 break;
             }
@@ -912,12 +912,12 @@ class JavaImplParse {
         int extra_digits, amount, amount2;
         int status;
 
-        if (Long.compareUnsigned(coeff, 9999999999999999L) > 0) {
+        if (UnsignedLong.compare(coeff, 9999999999999999L) > 0) {
             expon++;
             coeff = 1000000000000000L;
         }
         // check for possible underflow/overflow
-        if (Integer.compareUnsigned(expon, 3 * 256) >= 0) {
+        if (UnsignedInteger.compare(expon, 3 * 256) >= 0) {
             if (expon < 0) {
                 // underflow
                 if (expon + MAX_FORMAT_DIGITS < 0) {
@@ -1078,7 +1078,7 @@ class JavaImplParse {
                             carry = ((Stempw1 < X1) || (X1 < CI)) ? 1L : 0;
                         }
 
-                        if (Long.compareUnsigned((remainder_h >>> (64 - amount)) + carry, 1L << amount) >= 0)
+                        if (UnsignedLong.compare((remainder_h >>> (64 - amount)) + carry, 1L << amount) >= 0)
                             status = BID_EXACT_STATUS;
                         break;
                     }
@@ -1093,7 +1093,7 @@ class JavaImplParse {
             if (coeff == 0) {
                 if (expon > DECIMAL_MAX_EXPON_64) expon = DECIMAL_MAX_EXPON_64;
             }
-            while (Long.compareUnsigned(coeff, 1000000000000000L) < 0 && expon >= 3 * 256) {
+            while (UnsignedLong.compare(coeff, 1000000000000000L) < 0 && expon >= 3 * 256) {
                 expon--;
                 coeff = (coeff << 3) + (coeff << 1);
             }
@@ -1163,14 +1163,14 @@ class JavaImplParse {
             if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                 p.exponent = 0;
                 p.coefficient = x & 0xfe03ffffffffffffL;
-                if (Long.compareUnsigned(x & 0x0003ffffffffffffL, 1000000000000000L) >= 0)
+                if (UnsignedLong.compare(x & 0x0003ffffffffffffL, 1000000000000000L) >= 0)
                     p.coefficient = x & 0xfe00000000000000L;
                 if ((x & NAN_MASK64) == INFINITY_MASK64)
                     p.coefficient = x & SINFINITY_MASK64;
                 return 0;   // NaN or Infinity
             }
             // check for non-canonical values
-            if (Long.compareUnsigned(coeff, 10000000000000000L) >= 0)
+            if (UnsignedLong.compare(coeff, 10000000000000000L) >= 0)
                 coeff = 0;
             p.coefficient = coeff;
             // get exponent
