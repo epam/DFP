@@ -23,7 +23,7 @@ compile 'com.epam.deltix:dfp:0.11.21'
 ```
 Use:
 ```
-import deltix.dfp.Decimal64Utils;
+import com.epam.deltix.dfp.Decimal64Utils;
 
 @Decimal long price = Decimal64Utils.parse ("123.45");
 @Decimal long halfPrice = Decimal64Utils.divideByInteger (price, 2);
