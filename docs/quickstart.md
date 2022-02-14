@@ -4,14 +4,14 @@ Add the following dependency to your Java project (Gradle sample):
 
 ```groovy
 dependencies {
-    compile 'com.epam.deltix:dfp:0.11.21'
+    compile 'com.epam.deltix:dfp:0.11.23'
 }
 ```
 
 Here is a very short example of DFP usage:
 
 ```java
-import deltix.dfp.Decimal64Utils;
+import com.epam.deltix.dfp.Decimal64Utils;
 
 @Decimal long commission = Decimal64Utils.fromFixedPoint(8, 4); // 8 basis points, 0.0008
 @Decimal long price = Decimal64Utils.fromDouble (123.45);
