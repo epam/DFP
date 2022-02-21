@@ -317,46 +317,6 @@ class JavaImplParse {
         return get_BID64(sign_x, expon_x, coefficient_x, rnd_mode, pfpsf);
     }
 
-    public static final int DECIMAL_MAX_EXPON_64 = 767;
-    //public static final  int DECIMAL_EXPONENT_BIAS = 398;
-    //public static final  int MAX_FORMAT_DIGITS = 16;
-
-    public static final long SPECIAL_ENCODING_MASK64 = 0x6000000000000000L;
-    public static final long INFINITY_MASK64 = 0x7800000000000000L;
-    public static final long SINFINITY_MASK64 = 0xf800000000000000L;
-    //public static final  long SSNAN_MASK64 = 0xfc00000000000000L;
-    public static final long NAN_MASK64 = 0x7c00000000000000L;
-    //public static final  long SNAN_MASK64 = 0x7e00000000000000L;
-    //public static final  long QUIET_MASK64 = 0xfdffffffffffffffL;
-    public static final long LARGE_COEFF_MASK64 = 0x0007ffffffffffffL;
-    public static final long LARGE_COEFF_HIGH_BIT64 = 0x0020000000000000L;
-    public static final long SMALL_COEFF_MASK64 = 0x001fffffffffffffL;
-    public static final int EXPONENT_MASK64 = 0x3ff;
-    public static final int EXPONENT_SHIFT_LARGE64 = 51;
-    public static final int EXPONENT_SHIFT_SMALL64 = 53;
-    public static final long LARGEST_BID64 = 0x77fb86f26fc0ffffL;
-    public static final long SMALLEST_BID64 = 0xf7fb86f26fc0ffffL;
-    //public static final  long SMALL_COEFF_MASK128 = 0x0001ffffffffffffL;
-    //public static final  long LARGE_COEFF_MASK128 = 0x00007fffffffffffL;
-    //public static final  uint EXPONENT_MASK128 = 0x3fff;
-    //public static final  long LARGEST_BID128_HIGH = 0x5fffed09bead87c0L;
-    //public static final  long LARGEST_BID128_LOW = 0x378d8e63ffffffffL;
-    //public static final  uint SPECIAL_ENCODING_MASK32 = 0x60000000;
-    //public static final  uint SINFINITY_MASK32 = 0xf8000000;
-    //public static final  uint INFINITY_MASK32 = 0x78000000;
-    //public static final  uint LARGE_COEFF_MASK32 = 0x007fffff;
-    //public static final  uint LARGE_COEFF_HIGH_BIT32 = 0x00800000;
-    //public static final  uint SMALL_COEFF_MASK32 = 0x001fffff;
-    //public static final  uint EXPONENT_MASK32 = 0xff;
-    //public static final  int LARGEST_BID32 = 0x77f8967f;
-    //public static final  uint NAN_MASK32 = 0x7c000000;
-    //public static final  uint SNAN_MASK32 = 0x7e000000;
-    //public static final  uint SSNAN_MASK32 = 0xfc000000;
-    //public static final  uint QUIET_MASK32 = 0xfdffffff;
-    //public static final  long MASK_BINARY_EXPONENT = 0x7ff0000000000000L;
-    //public static final  int BINARY_EXPONENT_BIAS = 0x3ff;
-    //public static final  int UPPER_EXPON_LIMIT = 51;
-
     //
     //   no underflow checking
     //
