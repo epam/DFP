@@ -48,11 +48,11 @@ public class JavaImplMul {
      * <p>
      * DECIMAL_TINY_DETECTION_AFTER_ROUNDING: 0
      */
-    public static long bid64_mul(final long x, final long y, final int rnd_mode /* = BID_ROUNDING_TO_NEAREST */) {
-        long P_w0, P_w1, C128_w0, C128_w1, Q_high_w0, Q_high_w1, Q_low_w0, Q_low_w1, Stemp_w0, Stemp_w1;
-        long C64, remainder_h, carry;
+    public static long bid64_mul(final long x, final long y) {
+        long P_w0, P_w1, C128_w0, C128_w1, Q_high_w0, Q_high_w1, Q_low_w0, Q_low_w1;
+        long C64, remainder_h;
         int extra_digits, bin_expon_cx, bin_expon_cy, bin_expon_product;
-        int rmode, digits_p, bp, amount, amount2, final_exponent, round_up;
+        int digits_p, bp, amount, amount2, final_exponent, round_up;
         //  unsigned status, uf_status;
 
         //valid_x = unpack_BID64 (&sign_x, &exponent_x, &coefficient_x, x);
@@ -218,7 +218,7 @@ public class JavaImplMul {
             C64 = coefficient_x * coefficient_y;
 
             return get_BID64_small_mantissa(sign_x ^ sign_y,
-                exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS, C64, rnd_mode);
+                exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS, C64);
         } else {
             // get 128-bit product: coefficient_x*coefficient_y
             //__mul_64x64_to_128(P, coefficient_x, coefficient_y);
@@ -277,19 +277,12 @@ public class JavaImplMul {
             final_exponent =
                 exponent_x + exponent_y + extra_digits - DECIMAL_EXPONENT_BIAS;
 
-            rmode = rnd_mode;
-            if ((sign_x ^ sign_y) != 0 && (rmode == BID_ROUNDING_DOWN || rmode == BID_ROUNDING_UP)) // && (unsigned) (rmode - 1) < 2)
-                rmode = 3 - rmode;
-
             round_up = 0;
             if ((/*UnsignedInteger.compare*/(final_exponent) + Integer.MIN_VALUE >= (3 * 256) + Integer.MIN_VALUE)) {
                 if (final_exponent < 0) {
                     // underflow
                     if (final_exponent + 16 < 0) {
-                        long res = sign_x ^ sign_y;
-                        if (rmode == BID_ROUNDING_UP)
-                            res |= 1;
-                        return res;
+                        return sign_x ^ sign_y;
                     }
 
                     extra_digits -= final_exponent;
@@ -467,7 +460,7 @@ public class JavaImplMul {
                     }
                 } else {
                     return fast_get_BID64_check_OF(sign_x ^ sign_y, final_exponent,
-                        1000000000000000L, rnd_mode/*, pfpsf*/);
+                        1000000000000000L, BID_ROUNDING_TO_NEAREST/*, pfpsf*/);
                 }
             }
 
@@ -481,7 +474,7 @@ public class JavaImplMul {
                 {
                     final long __A128_w0 = P_w0;
                     final long __A128_w1 = P_w1;
-                    final long __B64 = bid_round_const_table[rmode][extra_digits];
+                    final long __B64 = bid_round_const_table[BID_ROUNDING_TO_NEAREST][extra_digits];
                     long __R64H;
                     __R64H = __A128_w1;
                     P_w0 = __B64 + __A128_w0;
@@ -645,32 +638,32 @@ public class JavaImplMul {
 
                 C64 = C128_w0;
 
-                if (rmode == 0)    //BID_ROUNDING_TO_NEAREST
-                    if ((C64 & 1) != 0 && round_up == 0) {
-                        // check whether fractional part of initial_P/10^extra_digits
-                        // is exactly .5
-                        // this is the same as fractional part of
-                        // (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
+                /*if (BID_ROUNDING_TO_NEAREST == 0)*/    //BID_ROUNDING_TO_NEAREST
+                if ((C64 & 1) != 0 && round_up == 0) {
+                    // check whether fractional part of initial_P/10^extra_digits
+                    // is exactly .5
+                    // this is the same as fractional part of
+                    // (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
-                        // get remainder
-                        remainder_h = Q_high_w0 << (64 - amount);
+                    // get remainder
+                    remainder_h = Q_high_w0 << (64 - amount);
 
-                        // test whether fractional part is 0
-                        if (remainder_h == 0
-                            && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
-                            || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                            && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
-                            C64--;
-                        }
+                    // test whether fractional part is 0
+                    if (remainder_h == 0
+                        && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
+                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
+                        && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
+                        C64--;
                     }
+                }
 
                 // convert to BID and return
-                return fast_get_BID64_check_OF(sign_x ^ sign_y, final_exponent, C64, rnd_mode);
+                return fast_get_BID64_check_OF(sign_x ^ sign_y, final_exponent, C64, BID_ROUNDING_TO_NEAREST);
             }
             // go to convert_format and exit
             C64 = P_w0;
             return get_BID64(sign_x ^ sign_y,
-                exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS, C64, rnd_mode);
+                exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS, C64);
         }
     }
 
@@ -719,9 +712,9 @@ public class JavaImplMul {
     //
     //   This pack macro does not check for coefficients above 2^53
     //
-    static long get_BID64_small_mantissa(final long sgn, int expon, long coeff, int rmode) {
-        long C128_w0, C128_w1, Q_low_w0, Q_low_w1, Stemp_w0, Stemp_w1;
-        long r, mask, _C64, remainder_h, QH, carry, CY;
+    static long get_BID64_small_mantissa(final long sgn, int expon, long coeff) {
+        long C128_w0, C128_w1, Q_low_w0, Q_low_w1;
+        long r, mask, _C64, remainder_h, QH;
         int extra_digits, amount, amount2;
 
         // check for possible underflow/overflow
@@ -729,18 +722,12 @@ public class JavaImplMul {
             if (expon < 0) {
                 // underflow
                 if (expon + MAX_FORMAT_DIGITS < 0) {
-                    if (rmode == BID_ROUNDING_DOWN && sgn != 0)
-                        return 0x8000000000000001L;
-                    if (rmode == BID_ROUNDING_UP && sgn == 0)
-                        return 1L;
                     // result is 0
                     return sgn;
                 }
-                if (sgn != 0 && (rmode == BID_ROUNDING_DOWN || rmode == BID_ROUNDING_UP)) // (unsigned) (rmode - 1) < 2
-                    rmode = 3 - rmode;
                 // get digits to be shifted out
                 extra_digits = -expon;
-                C128_w0 = coeff + bid_round_const_table[rmode][extra_digits];
+                C128_w0 = coeff + bid_round_const_table[BID_ROUNDING_TO_NEAREST][extra_digits];
 
                 // get coeff*(2^M[extra_digits])/10^extra_digits
                 //__mul_64x128_full (QH, Q_low, C128_w0, bid_reciprocals10_128[extra_digits]);
@@ -815,24 +802,24 @@ public class JavaImplMul {
 
                 _C64 = QH >>> amount;
 
-                if (rmode == 0)    //BID_ROUNDING_TO_NEAREST
-                    if ((_C64 & 1) != 0) {
-                        // check whether fractional part of initial_P/10^extra_digits is exactly .5
+                /*if (BID_ROUNDING_TO_NEAREST == 0)*/    //BID_ROUNDING_TO_NEAREST
+                if ((_C64 & 1) != 0) {
+                    // check whether fractional part of initial_P/10^extra_digits is exactly .5
 
-                        // get remainder
-                        amount2 = 64 - amount;
-                        remainder_h = 0;
-                        remainder_h--;
-                        remainder_h >>>= amount2;
-                        remainder_h = remainder_h & QH;
+                    // get remainder
+                    amount2 = 64 - amount;
+                    remainder_h = 0;
+                    remainder_h--;
+                    remainder_h >>>= amount2;
+                    remainder_h = remainder_h & QH;
 
-                        if (remainder_h == 0
-                            && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
-                            || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                            && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
-                            _C64--;
-                        }
+                    if (remainder_h == 0
+                        && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
+                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
+                        && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
+                        _C64--;
                     }
+                }
 
                 return sgn | _C64;
             }
@@ -843,21 +830,7 @@ public class JavaImplMul {
             }
             if (expon > DECIMAL_MAX_EXPON_64) {
                 // overflow
-                r = sgn | INFINITY_MASK64;
-                switch (rmode) {
-                    case BID_ROUNDING_DOWN:
-                        if (sgn == 0)
-                            r = LARGEST_BID64;
-                        break;
-                    case BID_ROUNDING_TO_ZERO:
-                        r = sgn | LARGEST_BID64;
-                        break;
-                    case BID_ROUNDING_UP:
-                        // round up
-                        if (sgn != 0)
-                            r = SMALLEST_BID64;
-                }
-                return r;
+                return sgn | INFINITY_MASK64;
             } else {
                 mask = 1;
                 mask <<= EXPONENT_SHIFT_SMALL64;
@@ -884,8 +857,8 @@ public class JavaImplMul {
     //
     //   BID64 pack macro (general form)
     //
-    public static long get_BID64(long sgn, int expon, long coeff, int rmode) {
-        long Stemp_w0, Stemp_w1, Q_low_w0, Q_low_w1;
+    public static long get_BID64(long sgn, int expon, long coeff) {
+        long Q_low_w0, Q_low_w1;
         long QH, r, mask, _C64, remainder_h, carry;
         int extra_digits, amount, amount2;
 
@@ -898,18 +871,12 @@ public class JavaImplMul {
             if (expon < 0) {
                 // underflow
                 if (expon + MAX_FORMAT_DIGITS < 0) {
-                    if (rmode == BID_ROUNDING_DOWN && sgn != 0)
-                        return 0x8000000000000001L;
-                    if (rmode == BID_ROUNDING_UP && sgn == 0)
-                        return 1L;
                     // result is 0
                     return sgn;
                 }
-                if (sgn != 0 && (rmode == BID_ROUNDING_DOWN || rmode == BID_ROUNDING_UP) /*(uint)(rmode - 1) < 2*/)
-                    rmode = 3 - rmode;
                 // get digits to be shifted out
                 extra_digits = -expon;
-                coeff += bid_round_const_table[rmode][extra_digits];
+                coeff += bid_round_const_table[BID_ROUNDING_TO_NEAREST][extra_digits];
 
                 // get coeff*(2^M[extra_digits])/10^extra_digits
                 //__mul_64x128_full(out QH, out Q_low, coeff, bid_reciprocals10_128_flat[extra_digits << 1], bid_reciprocals10_128_flat[(extra_digits << 1) + 1]);
@@ -985,24 +952,24 @@ public class JavaImplMul {
 
                 _C64 = QH >>> amount;
 
-                if (rmode == 0) //BID_ROUNDING_TO_NEAREST
-                    if ((_C64 & 1) != 0) {
-                        // check whether fractional part of initial_P/10^extra_digits is exactly .5
+                /*if (BID_ROUNDING_TO_NEAREST == 0)*/ //BID_ROUNDING_TO_NEAREST
+                if ((_C64 & 1) != 0) {
+                    // check whether fractional part of initial_P/10^extra_digits is exactly .5
 
-                        // get remainder
-                        amount2 = 64 - amount;
-                        remainder_h = 0;
-                        remainder_h--;
-                        remainder_h >>>= amount2;
-                        remainder_h = remainder_h & QH;
+                    // get remainder
+                    amount2 = 64 - amount;
+                    remainder_h = 0;
+                    remainder_h--;
+                    remainder_h >>>= amount2;
+                    remainder_h = remainder_h & QH;
 
-                        if (remainder_h == 0
-                            && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
-                            || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                            && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
-                            _C64--;
-                        }
+                    if (remainder_h == 0
+                        && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
+                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
+                        && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
+                        _C64--;
                     }
+                }
 
                 return sgn | _C64;
             }
@@ -1015,22 +982,7 @@ public class JavaImplMul {
             }
             if (expon > DECIMAL_MAX_EXPON_64) {
                 // overflow
-                r = sgn | INFINITY_MASK64;
-                switch (rmode) {
-                    case BID_ROUNDING_DOWN:
-                        if (sgn == 0)
-                            r = LARGEST_BID64;
-                        break;
-                    case BID_ROUNDING_TO_ZERO:
-                        r = sgn | LARGEST_BID64;
-                        break;
-                    case BID_ROUNDING_UP:
-                        // round up
-                        if (sgn != 0)
-                            r = SMALLEST_BID64;
-                        break;
-                }
-                return r;
+                return sgn | INFINITY_MASK64;
             }
         }
 
