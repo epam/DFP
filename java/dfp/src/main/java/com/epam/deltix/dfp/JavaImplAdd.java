@@ -37,8 +37,8 @@ class JavaImplAdd {
     //static final long SSNAN_MASK32 =            0xfc000000
     //static final long QUIET_MASK32 =            0xfdffffff
     static final long MASK_BINARY_EXPONENT = 0x7ff0000000000000L;
-    //static final long BINARY_EXPONENT_BIAS =  0x3ff
-    //static final long UPPER_EXPON_LIMIT =     51
+    static final int BINARY_EXPONENT_BIAS = 0x3ff;
+    static final int UPPER_EXPON_LIMIT = 51;
     static final int DECIMAL_MAX_EXPON_64 = 767;
     static final int DECIMAL_EXPONENT_BIAS = 398;
     static final int MAX_FORMAT_DIGITS = 16;
@@ -55,18 +55,12 @@ class JavaImplAdd {
     static final long LONG_LOW_PART = 0xFFFFFFFFL;
 
 
-    static class Bid64Parts {
-        public long sign;
-        public int exponent;
-        public long coefficient;
-    }
-
-    static long unpack_BID64(final Bid64Parts p, final long x) {
-        p.sign = x & 0x8000000000000000L;
+    static long unpack_BID64(final Decimal64Parts p, final long x) {
+        p.signMask = x & 0x8000000000000000L;
 
         if ((x & SPECIAL_ENCODING_MASK64) != SPECIAL_ENCODING_MASK64) {
             // exponent
-            long tmp = x >> EXPONENT_SHIFT_SMALL64;
+            long tmp = x >>> EXPONENT_SHIFT_SMALL64;
             p.exponent = (int) (tmp & EXPONENT_MASK64);
             // coefficient
             p.coefficient = (x & SMALL_COEFF_MASK64);
@@ -74,9 +68,6 @@ class JavaImplAdd {
             return p.coefficient;
         } else {
             // special encodings
-            // coefficient
-            long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
-
             if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                 p.exponent = 0;
                 p.coefficient = x & 0xfe03ffffffffffffL;
@@ -86,12 +77,14 @@ class JavaImplAdd {
                     p.coefficient = x & SINFINITY_MASK64;
                 return 0;    // NaN or Infinity
             } else {
+                // coefficient
+                long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                 // check for non-canonical values
                 if (UnsignedLong.compare(coeff, 10000000000000000L) >= 0)
                     coeff = 0;
                 p.coefficient = coeff;
                 // get exponent
-                long tmp = x >> EXPONENT_SHIFT_LARGE64;
+                long tmp = x >>> EXPONENT_SHIFT_LARGE64;
                 p.exponent = (int) (tmp & EXPONENT_MASK64);
                 return coeff;
             }
@@ -141,7 +134,7 @@ class JavaImplAdd {
      */
     public static long add(final long x, final long y) {
 
-        long CA0, CA1, CT0, CT1, CT_new0, CT_new1;
+        long CA_w0, CA_w1, CT_w0, CT_w1, CT_new_w0, CT_new_w1;
         long sign_x, sign_y, coefficient_x, coefficient_y, C64_new;
         long valid_x, valid_y;
         long sign_a, sign_b, coefficient_a, coefficient_b, sign_s, sign_ab, rem_a;
@@ -322,12 +315,12 @@ class JavaImplAdd {
             // normalize a to a 16-digit coefficient
 
             scale_ca = bid_estimate_decimal_digits[bin_expon_ca];
-            if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_low[scale_ca]) >= 0)
+            if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_w0[scale_ca]) >= 0)
                 scale_ca++;
 
             scale_k = 16 - scale_ca;
 
-            coefficient_a *= bid_power10_table_128_low[scale_k];
+            coefficient_a *= bid_power10_table_128_w0[scale_k];
 
             diff_dec_expon -= scale_k;
             exponent_a -= scale_k;
@@ -395,7 +388,7 @@ class JavaImplAdd {
             // coefficient_a*10^(exponent_a-exponent_b)<2^63
 
             // multiply by 10^(exponent_a-exponent_b)
-            coefficient_a *= bid_power10_table_128_low[diff_dec_expon];
+            coefficient_a *= bid_power10_table_128_w0[diff_dec_expon];
 
             // sign mask
             sign_b = sign_b >> 63;  // @AD: signed value shift
@@ -413,7 +406,7 @@ class JavaImplAdd {
             sign_s &= 0x8000000000000000L;
 
             // coefficient_a < 10^16 ?
-            if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_low[MAX_FORMAT_DIGITS]) < 0) {
+            if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_w0[MAX_FORMAT_DIGITS]) < 0) {
                 if (rnd_mode == BID_ROUNDING_DOWN && (coefficient_a == 0) && sign_a != sign_b)
                     sign_s = 0x8000000000000000L;
                 return very_fast_get_BID64(sign_s, exponent_b, coefficient_a);
@@ -422,9 +415,9 @@ class JavaImplAdd {
 
             // already know coefficient_a<10^19
             // coefficient_a < 10^17 ?
-            if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_low[17]) < 0)
+            if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_w0[17]) < 0)
                 extra_digits = 1;
-            else if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_low[18]) < 0)
+            else if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_w0[18]) < 0)
                 extra_digits = 2;
             else
                 extra_digits = 3;
@@ -437,28 +430,28 @@ class JavaImplAdd {
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_a, bid_reciprocals10_64[extra_digits]);
             {
-                long CX = coefficient_a;
-                long CY = bid_reciprocals10_64[extra_digits];
-                long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = CX >>> 32;
-                CXL = LONG_LOW_PART & CX;
-                CYH = CY >>> 32;
-                CYL = LONG_LOW_PART & CY;
+                long __CX = coefficient_a;
+                long __CY = bid_reciprocals10_64[extra_digits];
+                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                __CXH = __CX >>> 32;
+                __CXL = LONG_LOW_PART & __CX;
+                __CYH = __CY >>> 32;
+                __CYL = LONG_LOW_PART & __CY;
 
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += (PM >>> 32);
-                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                __PM = __CXH * __CYL;
+                __PH = __CXH * __CYH;
+                __PL = __CXL * __CYL;
+                __PM2 = __CXL * __CYH;
+                __PH += (__PM >>> 32);
+                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
 
-                CT1 = PH + (PM >>> 32);
-                CT0 = (PM << 32) + (LONG_LOW_PART & PL);
+                CT_w1 = __PH + (__PM >>> 32);
+                CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
             }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
             amount = bid_short_recip_scale[extra_digits];
-            C64 = CT1 >>> amount;
+            C64 = CT_w1 >>> amount;
 
         } else {
             // coefficient_a*10^(exponent_a-exponent_b) is large
@@ -475,10 +468,10 @@ class JavaImplAdd {
             sign_ab = sign_ab >> 63;  // @AD: signed value shift
 
             // T1 = 10^(16-diff_dec_expon)
-            T1 = bid_power10_table_128_low[16 - diff_dec_expon];
+            T1 = bid_power10_table_128_w0[16 - diff_dec_expon];
 
             // get number of digits in coefficient_a
-            if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_low[scale_ca]) >= 0) {
+            if (UnsignedLong.compare(coefficient_a, bid_power10_table_128_w0[scale_ca]) >= 0) {
                 scale_ca++;
             }
 
@@ -486,7 +479,7 @@ class JavaImplAdd {
 
             // addition
             saved_ca = coefficient_a - T1;
-            coefficient_a = saved_ca * bid_power10_table_128_low[scale_k];
+            coefficient_a = saved_ca * bid_power10_table_128_w0[scale_k];
             extra_digits = diff_dec_expon - scale_k;
 
             // apply sign
@@ -497,28 +490,28 @@ class JavaImplAdd {
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
             {
-                final long CX = coefficient_b;
-                final long CY = bid_reciprocals10_64[extra_digits];
-                long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = CX >>> 32;
-                CXL = LONG_LOW_PART & CX;
-                CYH = CY >>> 32;
-                CYL = LONG_LOW_PART & CY;
+                final long __CX = coefficient_b;
+                final long __CY = bid_reciprocals10_64[extra_digits];
+                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                __CXH = __CX >>> 32;
+                __CXL = LONG_LOW_PART & __CX;
+                __CYH = __CY >>> 32;
+                __CYL = LONG_LOW_PART & __CY;
 
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += (PM >>> 32);
-                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                __PM = __CXH * __CYL;
+                __PH = __CXH * __CYH;
+                __PL = __CXL * __CYL;
+                __PM2 = __CXL * __CYH;
+                __PH += (__PM >>> 32);
+                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
 
-                CT1 = PH + (PM >>> 32);
-                CT0 = (PM << 32) + (LONG_LOW_PART & PL);
+                CT_w1 = __PH + (__PM >>> 32);
+                CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
             }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
             amount = bid_short_recip_scale[extra_digits];
-            C0_64 = CT1 >>> amount;
+            C0_64 = CT_w1 >>> amount;
 
             // result coefficient
             C64 = C0_64 + coefficient_a;
@@ -533,33 +526,33 @@ class JavaImplAdd {
                         saved_ca = saved_ca + T1;
                         //__mul_64x64_to_128(CA, saved_ca, 0x3333333333333334L);
                         {
-                            final long CX = saved_ca;
-                            final long CY = 0x3333333333333334L;
-                            long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                            CXH = CX >>> 32;
-                            CXL = LONG_LOW_PART & CX;
-                            CYH = CY >>> 32;
-                            CYL = LONG_LOW_PART & CY;
+                            final long __CX = saved_ca;
+                            final long __CY = 0x3333333333333334L;
+                            long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                            __CXH = __CX >>> 32;
+                            __CXL = LONG_LOW_PART & __CX;
+                            __CYH = __CY >>> 32;
+                            __CYL = LONG_LOW_PART & __CY;
 
-                            PM = CXH * CYL;
-                            PH = CXH * CYH;
-                            PL = CXL * CYL;
-                            PM2 = CXL * CYH;
-                            PH += (PM >>> 32);
-                            PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                            __PM = __CXH * __CYL;
+                            __PH = __CXH * __CYH;
+                            __PL = __CXL * __CYL;
+                            __PM2 = __CXL * __CYH;
+                            __PH += (__PM >>> 32);
+                            __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
 
-                            CA1 = PH + (PM >>> 32);
-                            CA0 = (PM << 32) + (LONG_LOW_PART & PL);
+                            CA_w1 = __PH + (__PM >>> 32);
+                            CA_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
                         }
                         //reciprocals10_64[1]);
-                        coefficient_a = CA1 >>> 1;
+                        coefficient_a = CA_w1 >>> 1;
                         rem_a =
                             saved_ca - (coefficient_a << 3) - (coefficient_a << 1);
                         coefficient_a = coefficient_a - T1;
 
-                        saved_cb += rem_a * bid_power10_table_128_low[diff_dec_expon];
+                        saved_cb += rem_a * bid_power10_table_128_w0[diff_dec_expon];
                     } else
-                        coefficient_a = (saved_ca - T1 - (T1 << 3)) * bid_power10_table_128_low[scale_k - 1];
+                        coefficient_a = (saved_ca - T1 - (T1 << 3)) * bid_power10_table_128_w0[scale_k - 1];
 
                     extra_digits++;
                     coefficient_b = saved_cb + 100000000000000000L + bid_round_const_table[rmode][extra_digits];
@@ -567,33 +560,33 @@ class JavaImplAdd {
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
                     {
-                        final long CX = coefficient_b;
-                        final long CY = bid_reciprocals10_64[extra_digits];
-                        long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                        CXH = CX >>> 32;
-                        CXL = LONG_LOW_PART & CX;
-                        CYH = CY >>> 32;
-                        CYL = LONG_LOW_PART & CY;
+                        final long __CX = coefficient_b;
+                        final long __CY = bid_reciprocals10_64[extra_digits];
+                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                        __CXH = __CX >>> 32;
+                        __CXL = LONG_LOW_PART & __CX;
+                        __CYH = __CY >>> 32;
+                        __CYL = LONG_LOW_PART & __CY;
 
-                        PM = CXH * CYL;
-                        PH = CXH * CYH;
-                        PL = CXL * CYL;
-                        PM2 = CXL * CYH;
-                        PH += (PM >>> 32);
-                        PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                        __PM = __CXH * __CYL;
+                        __PH = __CXH * __CYH;
+                        __PL = __CXL * __CYL;
+                        __PM2 = __CXL * __CYH;
+                        __PH += (__PM >>> 32);
+                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
 
-                        CT1 = PH + (PM >>> 32);
-                        CT0 = (PM << 32) + (LONG_LOW_PART & PL);
+                        CT_w1 = __PH + (__PM >>> 32);
+                        CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
                     }
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[extra_digits];
-                    C0_64 = CT1 >>> amount;
+                    C0_64 = CT_w1 >>> amount;
 
                     // result coefficient
                     C64 = C0_64 + coefficient_a;
                 } else if (UnsignedLong.compare(C64, 1000000000000000L) <= 0) {
                     // less than 16 digits in result
-                    coefficient_a = saved_ca * bid_power10_table_128_low[scale_k + 1];
+                    coefficient_a = saved_ca * bid_power10_table_128_w0[scale_k + 1];
                     //extra_digits --;
                     exponent_b--;
                     coefficient_b = (saved_cb << 3) + (saved_cb << 1) + 100000000000000000L
@@ -602,34 +595,34 @@ class JavaImplAdd {
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT_new, coefficient_b, bid_reciprocals10_64[extra_digits]);
                     {
-                        final long CX = coefficient_b;
-                        final long CY = bid_reciprocals10_64[extra_digits];
-                        long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                        CXH = CX >>> 32;
-                        CXL = LONG_LOW_PART & CX;
-                        CYH = CY >>> 32;
-                        CYL = LONG_LOW_PART & CY;
+                        final long __CX = coefficient_b;
+                        final long __CY = bid_reciprocals10_64[extra_digits];
+                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                        __CXH = __CX >>> 32;
+                        __CXL = LONG_LOW_PART & __CX;
+                        __CYH = __CY >>> 32;
+                        __CYL = LONG_LOW_PART & __CY;
 
-                        PM = CXH * CYL;
-                        PH = CXH * CYH;
-                        PL = CXL * CYL;
-                        PM2 = CXL * CYH;
-                        PH += (PM >>> 32);
-                        PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                        __PM = __CXH * __CYL;
+                        __PH = __CXH * __CYH;
+                        __PL = __CXL * __CYL;
+                        __PM2 = __CXL * __CYH;
+                        __PH += (__PM >>> 32);
+                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
 
-                        CT_new1 = PH + (PM >>> 32);
-                        CT_new0 = (PM << 32) + (LONG_LOW_PART & PL);
+                        CT_new_w1 = __PH + (__PM >>> 32);
+                        CT_new_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
                     }
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[extra_digits];
-                    C0_64 = CT_new1 >>> amount;
+                    C0_64 = CT_new_w1 >>> amount;
 
                     // result coefficient
                     C64_new = C0_64 + coefficient_a;
                     if (UnsignedLong.compare(C64_new, 10000000000000000L) < 0) {
                         C64 = C64_new;
-                        CT0 = CT_new0;
-                        CT1 = CT_new1;
+                        CT_w0 = CT_new_w0;
+                        CT_w1 = CT_new_w1;
                     } else
                         exponent_b++;
                 }
@@ -646,10 +639,10 @@ class JavaImplAdd {
                 //      (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
                 // get remainder
-                remainder_h = CT1 << (64 - amount);
+                remainder_h = CT_w1 << (64 - amount);
 
                 // test whether fractional part is 0
-                if (remainder_h == 0 && (UnsignedLong.compare(CT0, bid_reciprocals10_64[extra_digits]) < 0)) {
+                if (remainder_h == 0 && (UnsignedLong.compare(CT_w0, bid_reciprocals10_64[extra_digits]) < 0)) {
                     C64--;
                 }
             }
@@ -756,28 +749,6 @@ class JavaImplAdd {
 
         return r;
     }
-
-//// get full 64x64bit product
-////
-//#define __mul_64x64_to_128(P, CX, CY)   \
-//{                                       \
-//BID_UINT64 CXH, CXL, CYH,CYL,PL,PH,PM,PM2;\
-//	CXH = (CX) >>> 32;                     \
-//	CXL = (BID_UINT32)(CX);                   \
-//	CYH = (CY) >>> 32;                     \
-//	CYL = (BID_UINT32)(CY);                   \
-//	                                      \
-//    PM = CXH*CYL;                         \
-//	PH = CXH*CYH;                         \
-//	PL = CXL*CYL;                         \
-//	PM2 = CXL*CYH;                        \
-//	PH += (PM>>>32);                       \
-//	PM = (BID_UINT64)((BID_UINT32)PM)+PM2+(PL>>>32); \
-//                                          \
-//	(P).w[1] = PH + (PM>>>32);             \
-//	(P).w[0] = (PM<<32)+(BID_UINT32)PL;       \
-//}
-
 
     // tables used in computation
     static final int[] bid_estimate_decimal_digits = {
@@ -918,7 +889,7 @@ class JavaImplAdd {
         39    // 2^128
     };
 
-    static final long[] bid_power10_table_128_low = {
+    static final long[] bid_power10_table_128_w0 = {
         0x0000000000000001L,
         0x000000000000000aL,
         0x0000000000000064L,
@@ -1129,5 +1100,4 @@ class JavaImplAdd {
         0x39a5652fb1137857L,
         0x2e1dea8c8da92d13L
     };
-
 }
