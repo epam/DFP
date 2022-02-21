@@ -363,13 +363,13 @@ class JavaImplParse {
     public static long fast_get_BID64_check_OF(final long sgn, int expon, long coeff, final int rmode, final FloatingPointStatusFlag fpsc) {
         long r, mask;
 
-        if (UnsignedInteger.compare(expon, 3 * 256 - 1) >= 0) {
+        if ((/*UnsignedInteger.compare*/(expon) + Integer.MIN_VALUE >= (3 * 256 - 1) + Integer.MIN_VALUE)) {
             if ((expon == 3 * 256 - 1) && coeff == 10000000000000000L) {
                 expon = 3 * 256;
                 coeff = 1000000000000000L;
             }
 
-            if (UnsignedInteger.compare(expon, 3 * 256) >= 0) {
+            if ((/*UnsignedInteger.compare*/(expon) + Integer.MIN_VALUE >= (3 * 256) + Integer.MIN_VALUE)) {
                 while (coeff < 1000000000000000L && expon >= 3 * 256) {
                     expon--;
                     coeff = (coeff << 3) + (coeff << 1);
@@ -402,7 +402,7 @@ class JavaImplParse {
         mask <<= EXPONENT_SHIFT_SMALL64;
 
         // check whether coefficient fits in 10*5+3 bits
-        if (UnsignedLong.compare(coeff, mask) < 0) {
+        if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE < (mask) + Long.MIN_VALUE)) {
             r = LONG_LOW_PART & expon;
             r <<= EXPONENT_SHIFT_SMALL64;
             r |= (coeff | sgn);
@@ -606,7 +606,7 @@ class JavaImplParse {
                 long R64H;
                 R64H = __A128_w1;
                 _QM2_w0 = (__B64) + __A128_w0;
-                if (UnsignedLong.compare(_QM2_w0, __B64) < 0)
+                if ((/*UnsignedLong.compare*/(_QM2_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                     R64H++;
                 _QM2_w1 = R64H;
             }
@@ -632,9 +632,9 @@ class JavaImplParse {
                 remainder_h = remainder_h & QH;
 
                 if (remainder_h == 0
-                    && (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) < 0
+                    && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
                     || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                    && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) < 0))) {
+                    && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
                     _C64--;
                 }
             }
@@ -652,17 +652,17 @@ class JavaImplParse {
                 case BID_ROUNDING_TIES_AWAY:
                     // test whether fractional part is 0
                     if (remainder_h == 0x8000000000000000L
-                        && (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) < 0
+                        && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
                         || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                        && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) < 0)))
+                        && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE))))
                         status = BID_EXACT_STATUS;
                     break;
                 case BID_ROUNDING_DOWN:
                 case BID_ROUNDING_TO_ZERO:
                     if (remainder_h == 0
-                        && (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) < 0
+                        && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
                         || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                        && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) < 0)))
+                        && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE))))
                         status = BID_EXACT_STATUS;
                     break;
                 default:
@@ -675,7 +675,7 @@ class JavaImplParse {
 
                     final long __X1 = __X;
                     Stemp_w0 = __X + __Y;
-                    CY = UnsignedLong.compare(Stemp_w0, __X1) < 0 ? 1L : 0;
+                    CY = (/*UnsignedLong.compare*/(Stemp_w0) + Long.MIN_VALUE < (__X1) + Long.MIN_VALUE) ? 1L : 0;
                 }
                 //__add_carry_in_out(out Stemp_w1, out carry, Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1], CY);
                 {
@@ -686,10 +686,10 @@ class JavaImplParse {
                     final long __X1;
                     __X1 = __X + __CI;
                     Stemp_w1 = __X1 + __Y;
-                    carry = (UnsignedLong.compare(Stemp_w1, __X1) < 0 || UnsignedLong.compare(__X1, __CI) < 0) ? 1L : 0;
+                    carry = ((/*UnsignedLong.compare*/(Stemp_w1) + Long.MIN_VALUE < (__X1) + Long.MIN_VALUE) || (/*UnsignedLong.compare*/(__X1) + Long.MIN_VALUE < (__CI) + Long.MIN_VALUE)) ? 1L : 0;
                 }
 
-                if (UnsignedLong.compare((remainder_h >>> (64 - amount)) + carry, 1L << amount) >= 0)
+                if ((/*UnsignedLong.compare*/((remainder_h >>> (64 - amount)) + carry) + Long.MIN_VALUE >= (1L << amount) + Long.MIN_VALUE))
                     status = BID_EXACT_STATUS;
                 break;
             }
@@ -713,12 +713,12 @@ class JavaImplParse {
         int extra_digits, amount, amount2;
         int status;
 
-        if (UnsignedLong.compare(coeff, 9999999999999999L) > 0) {
+        if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE > (9999999999999999L) + Long.MIN_VALUE)) {
             expon++;
             coeff = 1000000000000000L;
         }
         // check for possible underflow/overflow
-        if (UnsignedInteger.compare(expon, 3 * 256) >= 0) {
+        if ((/*UnsignedInteger.compare*/(expon) + Integer.MIN_VALUE >= (3 * 256) + Integer.MIN_VALUE)) {
             if (expon < 0) {
                 // underflow
                 if (expon + MAX_FORMAT_DIGITS < 0) {
@@ -797,7 +797,7 @@ class JavaImplParse {
                         long R64H;
                         R64H = __A128_w1;
                         _QM2_w0 = (__B64) + __A128_w0;
-                        if (UnsignedLong.compare(_QM2_w0, __B64) < 0)
+                        if ((/*UnsignedLong.compare*/(_QM2_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                             R64H++;
                         _QM2_w1 = R64H;
                     }
@@ -822,9 +822,9 @@ class JavaImplParse {
                         remainder_h = remainder_h & QH;
 
                         if (remainder_h == 0
-                            && (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) < 0
+                            && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
                             || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                            && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) < 0))) {
+                            && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
                             _C64--;
                         }
                     }
@@ -842,17 +842,17 @@ class JavaImplParse {
                         case BID_ROUNDING_TIES_AWAY:
                             // test whether fractional part is 0
                             if (remainder_h == 0x8000000000000000L
-                                && (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) < 0
+                                && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
                                 || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                                && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) < 0)))
+                                && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE))))
                                 status = BID_EXACT_STATUS;
                             break;
                         case BID_ROUNDING_DOWN:
                         case BID_ROUNDING_TO_ZERO:
                             if (remainder_h == 0
-                                && (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) < 0)
+                                && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE))
                                 || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                                && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) < 0))
+                                && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))
                                 status = BID_EXACT_STATUS;
                             break;
                         default:
@@ -865,7 +865,7 @@ class JavaImplParse {
 
                             final long __X1 = __X;
                             Stemp_w0 = __X + __Y;
-                            CY = UnsignedLong.compare(Stemp_w0, __X1) < 0 ? 1L : 0;
+                            CY = (/*UnsignedLong.compare*/(Stemp_w0) + Long.MIN_VALUE < (__X1) + Long.MIN_VALUE) ? 1L : 0;
                         }
                         //__add_carry_in_out(out Stemp_w1, out carry, Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1], CY);
                         {
@@ -876,10 +876,10 @@ class JavaImplParse {
                             final long __X1;
                             __X1 = __X + __CI;
                             Stemp_w1 = __X1 + __Y;
-                            carry = (UnsignedLong.compare(Stemp_w1, __X1) < 0 || UnsignedLong.compare(__X1, __CI) < 0) ? 1L : 0;
+                            carry = ((/*UnsignedLong.compare*/(Stemp_w1) + Long.MIN_VALUE < (__X1) + Long.MIN_VALUE) || (/*UnsignedLong.compare*/(__X1) + Long.MIN_VALUE < (__CI) + Long.MIN_VALUE)) ? 1L : 0;
                         }
 
-                        if (UnsignedLong.compare((remainder_h >>> (64 - amount)) + carry, 1L << amount) >= 0)
+                        if ((/*UnsignedLong.compare*/((remainder_h >>> (64 - amount)) + carry) + Long.MIN_VALUE >= (1L << amount) + Long.MIN_VALUE))
                             status = BID_EXACT_STATUS;
                         break;
                     }
@@ -894,7 +894,7 @@ class JavaImplParse {
             if (coeff == 0) {
                 if (expon > DECIMAL_MAX_EXPON_64) expon = DECIMAL_MAX_EXPON_64;
             }
-            while (UnsignedLong.compare(coeff, 1000000000000000L) < 0 && expon >= 3 * 256) {
+            while ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE < (1000000000000000L) + Long.MIN_VALUE) && expon >= 3 * 256) {
                 expon--;
                 coeff = (coeff << 3) + (coeff << 1);
             }
@@ -924,7 +924,7 @@ class JavaImplParse {
         mask <<= EXPONENT_SHIFT_SMALL64;
 
         // check whether coefficient fits in 10*5+3 bits
-        if (UnsignedLong.compare(coeff, mask) < 0) {
+        if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE < (mask) + Long.MIN_VALUE)) {
             r = LONG_LOW_PART & expon;
             r <<= EXPONENT_SHIFT_SMALL64;
             r |= (coeff | sgn);

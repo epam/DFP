@@ -76,7 +76,7 @@ public class JavaImplMul {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if (UnsignedLong.compare(x & 0x0003ffffffffffffL, 1000000000000000L) >= 0)
+                    if ((/*UnsignedLong.compare*/(x & 0x0003ffffffffffffL) + Long.MIN_VALUE >= (1000000000000000L) + Long.MIN_VALUE))
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
@@ -85,7 +85,7 @@ public class JavaImplMul {
                     // coefficient
                     long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if (UnsignedLong.compare(coeff, 10000000000000000L) >= 0)
+                    if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE >= (10000000000000000L) + Long.MIN_VALUE))
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -117,7 +117,7 @@ public class JavaImplMul {
                 if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_y = 0;
                     coefficient_y = y & 0xfe03ffffffffffffL;
-                    if (UnsignedLong.compare(y & 0x0003ffffffffffffL, 1000000000000000L) >= 0)
+                    if ((/*UnsignedLong.compare*/(y & 0x0003ffffffffffffL) + Long.MIN_VALUE >= (1000000000000000L) + Long.MIN_VALUE))
                         coefficient_y = y & 0xfe00000000000000L;
                     if ((y & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_y = y & SINFINITY_MASK64;
@@ -126,7 +126,7 @@ public class JavaImplMul {
                     // coefficient
                     long coeff = (y & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if (UnsignedLong.compare(coeff, 10000000000000000L) >= 0)
+                    if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE >= (10000000000000000L) + Long.MIN_VALUE))
                         coeff = 0;
                     coefficient_y = coeff;
                     // get exponent
@@ -255,11 +255,11 @@ public class JavaImplMul {
                 bp = __bin_expon;
                 if (bp < 63) {
                     M <<= bp + 1;
-                    if (UnsignedLong.compare(__P_w0, M) >= 0)
+                    if ((/*UnsignedLong.compare*/(__P_w0) + Long.MIN_VALUE >= (M) + Long.MIN_VALUE))
                         bp++;
                 } else if (bp > 64) {
                     M <<= bp + 1 - 64;
-                    if ((UnsignedLong.compare(__P_w1, M) > 0) || (__P_w1 == M && __P_w0 != 0))
+                    if (((/*UnsignedLong.compare*/(__P_w1) + Long.MIN_VALUE > (M) + Long.MIN_VALUE)) || (__P_w1 == M && __P_w0 != 0))
                         bp++;
                 } else if (__P_w1 != 0)
                     bp++;
@@ -282,7 +282,7 @@ public class JavaImplMul {
                 rmode = 3 - rmode;
 
             round_up = 0;
-            if (UnsignedInteger.compare(final_exponent, 3 * 256) >= 0) {
+            if ((/*UnsignedInteger.compare*/(final_exponent) + Integer.MIN_VALUE >= (3 * 256) + Integer.MIN_VALUE)) {
                 if (final_exponent < 0) {
                     // underflow
                     if (final_exponent + 16 < 0) {
@@ -399,7 +399,7 @@ public class JavaImplMul {
                                 long Q128_w0, Q128_w1;
                                 Q128_w1 = __A128_w1 + __B128_w1;
                                 Q128_w0 = __B128_w0 + __A128_w0;
-                                if (UnsignedLong.compare(Q128_w0, __B128_w0) < 0)
+                                if ((/*UnsignedLong.compare*/(Q128_w0) + Long.MIN_VALUE < (__B128_w0) + Long.MIN_VALUE))
                                     Q128_w1++;
                                 _QM_w1 = Q128_w1;
                                 _QM_w0 = Q128_w0;
@@ -415,7 +415,7 @@ public class JavaImplMul {
                                 long __R64H;
                                 __R64H = __A128_w1;
                                 _QM2_w0 = __B64 + __A128_w0;
-                                if (UnsignedLong.compare(_QM2_w0, __B64) < 0)
+                                if ((/*UnsignedLong.compare*/(_QM2_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                                     __R64H++;
                                 _QM2_w1 = __R64H;
                             }
@@ -428,7 +428,7 @@ public class JavaImplMul {
                                 long __R64H;
                                 __R64H = __A128_w1;
                                 Q_high_w0 = __B64 + __A128_w0;
-                                if (UnsignedLong.compare(Q_high_w0, __B64) < 0)
+                                if ((/*UnsignedLong.compare*/(Q_high_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                                     __R64H++;
                                 Q_high_w1 = __R64H;
                             }
@@ -455,9 +455,9 @@ public class JavaImplMul {
                         remainder_h = remainder_h & Q_high_w0;
 
                         extra_digits -= 16;
-                        if (remainder_h != 0 || (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(16 << 1) + 1]) > 0
+                        if (remainder_h != 0 || ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE > (bid_reciprocals10_128_flat[(16 << 1) + 1]) + Long.MIN_VALUE)
                             || (Q_low_w1 == bid_reciprocals10_128_flat[(16 << 1) + 1]
-                            && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(16 << 1) + 0]) >= 0))) {
+                            && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE >= (bid_reciprocals10_128_flat[(16 << 1) + 0]) + Long.MIN_VALUE)))) {
                             round_up = 1;
                             // __set_status_flags(pfpsf, BID_UNDERFLOW_EXCEPTION | BID_INEXACT_EXCEPTION);
                             P_w0 = (P_w0 << 3) + (P_w0 << 1);
@@ -485,7 +485,7 @@ public class JavaImplMul {
                     long __R64H;
                     __R64H = __A128_w1;
                     P_w0 = __B64 + __A128_w0;
-                    if (UnsignedLong.compare(P_w0, __B64) < 0)
+                    if ((/*UnsignedLong.compare*/(P_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                         __R64H++;
                     P_w1 = __R64H;
                 }
@@ -594,7 +594,7 @@ public class JavaImplMul {
                         long Q128_w0, Q128_w1;
                         Q128_w1 = __A128_w1 + __B128_w1;
                         Q128_w0 = __B128_w0 + __A128_w0;
-                        if (UnsignedLong.compare(Q128_w0, __B128_w0) < 0)
+                        if ((/*UnsignedLong.compare*/(Q128_w0) + Long.MIN_VALUE < (__B128_w0) + Long.MIN_VALUE))
                             Q128_w1++;
                         _QM_w1 = Q128_w1;
                         _QM_w0 = Q128_w0;
@@ -610,7 +610,7 @@ public class JavaImplMul {
                         long __R64H;
                         __R64H = __A128_w1;
                         _QM2_w0 = __B64 + __A128_w0;
-                        if (UnsignedLong.compare(_QM2_w0, __B64) < 0)
+                        if ((/*UnsignedLong.compare*/(_QM2_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                             __R64H++;
                         _QM2_w1 = __R64H;
                     }
@@ -623,7 +623,7 @@ public class JavaImplMul {
                         long __R64H;
                         __R64H = __A128_w1;
                         Q_high_w0 = __B64 + __A128_w0;
-                        if (UnsignedLong.compare(Q_high_w0, __B64) < 0)
+                        if ((/*UnsignedLong.compare*/(Q_high_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                             __R64H++;
                         Q_high_w1 = __R64H;
                     }
@@ -657,9 +657,9 @@ public class JavaImplMul {
 
                         // test whether fractional part is 0
                         if (remainder_h == 0
-                            && (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) < 0
+                            && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
                             || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                            && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) < 0))) {
+                            && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
                             C64--;
                         }
                     }
@@ -725,7 +725,7 @@ public class JavaImplMul {
         int extra_digits, amount, amount2;
 
         // check for possible underflow/overflow
-        if (UnsignedInteger.compare(expon, 3 * 256) >= 0) {
+        if ((/*UnsignedInteger.compare*/(expon) + Integer.MIN_VALUE >= (3 * 256) + Integer.MIN_VALUE)) {
             if (expon < 0) {
                 // underflow
                 if (expon + MAX_FORMAT_DIGITS < 0) {
@@ -802,7 +802,7 @@ public class JavaImplMul {
                         long R64H;
                         R64H = __A128_w1;
                         _QM2_w0 = (__B64) + __A128_w0;
-                        if (UnsignedLong.compare(_QM2_w0, __B64) < 0)
+                        if ((/*UnsignedLong.compare*/(_QM2_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                             R64H++;
                         _QM2_w1 = R64H;
                     }
@@ -827,9 +827,9 @@ public class JavaImplMul {
                         remainder_h = remainder_h & QH;
 
                         if (remainder_h == 0
-                            && (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) < 0
+                            && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
                             || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                            && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) < 0))) {
+                            && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
                             _C64--;
                         }
                     }
@@ -837,7 +837,7 @@ public class JavaImplMul {
                 return sgn | _C64;
             }
 
-            while (UnsignedLong.compare(coeff, 1000000000000000L) < 0 && expon >= 3 * 256) {
+            while ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE < (1000000000000000L) + Long.MIN_VALUE) && expon >= 3 * 256) {
                 expon--;
                 coeff = (coeff << 3) + (coeff << 1);
             }
@@ -861,7 +861,7 @@ public class JavaImplMul {
             } else {
                 mask = 1;
                 mask <<= EXPONENT_SHIFT_SMALL64;
-                if (UnsignedLong.compare(coeff, mask) >= 0) {
+                if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE >= (mask) + Long.MIN_VALUE)) {
                     r = expon;
                     r <<= EXPONENT_SHIFT_LARGE64;
                     r |= (sgn | SPECIAL_ENCODING_MASK64);
@@ -889,12 +889,12 @@ public class JavaImplMul {
         long QH, r, mask, _C64, remainder_h, carry;
         int extra_digits, amount, amount2;
 
-        if (UnsignedLong.compare(coeff, 9999999999999999L) > 0) {
+        if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE > (9999999999999999L) + Long.MIN_VALUE)) {
             expon++;
             coeff = 1000000000000000L;
         }
         // check for possible underflow/overflow
-        if (UnsignedInteger.compare(expon, 3 * 256) >= 0) {
+        if ((/*UnsignedInteger.compare*/(expon) + Integer.MIN_VALUE >= (3 * 256) + Integer.MIN_VALUE)) {
             if (expon < 0) {
                 // underflow
                 if (expon + MAX_FORMAT_DIGITS < 0) {
@@ -972,7 +972,7 @@ public class JavaImplMul {
                         long R64H;
                         R64H = __A128_w1;
                         _QM2_w0 = (__B64) + __A128_w0;
-                        if (UnsignedLong.compare(_QM2_w0, __B64) < 0)
+                        if ((/*UnsignedLong.compare*/(_QM2_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                             R64H++;
                         _QM2_w1 = R64H;
                     }
@@ -997,9 +997,9 @@ public class JavaImplMul {
                         remainder_h = remainder_h & QH;
 
                         if (remainder_h == 0
-                            && (UnsignedLong.compare(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) < 0
+                            && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
                             || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                            && UnsignedLong.compare(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) < 0))) {
+                            && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
                             _C64--;
                         }
                     }
@@ -1009,7 +1009,7 @@ public class JavaImplMul {
             if (coeff == 0) {
                 if (expon > DECIMAL_MAX_EXPON_64) expon = DECIMAL_MAX_EXPON_64;
             }
-            while (UnsignedLong.compare(coeff, 1000000000000000L) < 0 && expon >= 3 * 256) {
+            while ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE < (1000000000000000L) + Long.MIN_VALUE) && expon >= 3 * 256) {
                 expon--;
                 coeff = (coeff << 3) + (coeff << 1);
             }
@@ -1038,7 +1038,7 @@ public class JavaImplMul {
         mask <<= EXPONENT_SHIFT_SMALL64;
 
         // check whether coefficient fits in 10*5+3 bits
-        if (UnsignedLong.compare(coeff, mask) < 0) {
+        if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE < (mask) + Long.MIN_VALUE)) {
             r = LONG_LOW_PART & expon;
             r <<= EXPONENT_SHIFT_SMALL64;
             r |= (coeff | sgn);
@@ -1069,7 +1069,7 @@ public class JavaImplMul {
     //  return 0 if A<=B
     //  non-zero if A>B
     static boolean __unsigned_compare_gt_128(final long A_w0, final long A_w1, final long B_w0, final long B_w1) {
-        return (UnsignedLong.compare(A_w1, B_w1) > 0) ||
-            ((A_w1 == B_w1) && (UnsignedLong.compare(A_w0, B_w0) > 0));
+        return ((/*UnsignedLong.compare*/(A_w1) + Long.MIN_VALUE > (B_w1) + Long.MIN_VALUE)) ||
+            ((A_w1 == B_w1) && ((/*UnsignedLong.compare*/(A_w0) + Long.MIN_VALUE > (B_w0) + Long.MIN_VALUE)));
     }
 }
