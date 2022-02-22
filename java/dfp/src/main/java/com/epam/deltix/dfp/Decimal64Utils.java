@@ -601,17 +601,17 @@ public class Decimal64Utils {
 
     @Decimal
     public static long multiply(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.multiply2(a, b);
+        return JavaImplMul.bid64_mul(a, b);
     }
 
     @Decimal
     public static long multiply(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
-        return NativeImpl.multiply3(a, b, c);
+        return JavaImplMul.bid64_mul(JavaImplMul.bid64_mul(a, b), c);
     }
 
     @Decimal
     public static long multiply(@Decimal final long a, @Decimal final long b, @Decimal final long c, @Decimal final long d) {
-        return NativeImpl.multiply4(a, b, c, d);
+        return JavaImplMul.bid64_mul(JavaImplMul.bid64_mul(a, b), JavaImplMul.bid64_mul(c, d));
     }
 
     @Decimal
