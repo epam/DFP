@@ -620,6 +620,39 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testMulWithCoverage() throws Exception {
+        testMulCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
+
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                testMulCase(x, y);
+
+        checkInMultipleThreads(
+            new Runnable() {
+                @Override
+                public void run() {
+                    final Random random = new Random();
+                    for (int i = 0; i < 10_000_000; ++i) {
+                        final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+                        final long y = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+
+                        testMulCase(x, y);
+                    }
+                }
+            });
+    }
+
+    private void testMulCase(final long x, final long y) {
+        final long javaRet = JavaImplMul.bid64_mul(x, y);
+        final long nativeRet = NativeImpl.multiply2(x, y);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L * 0x" + Long.toHexString(y) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
     public void testToStringScientific() throws Exception {
         checkInMultipleThreads(
             new Runnable() {

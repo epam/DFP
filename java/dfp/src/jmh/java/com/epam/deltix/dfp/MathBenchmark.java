@@ -29,9 +29,21 @@ public class MathBenchmark {
     }
 
     @Benchmark
+    public void mulNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.multiply2(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void mulJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplMul.bid64_mul(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
     public void addNative(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(Decimal64Utils.add(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(NativeImpl.add2(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
