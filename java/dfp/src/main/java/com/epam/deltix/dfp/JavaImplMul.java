@@ -1,26 +1,18 @@
 package com.epam.deltix.dfp;
 
 import static com.epam.deltix.dfp.JavaImplAdd.*;
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_DOWN;
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_TIES_AWAY;
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_TO_NEAREST;
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_TO_ZERO;
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_UP;
 import static com.epam.deltix.dfp.JavaImplAdd.DECIMAL_EXPONENT_BIAS;
 import static com.epam.deltix.dfp.JavaImplAdd.DECIMAL_MAX_EXPON_64;
 import static com.epam.deltix.dfp.JavaImplAdd.EXPONENT_MASK64;
 import static com.epam.deltix.dfp.JavaImplAdd.EXPONENT_SHIFT_LARGE64;
 import static com.epam.deltix.dfp.JavaImplAdd.EXPONENT_SHIFT_SMALL64;
 import static com.epam.deltix.dfp.JavaImplAdd.INFINITY_MASK64;
-import static com.epam.deltix.dfp.JavaImplAdd.LARGEST_BID64;
 import static com.epam.deltix.dfp.JavaImplAdd.LARGE_COEFF_HIGH_BIT64;
 import static com.epam.deltix.dfp.JavaImplAdd.LARGE_COEFF_MASK64;
 import static com.epam.deltix.dfp.JavaImplAdd.NAN_MASK64;
 import static com.epam.deltix.dfp.JavaImplAdd.SINFINITY_MASK64;
-import static com.epam.deltix.dfp.JavaImplAdd.SMALLEST_BID64;
 import static com.epam.deltix.dfp.JavaImplAdd.SMALL_COEFF_MASK64;
 import static com.epam.deltix.dfp.JavaImplAdd.SPECIAL_ENCODING_MASK64;
-import static com.epam.deltix.dfp.JavaImplAdd.bid_round_const_table;
 import static com.epam.deltix.dfp.JavaImplParse.*;
 
 public class JavaImplMul {
@@ -53,7 +45,6 @@ public class JavaImplMul {
         long C64, remainder_h;
         int extra_digits, bin_expon_cx, bin_expon_cy, bin_expon_product;
         int digits_p, bp, amount, amount2, final_exponent, round_up;
-        //  unsigned status, uf_status;
 
         //valid_x = unpack_BID64 (&sign_x, &exponent_x, &coefficient_x, x);
         final long sign_x;
@@ -460,7 +451,7 @@ public class JavaImplMul {
                     }
                 } else {
                     return fast_get_BID64_check_OF(sign_x ^ sign_y, final_exponent,
-                        1000000000000000L, BID_ROUNDING_TO_NEAREST/*, pfpsf*/);
+                        1000000000000000L/*, BID_ROUNDING_TO_NEAREST, pfpsf*/);
                 }
             }
 
@@ -474,7 +465,7 @@ public class JavaImplMul {
                 {
                     final long __A128_w0 = P_w0;
                     final long __A128_w1 = P_w1;
-                    final long __B64 = bid_round_const_table[BID_ROUNDING_TO_NEAREST][extra_digits];
+                    final long __B64 = bid_round_const_table_nearest[extra_digits];
                     long __R64H;
                     __R64H = __A128_w1;
                     P_w0 = __B64 + __A128_w0;
@@ -658,7 +649,7 @@ public class JavaImplMul {
                 }
 
                 // convert to BID and return
-                return fast_get_BID64_check_OF(sign_x ^ sign_y, final_exponent, C64, BID_ROUNDING_TO_NEAREST);
+                return fast_get_BID64_check_OF(sign_x ^ sign_y, final_exponent, C64/*, BID_ROUNDING_TO_NEAREST*/);
             }
             // go to convert_format and exit
             C64 = P_w0;
@@ -727,7 +718,7 @@ public class JavaImplMul {
                 }
                 // get digits to be shifted out
                 extra_digits = -expon;
-                C128_w0 = coeff + bid_round_const_table[BID_ROUNDING_TO_NEAREST][extra_digits];
+                C128_w0 = coeff + bid_round_const_table_nearest[extra_digits];
 
                 // get coeff*(2^M[extra_digits])/10^extra_digits
                 //__mul_64x128_full (QH, Q_low, C128_w0, bid_reciprocals10_128[extra_digits]);
@@ -876,7 +867,7 @@ public class JavaImplMul {
                 }
                 // get digits to be shifted out
                 extra_digits = -expon;
-                coeff += bid_round_const_table[BID_ROUNDING_TO_NEAREST][extra_digits];
+                coeff += bid_round_const_table_nearest[extra_digits];
 
                 // get coeff*(2^M[extra_digits])/10^extra_digits
                 //__mul_64x128_full(out QH, out Q_low, coeff, bid_reciprocals10_128_flat[extra_digits << 1], bid_reciprocals10_128_flat[(extra_digits << 1) + 1]);

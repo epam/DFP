@@ -139,13 +139,8 @@ class JavaImplAdd {
         long valid_x, valid_y;
         long sign_a, sign_b, coefficient_a, coefficient_b, sign_s, sign_ab, rem_a;
         long saved_ca, saved_cb, C0_64, C64, remainder_h, T1, carry, tmp;
-//  int_double tempx;
         int exponent_x, exponent_y, exponent_a, exponent_b, diff_dec_expon;
         int bin_expon_ca, extra_digits, amount, scale_k, scale_ca;
-        int rmode, status;
-//
-//  BID_OPT_SAVE_BINARY_FLAGS()
-        final int rnd_mode = BID_ROUNDING_TO_NEAREST;
 
         // long valid_x = unpack_BID64(&sign_x, &exponent_x, &coefficient_x, x);
         {
@@ -332,55 +327,16 @@ class JavaImplAdd {
             bin_expon_ca = (int) ((tempxi & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff;
 
             if (diff_dec_expon > MAX_FORMAT_DIGITS) {
-                if ((((rnd_mode) & 3) != 0) && (coefficient_b != 0))    // not BID_ROUNDING_TO_NEAREST
-                {
-                    switch (rnd_mode) {
-                        case BID_ROUNDING_DOWN:
-                            if (sign_b != 0) {
-                                coefficient_a -= ((sign_a >> 63) | 1); // @AD: signed value shift
-                                if ((/*UnsignedLong.compare*/(coefficient_a) + Long.MIN_VALUE < (1000000000000000L) + Long.MIN_VALUE)) {
-                                    exponent_a--;
-                                    coefficient_a = 9999999999999999L;
-                                } else if ((/*UnsignedLong.compare*/(coefficient_a) + Long.MIN_VALUE >= (10000000000000000L) + Long.MIN_VALUE)) {
-                                    exponent_a++;
-                                    coefficient_a = 1000000000000000L;
-                                }
-                            }
-                            break;
-                        case BID_ROUNDING_UP:
-                            if (sign_b == 0) {
-                                coefficient_a += ((sign_a >> 63) | 1); // @AD: signed value shift
-                                if ((/*UnsignedLong.compare*/(coefficient_a) + Long.MIN_VALUE < (1000000000000000L) + Long.MIN_VALUE)) {
-                                    exponent_a--;
-                                    coefficient_a = 9999999999999999L;
-                                } else if ((/*UnsignedLong.compare*/(coefficient_a) + Long.MIN_VALUE >= (10000000000000000L) + Long.MIN_VALUE)) {
-                                    exponent_a++;
-                                    coefficient_a = 1000000000000000L;
-                                }
-                            }
-                            break;
-                        default:    // RZ
-                            if (sign_a != sign_b) {
-                                coefficient_a--;
-                                if ((/*UnsignedLong.compare*/(coefficient_a) + Long.MIN_VALUE < (1000000000000000L) + Long.MIN_VALUE)) {
-                                    exponent_a--;
-                                    coefficient_a = 9999999999999999L;
-                                }
-                            }
-                            break;
-                    }
-                } else
+                // check special case here
+                if ((coefficient_a == 1000000000000000L)
+                    && (diff_dec_expon == MAX_FORMAT_DIGITS + 1)
+                    && ((sign_a ^ sign_b) != 0)
+                    && ((/*UnsignedLong.compare*/(coefficient_b) + Long.MIN_VALUE > (5000000000000000L) + Long.MIN_VALUE))) {
+                    coefficient_a = 9999999999999999L;
+                    exponent_a--;
+                }
 
-                    // check special case here
-                    if ((coefficient_a == 1000000000000000L)
-                        && (diff_dec_expon == MAX_FORMAT_DIGITS + 1)
-                        && ((sign_a ^ sign_b) != 0)
-                        && ((/*UnsignedLong.compare*/(coefficient_b) + Long.MIN_VALUE > (5000000000000000L) + Long.MIN_VALUE))) {
-                        coefficient_a = 9999999999999999L;
-                        exponent_a--;
-                    }
-
-                return fast_get_BID64_check_OF(sign_a, exponent_a, coefficient_a, rnd_mode);
+                return fast_get_BID64_check_OF(sign_a, exponent_a, coefficient_a);
             }
         }
         // test whether coefficient_a*10^(exponent_a-exponent_b)  may exceed 2^62
@@ -407,8 +363,6 @@ class JavaImplAdd {
 
             // coefficient_a < 10^16 ?
             if ((/*UnsignedLong.compare*/(coefficient_a) + Long.MIN_VALUE < (bid_power10_table_128_w0[MAX_FORMAT_DIGITS]) + Long.MIN_VALUE)) {
-                if (rnd_mode == BID_ROUNDING_DOWN && (coefficient_a == 0) && sign_a != sign_b)
-                    sign_s = 0x8000000000000000L;
                 return very_fast_get_BID64(sign_s, exponent_b, coefficient_a);
             }
             // otherwise rounding is necessary
@@ -422,10 +376,7 @@ class JavaImplAdd {
             else
                 extra_digits = 3;
 
-            rmode = rnd_mode;
-            if ((sign_s != 0) && (rmode == BID_ROUNDING_DOWN || rmode == BID_ROUNDING_UP)) // sign_s && (unsigned) (rmode - 1) < 2
-                rmode = 3 - rmode;
-            coefficient_a += bid_round_const_table[rmode][extra_digits];
+            coefficient_a += bid_round_const_table_nearest[extra_digits];
 
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_a, bid_reciprocals10_64[extra_digits]);
@@ -457,10 +408,6 @@ class JavaImplAdd {
             // coefficient_a*10^(exponent_a-exponent_b) is large
             sign_s = sign_a;
 
-            rmode = rnd_mode;
-            if ((sign_s != 0) && (rmode == BID_ROUNDING_DOWN || rmode == BID_ROUNDING_UP)) // sign_s && (unsigned) (rmode - 1) < 2
-                rmode = 3 - rmode;
-
             // check whether we can take faster path
             scale_ca = bid_estimate_decimal_digits[bin_expon_ca];
 
@@ -485,7 +432,7 @@ class JavaImplAdd {
             // apply sign
             saved_cb = (coefficient_b + sign_ab) ^ sign_ab;
             // add 10^16 and rounding constant
-            coefficient_b = saved_cb + 10000000000000000L + bid_round_const_table[rmode][extra_digits];
+            coefficient_b = saved_cb + 10000000000000000L + bid_round_const_table_nearest[extra_digits];
 
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
@@ -555,7 +502,7 @@ class JavaImplAdd {
                         coefficient_a = (saved_ca - T1 - (T1 << 3)) * bid_power10_table_128_w0[scale_k - 1];
 
                     extra_digits++;
-                    coefficient_b = saved_cb + 100000000000000000L + bid_round_const_table[rmode][extra_digits];
+                    coefficient_b = saved_cb + 100000000000000000L + bid_round_const_table_nearest[extra_digits];
 
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
@@ -590,7 +537,7 @@ class JavaImplAdd {
                     //extra_digits --;
                     exponent_b--;
                     coefficient_b = (saved_cb << 3) + (saved_cb << 1) + 100000000000000000L
-                        + bid_round_const_table[rmode][extra_digits];
+                        + bid_round_const_table_nearest[extra_digits];
 
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT_new, coefficient_b, bid_reciprocals10_64[extra_digits]);
@@ -631,30 +578,30 @@ class JavaImplAdd {
 
         }
 
-        if (rmode == 0)    //BID_ROUNDING_TO_NEAREST
-            if ((C64 & 1) != 0) {
-                // check whether fractional part of initial_P/10^extra_digits is
-                // exactly .5
-                // this is the same as fractional part of
-                //      (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
+        // if (BID_ROUNDING_TO_NEAREST == 0)    //BID_ROUNDING_TO_NEAREST
+        if ((C64 & 1) != 0) {
+            // check whether fractional part of initial_P/10^extra_digits is
+            // exactly .5
+            // this is the same as fractional part of
+            //      (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
-                // get remainder
-                remainder_h = CT_w1 << (64 - amount);
+            // get remainder
+            remainder_h = CT_w1 << (64 - amount);
 
-                // test whether fractional part is 0
-                if (remainder_h == 0 && ((/*UnsignedLong.compare*/(CT_w0) + Long.MIN_VALUE < (bid_reciprocals10_64[extra_digits]) + Long.MIN_VALUE))) {
-                    C64--;
-                }
+            // test whether fractional part is 0
+            if (remainder_h == 0 && ((/*UnsignedLong.compare*/(CT_w0) + Long.MIN_VALUE < (bid_reciprocals10_64[extra_digits]) + Long.MIN_VALUE))) {
+                C64--;
             }
+        }
 
         return
-            fast_get_BID64_check_OF(sign_s, exponent_b + extra_digits, C64, rnd_mode);
+            fast_get_BID64_check_OF(sign_s, exponent_b + extra_digits, C64);
     }
 
     //
     //   no underflow checking
     //
-    static long fast_get_BID64_check_OF(long sgn, int expon, long coeff, int rmode) {
+    static long fast_get_BID64_check_OF(long sgn, int expon, long coeff) {
         long r, mask;
 
         if ((/*UnsignedInteger.compare*/(expon) + Integer.MIN_VALUE >= (3 * 256 - 1) + Integer.MIN_VALUE)) {
@@ -670,21 +617,7 @@ class JavaImplAdd {
                 }
                 if (expon > DECIMAL_MAX_EXPON_64) {
                     // overflow
-                    r = sgn | INFINITY_MASK64;
-                    switch (rmode) {
-                        case BID_ROUNDING_DOWN:
-                            if (sgn == 0)
-                                r = LARGEST_BID64;
-                            break;
-                        case BID_ROUNDING_TO_ZERO:
-                            r = sgn | LARGEST_BID64;
-                            break;
-                        case BID_ROUNDING_UP:
-                            // round up
-                            if (sgn != 0)
-                                r = SMALLEST_BID64;
-                    }
-                    return r;
+                    return sgn | INFINITY_MASK64;
                 }
             }
         }
@@ -951,7 +884,7 @@ class JavaImplAdd {
         53    // 10^16
     };
 
-    static final long[][] bid_round_const_table = {
+    static final long[] bid_round_const_table_nearest =
         {    // RN
             0L,    // 0 extra digits
             5L,    // 1 extra digits
@@ -972,7 +905,10 @@ class JavaImplAdd {
             5000000000000000L,    // 16 extra digits
             50000000000000000L,    // 17 extra digits
             500000000000000000L    // 18 extra digits
-        },
+        };
+
+    static final long[][] bid_round_const_table = {
+        bid_round_const_table_nearest,
         {    // RD
             0L,    // 0 extra digits
             0L,    // 1 extra digits
