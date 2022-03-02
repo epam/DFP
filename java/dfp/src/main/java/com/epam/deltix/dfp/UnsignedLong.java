@@ -5,6 +5,54 @@ class UnsignedLong {
         return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
     }
 
+//    /**
+//     * The copy-paste of the Guava (Apache-2.0 License )
+//     * com.google.common.primitives.UnsignedLong.fromLongBits().doubleValue();
+//     *
+//     * @param value Unsigned long value
+//     * @return double value
+//     */
+//    public static double guavaDoubleValue(final long value) {
+//        if (value >= 0) {
+//            return (double) value;
+//        }
+//        // The top bit is set, which means that the double value is going to come from the top 53 bits.
+//        // So we can ignore the bottom 11, except for rounding. We can unsigned-shift right 1, aka
+//        // unsigned-divide by 2, and convert that. Then we'll get exactly half of the desired double
+//        // value. But in the specific case where the bottom two bits of the original number are 01, we
+//        // want to replace that with 1 in the shifted value for correct rounding.
+//        return (double) ((value >>> 1) | (value & 1)) * 2.0;
+//    }
+
+    /**
+     * The copy-paste of the jOOU (Apache-2.0 License)
+     * org.joou.ULong.doubleValue()
+     *
+     * @param value Unsigned long value
+     * @return double value
+     */
+    public static double doubleValue(final long value) {
+        return value >= 0 ? value : ((double) (value & Long.MAX_VALUE)) + Long.MAX_VALUE;
+    }
+
+    public static long fromDoubleSafe(final double x) {
+        if (x < 0 || !DoubleIsFinite(x) || x > uLongMaxDouble)
+            throw new IllegalArgumentException("The x(=" + x + ") must be non-negative finite value in acceptable range.");
+        return fromDouble(x);
+    }
+
+    public static long fromDouble(final double x) {
+        if (x <= Long.MAX_VALUE)
+            return (long) x;
+        return (long) (x - Long.MAX_VALUE) | Long.MIN_VALUE;
+    }
+
+    private static final double uLongMaxDouble = 18446744073709551615.0;
+
+    private static boolean DoubleIsFinite(final double d) { // 1.7 support
+        return Math.abs(d) <= Double.MAX_VALUE;
+    }
+
     public static long parse(String s, int radix)
         throws NumberFormatException {
         if (s == null) {

@@ -653,6 +653,44 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testDivWithCoverage() throws Exception {
+        testDivCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
+
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                testDivCase(x, y);
+
+        checkInMultipleThreads(
+            new Runnable() {
+                @Override
+                public void run() {
+                    final Random random = new Random();
+                    for (int i = 0; i < 10_000_000; ++i) {
+                        final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+                        final long y = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+
+                        testDivCase(x, y);
+                    }
+                }
+            });
+    }
+
+    @Test
+    public void testDivCases() {
+        testDivCase(0x31c38d7ea4c68000L, 0xafb1c37937e08001L);
+    }
+
+    private void testDivCase(final long x, final long y) {
+        final long javaRet = JavaImplDiv.bid64_div(x, y);
+        final long nativeRet = NativeImpl.divide(x, y);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L / 0x" + Long.toHexString(y) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
     public void testToStringScientific() throws Exception {
         checkInMultipleThreads(
             new Runnable() {
