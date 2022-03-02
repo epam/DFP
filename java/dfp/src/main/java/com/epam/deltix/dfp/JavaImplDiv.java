@@ -13,11 +13,11 @@ public class JavaImplDiv {
      * _  Intel's original
      * _  Algorithm description:
      * _
-     * _  if(coefficient_x<coefficient_y)
+     * _  if(coefficient_x&lt;coefficient_y)
      * _    p = number_digits(coefficient_y) - number_digits(coefficient_x)
      * _    A = coefficient_x*10^p
      * _    B = coefficient_y
-     * _    CA= A*10^(15+j), j=0 for A>=B, 1 otherwise
+     * _    CA= A*10^(15+j), j=0 for A&ge;B, 1 otherwise
      * _    Q = 0
      * _  else
      * _    get Q=(int)(coefficient_x/coefficient_y)
@@ -28,7 +28,7 @@ public class JavaImplDiv {
      * _    CA=R*10^m, Q=Q*10^m
      * _    B = coefficient_y
      * _  endif
-     * _    if (CA<2^64)
+     * _    if (CA&lt;2^64)
      * _      Q += CA/B  (64-bit unsigned divide)
      * _    else
      * _      get final Q using double precision divide, followed by 3 integer
