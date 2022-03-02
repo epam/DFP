@@ -626,7 +626,7 @@ public class Decimal64Utils {
 
     @Decimal
     public static long divide(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.divide(a, b);
+        return JavaImplDiv.bid64_div(a, b);
     }
 
     @Decimal
