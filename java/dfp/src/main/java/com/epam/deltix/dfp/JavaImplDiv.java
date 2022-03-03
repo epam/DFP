@@ -215,14 +215,14 @@ public class JavaImplDiv {
             // get number of decimal digits for c_x, c_y
 
             //--- get number of bits in the coefficients of x and y ---
-            tempx_i = Float.floatToIntBits((float) coefficient_x);
-            tempy_i = Float.floatToIntBits((float) coefficient_y);
+            tempx_i = Float.floatToIntBits(/*The UnsignedLong.floatValue is not required, because coefficient_x is always positive*/coefficient_x);
+            tempy_i = Float.floatToIntBits(/*The UnsignedLong.floatValue is not required, because coefficient_x is always positive*/coefficient_y);
             bin_index = (tempy_i - tempx_i) >>> 23;
 
             A = coefficient_x * bid_power10_index_binexp[bin_index];
             B = coefficient_y;
 
-            temp_b_i = Double.doubleToLongBits((double) B);
+            temp_b_i = Double.doubleToLongBits(/*The UnsignedLong.doubleValue is not required, because coefficient_x is always positive*/B);
 
             // compare A, B
             DU = (A - B) >>> 63;
@@ -270,7 +270,7 @@ public class JavaImplDiv {
 
             db = UnsignedLong.doubleValue(coefficient_y);
 
-            double tempq_d = da / db;
+            final double tempq_d = da / db;
             tempq_i = Double.doubleToLongBits(tempq_d);
             Q = UnsignedLong.fromDouble(tempq_d);
 
@@ -325,7 +325,7 @@ public class JavaImplDiv {
         }
 
         if (CA_w1 == 0) {
-            Q2 = CA_w0 / B;
+            Q2 = UnsignedLong.divide(CA_w0, B);
             B2 = B + B;
             B4 = B2 + B2;
             R = CA_w0 - Q2 * B;
@@ -450,7 +450,7 @@ public class JavaImplDiv {
                         digit = tdigit1;
                     }
                     // decompose digit
-                    PD = (long)(digit & LONG_LOW_PART) * 0x068DB8BBL;
+                    PD = (long) (digit & LONG_LOW_PART) * 0x068DB8BBL;
                     digit_h = (int) (PD >>> 40);
                     digit_low = digit - digit_h * 10000;
 

@@ -7,6 +7,54 @@ class UnsignedLong {
 
 //    /**
 //     * The copy-paste of the Guava (Apache-2.0 License )
+//     * @param dividend The value to be divided.
+//     * @param divisor  The value doing the dividing.
+//     * @return The unsigned quotient of the first argument divided by the second argument
+//     */
+//    public static long guavaDivide(long dividend, long divisor) {
+//        if (divisor < 0) { // i.e., divisor >= 2^63:
+//            if (compare(dividend, divisor) < 0) {
+//                return 0; // dividend < divisor
+//            } else {
+//                return 1; // dividend >= divisor
+//            }
+//        }
+//
+//        // Optimization - use signed division if dividend < 2^63
+//        if (dividend >= 0) {
+//            return dividend / divisor;
+//        }
+//
+//        /*
+//         * Otherwise, approximate the quotient, check, and correct if necessary. Our approximation is
+//         * guaranteed to be either exact or one less than the correct value. This follows from fact that
+//         * floor(floor(x)/i) == floor(x/i) for any real x and integer i != 0. The proof is not quite
+//         * trivial.
+//         */
+//        long quotient = ((dividend >>> 1) / divisor) << 1;
+//        long rem = dividend - quotient * divisor;
+//        return quotient + (compare(rem, divisor) >= 0 ? 1 : 0);
+//    }
+
+    /**
+     * The copy-paste of the OpenJDK Long.divideUnsigned
+     *
+     * @param dividend The value to be divided.
+     * @param divisor  The value doing the dividing.
+     * @return The unsigned quotient of the first argument divided by the second argument
+     */
+    public static long divide(final long dividend, final long divisor) {
+        /* See Hacker's Delight (2nd ed), section 9.3 */
+        if (divisor >= 0) {
+            final long q = (dividend >>> 1) / divisor << 1;
+            final long r = dividend - q * divisor;
+            return q + ((r | ~(r - divisor)) >>> (Long.SIZE - 1));
+        }
+        return (dividend & ~(dividend - divisor)) >>> (Long.SIZE - 1);
+    }
+
+//    /**
+//     * The copy-paste of the Guava (Apache-2.0 License )
 //     * com.google.common.primitives.UnsignedLong.fromLongBits().doubleValue();
 //     *
 //     * @param value Unsigned long value
@@ -33,6 +81,17 @@ class UnsignedLong {
      */
     public static double doubleValue(final long value) {
         return value >= 0 ? value : ((double) (value & Long.MAX_VALUE)) + Long.MAX_VALUE;
+    }
+
+    /**
+     * The copy-paste of the jOOU (Apache-2.0 License)
+     * org.joou.ULong.doubleValue()
+     *
+     * @param value Unsigned long value
+     * @return double value
+     */
+    public static float floatValue(final long value) {
+        return value >= 0 ? value : ((float) (value & Long.MAX_VALUE)) + Long.MAX_VALUE;
     }
 
     public static long fromDoubleSafe(final double x) {
