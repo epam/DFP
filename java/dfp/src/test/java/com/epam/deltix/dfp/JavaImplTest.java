@@ -1,9 +1,9 @@
 package com.epam.deltix.dfp;
 
+import org.apache.commons.math3.random.MersenneTwister;
 import org.junit.Test;
 
 import java.io.*;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -452,20 +452,24 @@ public class JavaImplTest {
 
     @Test
     public void TestRoundRandomly() throws Exception {
+        final int randomPointMaxOffset = Decimal64Utils.MAX_SIGNIFICAND_DIGITS + Decimal64Utils.MAX_SIGNIFICAND_DIGITS / 4;
+
         checkInMultipleThreads(
             new Runnable() {
                 @Override
                 public void run() {
-                    final Random random = new Random();
-                    for (int ri = 0; ri < 1_000_000; ++ri) {
-                        final double mantissa = random.nextDouble() * 2 - 1;
-                        final int tenPower = random.nextInt(308 * 2 + 1) - 308;
-                        final int randomOffset = random.nextInt(20 * 2 + 1) - 20;
+                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator(
+                        new MersenneTwister(), 1,
+                        Decimal64Utils.MIN_EXPONENT + randomPointMaxOffset,
+                        Decimal64Utils.MAX_EXPONENT - randomPointMaxOffset);
 
-                        final long inValue = Decimal64Utils.fromDouble(mantissa * Math.pow(10, tenPower));
-                        final int roundPoint = tenPower + randomOffset;
+                    for (int ri = 0; ri < NTests / 10 /* Test will be very slow without this division */ ; ++ri) {
+                        final int randomOffset = random.generator.nextInt(randomPointMaxOffset * 2 + 1) - randomPointMaxOffset;
+
+                        final long inValue = random.nextX();
+                        final int roundPoint = random.getXExp() + randomOffset;
                         final RoundType roundType;
-                        switch (random.nextInt(4)) {
+                        switch (random.generator.nextInt(4)) {
                             case 0:
                                 roundType = RoundType.ROUND;
                                 break;
@@ -531,15 +535,9 @@ public class JavaImplTest {
             new Runnable() {
                 @Override
                 public void run() {
-                    final Random random = new Random();
-                    for (int ri = 0; ri < 10_000_000; ++ri) {
-                        final double mantissa = random.nextDouble() * 2 - 1;
-                        final int tenPower = random.nextInt(30 * 2 + 1) - 30;
-
-                        final long inValue = Decimal64Utils.fromDouble(mantissa * Math.pow(10, tenPower));
-
-                        checkStrEq(inValue);
-                    }
+                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+                    for (int ri = 0; ri < NTests; ++ri)
+                        checkStrEq(random.nextX());
                 }
             });
     }
@@ -593,12 +591,10 @@ public class JavaImplTest {
             new Runnable() {
                 @Override
                 public void run() {
-                    final Random random = new Random();
-                    for (int i = 0; i < 10_000_000; ++i) {
-                        final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
-                        final long y = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
-
-                        testAddCase(x, y);
+                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+                    for (int i = 0; i < NTests; ++i) {
+                        random.makeNextPair();
+                        testAddCase(random.getX(), random.getY());
                     }
                 }
             });
@@ -620,14 +616,83 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testMulWithCoverage() throws Exception {
+        testMulCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
+
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                testMulCase(x, y);
+
+        checkInMultipleThreads(
+            new Runnable() {
+                @Override
+                public void run() {
+                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+                    for (int i = 0; i < NTests; ++i) {
+                        random.makeNextPair();
+                        testMulCase(random.getX(), random.getY());
+                    }
+                }
+            });
+    }
+
+    private void testMulCase(final long x, final long y) {
+        final long javaRet = JavaImplMul.bid64_mul(x, y);
+        final long nativeRet = NativeImpl.multiply2(x, y);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L * 0x" + Long.toHexString(y) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
+    public void testDivWithCoverage() throws Exception {
+        testDivCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
+
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                testDivCase(x, y);
+
+        checkInMultipleThreads(
+            new Runnable() {
+                @Override
+                public void run() {
+                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+                    for (int i = 0; i < NTests; ++i) {
+                        random.makeNextPair();
+                        testDivCase(random.getX(), random.getY());
+                    }
+                }
+            });
+    }
+
+    @Test
+    public void testDivCases() {
+        testDivCase(0x31a000000000000dL, 0x2e800000000006d1L);
+        testDivCase(0x30A0EFABDABB1574L, 0x30A0000062DF732AL);
+        testDivCase(0x31c38d7ea4c68000L, 0xafb1c37937e08001L);
+    }
+
+    private void testDivCase(final long x, final long y) {
+        final long javaRet = JavaImplDiv.bid64_div(x, y);
+        final long nativeRet = NativeImpl.divide(x, y);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L / 0x" + Long.toHexString(y) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
     public void testToStringScientific() throws Exception {
         checkInMultipleThreads(
             new Runnable() {
                 @Override
                 public void run() {
-                    final Random random = new Random();
-                    for (int i = 0; i < 10_000_000; ++i) {
-                        final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+                    for (int i = 0; i < NTests; ++i) {
+                        final long x = random.nextX();
                         final String xs = Decimal64Utils.toScientificString(x);
                         final long y = Decimal64Utils.parse(xs);
 
@@ -644,12 +709,9 @@ public class JavaImplTest {
             new Runnable() {
                 @Override
                 public void run() {
-                    final Random random = new Random();
-                    for (int i = 0; i < 10_000_000; ++i) {
-                        final long x = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
-
-                        checkFormattingValue(x);
-                    }
+                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+                    for (int i = 0; i < NTests; ++i)
+                        checkFormattingValue(random.nextX());
                 }
             });
     }

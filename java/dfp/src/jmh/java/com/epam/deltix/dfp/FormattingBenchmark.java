@@ -27,13 +27,10 @@ public class FormattingBenchmark {
     public void setUp() {
         decimalValue = Decimal64Utils.fromDouble(doubleValue);
 
-        final Random random = new Random();
-
+        final TestUtils.RandomDecimalsGenerator random = new TestUtils.RandomDecimalsGenerator();
         decimalValues = new long[1000];
         for (int i = 0; i < decimalValues.length; ++i)
-            decimalValues[i] = Decimal64Utils.scaleByPowerOfTen(
-                Decimal64Utils.fromDouble(random.nextDouble() * 2 - 1),
-                random.nextInt(30 * 2 + 1) - 30);
+            decimalValues[i] = random.nextX();
     }
 
     @Benchmark

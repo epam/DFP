@@ -60,8 +60,8 @@ public class DivisionByLongBenchmark {
             PL = CXL * CYL;
             PM2 = CXL * CYH;
             PH += (PM >>> 32);
-            PM = ((int) PM) + PM2 + (PL >> 32);
-            ALBH_1 = PH + (PM >> 32);
+            PM = ((int) PM) + PM2 + (PL >>> 32);
+            ALBH_1 = PH + (PM >>> 32);
             ALBH_0 = (PM << 32) + (int) PL;
         }
         {

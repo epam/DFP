@@ -2,8 +2,7 @@ package com.epam.deltix.dfp;
 
 import static com.epam.deltix.dfp.JavaImpl.NaN;
 import static com.epam.deltix.dfp.JavaImpl.ZERO;
-import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
-import static com.epam.deltix.dfp.JavaImplAdd.MAX_FORMAT_DIGITS;
+import static com.epam.deltix.dfp.JavaImplAdd.*;
 
 class JavaImplParse {
     private JavaImplParse() {
@@ -318,59 +317,19 @@ class JavaImplParse {
         return get_BID64(sign_x, expon_x, coefficient_x, rnd_mode, pfpsf);
     }
 
-    public static final int DECIMAL_MAX_EXPON_64 = 767;
-    //public static final  int DECIMAL_EXPONENT_BIAS = 398;
-    //public static final  int MAX_FORMAT_DIGITS = 16;
-
-    public static final long SPECIAL_ENCODING_MASK64 = 0x6000000000000000L;
-    public static final long INFINITY_MASK64 = 0x7800000000000000L;
-    public static final long SINFINITY_MASK64 = 0xf800000000000000L;
-    //public static final  long SSNAN_MASK64 = 0xfc00000000000000L;
-    public static final long NAN_MASK64 = 0x7c00000000000000L;
-    //public static final  long SNAN_MASK64 = 0x7e00000000000000L;
-    //public static final  long QUIET_MASK64 = 0xfdffffffffffffffL;
-    public static final long LARGE_COEFF_MASK64 = 0x0007ffffffffffffL;
-    public static final long LARGE_COEFF_HIGH_BIT64 = 0x0020000000000000L;
-    public static final long SMALL_COEFF_MASK64 = 0x001fffffffffffffL;
-    public static final int EXPONENT_MASK64 = 0x3ff;
-    public static final int EXPONENT_SHIFT_LARGE64 = 51;
-    public static final int EXPONENT_SHIFT_SMALL64 = 53;
-    public static final long LARGEST_BID64 = 0x77fb86f26fc0ffffL;
-    public static final long SMALLEST_BID64 = 0xf7fb86f26fc0ffffL;
-    //public static final  long SMALL_COEFF_MASK128 = 0x0001ffffffffffffL;
-    //public static final  long LARGE_COEFF_MASK128 = 0x00007fffffffffffL;
-    //public static final  uint EXPONENT_MASK128 = 0x3fff;
-    //public static final  long LARGEST_BID128_HIGH = 0x5fffed09bead87c0L;
-    //public static final  long LARGEST_BID128_LOW = 0x378d8e63ffffffffL;
-    //public static final  uint SPECIAL_ENCODING_MASK32 = 0x60000000;
-    //public static final  uint SINFINITY_MASK32 = 0xf8000000;
-    //public static final  uint INFINITY_MASK32 = 0x78000000;
-    //public static final  uint LARGE_COEFF_MASK32 = 0x007fffff;
-    //public static final  uint LARGE_COEFF_HIGH_BIT32 = 0x00800000;
-    //public static final  uint SMALL_COEFF_MASK32 = 0x001fffff;
-    //public static final  uint EXPONENT_MASK32 = 0xff;
-    //public static final  int LARGEST_BID32 = 0x77f8967f;
-    //public static final  uint NAN_MASK32 = 0x7c000000;
-    //public static final  uint SNAN_MASK32 = 0x7e000000;
-    //public static final  uint SSNAN_MASK32 = 0xfc000000;
-    //public static final  uint QUIET_MASK32 = 0xfdffffff;
-    //public static final  long MASK_BINARY_EXPONENT = 0x7ff0000000000000L;
-    //public static final  int BINARY_EXPONENT_BIAS = 0x3ff;
-    //public static final  int UPPER_EXPON_LIMIT = 51;
-
     //
     //   no underflow checking
     //
     public static long fast_get_BID64_check_OF(final long sgn, int expon, long coeff, final int rmode, final FloatingPointStatusFlag fpsc) {
         long r, mask;
 
-        if (Integer.compareUnsigned(expon, 3 * 256 - 1) >= 0) {
+        if ((/*UnsignedInteger.compare*/(expon) + Integer.MIN_VALUE >= (3 * 256 - 1) + Integer.MIN_VALUE)) {
             if ((expon == 3 * 256 - 1) && coeff == 10000000000000000L) {
                 expon = 3 * 256;
                 coeff = 1000000000000000L;
             }
 
-            if (Integer.compareUnsigned(expon, 3 * 256) >= 0) {
+            if ((/*UnsignedInteger.compare*/(expon) + Integer.MIN_VALUE >= (3 * 256) + Integer.MIN_VALUE)) {
                 while (coeff < 1000000000000000L && expon >= 3 * 256) {
                     expon--;
                     coeff = (coeff << 3) + (coeff << 1);
@@ -403,7 +362,7 @@ class JavaImplParse {
         mask <<= EXPONENT_SHIFT_SMALL64;
 
         // check whether coefficient fits in 10*5+3 bits
-        if (coeff < mask) {
+        if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE < (mask) + Long.MIN_VALUE)) {
             r = LONG_LOW_PART & expon;
             r <<= EXPONENT_SHIFT_SMALL64;
             r |= (coeff | sgn);
@@ -439,120 +398,7 @@ class JavaImplParse {
         public long w0, w1;
     }
 
-    public static final long[][] bid_round_const_table = {
-        {    // RN
-            0L,    // 0 extra digits
-            5L,    // 1 extra digits
-            50L,    // 2 extra digits
-            500L,    // 3 extra digits
-            5000L,    // 4 extra digits
-            50000L,    // 5 extra digits
-            500000L,    // 6 extra digits
-            5000000L,    // 7 extra digits
-            50000000L,    // 8 extra digits
-            500000000L,    // 9 extra digits
-            5000000000L,    // 10 extra digits
-            50000000000L,    // 11 extra digits
-            500000000000L,    // 12 extra digits
-            5000000000000L,    // 13 extra digits
-            50000000000000L,    // 14 extra digits
-            500000000000000L,    // 15 extra digits
-            5000000000000000L,    // 16 extra digits
-            50000000000000000L,    // 17 extra digits
-            500000000000000000L    // 18 extra digits
-        }
-        ,
-        {    // RD
-            0L,    // 0 extra digits
-            0L,    // 1 extra digits
-            0L,    // 2 extra digits
-            00L,    // 3 extra digits
-            000L,    // 4 extra digits
-            0000L,    // 5 extra digits
-            00000L,    // 6 extra digits
-            000000L,    // 7 extra digits
-            0000000L,    // 8 extra digits
-            00000000L,    // 9 extra digits
-            000000000L,    // 10 extra digits
-            0000000000L,    // 11 extra digits
-            00000000000L,    // 12 extra digits
-            000000000000L,    // 13 extra digits
-            0000000000000L,    // 14 extra digits
-            00000000000000L,    // 15 extra digits
-            000000000000000L,    // 16 extra digits
-            0000000000000000L,    // 17 extra digits
-            00000000000000000L    // 18 extra digits
-        }
-        ,
-        {    // round to Inf
-            0L,    // 0 extra digits
-            9L,    // 1 extra digits
-            99L,    // 2 extra digits
-            999L,    // 3 extra digits
-            9999L,    // 4 extra digits
-            99999L,    // 5 extra digits
-            999999L,    // 6 extra digits
-            9999999L,    // 7 extra digits
-            99999999L,    // 8 extra digits
-            999999999L,    // 9 extra digits
-            9999999999L,    // 10 extra digits
-            99999999999L,    // 11 extra digits
-            999999999999L,    // 12 extra digits
-            9999999999999L,    // 13 extra digits
-            99999999999999L,    // 14 extra digits
-            999999999999999L,    // 15 extra digits
-            9999999999999999L,    // 16 extra digits
-            99999999999999999L,    // 17 extra digits
-            999999999999999999L    // 18 extra digits
-        }
-        ,
-        {    // RZ
-            0L,    // 0 extra digits
-            0L,    // 1 extra digits
-            0L,    // 2 extra digits
-            00L,    // 3 extra digits
-            000L,    // 4 extra digits
-            0000L,    // 5 extra digits
-            00000L,    // 6 extra digits
-            000000L,    // 7 extra digits
-            0000000L,    // 8 extra digits
-            00000000L,    // 9 extra digits
-            000000000L,    // 10 extra digits
-            0000000000L,    // 11 extra digits
-            00000000000L,    // 12 extra digits
-            000000000000L,    // 13 extra digits
-            0000000000000L,    // 14 extra digits
-            00000000000000L,    // 15 extra digits
-            000000000000000L,    // 16 extra digits
-            0000000000000000L,    // 17 extra digits
-            00000000000000000L    // 18 extra digits
-        }
-        ,
-        {    // round ties away from 0
-            0L,    // 0 extra digits
-            5L,    // 1 extra digits
-            50L,    // 2 extra digits
-            500L,    // 3 extra digits
-            5000L,    // 4 extra digits
-            50000L,    // 5 extra digits
-            500000L,    // 6 extra digits
-            5000000L,    // 7 extra digits
-            50000000L,    // 8 extra digits
-            500000000L,    // 9 extra digits
-            5000000000L,    // 10 extra digits
-            50000000000L,    // 11 extra digits
-            500000000000L,    // 12 extra digits
-            5000000000000L,    // 13 extra digits
-            50000000000000L,    // 14 extra digits
-            500000000000000L,    // 15 extra digits
-            5000000000000000L,    // 16 extra digits
-            50000000000000000L,    // 17 extra digits
-            500000000000000000L    // 18 extra digits
-        }
-        ,
-    };
-
-    public static long[] bid_reciprocals10_128_dense = {
+    public static long[] bid_reciprocals10_128_flat = {
         0L, 0L,    // 0 extra digits
         0x3333333333333334L, 0x3333333333333333L,    // 1 extra digit
         0x51eb851eb851eb86L, 0x051eb851eb851eb8L,    // 2 extra digits
@@ -631,96 +477,11 @@ class JavaImplParse {
         109,    // 237 - 128, 1/10^35
     };
 
-
-//    public static void __mul_64x128_full(/*out*/ long Ph, /*out*/ final BID_UINT128 Ql, final long A, final long Bw0, final long Bw1) {
-//        long ALBLw0, ALBLw1, ALBHw0, ALBHw1, QM2w0, QM2w1;
-//
-//        //__mul_64x64_to_128(out ALBH, A, B.w1);
-//        {
-//            final long CX = A;
-//            final long CY = Bw1;
-//            long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-//            CXH = CX >>> 32;
-//            CXL = LONG_LOW_PART & CX;
-//            CYH = CY >>> 32;
-//            CYL = LONG_LOW_PART & CY;
-//
-//            PM = CXH * CYL;
-//            PH = CXH * CYH;
-//            PL = CXL * CYL;
-//            PM2 = CXL * CYH;
-//            PH += (PM >>> 32);
-//            PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-//
-//            ALBHw1 = PH + (PM >>> 32);
-//            ALBHw0 = (PM << 32) + (LONG_LOW_PART & PL);
-//        }
-//        //__mul_64x64_to_128(out ALBL, A, B.w0);
-//        {
-//            final long CX = A;
-//            final long CY = Bw0;
-//            long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-//            CXH = CX >>> 32;
-//            CXL = LONG_LOW_PART & CX;
-//            CYH = CY >>> 32;
-//            CYL = LONG_LOW_PART & CY;
-//
-//            PM = CXH * CYL;
-//            PH = CXH * CYH;
-//            PL = CXL * CYL;
-//            PM2 = CXL * CYH;
-//            PH += (PM >>> 32);
-//            PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-//
-//            ALBLw1 = PH + (PM >>> 32);
-//            ALBLw0 = (PM << 32) + (LONG_LOW_PART & PL);
-//        }
-//
-//        Ql.w0 = ALBLw0;
-//        //__add_128_64(out QM2, ALBH, ALBL.w1);
-//        {
-//            final long A128w0 = ALBHw0;
-//            final long A128w1 = ALBHw1;
-//            final long B64 = ALBLw1;
-//            long R64H;
-//            R64H = A128w1;
-//            QM2w0 = (B64) + A128w0;
-//            if (QM2w0 < B64)
-//                R64H++;
-//            QM2w1 = R64H;
-//        }
-//        Ql.w1 = QM2w0;
-//        Ph = QM2w1;
-//    }
-//
-//    public static void __add_128_64(/*out*/ long R128w0, long R128w1, long A128w0, long A128w1, long B64) {
-//        long R64H;
-//        R64H = A128w1;
-//        R128w0 = (B64) + A128w0;
-//        if (R128w0 < B64)
-//            R64H++;
-//        R128w1 = R64H;
-//    }
-//
-//    public static void __add_carry_out(/*out*/ long S, /*out*/ long CY, final long X, final long Y) {
-//        final long X1 = X;
-//        S = X + Y;
-//        CY = (S < X1) ? 1L : 0;
-//    }
-//
-//    public static void __add_carry_in_out(/*out*/ long S, /*out*/ long CY, final long X, final long Y, final long CI) {
-//        final long X1;
-//        X1 = X + CI;
-//        S = X1 + Y;
-//        CY = ((S < X1) || (X1 < CI)) ? 1L : 0;
-//    }
-
-
     //
     // This pack macro is used when underflow is known to occur
     //
     public static long get_BID64_UF(final long sgn, final int expon, long coeff, final long R, int rmode, final FloatingPointStatusFlag fpsc) {
-        long C128w0, C128w1, Q_loww0, Q_loww1, Stempw0, Stempw1;
+        long C128_w0, C128_w1, Q_low_w0, Q_low_w1, Stemp_w0, Stemp_w1;
         long _C64, remainder_h, QH, carry;
         int extra_digits, amount, amount2;
         int status;
@@ -743,74 +504,74 @@ class JavaImplParse {
             coeff |= 1;
         // get digits to be shifted out
         extra_digits = 1 - expon;
-        C128w0 = coeff + bid_round_const_table[rmode][extra_digits];
+        C128_w0 = coeff + bid_round_const_table[rmode][extra_digits];
 
         // get coeff*(2^M[extra_digits])/10^extra_digits
-        //__mul_64x128_full(out QH, out Q_low, C128.w0, bid_reciprocals10_128_dense[extra_digits << 1], bid_reciprocals10_128_dense[(extra_digits << 1) + 1]);
-        //public static void __mul_64x128_full(/*out*/ long Ph, /*out*/ final BID_UINT128 Ql, final long A, final long Bw0, final long Bw1)
+        //__mul_64x128_full(out QH, out Q_low, C128.w0, bid_reciprocals10_128_flat[extra_digits << 1], bid_reciprocals10_128_flat[(extra_digits << 1) + 1]);
+        //public static void __mul_64x128_full(/*out*/ long Ph, /*out*/ final BID_UINT128 Ql, final long A, final long B_w0, final long B_w1)
         {
-            final long A = C128w0;
-            final long Bw0 = bid_reciprocals10_128_dense[extra_digits << 1];
-            final long Bw1 = bid_reciprocals10_128_dense[(extra_digits << 1) + 1];
+            final long _A = C128_w0;
+            final long _B_w0 = bid_reciprocals10_128_flat[extra_digits << 1];
+            final long _B_w1 = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
 
-            long ALBLw0, ALBLw1, ALBHw0, ALBHw1, QM2w0, QM2w1;
+            long _ALBL_w0, _ALBL_w1, _ALBH_w0, _ALBH_w1, _QM2_w0, _QM2_w1;
 
             //__mul_64x64_to_128(out ALBH, A, B.w1);
             {
-                final long CX = A;
-                final long CY = Bw1;
-                long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = CX >>> 32;
-                CXL = LONG_LOW_PART & CX;
-                CYH = CY >>> 32;
-                CYL = LONG_LOW_PART & CY;
+                final long __CX = _A;
+                final long __CY = _B_w1;
+                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                __CXH = __CX >>> 32;
+                __CXL = LONG_LOW_PART & __CX;
+                __CYH = __CY >>> 32;
+                __CYL = LONG_LOW_PART & __CY;
 
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += (PM >>> 32);
-                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                __PM = __CXH * __CYL;
+                __PH = __CXH * __CYH;
+                __PL = __CXL * __CYL;
+                __PM2 = __CXL * __CYH;
+                __PH += (__PM >>> 32);
+                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
 
-                ALBHw1 = PH + (PM >>> 32);
-                ALBHw0 = (PM << 32) + (LONG_LOW_PART & PL);
+                _ALBH_w1 = __PH + (__PM >>> 32);
+                _ALBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
             }
             //__mul_64x64_to_128(out ALBL, A, B.w0);
             {
-                final long CX = A;
-                final long CY = Bw0;
-                long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = CX >>> 32;
-                CXL = LONG_LOW_PART & CX;
-                CYH = CY >>> 32;
-                CYL = LONG_LOW_PART & CY;
+                final long __CX = _A;
+                final long __CY = _B_w0;
+                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                __CXH = __CX >>> 32;
+                __CXL = LONG_LOW_PART & __CX;
+                __CYH = __CY >>> 32;
+                __CYL = LONG_LOW_PART & __CY;
 
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += (PM >>> 32);
-                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                __PM = __CXH * __CYL;
+                __PH = __CXH * __CYH;
+                __PL = __CXL * __CYL;
+                __PM2 = __CXL * __CYH;
+                __PH += (__PM >>> 32);
+                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
 
-                ALBLw1 = PH + (PM >>> 32);
-                ALBLw0 = (PM << 32) + (LONG_LOW_PART & PL);
+                _ALBL_w1 = __PH + (__PM >>> 32);
+                _ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
             }
 
-            Q_loww0 = ALBLw0;
+            Q_low_w0 = _ALBL_w0;
             //__add_128_64(out QM2, ALBH, ALBL.w1);
             {
-                final long A128w0 = ALBHw0;
-                final long A128w1 = ALBHw1;
-                final long B64 = ALBLw1;
+                final long __A128_w0 = _ALBH_w0;
+                final long __A128_w1 = _ALBH_w1;
+                final long __B64 = _ALBL_w1;
                 long R64H;
-                R64H = A128w1;
-                QM2w0 = (B64) + A128w0;
-                if (QM2w0 < B64)
+                R64H = __A128_w1;
+                _QM2_w0 = (__B64) + __A128_w0;
+                if ((/*UnsignedLong.compare*/(_QM2_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                     R64H++;
-                QM2w1 = R64H;
+                _QM2_w1 = R64H;
             }
-            Q_loww1 = QM2w0;
-            QH = QM2w1;
+            Q_low_w1 = _QM2_w0;
+            QH = _QM2_w1;
         }
 
         // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
@@ -831,9 +592,9 @@ class JavaImplParse {
                 remainder_h = remainder_h & QH;
 
                 if (remainder_h == 0
-                    && (Q_loww1 < bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                    || (Q_loww1 == bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                    && Q_loww0 < bid_reciprocals10_128_dense[(extra_digits << 1) + 0]))) {
+                    && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
+                    || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
+                    && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
                     _C64--;
                 }
             }
@@ -851,44 +612,44 @@ class JavaImplParse {
                 case BID_ROUNDING_TIES_AWAY:
                     // test whether fractional part is 0
                     if (remainder_h == 0x8000000000000000L
-                        && (Q_loww1 < bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                        || (Q_loww1 == bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                        && Q_loww0 < bid_reciprocals10_128_dense[(extra_digits << 1) + 0])))
+                        && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
+                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
+                        && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE))))
                         status = BID_EXACT_STATUS;
                     break;
                 case BID_ROUNDING_DOWN:
                 case BID_ROUNDING_TO_ZERO:
                     if (remainder_h == 0
-                        && (Q_loww1 < bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                        || (Q_loww1 == bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                        && Q_loww0 < bid_reciprocals10_128_dense[(extra_digits << 1) + 0])))
+                        && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
+                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
+                        && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE))))
                         status = BID_EXACT_STATUS;
                     break;
                 default:
                     // round up
                     long CY;
-                    //__add_carry_out(out Stempw0, out CY, Q_loww0, bid_reciprocals10_128_dense[(extra_digits << 1) + 0]);
+                    //__add_carry_out(out Stemp_w0, out CY, Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]);
                 {
-                    final long X = Q_loww0;
-                    final long Y = bid_reciprocals10_128_dense[(extra_digits << 1) + 0];
+                    final long __X = Q_low_w0;
+                    final long __Y = bid_reciprocals10_128_flat[(extra_digits << 1) + 0];
 
-                    final long X1 = X;
-                    Stempw0 = X + Y;
-                    CY = (Stempw0 < X1) ? 1L : 0;
+                    final long __X1 = __X;
+                    Stemp_w0 = __X + __Y;
+                    CY = (/*UnsignedLong.compare*/(Stemp_w0) + Long.MIN_VALUE < (__X1) + Long.MIN_VALUE) ? 1L : 0;
                 }
-                //__add_carry_in_out(out Stempw1, out carry, Q_loww1, bid_reciprocals10_128_dense[(extra_digits << 1) + 1], CY);
+                //__add_carry_in_out(out Stemp_w1, out carry, Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1], CY);
                 {
-                    final long X = Q_loww1;
-                    final long Y = bid_reciprocals10_128_dense[(extra_digits << 1) + 1];
-                    final long CI = CY;
+                    final long __X = Q_low_w1;
+                    final long __Y = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
+                    final long __CI = CY;
 
-                    final long X1;
-                    X1 = X + CI;
-                    Stempw1 = X1 + Y;
-                    carry = ((Stempw1 < X1) || (X1 < CI)) ? 1L : 0;
+                    final long __X1;
+                    __X1 = __X + __CI;
+                    Stemp_w1 = __X1 + __Y;
+                    carry = ((/*UnsignedLong.compare*/(Stemp_w1) + Long.MIN_VALUE < (__X1) + Long.MIN_VALUE) || (/*UnsignedLong.compare*/(__X1) + Long.MIN_VALUE < (__CI) + Long.MIN_VALUE)) ? 1L : 0;
                 }
 
-                if (Long.compareUnsigned((remainder_h >>> (64 - amount)) + carry, 1L << amount) >= 0)
+                if ((/*UnsignedLong.compare*/((remainder_h >>> (64 - amount)) + carry) + Long.MIN_VALUE >= (1L << amount) + Long.MIN_VALUE))
                     status = BID_EXACT_STATUS;
                 break;
             }
@@ -907,17 +668,17 @@ class JavaImplParse {
     //   BID64 pack macro (general form)
     //
     public static long get_BID64(long sgn, int expon, long coeff, int rmode, FloatingPointStatusFlag fpsc) {
-        long Stempw0, Stempw1, Q_loww0, Q_loww1;
+        long Stemp_w0, Stemp_w1, Q_low_w0, Q_low_w1;
         long QH, r, mask, _C64, remainder_h, carry;
         int extra_digits, amount, amount2;
         int status;
 
-        if (Long.compareUnsigned(coeff, 9999999999999999L) > 0) {
+        if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE > (9999999999999999L) + Long.MIN_VALUE)) {
             expon++;
             coeff = 1000000000000000L;
         }
         // check for possible underflow/overflow
-        if (Integer.compareUnsigned(expon, 3 * 256) >= 0) {
+        if ((/*UnsignedInteger.compare*/(expon) + Integer.MIN_VALUE >= (3 * 256) + Integer.MIN_VALUE)) {
             if (expon < 0) {
                 // underflow
                 if (expon + MAX_FORMAT_DIGITS < 0) {
@@ -936,72 +697,72 @@ class JavaImplParse {
                 coeff += bid_round_const_table[rmode][extra_digits];
 
                 // get coeff*(2^M[extra_digits])/10^extra_digits
-                //__mul_64x128_full(out QH, out Q_low, coeff, bid_reciprocals10_128_dense[extra_digits << 1], bid_reciprocals10_128_dense[(extra_digits << 1) + 1]);
-                //public static void __mul_64x128_full(/*out*/ long Ph, /*out*/ final BID_UINT128 Ql, final long A, final long Bw0, final long Bw1)
+                //__mul_64x128_full(out QH, out Q_low, coeff, bid_reciprocals10_128_flat[extra_digits << 1], bid_reciprocals10_128_flat[(extra_digits << 1) + 1]);
+                //public static void __mul_64x128_full(/*out*/ long Ph, /*out*/ final BID_UINT128 Ql, final long A, final long B_w0, final long B_w1)
                 {
 
-                    final long A = coeff;
-                    final long Bw0 = bid_reciprocals10_128_dense[extra_digits << 1];
-                    final long Bw1 = bid_reciprocals10_128_dense[(extra_digits << 1) + 1];
+                    final long _A = coeff;
+                    final long _B_w0 = bid_reciprocals10_128_flat[extra_digits << 1];
+                    final long _B_w1 = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
 
-                    long ALBLw0, ALBLw1, ALBHw0, ALBHw1, QM2w0, QM2w1;
+                    long _ALBL_w0, _ALBL_w1, _ALBH_w0, _ALBH_w1, _QM2_w0, _QM2_w1;
 
                     //__mul_64x64_to_128(out ALBH, A, B.w1);
                     {
-                        final long CX = A;
-                        final long CY = Bw1;
-                        long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                        CXH = CX >>> 32;
-                        CXL = LONG_LOW_PART & CX;
-                        CYH = CY >>> 32;
-                        CYL = LONG_LOW_PART & CY;
+                        final long __CX = _A;
+                        final long __CY = _B_w1;
+                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                        __CXH = __CX >>> 32;
+                        __CXL = LONG_LOW_PART & __CX;
+                        __CYH = __CY >>> 32;
+                        __CYL = LONG_LOW_PART & __CY;
 
-                        PM = CXH * CYL;
-                        PH = CXH * CYH;
-                        PL = CXL * CYL;
-                        PM2 = CXL * CYH;
-                        PH += (PM >>> 32);
-                        PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                        __PM = __CXH * __CYL;
+                        __PH = __CXH * __CYH;
+                        __PL = __CXL * __CYL;
+                        __PM2 = __CXL * __CYH;
+                        __PH += (__PM >>> 32);
+                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
 
-                        ALBHw1 = PH + (PM >>> 32);
-                        ALBHw0 = (PM << 32) + (LONG_LOW_PART & PL);
+                        _ALBH_w1 = __PH + (__PM >>> 32);
+                        _ALBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
                     }
                     //__mul_64x64_to_128(out ALBL, A, B.w0);
                     {
-                        final long CX = A;
-                        final long CY = Bw0;
-                        long CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                        CXH = CX >>> 32;
-                        CXL = LONG_LOW_PART & CX;
-                        CYH = CY >>> 32;
-                        CYL = LONG_LOW_PART & CY;
+                        final long __CX = _A;
+                        final long __CY = _B_w0;
+                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                        __CXH = __CX >>> 32;
+                        __CXL = LONG_LOW_PART & __CX;
+                        __CYH = __CY >>> 32;
+                        __CYL = LONG_LOW_PART & __CY;
 
-                        PM = CXH * CYL;
-                        PH = CXH * CYH;
-                        PL = CXL * CYL;
-                        PM2 = CXL * CYH;
-                        PH += (PM >>> 32);
-                        PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                        __PM = __CXH * __CYL;
+                        __PH = __CXH * __CYH;
+                        __PL = __CXL * __CYL;
+                        __PM2 = __CXL * __CYH;
+                        __PH += (__PM >>> 32);
+                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
 
-                        ALBLw1 = PH + (PM >>> 32);
-                        ALBLw0 = (PM << 32) + (LONG_LOW_PART & PL);
+                        _ALBL_w1 = __PH + (__PM >>> 32);
+                        _ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
                     }
 
-                    Q_loww0 = ALBLw0;
+                    Q_low_w0 = _ALBL_w0;
                     //__add_128_64(out QM2, ALBH, ALBL.w1);
                     {
-                        final long A128w0 = ALBHw0;
-                        final long A128w1 = ALBHw1;
-                        final long B64 = ALBLw1;
+                        final long __A128_w0 = _ALBH_w0;
+                        final long __A128_w1 = _ALBH_w1;
+                        final long __B64 = _ALBL_w1;
                         long R64H;
-                        R64H = A128w1;
-                        QM2w0 = (B64) + A128w0;
-                        if (QM2w0 < B64)
+                        R64H = __A128_w1;
+                        _QM2_w0 = (__B64) + __A128_w0;
+                        if ((/*UnsignedLong.compare*/(_QM2_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
                             R64H++;
-                        QM2w1 = R64H;
+                        _QM2_w1 = R64H;
                     }
-                    Q_loww1 = QM2w0;
-                    QH = QM2w1;
+                    Q_low_w1 = _QM2_w0;
+                    QH = _QM2_w1;
                 }
 
                 // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
@@ -1021,9 +782,9 @@ class JavaImplParse {
                         remainder_h = remainder_h & QH;
 
                         if (remainder_h == 0
-                            && (Q_loww1 < bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                            || (Q_loww1 == bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                            && Q_loww0 < bid_reciprocals10_128_dense[(extra_digits << 1) + 0]))) {
+                            && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
+                            || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
+                            && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))) {
                             _C64--;
                         }
                     }
@@ -1041,44 +802,44 @@ class JavaImplParse {
                         case BID_ROUNDING_TIES_AWAY:
                             // test whether fractional part is 0
                             if (remainder_h == 0x8000000000000000L
-                                && (Q_loww1 < bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                                || (Q_loww1 == bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                                && Q_loww0 < bid_reciprocals10_128_dense[(extra_digits << 1) + 0])))
+                                && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
+                                || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
+                                && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE))))
                                 status = BID_EXACT_STATUS;
                             break;
                         case BID_ROUNDING_DOWN:
                         case BID_ROUNDING_TO_ZERO:
                             if (remainder_h == 0
-                                && (Q_loww1 < bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                                || (Q_loww1 == bid_reciprocals10_128_dense[(extra_digits << 1) + 1]
-                                && Q_loww0 < bid_reciprocals10_128_dense[(extra_digits << 1) + 0])))
+                                && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE))
+                                || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
+                                && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 0]) + Long.MIN_VALUE)))
                                 status = BID_EXACT_STATUS;
                             break;
                         default:
                             // round up
                             long CY;
-                            //__add_carry_out(out Stempw0, out CY, Q_loww0, bid_reciprocals10_128_dense[(extra_digits << 1) + 0]);
+                            //__add_carry_out(out Stemp_w0, out CY, Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]);
                         {
-                            final long X = Q_loww0;
-                            final long Y = bid_reciprocals10_128_dense[(extra_digits << 1) + 0];
+                            final long __X = Q_low_w0;
+                            final long __Y = bid_reciprocals10_128_flat[(extra_digits << 1) + 0];
 
-                            final long X1 = X;
-                            Stempw0 = X + Y;
-                            CY = (Stempw0 < X1) ? 1L : 0;
+                            final long __X1 = __X;
+                            Stemp_w0 = __X + __Y;
+                            CY = (/*UnsignedLong.compare*/(Stemp_w0) + Long.MIN_VALUE < (__X1) + Long.MIN_VALUE) ? 1L : 0;
                         }
-                        //__add_carry_in_out(out Stempw1, out carry, Q_loww1, bid_reciprocals10_128_dense[(extra_digits << 1) + 1], CY);
+                        //__add_carry_in_out(out Stemp_w1, out carry, Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1], CY);
                         {
-                            final long X = Q_loww1;
-                            final long Y = bid_reciprocals10_128_dense[(extra_digits << 1) + 1];
-                            final long CI = CY;
+                            final long __X = Q_low_w1;
+                            final long __Y = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
+                            final long __CI = CY;
 
-                            final long X1;
-                            X1 = X + CI;
-                            Stempw1 = X1 + Y;
-                            carry = ((Stempw1 < X1) || (X1 < CI)) ? 1L : 0;
+                            final long __X1;
+                            __X1 = __X + __CI;
+                            Stemp_w1 = __X1 + __Y;
+                            carry = ((/*UnsignedLong.compare*/(Stemp_w1) + Long.MIN_VALUE < (__X1) + Long.MIN_VALUE) || (/*UnsignedLong.compare*/(__X1) + Long.MIN_VALUE < (__CI) + Long.MIN_VALUE)) ? 1L : 0;
                         }
 
-                        if (Long.compareUnsigned((remainder_h >>> (64 - amount)) + carry, 1L << amount) >= 0)
+                        if ((/*UnsignedLong.compare*/((remainder_h >>> (64 - amount)) + carry) + Long.MIN_VALUE >= (1L << amount) + Long.MIN_VALUE))
                             status = BID_EXACT_STATUS;
                         break;
                     }
@@ -1093,7 +854,7 @@ class JavaImplParse {
             if (coeff == 0) {
                 if (expon > DECIMAL_MAX_EXPON_64) expon = DECIMAL_MAX_EXPON_64;
             }
-            while (Long.compareUnsigned(coeff, 1000000000000000L) < 0 && expon >= 3 * 256) {
+            while ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE < (1000000000000000L) + Long.MIN_VALUE) && expon >= 3 * 256) {
                 expon--;
                 coeff = (coeff << 3) + (coeff << 1);
             }
@@ -1123,7 +884,7 @@ class JavaImplParse {
         mask <<= EXPONENT_SHIFT_SMALL64;
 
         // check whether coefficient fits in 10*5+3 bits
-        if (coeff < mask) {
+        if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE < (mask) + Long.MIN_VALUE)) {
             r = LONG_LOW_PART & expon;
             r <<= EXPONENT_SHIFT_SMALL64;
             r |= (coeff | sgn);
@@ -1148,42 +909,5 @@ class JavaImplParse {
         r |= coeff;
 
         return r;
-    }
-
-    public static long unpack_BID64(final Decimal64Parts p, final long x) {
-        long tmp, coeff;
-
-        p.signMask = x & 0x8000000000000000L;
-
-        if ((x & SPECIAL_ENCODING_MASK64) == SPECIAL_ENCODING_MASK64) {
-            // special encodings
-            // coefficient
-            coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
-
-            if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
-                p.exponent = 0;
-                p.coefficient = x & 0xfe03ffffffffffffL;
-                if (Long.compareUnsigned(x & 0x0003ffffffffffffL, 1000000000000000L) >= 0)
-                    p.coefficient = x & 0xfe00000000000000L;
-                if ((x & NAN_MASK64) == INFINITY_MASK64)
-                    p.coefficient = x & SINFINITY_MASK64;
-                return 0;   // NaN or Infinity
-            }
-            // check for non-canonical values
-            if (Long.compareUnsigned(coeff, 10000000000000000L) >= 0)
-                coeff = 0;
-            p.coefficient = coeff;
-            // get exponent
-            tmp = x >>> EXPONENT_SHIFT_LARGE64;
-            p.exponent = (int) (tmp & EXPONENT_MASK64);
-            return coeff;
-        }
-        // exponent
-        tmp = x >>> EXPONENT_SHIFT_SMALL64;
-        p.exponent = (int) (tmp & EXPONENT_MASK64);
-        // coefficient
-        p.coefficient = (x & SMALL_COEFF_MASK64);
-
-        return p.coefficient;
     }
 }

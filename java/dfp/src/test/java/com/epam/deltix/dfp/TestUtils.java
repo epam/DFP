@@ -1,10 +1,13 @@
 package com.epam.deltix.dfp;
 
+import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.random.RandomGenerator;
 import org.junit.Assert;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
 import static com.epam.deltix.dfp.Decimal64Utils.toDebugString;
 import static org.junit.Assert.assertEquals;
 
@@ -260,29 +263,131 @@ public class TestUtils {
 
     static final Random rng = new Random();
 
-    public static void checkInMultipleThreads(final Runnable target) throws Exception {
-        final Thread[] threads = new Thread[Runtime.getRuntime().availableProcessors()];
-        final AtomicReference<Exception> lastException = new AtomicReference<>(null);
+    static final int NTests = 10_000_000;
 
-        for (int ti = 0; ti < threads.length; ++ti) {
-            threads[ti] = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            target.run();
-                        } catch (final Exception e) {
-                            lastException.set(e);
+    public static void checkInMultipleThreads(final Runnable target) throws Exception {
+        checkInMultipleThreads(Runtime.getRuntime().availableProcessors(), target);
+    }
+
+    public static void checkInMultipleThreads(final int threadsCount, final Runnable target) throws Exception {
+        if (threadsCount < 1)
+            throw new IllegalArgumentException("The threadsCount(=" + threadsCount + ") must be positive.");
+
+        if (threadsCount == 1) {
+            target.run();
+        }
+        else {
+            final Thread[] threads = new Thread[threadsCount];
+            final AtomicReference<Exception> lastException = new AtomicReference<>(null);
+
+            for (int ti = 0; ti < threads.length; ++ti) {
+                threads[ti] = new Thread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                target.run();
+                            } catch (final Exception e) {
+                                lastException.set(e);
+                            }
                         }
-                    }
-                });
-            threads[ti].start();
+                    });
+                threads[ti].start();
+            }
+
+            for (final Thread thread : threads)
+                thread.join();
+
+            if (lastException.get() != null)
+                throw lastException.get();
         }
 
-        for (final Thread thread : threads)
-            thread.join();
+    }
 
-        if (lastException.get() != null)
-            throw lastException.get();
+    public static class RandomDecimalsGenerator {
+        final RandomGenerator generator;
+        long x = Decimal64Utils.NaN;
+        int xExp = 0;
+        long y = Decimal64Utils.NaN;
+        int yExp = 0;
+
+        final int mantissaMaxShift;
+        final int exponentRange;
+        final int exponentOffset;
+
+        private static final int TWICE_OF_MAX_SIGNIFICAND_DIGITS = MAX_SIGNIFICAND_DIGITS * 2;
+        private static final int HALF_OF_MAX_SIGNIFICAND_DIGITS = MAX_SIGNIFICAND_DIGITS / 2;
+
+        public RandomDecimalsGenerator() {
+            this(new MersenneTwister(), 1,
+                -TWICE_OF_MAX_SIGNIFICAND_DIGITS - HALF_OF_MAX_SIGNIFICAND_DIGITS,
+                TWICE_OF_MAX_SIGNIFICAND_DIGITS - HALF_OF_MAX_SIGNIFICAND_DIGITS);
+        }
+
+        public RandomDecimalsGenerator(
+            final RandomGenerator generator,
+            final int mantissaMinBits,
+            final int exponentMin,
+            final int exponentMax) {
+            if (generator == null)
+                throw new IllegalArgumentException("The random argument is null.");
+            if (mantissaMinBits < 1 || 64 < mantissaMinBits)
+                throw new IllegalArgumentException("The mantissaMinBits(=" + mantissaMinBits + ") must lie in [1..64] range");
+            if (exponentMin < Decimal64Utils.MIN_EXPONENT || Decimal64Utils.MAX_EXPONENT < exponentMin)
+                throw new IllegalArgumentException("The exponentMin(=" + exponentMin + ") must lie in [" +
+                    Decimal64Utils.MIN_EXPONENT + ".." + Decimal64Utils.MAX_EXPONENT + "] range.");
+            if (exponentMax < Decimal64Utils.MIN_EXPONENT || Decimal64Utils.MAX_EXPONENT < exponentMax)
+                throw new IllegalArgumentException("The exponentMax(=" + exponentMax + ") must lie in [" +
+                    Decimal64Utils.MIN_EXPONENT + ".." + Decimal64Utils.MAX_EXPONENT + "] range.");
+            if (exponentMax <= exponentMin)
+                throw new IllegalArgumentException("The exponentMin(=" + exponentMin +
+                    ") must be less than the exponentMax(=" + exponentMax + ".");
+
+            this.generator = generator;
+            this.mantissaMaxShift = 64 - mantissaMinBits + 1 /*  for random.nextInt() exclusive upper bound */;
+            this.exponentRange = exponentMax - exponentMin;
+            this.exponentOffset = exponentMin;
+        }
+
+        public void makeNextPair() {
+            nextX();
+            nextY();
+        }
+
+        public long nextX() {
+            xExp = generator.nextInt(exponentRange) + exponentOffset;
+            return x = Decimal64Utils.fromFixedPoint(generator.nextLong() >> generator.nextInt(mantissaMaxShift), -xExp);
+        }
+
+        public long nextY() {
+            yExp = generator.nextInt(exponentRange) + exponentOffset;
+            return y = Decimal64Utils.fromFixedPoint(generator.nextLong() >> generator.nextInt(mantissaMaxShift), -yExp);
+        }
+
+        public long getX() {
+            return x;
+        }
+
+        public int getXExp() {
+            return xExp;
+        }
+
+        public long getY() {
+            return y;
+        }
+
+        public int getYExp() {
+            return yExp;
+        }
+
+        @Override
+        public String toString() {
+            return "RandomDecimalsGenerator{" +
+                "x=" + Decimal64Utils.toScientificString(x) +
+                ", xExp=" + xExp +
+                ", y=" + Decimal64Utils.toScientificString(y) +
+                ", yExp=" + yExp +
+                '}';
+        }
     }
 }
