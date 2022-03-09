@@ -291,6 +291,7 @@ jobs:
           versionSnapshotNext=`echo $versionSnapshot | perl -pe 's/^((\d+\.)*)(\d+)(.*)$/$1.($3+1).$4/e'`
           echo "$versionSnapshot -> $versionRelease  -> $versionSnapshotNext"
           sed -i "s/version=$versionSnapshot/version=$versionRelease/" gradle.properties
+          sed -i "s/\(implementation[[:blank:]]\{1,\}'com\.epam\.deltix:dfp:\)[0-9.]\{5,\}'/\1$versionRelease'/" README.md
           git commit -am "[skip-ci] Generate release version"
           git push origin HEAD
 
