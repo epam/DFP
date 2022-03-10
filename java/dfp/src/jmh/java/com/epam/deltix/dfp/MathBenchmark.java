@@ -21,17 +21,40 @@ public class MathBenchmark {
 
     @Setup
     public void setUp() {
-        final Random random = new Random();
-
+        TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator();
         decimalValues = new long[1003];
         for (int i = 0; i < decimalValues.length; ++i)
-            decimalValues[i] = Decimal64Utils.fromFixedPoint(random.nextLong(), -(random.nextInt(80) - 40 - 15));
+            decimalValues[i] = generator.nextX();
+    }
+
+    @Benchmark
+    public void divNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.divide(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void divJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplDiv.bid64_div(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void mulNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.multiply2(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void mulJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplMul.bid64_mul(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
     public void addNative(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(Decimal64Utils.add(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(NativeImpl.add2(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
@@ -41,7 +64,7 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void addNop(Blackhole bh) {
+    public void nopJustIter(Blackhole bh) {
         for (int i = 1; i < 1000; ++i)
             bh.consume(decimalValues[i]);
     }
