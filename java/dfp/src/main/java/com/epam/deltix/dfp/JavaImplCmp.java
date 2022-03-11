@@ -56,7 +56,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -70,7 +70,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -114,7 +114,7 @@ public class JavaImplCmp {
 //  for (lcv = 0; lcv < (exp_y - exp_x); lcv++) {
 //    // recalculate y's significand upwards
 //    sig_y = sig_y * 10;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      return false;
 //    }
 //  }
@@ -167,7 +167,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -181,7 +181,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -318,7 +318,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -332,7 +332,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -402,7 +402,7 @@ public class JavaImplCmp {
 //    // if postitive, return whichever significand abs is smaller
 //    // (converse if negative)
 //    res = (((sig_n_prime_w1 == 0)
-//	    && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) !=
+//	    && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) !=
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -466,7 +466,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -480,7 +480,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -524,7 +524,7 @@ public class JavaImplCmp {
 //  if (sig_x > sig_y && exp_x >= exp_y) {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
-//  if (sig_x < sig_y && exp_x <= exp_y) {
+//  if (UnsignedLong.isLess(sig_x, sig_y) && exp_x <= exp_y) {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
@@ -611,7 +611,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -625,7 +625,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -671,7 +671,7 @@ public class JavaImplCmp {
 //  if (sig_x > sig_y && exp_x >= exp_y) {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
-//  if (sig_x < sig_y && exp_x <= exp_y) {
+//  if (UnsignedLong.isLess(sig_x, sig_y) && exp_x <= exp_y) {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
@@ -696,7 +696,7 @@ public class JavaImplCmp {
 //    // if postitive, return whichever significand abs is smaller
 //    // (converse if negative)
 //    res = (((sig_n_prime_w1 == 0)
-//	    && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) ==
+//	    && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -710,7 +710,7 @@ public class JavaImplCmp {
 //  // if positive, return whichever significand abs is smaller
 //  // (converse if negative)
 //  res = (((sig_n_prime_w1 > 0)
-//	  || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
+//	  || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -761,7 +761,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -775,7 +775,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -820,7 +820,7 @@ public class JavaImplCmp {
 //  if (sig_x > sig_y && exp_x >= exp_y) {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
-//  if (sig_x < sig_y && exp_x <= exp_y) {
+//  if (UnsignedLong.isLess(sig_x, sig_y) && exp_x <= exp_y) {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
@@ -845,7 +845,7 @@ public class JavaImplCmp {
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    res = (((sig_n_prime_w1 == 0)
-//	    && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) ==
+//	    && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -859,7 +859,7 @@ public class JavaImplCmp {
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
 //  res = (((sig_n_prime_w1 > 0)
-//	  || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
+//	  || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -910,7 +910,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -924,7 +924,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -969,7 +969,7 @@ public class JavaImplCmp {
 //  if (sig_x > sig_y && exp_x >= exp_y) {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
-//  if (sig_x < sig_y && exp_x <= exp_y) {
+//  if (UnsignedLong.isLess(sig_x, sig_y) && exp_x <= exp_y) {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
@@ -994,7 +994,7 @@ public class JavaImplCmp {
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    res = (((sig_n_prime_w1 == 0)
-//	    && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) ==
+//	    && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -1008,7 +1008,7 @@ public class JavaImplCmp {
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
 //  res = (((sig_n_prime_w1 > 0)
-//	  || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
+//	  || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -1047,7 +1047,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -1062,7 +1062,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -1111,7 +1111,7 @@ public class JavaImplCmp {
 //
 //    // recalculate y's significand upwards
 //    sig_y = sig_y * 10;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      return true;
 //    }
 //  }
@@ -1168,7 +1168,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -1183,7 +1183,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -1229,7 +1229,7 @@ public class JavaImplCmp {
 //  if (sig_x > sig_y && exp_x >= exp_y) {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
-//  if (sig_x < sig_y && exp_x <= exp_y) {
+//  if (UnsignedLong.isLess(sig_x, sig_y) && exp_x <= exp_y) {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
@@ -1257,7 +1257,7 @@ public class JavaImplCmp {
 //    //     (converse if negative)
 //    {
 //      return (((sig_n_prime_w1 == 0)
-//	      && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) ==
+//	      && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) ==
 //					      MASK_SIGN));
 //    }
 //  }
@@ -1273,7 +1273,7 @@ public class JavaImplCmp {
 //  //     (converse if negative)
 //  {
 //    return (((sig_n_prime_w1 > 0)
-//	    || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
+//	    || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					      MASK_SIGN));
 //  }
 //}
@@ -1325,7 +1325,7 @@ public class JavaImplCmp {
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_x, 9999999999999999L)) {
 //      non_canon_x = true;
 //    } else {
 //      non_canon_x = false;
@@ -1340,7 +1340,7 @@ public class JavaImplCmp {
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
 //    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999L) {
+//    if (UnsignedLong.isGreater(sig_y, 9999999999999999L)) {
 //      non_canon_y = true;
 //    } else {
 //      non_canon_y = false;
@@ -1386,7 +1386,7 @@ public class JavaImplCmp {
 //  if (sig_x > sig_y && exp_x >= exp_y) {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
-//  if (sig_x < sig_y && exp_x <= exp_y) {
+//  if (UnsignedLong.isLess(sig_x, sig_y) && exp_x <= exp_y) {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
@@ -1414,7 +1414,7 @@ public class JavaImplCmp {
 //    //     (converse if negative)
 //    {
 //      return (((sig_n_prime_w1 == 0)
-//	      && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) !=
+//	      && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) !=
 //					      MASK_SIGN));
 //    }
 //  }
@@ -1430,7 +1430,7 @@ public class JavaImplCmp {
 //  //     (converse if negative)
 //  {
 //    return (((sig_n_prime_w1 > 0)
-//	    || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) !=
+//	    || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) !=
 //					      MASK_SIGN));
 //  }
 //}
