@@ -42,18 +42,15 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equivalent.
 //  if (x == y) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // INFINITY (CASE3)
 //  if (((x & MASK_INF) == MASK_INF) && ((y & MASK_INF) == MASK_INF)) {
-//    res = (((x ^ y) & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return (((x ^ y) & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // ONE INFINITY (CASE3')
 //  if (((x & MASK_INF) == MASK_INF) || ((y & MASK_INF) == MASK_INF)) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
@@ -96,17 +93,14 @@ public class JavaImplCmp {
 //    y_is_zero = 1;
 //  }
 //  if (x_is_zero && y_is_zero) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  } else if ((x_is_zero && !y_is_zero) || (!x_is_zero && y_is_zero)) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ => not equal : return 0
 //  if ((x ^ y) & MASK_SIGN) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  if (exp_x > exp_y) {	// to simplify the loop below,
@@ -121,8 +115,7 @@ public class JavaImplCmp {
 //    // recalculate y's significand upwards
 //    sig_y = sig_y * 10;
 //    if (sig_y > 9999999999999999L) {
-//      res = 0;
-//      BID_RETURN (res);
+//      return false;
 //    }
 //  }
 //  res = (sig_y == sig_x);
@@ -150,15 +143,13 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equal (not Greater).
 //  if (x == y) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // INFINITY (CASE3)
 //  if ((x & MASK_INF) == MASK_INF) {
 //    // if x is neg infinity, there is no way it is greater than y, return 0
 //    if (((x & MASK_SIGN) == MASK_SIGN)) {
-//      res = 0;
-//      BID_RETURN (res);
+//      return false;
 //    } else {
 //      // x is pos infinity, it is greater, unless y is positive
 //      // infinity => return y!=pos_infinity
@@ -214,8 +205,7 @@ public class JavaImplCmp {
 //  }
 //  // if both numbers are zero, neither is greater => return NOTGREATERTHAN
 //  if (x_is_zero && y_is_zero) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  } else if (x_is_zero) {
 //    // is x is zero, it is greater if Y is negative
 //    res = ((y & MASK_SIGN) == MASK_SIGN);
@@ -228,19 +218,16 @@ public class JavaImplCmp {
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ, x is greater if y is negative
 //  if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
-//    res = ((y & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  // if both components are either bigger or smaller,
 //  // it is clear what needs to be done
 //  if (sig_x > sig_y && exp_x > exp_y) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  if (sig_x < sig_y && exp_x < exp_y) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
 //  if (exp_x - exp_y > 15) {	// difference cannot be greater than 10^15
@@ -265,8 +252,7 @@ public class JavaImplCmp {
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // if postitive, return whichever significand is larger (converse if neg.)
 //    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
-//      res = 0;
-//      BID_RETURN (res);
+//      return false;
 //    }
 //    res = (((sig_n_prime.w[1] > 0)
 //	    || sig_n_prime.w[0] > sig_y) ^ ((x & MASK_SIGN) ==
@@ -279,8 +265,7 @@ public class JavaImplCmp {
 //  // if postitive, return whichever significand is larger
 //  //     (converse if negative)
 //  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  res = (((sig_n_prime.w[1] == 0)
 //	  && (sig_x > sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
@@ -308,8 +293,7 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equal.
 //  if (x == y) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // INFINITY (CASE3)
 //  if ((x & MASK_INF) == MASK_INF) {
@@ -386,18 +370,15 @@ public class JavaImplCmp {
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ, x is less than if y is positive
 //  if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
-//    res = ((y & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  // if both components are either bigger or smaller
 //  if (sig_x > sig_y && exp_x >= exp_y) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  if (sig_x < sig_y && exp_x <= exp_y) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
 //  if (exp_x - exp_y > 15) {
@@ -407,8 +388,7 @@ public class JavaImplCmp {
 //  }
 //  // if exp_x is 15 less than exp_y, no need for compensation
 //  if (exp_y - exp_x > 15) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
 //  if (exp_x > exp_y) {	// to simplify the loop below,
@@ -417,8 +397,7 @@ public class JavaImplCmp {
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // return 1 if values are equal
 //    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
-//      res = 1;
-//      BID_RETURN (res);
+//      return true;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    // (converse if negative)
@@ -432,8 +411,7 @@ public class JavaImplCmp {
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // return 0 if values are equal
 //  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  // (converse if negative)
@@ -464,15 +442,13 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equal (not Greater).
 //  if (x == y) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // INFINITY (CASE3)
 //  if ((x & MASK_INF) == MASK_INF) {
 //    // if x is neg infinity, there is no way it is greater than y, return 0
 //    if (((x & MASK_SIGN) == MASK_SIGN)) {
-//      res = 0;
-//      BID_RETURN (res);
+//      return false;
 //    } else {
 //      // x is pos infinity, it is greater, unless y is positive infinity =>
 //      // return y!=pos_infinity
@@ -528,8 +504,7 @@ public class JavaImplCmp {
 //  }
 //  // if both numbers are zero, neither is greater => return NOTGREATERTHAN
 //  if (x_is_zero && y_is_zero) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  } else if (x_is_zero) {
 //    // is x is zero, it is greater if Y is negative
 //    res = ((y & MASK_SIGN) == MASK_SIGN);
@@ -542,18 +517,15 @@ public class JavaImplCmp {
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ, x is greater if y is negative
 //  if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
-//    res = ((y & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  // if both components are either bigger or smaller
 //  if (sig_x > sig_y && exp_x >= exp_y) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  if (sig_x < sig_y && exp_x <= exp_y) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
 //  if (exp_x - exp_y > 15) {
@@ -563,8 +535,7 @@ public class JavaImplCmp {
 //  }
 //  // if exp_x is 15 less than exp_y, no need for compensation
 //  if (exp_y - exp_x > 15) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
 //  if (exp_x > exp_y) {	// to simplify the loop below,
@@ -574,8 +545,7 @@ public class JavaImplCmp {
 //    // if postitive, return whichever significand is larger
 //    // (converse if negative)
 //    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
-//      res = 0;
-//      BID_RETURN (res);
+//      return false;
 //    }
 //    res = (((sig_n_prime.w[1] > 0)
 //	    || sig_n_prime.w[0] > sig_y) ^ ((x & MASK_SIGN) ==
@@ -587,8 +557,7 @@ public class JavaImplCmp {
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // if postitive, return whichever significand is larger (converse if negative)
 //  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  res = (((sig_n_prime.w[1] == 0)
 //	  && (sig_x > sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
@@ -616,8 +585,7 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equal.
 //  if (x == y) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // INFINITY (CASE3)
 //  if ((x & MASK_INF) == MASK_INF) {
@@ -695,19 +663,16 @@ public class JavaImplCmp {
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ, x is less than if y is positive
 //  if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
-//    res = ((y & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  // if both components are either bigger or smaller,
 //  // it is clear what needs to be done
 //  if (sig_x > sig_y && exp_x >= exp_y) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  if (sig_x < sig_y && exp_x <= exp_y) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
 //  if (exp_x - exp_y > 15) {
@@ -717,8 +682,7 @@ public class JavaImplCmp {
 //  }
 //  // if exp_x is 15 less than exp_y, no need for compensation
 //  if (exp_y - exp_x > 15) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
 //  if (exp_x > exp_y) {	// to simplify the loop below,
@@ -727,8 +691,7 @@ public class JavaImplCmp {
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // return 0 if values are equal
 //    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
-//      res = 0;
-//      BID_RETURN (res);
+//      return false;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    // (converse if negative)
@@ -742,8 +705,7 @@ public class JavaImplCmp {
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // return 0 if values are equal
 //  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  // (converse if negative)
@@ -774,8 +736,7 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equal (LESSEQUAL).
 //  if (x == y) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // INFINITY (CASE3)
 //  if ((x & MASK_INF) == MASK_INF) {
@@ -852,18 +813,15 @@ public class JavaImplCmp {
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ, x is less than if y is positive
 //  if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
-//    res = ((y & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  // if both components are either bigger or smaller
 //  if (sig_x > sig_y && exp_x >= exp_y) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  if (sig_x < sig_y && exp_x <= exp_y) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
 //  if (exp_x - exp_y > 15) {
@@ -873,8 +831,7 @@ public class JavaImplCmp {
 //  }
 //  // if exp_x is 15 less than exp_y, no need for compensation
 //  if (exp_y - exp_x > 15) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
 //  if (exp_x > exp_y) {	// to simplify the loop below,
@@ -883,8 +840,7 @@ public class JavaImplCmp {
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // return 1 if values are equal
 //    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
-//      res = 1;
-//      BID_RETURN (res);
+//      return true;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
@@ -898,8 +854,7 @@ public class JavaImplCmp {
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // return 1 if values are equal
 //  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
@@ -929,8 +884,7 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equal.
 //  if (x == y) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // INFINITY (CASE3)
 //  if ((x & MASK_INF) == MASK_INF) {
@@ -1008,18 +962,15 @@ public class JavaImplCmp {
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ, x is less than if y is positive
 //  if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
-//    res = ((y & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  // if both components are either bigger or smaller
 //  if (sig_x > sig_y && exp_x >= exp_y) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  if (sig_x < sig_y && exp_x <= exp_y) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
 //  if (exp_x - exp_y > 15) {
@@ -1029,8 +980,7 @@ public class JavaImplCmp {
 //  }
 //  // if exp_x is 15 less than exp_y, no need for compensation
 //  if (exp_y - exp_x > 15) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
 //  if (exp_x > exp_y) {	// to simplify the loop below,
@@ -1039,8 +989,7 @@ public class JavaImplCmp {
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // return 0 if values are equal
 //    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
-//      res = 0;
-//      BID_RETURN (res);
+//      return false;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
@@ -1054,8 +1003,7 @@ public class JavaImplCmp {
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // return 0 if values are equal
 //  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
@@ -1085,18 +1033,15 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equivalent.
 //  if (x == y) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  }
 //  // INFINITY (CASE3)
 //  if (((x & MASK_INF) == MASK_INF) && ((y & MASK_INF) == MASK_INF)) {
-//    res = (((x ^ y) & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return (((x ^ y) & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // ONE INFINITY (CASE3')
 //  if (((x & MASK_INF) == MASK_INF) || ((y & MASK_INF) == MASK_INF)) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
@@ -1142,17 +1087,14 @@ public class JavaImplCmp {
 //  }
 //
 //  if (x_is_zero && y_is_zero) {
-//    res = 0;
-//    BID_RETURN (res);
+//    return false;
 //  } else if ((x_is_zero && !y_is_zero) || (!x_is_zero && y_is_zero)) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ => not equal : return 1
 //  if ((x ^ y) & MASK_SIGN) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  if (exp_x > exp_y) {	// to simplify the loop below,
@@ -1161,8 +1103,7 @@ public class JavaImplCmp {
 //  }
 //
 //  if (exp_y - exp_x > 15) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // difference cannot be greater than 10^16
 //
@@ -1171,14 +1112,12 @@ public class JavaImplCmp {
 //    // recalculate y's significand upwards
 //    sig_y = sig_y * 10;
 //    if (sig_y > 9999999999999999L) {
-//      res = 1;
-//      BID_RETURN (res);
+//      return true;
 //    }
 //  }
 //
 //  {
-//    res = sig_y != sig_x;
-//    BID_RETURN (res);
+//    return sig_y != sig_x;
 //  }
 //
 //}
@@ -1204,29 +1143,25 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equal (LESSEQUAL).
 //  if (x == y) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // INFINITY (CASE3)
 //  if ((x & MASK_INF) == MASK_INF) {
 //    // if x is neg infinity, it must be lessthan or equal to y return 1
 //    if (((x & MASK_SIGN) == MASK_SIGN)) {
-//      res = 1;
-//      BID_RETURN (res);
+//      return true;
 //    }
 //    // x is pos infinity, it is greater, unless y is positive
 //    // infinity => return y==pos_infinity
 //    else {
-//      res = !(((y & MASK_INF) != MASK_INF)
+//      return !(((y & MASK_INF) != MASK_INF)
 //	      || ((y & MASK_SIGN) == MASK_SIGN));
-//      BID_RETURN (res);
 //    }
 //  } else if ((y & MASK_INF) == MASK_INF) {
 //    // x is finite, so if y is positive infinity, then x is less, return 1
 //    //                 if y is negative infinity, then x is greater, return 0
 //    {
-//      res = ((y & MASK_SIGN) != MASK_SIGN);
-//      BID_RETURN (res);
+//      return ((y & MASK_SIGN) != MASK_SIGN);
 //    }
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
@@ -1274,46 +1209,38 @@ public class JavaImplCmp {
 //  }
 //  // if both numbers are zero, they are equal -> return 1
 //  if (x_is_zero && y_is_zero) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // if x is zero, it is lessthan if Y is positive
 //  else if (x_is_zero) {
-//    res = ((y & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if y is zero, X is less if it is negative
 //  else if (y_is_zero) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ, x is less than if y is positive
 //  if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
-//    res = ((y & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  // if both components are either bigger or smaller
 //  if (sig_x > sig_y && exp_x >= exp_y) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  if (sig_x < sig_y && exp_x <= exp_y) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
 //  if (exp_x - exp_y > 15) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // difference cannot be greater than 10^15
 //
 //  // if exp_x is 15 less than exp_y, no need for compensation
 //  if (exp_y - exp_x > 15) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
 //  if (exp_x > exp_y) {	// to simplify the loop below,
@@ -1324,16 +1251,14 @@ public class JavaImplCmp {
 //
 //    // return 1 if values are equal
 //    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
-//      res = 1;
-//      BID_RETURN (res);
+//      return true;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    {
-//      res = (((sig_n_prime.w[1] == 0)
+//      return (((sig_n_prime.w[1] == 0)
 //	      && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) ==
 //					      MASK_SIGN));
-//      BID_RETURN (res);
 //    }
 //  }
 //  // adjust the y significand upwards
@@ -1342,16 +1267,14 @@ public class JavaImplCmp {
 //
 //  // return 1 if values are equal
 //  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
 //  {
-//    res = (((sig_n_prime.w[1] > 0)
+//    return (((sig_n_prime.w[1] > 0)
 //	    || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
 //					      MASK_SIGN));
-//    BID_RETURN (res);
 //  }
 //}
 //
@@ -1375,8 +1298,7 @@ public class JavaImplCmp {
 //  // SIMPLE (CASE2)
 //  // if all the bits are the same, these numbers are equal.
 //  if (x == y) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // INFINITY (CASE3)
 //  if ((x & MASK_INF) == MASK_INF) {
@@ -1384,22 +1306,19 @@ public class JavaImplCmp {
 //    if ((x & MASK_SIGN) == MASK_SIGN)
 //      // x is -inf, so it is less than y unless y is -inf
 //    {
-//      res = (((y & MASK_INF) == MASK_INF)
+//      return (((y & MASK_INF) == MASK_INF)
 //	     && (y & MASK_SIGN) == MASK_SIGN);
-//      BID_RETURN (res);
 //    } else
 //      // x is pos_inf, no way for it to be less than y
 //    {
-//      res = 1;
-//      BID_RETURN (res);
+//      return true;
 //    }
 //  } else if ((y & MASK_INF) == MASK_INF) {
 //    // x is finite, so:
 //    //    if y is +inf, x<y
 //    //    if y is -inf, x>y
 //    {
-//      res = ((y & MASK_SIGN) == MASK_SIGN);
-//      BID_RETURN (res);
+//      return ((y & MASK_SIGN) == MASK_SIGN);
 //    }
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
@@ -1447,46 +1366,38 @@ public class JavaImplCmp {
 //  }
 //  // if both numbers are zero, they are equal
 //  if (x_is_zero && y_is_zero) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // if x is zero, it is lessthan if Y is positive
 //  else if (x_is_zero) {
-//    res = ((y & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if y is zero, X is less if it is negative
 //  else if (y_is_zero) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // OPPOSITE SIGN (CASE5)
 //  // now, if the sign bits differ, x is less than if y is positive
 //  if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
-//    res = ((y & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((y & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
 //  // if both components are either bigger or smaller
 //  if (sig_x > sig_y && exp_x >= exp_y) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  if (sig_x < sig_y && exp_x <= exp_y) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
 //  if (exp_x - exp_y > 15) {
-//    res = ((x & MASK_SIGN) != MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // difference cannot be greater than 10^15
 //
 //  // if exp_x is 15 less than exp_y, no need for compensation
 //  if (exp_y - exp_x > 15) {
-//    res = ((x & MASK_SIGN) == MASK_SIGN);
-//    BID_RETURN (res);
+//    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
 //  if (exp_x > exp_y) {	// to simplify the loop below,
@@ -1497,16 +1408,14 @@ public class JavaImplCmp {
 //
 //    // return 0 if values are equal
 //    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
-//      res = 1;
-//      BID_RETURN (res);
+//      return true;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    {
-//      res = (((sig_n_prime.w[1] == 0)
+//      return (((sig_n_prime.w[1] == 0)
 //	      && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) !=
 //					      MASK_SIGN));
-//      BID_RETURN (res);
 //    }
 //  }
 //  // adjust the y significand upwards
@@ -1515,16 +1424,14 @@ public class JavaImplCmp {
 //
 //  // return 0 if values are equal
 //  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
-//    res = 1;
-//    BID_RETURN (res);
+//    return true;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
 //  {
-//    res = (((sig_n_prime.w[1] > 0)
+//    return (((sig_n_prime.w[1] > 0)
 //	    || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) !=
 //					      MASK_SIGN));
-//    BID_RETURN (res);
 //  }
 //}
 
