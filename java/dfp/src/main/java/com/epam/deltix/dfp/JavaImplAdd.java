@@ -132,7 +132,7 @@ class JavaImplAdd {
      * @param y Second term
      * @return The sum of operands
      */
-    public static long add(final long x, final long y) {
+    public static long bid64_add(final long x, final long y) {
 
         long CA_w0, CA_w1, CT_w0, CT_w1, CT_new_w0, CT_new_w1;
         long sign_x, sign_y, coefficient_x, coefficient_y, C64_new;

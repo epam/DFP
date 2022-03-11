@@ -7,8 +7,6 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.io.IOException;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -60,7 +58,7 @@ public class MathBenchmark {
     @Benchmark
     public void addJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplAdd.add(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(JavaImplAdd.bid64_add(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark

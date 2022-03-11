@@ -607,7 +607,7 @@ public class JavaImplTest {
     }
 
     private void testAddCase(final long x, final long y) {
-        final long javaRet = JavaImplAdd.add(x, y);
+        final long javaRet = JavaImplAdd.bid64_add(x, y);
         final long nativeRet = NativeImpl.add2(x, y);
 
         if (javaRet != nativeRet)
