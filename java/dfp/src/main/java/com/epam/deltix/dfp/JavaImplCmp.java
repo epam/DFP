@@ -27,7 +27,7 @@ public class JavaImplCmp {
 //  int res;
 //  int exp_x, exp_y, exp_t;
 //  BID_UINT64 sig_x, sig_y, sig_t;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y, lcv;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y, lcv;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered,
@@ -57,31 +57,31 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //  // ZERO (CASE4)
 //  // some properties:
@@ -120,7 +120,7 @@ public class JavaImplCmp {
 //  for (lcv = 0; lcv < (exp_y - exp_x); lcv++) {
 //    // recalculate y's significand upwards
 //    sig_y = sig_y * 10;
-//    if (sig_y > 9999999999999999ull) {
+//    if (sig_y > 9999999999999999L) {
 //      res = 0;
 //      BID_RETURN (res);
 //    }
@@ -135,7 +135,7 @@ public class JavaImplCmp {
 //  int exp_x, exp_y;
 //  BID_UINT64 sig_x, sig_y;
 //  BID_UINT128 sig_n_prime;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered, rather than equal :
@@ -174,31 +174,31 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //  // ZERO (CASE4)
 //  // some properties:
@@ -294,7 +294,7 @@ public class JavaImplCmp {
 //  int exp_x, exp_y;
 //  BID_UINT64 sig_x, sig_y;
 //  BID_UINT128 sig_n_prime;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered : return 1
@@ -332,31 +332,31 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //  // ZERO (CASE4)
 //  // some properties:
@@ -449,7 +449,7 @@ public class JavaImplCmp {
 //  int exp_x, exp_y;
 //  BID_UINT64 sig_x, sig_y;
 //  BID_UINT128 sig_n_prime;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered, rather than equal :
@@ -488,31 +488,31 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //  // ZERO (CASE4)
 //  // some properties:
@@ -602,7 +602,7 @@ public class JavaImplCmp {
 //  int exp_x, exp_y;
 //  BID_UINT64 sig_x, sig_y;
 //  BID_UINT128 sig_n_prime;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered : return 0
@@ -641,31 +641,31 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //  // ZERO (CASE4)
 //  // some properties:
@@ -759,7 +759,7 @@ public class JavaImplCmp {
 //  int exp_x, exp_y;
 //  BID_UINT64 sig_x, sig_y;
 //  BID_UINT128 sig_n_prime;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered, rather than equal :
@@ -798,31 +798,31 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //  // ZERO (CASE4)
 //  // some properties:
@@ -915,7 +915,7 @@ public class JavaImplCmp {
 //  int exp_x, exp_y;
 //  BID_UINT64 sig_x, sig_y;
 //  BID_UINT128 sig_n_prime;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered : return 0
@@ -954,31 +954,31 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //  // ZERO (CASE4)
 //  // some properties:
@@ -1070,7 +1070,7 @@ public class JavaImplCmp {
 //  int res;
 //  int exp_x, exp_y, exp_t;
 //  BID_UINT64 sig_x, sig_y, sig_t;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y, lcv;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y, lcv;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered,
@@ -1100,32 +1100,32 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //
 //  // ZERO (CASE4)
@@ -1170,7 +1170,7 @@ public class JavaImplCmp {
 //
 //    // recalculate y's significand upwards
 //    sig_y = sig_y * 10;
-//    if (sig_y > 9999999999999999ull) {
+//    if (sig_y > 9999999999999999L) {
 //      res = 1;
 //      BID_RETURN (res);
 //    }
@@ -1189,7 +1189,7 @@ public class JavaImplCmp {
 //  int exp_x, exp_y;
 //  BID_UINT64 sig_x, sig_y;
 //  BID_UINT128 sig_n_prime;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered,
@@ -1231,32 +1231,32 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //
 //  // ZERO (CASE4)
@@ -1361,7 +1361,7 @@ public class JavaImplCmp {
 //  int exp_x, exp_y;
 //  BID_UINT64 sig_x, sig_y;
 //  BID_UINT128 sig_n_prime;
-//  char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
+//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered : return 1
@@ -1404,32 +1404,32 @@ public class JavaImplCmp {
 //  }
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_x > 9999999999999999ull) {
-//      non_canon_x = 1;
+//    if (sig_x > 9999999999999999L) {
+//      non_canon_x = true;
 //    } else {
-//      non_canon_x = 0;
+//      non_canon_x = false;
 //    }
 //  } else {
-//    exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = 0;
+//    non_canon_x = false;
 //  }
 //
 //  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
 //  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (y & MASK_BINARY_EXPONENT2) >> 51;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
 //    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//    if (sig_y > 9999999999999999ull) {
-//      non_canon_y = 1;
+//    if (sig_y > 9999999999999999L) {
+//      non_canon_y = true;
 //    } else {
-//      non_canon_y = 0;
+//      non_canon_y = false;
 //    }
 //  } else {
-//    exp_y = (y & MASK_BINARY_EXPONENT1) >> 53;
+//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
 //    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = 0;
+//    non_canon_y = false;
 //  }
 //
 //  // ZERO (CASE4)
