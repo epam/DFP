@@ -27,7 +27,7 @@ public class JavaImplCmp {
 //  int res;
 //  int exp_x, exp_y, exp_t;
 //  BID_UINT64 sig_x, sig_y, sig_t;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y, lcv;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y, lcv;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered,
@@ -126,9 +126,9 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y;
-//  BID_UINT64 sig_x, sig_y;
-//  BID_UINT128 sig_n_prime;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
+//  long /*BID_UINT64*/ sig_x, sig_y;
+//  long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered, rather than equal :
@@ -226,7 +226,7 @@ public class JavaImplCmp {
 //  if (sig_x > sig_y && exp_x > exp_y) {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
-//  if (sig_x < sig_y && exp_x < exp_y) {
+//  if (UnsignedLong.isLess(sig_x, sig_y) && exp_x < exp_y) {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
@@ -251,11 +251,11 @@ public class JavaImplCmp {
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // if postitive, return whichever significand is larger (converse if neg.)
-//    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
+//    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return false;
 //    }
-//    res = (((sig_n_prime.w[1] > 0)
-//	    || sig_n_prime.w[0] > sig_y) ^ ((x & MASK_SIGN) ==
+//    res = (((sig_n_prime_w1 > 0)
+//	    || sig_n_prime_w0 > sig_y) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -264,11 +264,11 @@ public class JavaImplCmp {
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // if postitive, return whichever significand is larger
 //  //     (converse if negative)
-//  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
+//  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
 //    return false;
 //  }
-//  res = (((sig_n_prime.w[1] == 0)
-//	  && (sig_x > sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
+//  res = (((sig_n_prime_w1 == 0)
+//	  && (sig_x > sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -277,9 +277,9 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y;
-//  BID_UINT64 sig_x, sig_y;
-//  BID_UINT128 sig_n_prime;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
+//  long /*BID_UINT64*/ sig_x, sig_y;
+//  long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered : return 1
@@ -377,7 +377,7 @@ public class JavaImplCmp {
 //  if (sig_x > sig_y && exp_x >= exp_y) {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
-//  if (sig_x < sig_y && exp_x <= exp_y) {
+//  if (UnsignedLong.isLess(sig_x, sig_y) && exp_x <= exp_y) {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if exp_x is 15 greater than exp_y, no need for compensation
@@ -396,13 +396,13 @@ public class JavaImplCmp {
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // return 1 if values are equal
-//    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
+//    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return true;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    // (converse if negative)
-//    res = (((sig_n_prime.w[1] == 0)
-//	    && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) !=
+//    res = (((sig_n_prime_w1 == 0)
+//	    && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) !=
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -410,13 +410,13 @@ public class JavaImplCmp {
 //  __mul_64x64_to_128MACH (sig_n_prime, sig_y,
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // return 0 if values are equal
-//  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
+//  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
 //    return true;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  // (converse if negative)
-//  res = (((sig_n_prime.w[1] > 0)
-//	  || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) !=
+//  res = (((sig_n_prime_w1 > 0)
+//	  || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) !=
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -425,9 +425,9 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y;
-//  BID_UINT64 sig_x, sig_y;
-//  BID_UINT128 sig_n_prime;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
+//  long /*BID_UINT64*/ sig_x, sig_y;
+//  long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered, rather than equal :
@@ -544,11 +544,11 @@ public class JavaImplCmp {
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // if postitive, return whichever significand is larger
 //    // (converse if negative)
-//    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
+//    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return false;
 //    }
-//    res = (((sig_n_prime.w[1] > 0)
-//	    || sig_n_prime.w[0] > sig_y) ^ ((x & MASK_SIGN) ==
+//    res = (((sig_n_prime_w1 > 0)
+//	    || sig_n_prime_w0 > sig_y) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -556,11 +556,11 @@ public class JavaImplCmp {
 //  __mul_64x64_to_128MACH (sig_n_prime, sig_y,
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // if postitive, return whichever significand is larger (converse if negative)
-//  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
+//  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
 //    return false;
 //  }
-//  res = (((sig_n_prime.w[1] == 0)
-//	  && (sig_x > sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
+//  res = (((sig_n_prime_w1 == 0)
+//	  && (sig_x > sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -569,9 +569,9 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y;
-//  BID_UINT64 sig_x, sig_y;
-//  BID_UINT128 sig_n_prime;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
+//  long /*BID_UINT64*/ sig_x, sig_y;
+//  long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered : return 0
@@ -690,13 +690,13 @@ public class JavaImplCmp {
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // return 0 if values are equal
-//    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
+//    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return false;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    // (converse if negative)
-//    res = (((sig_n_prime.w[1] == 0)
-//	    && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) ==
+//    res = (((sig_n_prime_w1 == 0)
+//	    && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -704,13 +704,13 @@ public class JavaImplCmp {
 //  __mul_64x64_to_128MACH (sig_n_prime, sig_y,
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // return 0 if values are equal
-//  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
+//  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
 //    return false;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  // (converse if negative)
-//  res = (((sig_n_prime.w[1] > 0)
-//	  || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
+//  res = (((sig_n_prime_w1 > 0)
+//	  || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -719,9 +719,9 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y;
-//  BID_UINT64 sig_x, sig_y;
-//  BID_UINT128 sig_n_prime;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
+//  long /*BID_UINT64*/ sig_x, sig_y;
+//  long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered, rather than equal :
@@ -839,13 +839,13 @@ public class JavaImplCmp {
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // return 1 if values are equal
-//    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
+//    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return true;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
-//    res = (((sig_n_prime.w[1] == 0)
-//	    && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) ==
+//    res = (((sig_n_prime_w1 == 0)
+//	    && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -853,13 +853,13 @@ public class JavaImplCmp {
 //  __mul_64x64_to_128MACH (sig_n_prime, sig_y,
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // return 1 if values are equal
-//  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
+//  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
 //    return true;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
-//  res = (((sig_n_prime.w[1] > 0)
-//	  || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
+//  res = (((sig_n_prime_w1 > 0)
+//	  || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -868,9 +868,9 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y;
-//  BID_UINT64 sig_x, sig_y;
-//  BID_UINT128 sig_n_prime;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
+//  long /*BID_UINT64*/ sig_x, sig_y;
+//  long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered : return 0
@@ -988,13 +988,13 @@ public class JavaImplCmp {
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
 //    // return 0 if values are equal
-//    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
+//    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return false;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
-//    res = (((sig_n_prime.w[1] == 0)
-//	    && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) ==
+//    res = (((sig_n_prime_w1 == 0)
+//	    && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
 //  }
@@ -1002,13 +1002,13 @@ public class JavaImplCmp {
 //  __mul_64x64_to_128MACH (sig_n_prime, sig_y,
 //			  bid_mult_factor[exp_y - exp_x]);
 //  // return 0 if values are equal
-//  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
+//  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
 //    return false;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
-//  res = (((sig_n_prime.w[1] > 0)
-//	  || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
+//  res = (((sig_n_prime_w1 > 0)
+//	  || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -1018,7 +1018,7 @@ public class JavaImplCmp {
 //  int res;
 //  int exp_x, exp_y, exp_t;
 //  BID_UINT64 sig_x, sig_y, sig_t;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y, lcv;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y, lcv;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered,
@@ -1126,9 +1126,9 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y;
-//  BID_UINT64 sig_x, sig_y;
-//  BID_UINT128 sig_n_prime;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
+//  long /*BID_UINT64*/ sig_x, sig_y;
+//  long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered,
@@ -1250,14 +1250,14 @@ public class JavaImplCmp {
 //			    bid_mult_factor[exp_x - exp_y]);
 //
 //    // return 1 if values are equal
-//    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
+//    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return true;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    {
-//      return (((sig_n_prime.w[1] == 0)
-//	      && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) ==
+//      return (((sig_n_prime_w1 == 0)
+//	      && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) ==
 //					      MASK_SIGN));
 //    }
 //  }
@@ -1266,14 +1266,14 @@ public class JavaImplCmp {
 //			  bid_mult_factor[exp_y - exp_x]);
 //
 //  // return 1 if values are equal
-//  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
+//  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
 //    return true;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
 //  {
-//    return (((sig_n_prime.w[1] > 0)
-//	    || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
+//    return (((sig_n_prime_w1 > 0)
+//	    || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
 //					      MASK_SIGN));
 //  }
 //}
@@ -1282,9 +1282,9 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y;
-//  BID_UINT64 sig_x, sig_y;
-//  BID_UINT128 sig_n_prime;
-//  char x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
+//  long /*BID_UINT64*/ sig_x, sig_y;
+//  long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
+//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
 //
 //  // NaN (CASE1)
 //  // if either number is NAN, the comparison is unordered : return 1
@@ -1407,14 +1407,14 @@ public class JavaImplCmp {
 //			    bid_mult_factor[exp_x - exp_y]);
 //
 //    // return 0 if values are equal
-//    if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
+//    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return true;
 //    }
 //    // if postitive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    {
-//      return (((sig_n_prime.w[1] == 0)
-//	      && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) !=
+//      return (((sig_n_prime_w1 == 0)
+//	      && sig_n_prime_w0 < sig_y) ^ ((x & MASK_SIGN) !=
 //					      MASK_SIGN));
 //    }
 //  }
@@ -1423,14 +1423,14 @@ public class JavaImplCmp {
 //			  bid_mult_factor[exp_y - exp_x]);
 //
 //  // return 0 if values are equal
-//  if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
+//  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
 //    return true;
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
 //  {
-//    return (((sig_n_prime.w[1] > 0)
-//	    || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) !=
+//    return (((sig_n_prime_w1 > 0)
+//	    || (sig_x < sig_n_prime_w0)) ^ ((x & MASK_SIGN) !=
 //					      MASK_SIGN));
 //  }
 //}
