@@ -26,7 +26,7 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y, exp_t;
-//  BID_UINT64 sig_x, sig_y, sig_t;
+//  long /*BID_UINT64*/ sig_x, sig_y, sig_t;
 //  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y, lcv;
 //
 //  // NaN (CASE1)
@@ -1017,7 +1017,7 @@ public class JavaImplCmp {
 //
 //  int res;
 //  int exp_x, exp_y, exp_t;
-//  BID_UINT64 sig_x, sig_y, sig_t;
+//  long /*BID_UINT64*/ sig_x, sig_y, sig_t;
 //  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y, lcv;
 //
 //  // NaN (CASE1)
