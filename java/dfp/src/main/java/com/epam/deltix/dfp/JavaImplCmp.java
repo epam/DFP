@@ -103,7 +103,7 @@ public class JavaImplCmp {
 //    return false;
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //    SWAP (exp_x, exp_y, exp_t);	// put the larger exp in y,
 //    SWAP (sig_x, sig_y, sig_t);	// and the smaller exp in x
 //  }
@@ -246,7 +246,7 @@ public class JavaImplCmp {
 //    BID_RETURN (res);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //    // otherwise adjust the x significand upwards
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
@@ -254,7 +254,7 @@ public class JavaImplCmp {
 //    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return false;
 //    }
-//    res = (((sig_n_prime_w1 > 0)
+//    res = (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
 //	    || sig_n_prime_w0 > sig_y) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
@@ -268,7 +268,7 @@ public class JavaImplCmp {
 //    return false;
 //  }
 //  res = (((sig_n_prime_w1 == 0)
-//	  && (sig_x > sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
+//	  && (UnsignedLong.isGreater(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -391,7 +391,7 @@ public class JavaImplCmp {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //    // otherwise adjust the x significand upwards
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
@@ -415,7 +415,7 @@ public class JavaImplCmp {
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  // (converse if negative)
-//  res = (((sig_n_prime_w1 > 0)
+//  res = (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
 //	  || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) !=
 //					    MASK_SIGN));
 //  BID_RETURN (res);
@@ -538,7 +538,7 @@ public class JavaImplCmp {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //    // otherwise adjust the x significand upwards
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
@@ -547,7 +547,7 @@ public class JavaImplCmp {
 //    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return false;
 //    }
-//    res = (((sig_n_prime_w1 > 0)
+//    res = (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
 //	    || sig_n_prime_w0 > sig_y) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //    BID_RETURN (res);
@@ -560,7 +560,7 @@ public class JavaImplCmp {
 //    return false;
 //  }
 //  res = (((sig_n_prime_w1 == 0)
-//	  && (sig_x > sig_n_prime_w0)) ^ ((x & MASK_SIGN) ==
+//	  && (UnsignedLong.isGreater(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
 //}
@@ -685,7 +685,7 @@ public class JavaImplCmp {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //    // otherwise adjust the x significand upwards
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
@@ -709,7 +709,7 @@ public class JavaImplCmp {
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  // (converse if negative)
-//  res = (((sig_n_prime_w1 > 0)
+//  res = (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
 //	  || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
@@ -834,7 +834,7 @@ public class JavaImplCmp {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //    // otherwise adjust the x significand upwards
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
@@ -858,7 +858,7 @@ public class JavaImplCmp {
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
-//  res = (((sig_n_prime_w1 > 0)
+//  res = (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
 //	  || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
@@ -983,7 +983,7 @@ public class JavaImplCmp {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //    // otherwise adjust the x significand upwards
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
@@ -1007,7 +1007,7 @@ public class JavaImplCmp {
 //  }
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
-//  res = (((sig_n_prime_w1 > 0)
+//  res = (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
 //	  || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					    MASK_SIGN));
 //  BID_RETURN (res);
@@ -1097,7 +1097,7 @@ public class JavaImplCmp {
 //    return true;
 //  }
 //  // REDUNDANT REPRESENTATIONS (CASE6)
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //    SWAP (exp_x, exp_y, exp_t);	// put the larger exp in y,
 //    SWAP (sig_x, sig_y, sig_t);	// and the smaller exp in x
 //  }
@@ -1243,7 +1243,7 @@ public class JavaImplCmp {
 //    return ((x & MASK_SIGN) != MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //
 //    // otherwise adjust the x significand upwards
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
@@ -1272,7 +1272,7 @@ public class JavaImplCmp {
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
 //  {
-//    return (((sig_n_prime_w1 > 0)
+//    return (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
 //	    || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
 //					      MASK_SIGN));
 //  }
@@ -1400,7 +1400,7 @@ public class JavaImplCmp {
 //    return ((x & MASK_SIGN) == MASK_SIGN);
 //  }
 //  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
-//  if (exp_x > exp_y) {	// to simplify the loop below,
+//  if (Signed.isGreater(exp_x, exp_y)) {	// to simplify the loop below,
 //
 //    // otherwise adjust the x significand upwards
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
@@ -1429,7 +1429,7 @@ public class JavaImplCmp {
 //  // if positive, return whichever significand abs is smaller
 //  //     (converse if negative)
 //  {
-//    return (((sig_n_prime_w1 > 0)
+//    return (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
 //	    || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) !=
 //					      MASK_SIGN));
 //  }
