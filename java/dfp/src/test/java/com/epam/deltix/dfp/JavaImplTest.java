@@ -563,6 +563,7 @@ public class JavaImplTest {
     @Decimal
     static final long[] specialValues = {
         Decimal64Utils.fromDouble(Math.PI),
+        Decimal64Utils.fromDouble(-Math.E),
         Decimal64Utils.NaN,
         Decimal64Utils.NaN | 1000000000000000L,
         Decimal64Utils.POSITIVE_INFINITY,

@@ -5,6 +5,22 @@ class UnsignedLong {
         return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
     }
 
+    public static boolean isLess(final long a, final long b) {
+        return a + Long.MIN_VALUE < b + Long.MIN_VALUE;
+    }
+
+    public static boolean isLessEqual(final long a, final long b) {
+        return a + Long.MIN_VALUE <= b + Long.MIN_VALUE;
+    }
+
+    public static boolean isGreater(final long a, final long b) {
+        return a + Long.MIN_VALUE > b + Long.MIN_VALUE;
+    }
+
+    public static boolean isGreaterEqual(final long a, final long b) {
+        return a + Long.MIN_VALUE >= b + Long.MIN_VALUE;
+    }
+
 //    /**
 //     * The copy-paste of the Guava (Apache-2.0 License )
 //     * @param dividend The value to be divided.

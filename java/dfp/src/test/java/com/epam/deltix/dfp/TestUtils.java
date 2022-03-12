@@ -263,7 +263,7 @@ public class TestUtils {
 
     static final Random rng = new Random();
 
-    static final int NTests = 10_000_000;
+    static final int NTests = 100_000_000;
 
     public static void checkInMultipleThreads(final Runnable target) throws Exception {
         checkInMultipleThreads(Runtime.getRuntime().availableProcessors(), target);
