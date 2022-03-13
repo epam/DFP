@@ -1,5 +1,7 @@
 package com.epam.deltix.dfp;
 
+import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
+
 public class JavaImplCmp {
     private JavaImplCmp() {
     }
@@ -117,127 +119,163 @@ public class JavaImplCmp {
     }
 
     public static boolean bid64_quiet_greater(final long /*BID_UINT64*/ x, final long /*BID_UINT64*/ y) {
-        throw new UnsupportedOperationException();
-//  int exp_x, exp_y;
-//  long /*BID_UINT64*/ sig_x, sig_y;
-//  long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
-//  boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
-//
-//  // NaN (CASE1)
-//  // if either number is NAN, the comparison is unordered, rather than equal :
-//  // return 0
-//  if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
-//    return false;
-//  }
-//  // SIMPLE (CASE2)
-//  // if all the bits are the same, these numbers are equal (not Greater).
-//  if (x == y) {
-//    return false;
-//  }
-//  // INFINITY (CASE3)
-//  if ((x & MASK_INF) == MASK_INF) {
-//    // if x is neg infinity, there is no way it is greater than y, return 0
-//    if (((x & MASK_SIGN) == MASK_SIGN)) {
-//      return false;
-//    } else {
-//      // x is pos infinity, it is greater, unless y is positive
-//      // infinity => return y!=pos_infinity
-//      return (((y & MASK_INF) != MASK_INF)
-//	     || ((y & MASK_SIGN) == MASK_SIGN));
-//    }
-//  } else if ((y & MASK_INF) == MASK_INF) {
-//    // x is finite, so if y is positive infinity, then x is less, return 0
-//    //                 if y is negative infinity, then x is greater, return 1
-//    return ((y & MASK_SIGN) == MASK_SIGN);
-//  }
-//  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
-//  if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_x = (int)((x & MASK_BINARY_EXPONENT2) >>> 51);
-//    sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//      non_canon_x = UnsignedLong.isGreater(sig_x, 9999999999999999L);
-//  } else {
-//    exp_x = (int)((x & MASK_BINARY_EXPONENT1) >>> 53);
-//    sig_x = (x & MASK_BINARY_SIG1);
-//    non_canon_x = false;
-//  }
-//  // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
-//  if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
-//    exp_y = (int)((y & MASK_BINARY_EXPONENT2) >>> 51);
-//    sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-//      non_canon_y = UnsignedLong.isGreater(sig_y, 9999999999999999L);
-//  } else {
-//    exp_y = (int)((y & MASK_BINARY_EXPONENT1) >>> 53);
-//    sig_y = (y & MASK_BINARY_SIG1);
-//    non_canon_y = false;
-//  }
-//  // ZERO (CASE4)
-//  // some properties:
-//  //(+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-//  //(ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore ignore the
-//  // exponent field
-//  // (Any non-canonical # is considered 0)
-//  if (non_canon_x || sig_x == 0) {
-//    x_is_zero = true;
-//  }
-//  if (non_canon_y || sig_y == 0) {
-//    y_is_zero = true;
-//  }
-//  // if both numbers are zero, neither is greater => return NOTGREATERTHAN
-//  if (x_is_zero && y_is_zero) {
-//    return false;
-//  } else if (x_is_zero) {
-//    // is x is zero, it is greater if Y is negative
-//    return  ((y & MASK_SIGN) == MASK_SIGN);
-//  } else if (y_is_zero) {
-//    // is y is zero, X is greater if it is positive
-//    return ((x & MASK_SIGN) != MASK_SIGN);
-//  }
-//  // OPPOSITE SIGN (CASE5)
-//  // now, if the sign bits differ, x is greater if y is negative
-//  if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
-//    return ((y & MASK_SIGN) == MASK_SIGN);
-//  }
-//  // REDUNDANT REPRESENTATIONS (CASE6)
-//  // if both components are either bigger or smaller,
-//  // it is clear what needs to be done
-//  if (UnsignedLong.isGreater(sig_x, sig_y) && exp_x > exp_y) {
-//    return ((x & MASK_SIGN) != MASK_SIGN);
-//  }
-//  if (UnsignedLong.isLess(sig_x, sig_y) && exp_x < exp_y) {
-//    return ((x & MASK_SIGN) == MASK_SIGN);
-//  }
-//  // if exp_x is 15 greater than exp_y, no need for compensation
-//  if (exp_x - exp_y > 15) {	// difference cannot be greater than 10^15
-//      return (x & MASK_SIGN) == 0;// both are negative or positive
-//  }
-//  // if exp_x is 15 less than exp_y, no need for compensation
-//  if (exp_y - exp_x > 15) {
-//    return (x & MASK_SIGN) != 0; // both are negative or positive
-//  }
-//  // if |exp_x - exp_y| < 15, it comes down to the compensated significand
-//  if (exp_x > exp_y) {	// to simplify the loop below,
-//    // otherwise adjust the x significand upwards
-//    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
-//			    bid_mult_factor[exp_x - exp_y]);
-//    // if postitive, return whichever significand is larger (converse if neg.)
-//    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
-//      return false;
-//    }
-//    return (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
-//	    || UnsignedLong.isGreater(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) ==
-//					    MASK_SIGN));
-//  }
-//  // adjust the y significand upwards
-//  __mul_64x64_to_128MACH (sig_n_prime, sig_y,
-//			  bid_mult_factor[exp_y - exp_x]);
-//  // if postitive, return whichever significand is larger
-//  //     (converse if negative)
-//  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
-//    return false;
-//  }
-//  return (((sig_n_prime_w1 == 0)
-//	  && (UnsignedLong.isGreater(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) ==
-//					    MASK_SIGN));
+        int exp_x, exp_y;
+        long /*BID_UINT64*/ sig_x, sig_y;
+        long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
+        boolean x_is_zero = false, y_is_zero = false, non_canon_x, non_canon_y;
+
+        // NaN (CASE1)
+        // if either number is NAN, the comparison is unordered, rather than equal :
+        // return 0
+        if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
+            return false;
+        }
+        // SIMPLE (CASE2)
+        // if all the bits are the same, these numbers are equal (not Greater).
+        if (x == y) {
+            return false;
+        }
+        // INFINITY (CASE3)
+        if ((x & MASK_INF) == MASK_INF) {
+            // if x is neg infinity, there is no way it is greater than y, return 0
+            if (((x & MASK_SIGN) == MASK_SIGN)) {
+                return false;
+            } else {
+                // x is pos infinity, it is greater, unless y is positive
+                // infinity => return y!=pos_infinity
+                return (((y & MASK_INF) != MASK_INF)
+                    || ((y & MASK_SIGN) == MASK_SIGN));
+            }
+        } else if ((y & MASK_INF) == MASK_INF) {
+            // x is finite, so if y is positive infinity, then x is less, return 0
+            //                 if y is negative infinity, then x is greater, return 1
+            return ((y & MASK_SIGN) == MASK_SIGN);
+        }
+        // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
+        if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
+            exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);
+            sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
+            non_canon_x = UnsignedLong.isGreater(sig_x, 9999999999999999L);
+        } else {
+            exp_x = (int) ((x & MASK_BINARY_EXPONENT1) >>> 53);
+            sig_x = (x & MASK_BINARY_SIG1);
+            non_canon_x = false;
+        }
+        // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1] =>
+        if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
+            exp_y = (int) ((y & MASK_BINARY_EXPONENT2) >>> 51);
+            sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
+            non_canon_y = UnsignedLong.isGreater(sig_y, 9999999999999999L);
+        } else {
+            exp_y = (int) ((y & MASK_BINARY_EXPONENT1) >>> 53);
+            sig_y = (y & MASK_BINARY_SIG1);
+            non_canon_y = false;
+        }
+        // ZERO (CASE4)
+        // some properties:
+        //(+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
+        //(ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore ignore the
+        // exponent field
+        // (Any non-canonical # is considered 0)
+        if (non_canon_x || sig_x == 0) {
+            x_is_zero = true;
+        }
+        if (non_canon_y || sig_y == 0) {
+            y_is_zero = true;
+        }
+        // if both numbers are zero, neither is greater => return NOTGREATERTHAN
+        if (x_is_zero && y_is_zero) {
+            return false;
+        } else if (x_is_zero) {
+            // is x is zero, it is greater if Y is negative
+            return ((y & MASK_SIGN) == MASK_SIGN);
+        } else if (y_is_zero) {
+            // is y is zero, X is greater if it is positive
+            return ((x & MASK_SIGN) != MASK_SIGN);
+        }
+        // OPPOSITE SIGN (CASE5)
+        // now, if the sign bits differ, x is greater if y is negative
+        if (((x ^ y) & MASK_SIGN) == MASK_SIGN) {
+            return ((y & MASK_SIGN) == MASK_SIGN);
+        }
+        // REDUNDANT REPRESENTATIONS (CASE6)
+        // if both components are either bigger or smaller,
+        // it is clear what needs to be done
+        if (UnsignedLong.isGreater(sig_x, sig_y) && exp_x > exp_y) {
+            return ((x & MASK_SIGN) != MASK_SIGN);
+        }
+        if (UnsignedLong.isLess(sig_x, sig_y) && exp_x < exp_y) {
+            return ((x & MASK_SIGN) == MASK_SIGN);
+        }
+        // if exp_x is 15 greater than exp_y, no need for compensation
+        if (exp_x - exp_y > 15) {    // difference cannot be greater than 10^15
+            return (x & MASK_SIGN) == 0;// both are negative or positive
+        }
+        // if exp_x is 15 less than exp_y, no need for compensation
+        if (exp_y - exp_x > 15) {
+            return (x & MASK_SIGN) != 0; // both are negative or positive
+        }
+        // if |exp_x - exp_y| < 15, it comes down to the compensated significand
+        if (exp_x > exp_y) {    // to simplify the loop below,
+            // otherwise adjust the x significand upwards
+            // __mul_64x64_to_128MACH (sig_n_prime, sig_x, bid_mult_factor[exp_x - exp_y]); // @AD: Note: The __mul_64x64_to_128MACH macro is the same as __mul_64x64_to_128
+            {
+                final long __CX = sig_x;
+                final long __CY = bid_mult_factor[exp_x - exp_y];
+                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                __CXH = __CX >>> 32;
+                __CXL = LONG_LOW_PART & __CX;
+                __CYH = __CY >>> 32;
+                __CYL = LONG_LOW_PART & __CY;
+
+                __PM = __CXH * __CYL;
+                __PH = __CXH * __CYH;
+                __PL = __CXL * __CYL;
+                __PM2 = __CXL * __CYH;
+                __PH += (__PM >>> 32);
+                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
+
+                sig_n_prime_w1 = __PH + (__PM >>> 32);
+                sig_n_prime_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+            }
+
+            // if postitive, return whichever significand is larger (converse if neg.)
+            if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
+                return false;
+            }
+            return (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
+                || UnsignedLong.isGreater(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) ==
+                MASK_SIGN));
+        }
+        // adjust the y significand upwards
+        // __mul_64x64_to_128MACH (sig_n_prime, sig_y, bid_mult_factor[exp_y - exp_x]); // @AD: Note: The __mul_64x64_to_128MACH macro is the same as __mul_64x64_to_128
+        {
+            final long __CX = sig_y;
+            final long __CY = bid_mult_factor[exp_y - exp_x];
+            long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+            __CXH = __CX >>> 32;
+            __CXL = LONG_LOW_PART & __CX;
+            __CYH = __CY >>> 32;
+            __CYL = LONG_LOW_PART & __CY;
+
+            __PM = __CXH * __CYL;
+            __PH = __CXH * __CYH;
+            __PL = __CXL * __CYL;
+            __PM2 = __CXL * __CYH;
+            __PH += (__PM >>> 32);
+            __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
+
+            sig_n_prime_w1 = __PH + (__PM >>> 32);
+            sig_n_prime_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+        }
+
+        // if positive, return whichever significand is larger
+        //     (converse if negative)
+        if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
+            return false;
+        }
+        return (((sig_n_prime_w1 == 0)
+            && (UnsignedLong.isGreater(sig_x, sig_n_prime_w0))) ^ ((x & MASK_SIGN) == MASK_SIGN));
     }
 
     public static boolean bid64_quiet_greater_equal(final long /*BID_UINT64*/ x, final long /*BID_UINT64*/ y) {
@@ -367,7 +405,7 @@ public class JavaImplCmp {
 //    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return true;
 //    }
-//    // if postitive, return whichever significand abs is smaller
+//    // if positive, return whichever significand abs is smaller
 //    // (converse if negative)
 //    res = (((sig_n_prime_w1 == 0)
 //	    && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) !=
@@ -510,7 +548,7 @@ public class JavaImplCmp {
 //    // otherwise adjust the x significand upwards
 //    __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 //			    bid_mult_factor[exp_x - exp_y]);
-//    // if postitive, return whichever significand is larger
+//    // if positive, return whichever significand is larger
 //    // (converse if negative)
 //    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return false;
@@ -523,7 +561,7 @@ public class JavaImplCmp {
 //  // adjust the y significand upwards
 //  __mul_64x64_to_128MACH (sig_n_prime, sig_y,
 //			  bid_mult_factor[exp_y - exp_x]);
-//  // if postitive, return whichever significand is larger (converse if negative)
+//  // if positive, return whichever significand is larger (converse if negative)
 //  if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
 //    return false;
 //  }
@@ -662,7 +700,7 @@ public class JavaImplCmp {
 //    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return false;
 //    }
-//    // if postitive, return whichever significand abs is smaller
+//    // if positive, return whichever significand abs is smaller
 //    // (converse if negative)
 //    res = (((sig_n_prime_w1 == 0)
 //	    && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) ==
@@ -812,7 +850,7 @@ public class JavaImplCmp {
 //    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return true;
 //    }
-//    // if postitive, return whichever significand abs is smaller
+//    // if positive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    res = (((sig_n_prime_w1 == 0)
 //	    && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) ==
@@ -961,7 +999,7 @@ public class JavaImplCmp {
 //    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return false;
 //    }
-//    // if postitive, return whichever significand abs is smaller
+//    // if positive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    res = (((sig_n_prime_w1 == 0)
 //	    && UnsignedLong.isLess(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) ==
@@ -1223,7 +1261,7 @@ public class JavaImplCmp {
 //    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return true;
 //    }
-//    // if postitive, return whichever significand abs is smaller
+//    // if positive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    {
 //      return (((sig_n_prime_w1 == 0)
@@ -1380,7 +1418,7 @@ public class JavaImplCmp {
 //    if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
 //      return true;
 //    }
-//    // if postitive, return whichever significand abs is smaller
+//    // if positive, return whichever significand abs is smaller
 //    //     (converse if negative)
 //    {
 //      return (((sig_n_prime_w1 == 0)
