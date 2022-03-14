@@ -24,6 +24,18 @@ public class CompareBenchmark {
     }
 
     @Benchmark
+    public void compareNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.compare(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void compareJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplCmp.compare(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
     public void isEqualNative(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
             bh.consume(NativeImpl.isEqual(decimalValues[i], decimalValues[i + 1]));
@@ -116,7 +128,7 @@ public class CompareBenchmark {
     @Benchmark
     public void isNonZeroJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCmp.bid64_quiet_not_equal(decimalValues[i], Decimal64Utils.ZERO));
+            bh.consume(!JavaImplCmp.bid64_isZero(decimalValues[i]));
     }
 
     @Benchmark
@@ -128,7 +140,7 @@ public class CompareBenchmark {
     @Benchmark
     public void isPositiveJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCmp.bid64_quiet_greater(decimalValues[i], Decimal64Utils.ZERO));
+            bh.consume(JavaImplCmp.isPositive(decimalValues[i]));
     }
 
     @Benchmark
@@ -140,7 +152,7 @@ public class CompareBenchmark {
     @Benchmark
     public void isNegativeJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCmp.bid64_quiet_less(decimalValues[i], Decimal64Utils.ZERO));
+            bh.consume(JavaImplCmp.isNegative(decimalValues[i]));
     }
 
     @Benchmark
@@ -152,7 +164,7 @@ public class CompareBenchmark {
     @Benchmark
     public void isNonPositiveJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCmp.bid64_quiet_less_equal(decimalValues[i], Decimal64Utils.ZERO));
+            bh.consume(JavaImplCmp.isNonPositive(decimalValues[i]));
     }
 
     @Benchmark
@@ -164,6 +176,6 @@ public class CompareBenchmark {
     @Benchmark
     public void isNonNegativeJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCmp.bid64_quiet_greater_equal(decimalValues[i], Decimal64Utils.ZERO));
+            bh.consume(JavaImplCmp.isNonNegative(decimalValues[i]));
     }
 }
