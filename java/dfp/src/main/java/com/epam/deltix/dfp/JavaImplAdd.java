@@ -71,7 +71,7 @@ class JavaImplAdd {
             if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                 p.exponent = 0;
                 p.coefficient = x & 0xfe03ffffffffffffL;
-                if ((UnsignedLong.isGreaterEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
                     p.coefficient = x & 0xfe00000000000000L;
                 if ((x & NAN_MASK64) == INFINITY_MASK64)
                     p.coefficient = x & SINFINITY_MASK64;
@@ -80,7 +80,7 @@ class JavaImplAdd {
                 // coefficient
                 long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                 // check for non-canonical values
-                if ((UnsignedLong.isGreaterEqual(coeff, 10000000000000000L)))
+                if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
                     coeff = 0;
                 p.coefficient = coeff;
                 // get exponent
@@ -162,14 +162,14 @@ class JavaImplAdd {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
                     valid_x = 0;    // NaN or Infinity
                 } else {
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterEqual(coeff, 10000000000000000L)))
+                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -201,14 +201,14 @@ class JavaImplAdd {
                     if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
                         exponent_y = 0;
                         coefficient_y = y & 0xfe03ffffffffffffL;
-                        if ((UnsignedLong.isGreaterEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
+                        if ((UnsignedLong.isGreaterOrEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
                             coefficient_y = y & 0xfe00000000000000L;
                         if ((y & NAN_MASK64) == INFINITY_MASK64)
                             coefficient_y = y & SINFINITY_MASK64;
                         valid_y = 0;    // NaN or Infinity
                     } else {
                         // check for non-canonical values
-                        if ((UnsignedLong.isGreaterEqual(coeff, 10000000000000000L)))
+                        if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
                             coeff = 0;
                         coefficient_y = coeff;
                         // get exponent
@@ -310,7 +310,7 @@ class JavaImplAdd {
             // normalize a to a 16-digit coefficient
 
             scale_ca = bid_estimate_decimal_digits[bin_expon_ca];
-            if ((UnsignedLong.isGreaterEqual(coefficient_a, bid_power10_table_128_w0[scale_ca])))
+            if ((UnsignedLong.isGreaterOrEqual(coefficient_a, bid_power10_table_128_w0[scale_ca])))
                 scale_ca++;
 
             scale_k = 16 - scale_ca;
@@ -418,7 +418,7 @@ class JavaImplAdd {
             T1 = bid_power10_table_128_w0[16 - diff_dec_expon];
 
             // get number of digits in coefficient_a
-            if ((UnsignedLong.isGreaterEqual(coefficient_a, bid_power10_table_128_w0[scale_ca]))) {
+            if ((UnsignedLong.isGreaterOrEqual(coefficient_a, bid_power10_table_128_w0[scale_ca]))) {
                 scale_ca++;
             }
 
@@ -466,7 +466,7 @@ class JavaImplAdd {
             // this test ensures the number of digits in coefficient_a does not change
             // after adding (the appropriately scaled and rounded) coefficient_b
             if ((UnsignedLong.isGreater(C64 - 1000000000000000L - 1, 9000000000000000L - 2))) {
-                if ((UnsignedLong.isGreaterEqual(C64, 10000000000000000L))) {
+                if ((UnsignedLong.isGreaterOrEqual(C64, 10000000000000000L))) {
                     // result has more than 16 digits
                     if (scale_k == 0) {
                         // must divide coeff_a by 10
@@ -531,7 +531,7 @@ class JavaImplAdd {
 
                     // result coefficient
                     C64 = C0_64 + coefficient_a;
-                } else if ((UnsignedLong.isLessEqual(C64, 1000000000000000L))) {
+                } else if ((UnsignedLong.isLessOrEqual(C64, 1000000000000000L))) {
                     // less than 16 digits in result
                     coefficient_a = saved_ca * bid_power10_table_128_w0[scale_k + 1];
                     //extra_digits --;

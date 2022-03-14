@@ -988,6 +988,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     /// region Comparable<T> Interface Implementation
 
     @Override
+    @Deprecated(/*"The is(Not)?(Less|Greater)?(Equal)? functions faster than the compare() call."*/)
     public int compareTo(final Decimal64 o) {
         return Decimal64Utils.compareTo(value, o.value);
     }

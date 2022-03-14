@@ -1,6 +1,7 @@
 package com.epam.deltix.dfp;
 
 class UnsignedLong {
+    @Deprecated(/*"The is(Not)?(Less|Greater)?(Equal)? functions faster than the compare() call."*/)
     public static int compare(final long x, final long y) {
         return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
     }
@@ -9,7 +10,7 @@ class UnsignedLong {
         return a + Long.MIN_VALUE < b + Long.MIN_VALUE;
     }
 
-    public static boolean isLessEqual(final long a, final long b) {
+    public static boolean isLessOrEqual(final long a, final long b) {
         return a + Long.MIN_VALUE <= b + Long.MIN_VALUE;
     }
 
@@ -17,7 +18,7 @@ class UnsignedLong {
         return a + Long.MIN_VALUE > b + Long.MIN_VALUE;
     }
 
-    public static boolean isGreaterEqual(final long a, final long b) {
+    public static boolean isGreaterOrEqual(final long a, final long b) {
         return a + Long.MIN_VALUE >= b + Long.MIN_VALUE;
     }
 

@@ -649,7 +649,7 @@ class JavaImplParse {
                     carry = ((UnsignedLong.isLess(Stemp_w1, __X1)) || (UnsignedLong.isLess(__X1, __CI))) ? 1L : 0;
                 }
 
-                if ((UnsignedLong.isGreaterEqual((remainder_h >>> (64 - amount)) + carry, 1L << amount)))
+                if ((UnsignedLong.isGreaterOrEqual((remainder_h >>> (64 - amount)) + carry, 1L << amount)))
                     status = BID_EXACT_STATUS;
                 break;
             }
@@ -839,7 +839,7 @@ class JavaImplParse {
                             carry = ((UnsignedLong.isLess(Stemp_w1, __X1)) || (UnsignedLong.isLess(__X1, __CI))) ? 1L : 0;
                         }
 
-                        if ((UnsignedLong.isGreaterEqual((remainder_h >>> (64 - amount)) + carry, 1L << amount)))
+                        if ((UnsignedLong.isGreaterOrEqual((remainder_h >>> (64 - amount)) + carry, 1L << amount)))
                             status = BID_EXACT_STATUS;
                         break;
                     }

@@ -116,46 +116,6 @@ class JavaImpl {
         return (value & MASK_INFINITY_AND_NAN) == MASK_INFINITY_AND_NAN;
     }
 
-    public static boolean isZero(final long value) {
-        if (isSpecial(value))
-            return isFinite(value) && UnsignedLong.compare(value & LARGE_COEFFICIENT_MASK, MAX_COEFFICIENT - LARGE_COEFFICIENT_HIGH_BIT) > 0;
-        return (value & SMALL_COEFFICIENT_MASK) == 0;
-    }
-
-    // SignCheckBenchmark.dIsPositive  avgt   25   6.991 +- 0.317  ns/op
-    // SignCheckBenchmark.nIsPositive  avgt   25  18.532 +- 0.185  ns/op
-    public static boolean isPositive(final long value) {
-        if ((value & MASK_INFINITY_NAN) == MASK_INFINITY_NAN)
-            return false;
-        if (isZero(value))
-            return false;
-        return (value & MASK_SIGN) == 0;
-    }
-
-    public static boolean isNegative(final long value) {
-        if ((value & MASK_INFINITY_NAN) == MASK_INFINITY_NAN)
-            return false;
-        if (isZero(value))
-            return false;
-        return (value & MASK_SIGN) != 0;
-    }
-
-    public static boolean isNonPositive(final long value) {
-        if ((value & MASK_INFINITY_NAN) == MASK_INFINITY_NAN)
-            return false;
-        if (isZero(value))
-            return true;
-        return (value & MASK_SIGN) != 0;
-    }
-
-    public static boolean isNonNegative(final long value) {
-        if ((value & MASK_INFINITY_NAN) == MASK_INFINITY_NAN)
-            return false;
-        if (isZero(value))
-            return true;
-        return (value & MASK_SIGN) == 0;
-    }
-
     public static long negate(final long value) {
         return value ^ MASK_SIGN;
     }

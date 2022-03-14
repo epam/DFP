@@ -5,6 +5,8 @@ import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 
+import static com.epam.deltix.dfp.MathBenchmark.fixedSeed;
+
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Warmup(time = 3, iterations = 1)
@@ -15,7 +17,7 @@ public class CompareBenchmark {
 
     @Setup
     public void setUp() {
-        TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator();
+        TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator(fixedSeed);
         decimalValues = new long[1001];
         for (int i = 0; i < decimalValues.length; ++i)
             decimalValues[i] = generator.nextX();

@@ -16,10 +16,11 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Thread)
 public class MathBenchmark {
     private long[] decimalValues;
+    public static int fixedSeed = 42 * 42 * 42 * 42 * 42;
 
     @Setup
     public void setUp() {
-        TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator();
+        TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator(fixedSeed);
         decimalValues = new long[1003];
         for (int i = 0; i < decimalValues.length; ++i)
             decimalValues[i] = generator.nextX();

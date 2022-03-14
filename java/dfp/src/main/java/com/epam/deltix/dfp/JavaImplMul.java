@@ -67,7 +67,7 @@ public class JavaImplMul {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
@@ -76,7 +76,7 @@ public class JavaImplMul {
                     // coefficient
                     long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterEqual(coeff, 10000000000000000L)))
+                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -108,7 +108,7 @@ public class JavaImplMul {
                 if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_y = 0;
                     coefficient_y = y & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((UnsignedLong.isGreaterOrEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
                         coefficient_y = y & 0xfe00000000000000L;
                     if ((y & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_y = y & SINFINITY_MASK64;
@@ -117,7 +117,7 @@ public class JavaImplMul {
                     // coefficient
                     long coeff = (y & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterEqual(coeff, 10000000000000000L)))
+                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
                         coeff = 0;
                     coefficient_y = coeff;
                     // get exponent
@@ -246,7 +246,7 @@ public class JavaImplMul {
                 bp = __bin_expon;
                 if (bp < 63) {
                     M <<= bp + 1;
-                    if ((UnsignedLong.isGreaterEqual(__P_w0, M)))
+                    if ((UnsignedLong.isGreaterOrEqual(__P_w0, M)))
                         bp++;
                 } else if (bp > 64) {
                     M <<= bp + 1 - 64;
@@ -441,7 +441,7 @@ public class JavaImplMul {
                         extra_digits -= 16;
                         if (remainder_h != 0 || ((UnsignedLong.isGreater(Q_low_w1, bid_reciprocals10_128_flat[(16 << 1) + 1]))
                             || (Q_low_w1 == bid_reciprocals10_128_flat[(16 << 1) + 1]
-                            && (UnsignedLong.isGreaterEqual(Q_low_w0, bid_reciprocals10_128_flat[(16 << 1) + 0]))))) {
+                            && (UnsignedLong.isGreaterOrEqual(Q_low_w0, bid_reciprocals10_128_flat[(16 << 1) + 0]))))) {
                             round_up = 1;
                             // __set_status_flags(pfpsf, BID_UNDERFLOW_EXCEPTION | BID_INEXACT_EXCEPTION);
                             P_w0 = (P_w0 << 3) + (P_w0 << 1);
@@ -825,7 +825,7 @@ public class JavaImplMul {
             } else {
                 mask = 1;
                 mask <<= EXPONENT_SHIFT_SMALL64;
-                if ((UnsignedLong.isGreaterEqual(coeff, mask))) {
+                if ((UnsignedLong.isGreaterOrEqual(coeff, mask))) {
                     r = expon;
                     r <<= EXPONENT_SHIFT_LARGE64;
                     r |= (sgn | SPECIAL_ENCODING_MASK64);

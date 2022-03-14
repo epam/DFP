@@ -478,57 +478,57 @@ public class Decimal64Utils {
     /// endregion
 
     /// region Comparison
-
+    @Deprecated(/*"The is(Not)?(Less|Greater)(Equal)? functions faster than the compare() call."*/)
     public static int compareTo(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.compare(a, b);
+        return JavaImplCmp.compare(a, b);
     }
 
     public static boolean isEqual(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.isEqual(a, b);
+        return JavaImplCmp.bid64_quiet_equal(a, b);
     }
 
     public static boolean isNotEqual(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.isNotEqual(a, b);
+        return JavaImplCmp.bid64_quiet_not_equal(a, b);
     }
 
     public static boolean isLess(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.isLess(a, b);
+        return JavaImplCmp.bid64_quiet_less(a, b);
     }
 
     public static boolean isLessOrEqual(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.isLessOrEqual(a, b);
+        return JavaImplCmp.bid64_quiet_less_equal(a, b);
     }
 
     public static boolean isGreater(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.isGreater(a, b);
+        return JavaImplCmp.bid64_quiet_greater(a, b);
     }
 
     public static boolean isGreaterOrEqual(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.isGreaterOrEqual(a, b);
+        return JavaImplCmp.bid64_quiet_greater_equal(a, b);
     }
 
     public static boolean isZero(@Decimal final long value) {
-        return JavaImpl.isZero(value);
+        return JavaImplCmp.bid64_isZero(value);
     }
 
     public static boolean isNonZero(@Decimal final long value) {
-        return !JavaImpl.isZero(value);
+        return !isZero(value);
     }
 
     public static boolean isPositive(@Decimal final long value) {
-        return JavaImpl.isPositive(value);
+        return JavaImplCmp.isPositive(value);
     }
 
     public static boolean isNegative(@Decimal final long value) {
-        return JavaImpl.isNegative(value);
+        return JavaImplCmp.isNegative(value);
     }
 
     public static boolean isNonPositive(@Decimal final long value) {
-        return JavaImpl.isNonPositive(value);
+        return JavaImplCmp.isNonPositive(value);
     }
 
     public static boolean isNonNegative(@Decimal final long value) {
-        return JavaImpl.isNonNegative(value);
+        return JavaImplCmp.isNonNegative(value);
     }
 
     /// endregion

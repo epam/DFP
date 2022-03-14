@@ -263,7 +263,7 @@ public class TestUtils {
 
     static final Random rng = new Random();
 
-    static final int NTests = 100_000_000;
+    static final int NTests = 10_000_000;
 
     public static void checkInMultipleThreads(final Runnable target) throws Exception {
         checkInMultipleThreads(Runtime.getRuntime().availableProcessors(), target);
@@ -275,8 +275,7 @@ public class TestUtils {
 
         if (threadsCount == 1) {
             target.run();
-        }
-        else {
+        } else {
             final Thread[] threads = new Thread[threadsCount];
             final AtomicReference<Exception> lastException = new AtomicReference<>(null);
 
@@ -319,7 +318,11 @@ public class TestUtils {
         private static final int HALF_OF_MAX_SIGNIFICAND_DIGITS = MAX_SIGNIFICAND_DIGITS / 2;
 
         public RandomDecimalsGenerator() {
-            this(new MersenneTwister(), 1,
+            this((int) System.nanoTime());
+        }
+
+        public RandomDecimalsGenerator(final int randomSeed) {
+            this(new MersenneTwister(randomSeed), 1,
                 -TWICE_OF_MAX_SIGNIFICAND_DIGITS - HALF_OF_MAX_SIGNIFICAND_DIGITS,
                 TWICE_OF_MAX_SIGNIFICAND_DIGITS - HALF_OF_MAX_SIGNIFICAND_DIGITS);
         }
