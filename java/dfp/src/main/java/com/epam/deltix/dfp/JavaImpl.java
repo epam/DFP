@@ -221,7 +221,7 @@ class JavaImpl {
             unscaledValue = unscaledValue.divide(BigInteger.TEN.pow(baseTenShiftSize));
             scale -= baseTenShiftSize;
         }
-        long intCompact = unscaledValue.longValueExact();
+        long intCompact = unscaledValue.longValue();
 
         if (intCompact < 0) {
             signMask = MASK_SIGN;
