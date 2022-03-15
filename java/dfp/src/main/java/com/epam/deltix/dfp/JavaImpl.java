@@ -1595,13 +1595,13 @@ class JavaImpl {
         long result;
         final long signMask = isSigned ? MASK_SIGN : 0;
 
-        if (UnsignedInteger.compare(exponent, 3 * 256 - 1) >= 0) {
+        if (UnsignedInteger.isGreaterOrEqual(exponent, 3 * 256 - 1)) {
             if ((exponent == 3 * 256 - 1) && coefficient == 10000000000000000L) {
                 exponent = 3 * 256;
                 coefficient = 1000000000000000L;
             }
 
-            if (UnsignedInteger.compare(exponent, 3 * 256) >= 0) {
+            if (UnsignedInteger.isGreaterOrEqual(exponent, 3 * 256)) {
                 while (coefficient < 1000000000000000L && exponent >= 3 * 256) {
                     exponent--;
                     coefficient = (coefficient << 3) + (coefficient << 1);

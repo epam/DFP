@@ -1,6 +1,9 @@
 package com.epam.deltix.dfp;
 
 class UnsignedLong {
+    private UnsignedLong() {
+    }
+
     @Deprecated(/*"The is(Not)?(Less|Greater)?(Equal)? functions faster than the compare() call."*/)
     public static int compare(final long x, final long y) {
         return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
