@@ -155,7 +155,7 @@ class UnsignedLong {
                     throw new NumberFormatException("Bad digit at end of " + s);
                 }
                 long result = first * radix + second;
-                if (compare(result, first) < 0) {
+                if (isLess(result, first)) {
                     /*
                      * The maximum unsigned value, (2^64)-1, takes at
                      * most one more digit to represent than the

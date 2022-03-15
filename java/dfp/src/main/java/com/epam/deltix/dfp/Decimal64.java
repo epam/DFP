@@ -987,8 +987,14 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
 
     /// region Comparable<T> Interface Implementation
 
+    /**
+     * The is(Not)?(Less|Greater)?(Equal)? functions faster than the compare() call.
+     *
+     * @param o The object to be compared.
+     * @return A negative integer, zero, or a positive integer as this object is less than,
+     * equal to, or greater than the specified object.
+     */
     @Override
-    @Deprecated(/*"The is(Not)?(Less|Greater)?(Equal)? functions faster than the compare() call."*/)
     public int compareTo(final Decimal64 o) {
         return Decimal64Utils.compareTo(value, o.value);
     }
