@@ -479,16 +479,8 @@ public class Decimal64Utils {
 
     /// region Comparison
 
-    /**
-     * The is(Not)?(Less|Greater)?(Equal)? functions faster than the compare() call.
-     *
-     * @param a The first decimal value to be compared.
-     * @param b The first decimal value to be compared.
-     * @return A negative integer, zero, or a positive integer as this object is less than,
-     * equal to, or greater than the specified object.
-     */
     public static int compareTo(@Decimal final long a, @Decimal final long b) {
-        return JavaImplCmp.compare(a, b);
+        return JavaImplCmp.bid64_quiet_compare(a, b);
     }
 
     public static boolean isEqual(@Decimal final long a, @Decimal final long b) {
