@@ -480,7 +480,7 @@ public class Decimal64Utils {
     /// region Comparison
 
     public static int compareTo(@Decimal final long a, @Decimal final long b) {
-        return JavaImplCmp.bid64_quiet_compare(a, b);
+        return JavaImplCmp.compare(a, b);
     }
 
     public static boolean isEqual(@Decimal final long a, @Decimal final long b) {

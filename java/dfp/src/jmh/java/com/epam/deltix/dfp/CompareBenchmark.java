@@ -32,7 +32,7 @@ public class CompareBenchmark {
     @Benchmark
     public void compareJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCmp.bid64_quiet_compare(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(JavaImplCmp.compare(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark

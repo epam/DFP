@@ -73,7 +73,7 @@ public class CompareTest {
 
     static void compareCheck(final long x, final long y) {
         final int nativeRet = NativeImpl.compare(x, y);
-        final int javaRet = JavaImplCmp.bid64_quiet_compare(x, y);
+        final int javaRet = JavaImplCmp.compare(x, y);
 
         if (javaRet != nativeRet)
             throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L vs 0x" +

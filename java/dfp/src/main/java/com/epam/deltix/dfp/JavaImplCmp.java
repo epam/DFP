@@ -1,6 +1,5 @@
 package com.epam.deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImpl.isNaN;
 import static com.epam.deltix.dfp.JavaImplAdd.*;
 
 public class JavaImplCmp {
@@ -25,7 +24,7 @@ public class JavaImplCmp {
     static final long MASK_COEFF = 0x0001ffffffffffffL;
     static final long BIN_EXP_BIAS = (0x1820L << 49);
 
-    public static int bid64_quiet_compare(final long /*BID_UINT64*/ x, final long /*BID_UINT64*/ y) {
+    public static int compare(final long /*BID_UINT64*/ x, final long /*BID_UINT64*/ y) {
         int exp_x, exp_y;
         long /*BID_UINT64*/ sig_x, sig_y;
         long /*BID_UINT128*/ sig_n_prime_w0, sig_n_prime_w1;
