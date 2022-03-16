@@ -1,8 +1,28 @@
 package com.epam.deltix.dfp;
 
 class UnsignedLong {
+    private UnsignedLong() {
+    }
+
+    @Deprecated(/*"The is(Not)?(Less|Greater)?(Equal)? functions faster than the compare() call."*/)
     public static int compare(final long x, final long y) {
         return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
+    }
+
+    public static boolean isLess(final long a, final long b) {
+        return a + Long.MIN_VALUE < b + Long.MIN_VALUE;
+    }
+
+    public static boolean isLessOrEqual(final long a, final long b) {
+        return a + Long.MIN_VALUE <= b + Long.MIN_VALUE;
+    }
+
+    public static boolean isGreater(final long a, final long b) {
+        return a + Long.MIN_VALUE > b + Long.MIN_VALUE;
+    }
+
+    public static boolean isGreaterOrEqual(final long a, final long b) {
+        return a + Long.MIN_VALUE >= b + Long.MIN_VALUE;
     }
 
 //    /**
@@ -138,7 +158,7 @@ class UnsignedLong {
                     throw new NumberFormatException("Bad digit at end of " + s);
                 }
                 long result = first * radix + second;
-                if (compare(result, first) < 0) {
+                if (isLess(result, first)) {
                     /*
                      * The maximum unsigned value, (2^64)-1, takes at
                      * most one more digit to represent than the

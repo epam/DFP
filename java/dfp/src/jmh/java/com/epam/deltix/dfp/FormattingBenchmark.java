@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static com.epam.deltix.dfp.MathBenchmark.fixedSeed;
+
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Warmup(time = 3, iterations = 1)
@@ -27,7 +29,7 @@ public class FormattingBenchmark {
     public void setUp() {
         decimalValue = Decimal64Utils.fromDouble(doubleValue);
 
-        final TestUtils.RandomDecimalsGenerator random = new TestUtils.RandomDecimalsGenerator();
+        final TestUtils.RandomDecimalsGenerator random = new TestUtils.RandomDecimalsGenerator(fixedSeed);
         decimalValues = new long[1000];
         for (int i = 0; i < decimalValues.length; ++i)
             decimalValues[i] = random.nextX();

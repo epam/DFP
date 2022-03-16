@@ -7,8 +7,6 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.io.IOException;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -18,10 +16,11 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Thread)
 public class MathBenchmark {
     private long[] decimalValues;
+    public static int fixedSeed = 42 * 42 * 42 * 42 * 42;
 
     @Setup
     public void setUp() {
-        TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator();
+        TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator(fixedSeed);
         decimalValues = new long[1003];
         for (int i = 0; i < decimalValues.length; ++i)
             decimalValues[i] = generator.nextX();
@@ -60,7 +59,7 @@ public class MathBenchmark {
     @Benchmark
     public void addJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplAdd.add(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(JavaImplAdd.bid64_add(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
