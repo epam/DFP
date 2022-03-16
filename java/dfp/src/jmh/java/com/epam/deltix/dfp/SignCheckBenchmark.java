@@ -19,7 +19,7 @@ public class SignCheckBenchmark {
 
     @Benchmark
     public static void javaIsPositive(final BenchmarkState state, final Blackhole blackhole) {
-        blackhole.consume(Decimal64Utils.isPositive(state.value));
+        blackhole.consume(JavaImplCmp.isPositive(state.value));
     }
 
     @Benchmark

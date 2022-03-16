@@ -563,6 +563,7 @@ public class JavaImplTest {
     @Decimal
     static final long[] specialValues = {
         Decimal64Utils.fromDouble(Math.PI),
+        Decimal64Utils.fromDouble(-Math.E),
         Decimal64Utils.NaN,
         Decimal64Utils.NaN | 1000000000000000L,
         Decimal64Utils.POSITIVE_INFINITY,
@@ -607,7 +608,7 @@ public class JavaImplTest {
     }
 
     private void testAddCase(final long x, final long y) {
-        final long javaRet = JavaImplAdd.add(x, y);
+        final long javaRet = JavaImplAdd.bid64_add(x, y);
         final long nativeRet = NativeImpl.add2(x, y);
 
         if (javaRet != nativeRet)

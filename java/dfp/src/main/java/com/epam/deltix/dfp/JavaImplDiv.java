@@ -90,7 +90,7 @@ public class JavaImplDiv {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((/*UnsignedLong.compare*/(x & 0x0003ffffffffffffL) + Long.MIN_VALUE >= (1000000000000000L) + Long.MIN_VALUE))
+                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
@@ -99,7 +99,7 @@ public class JavaImplDiv {
                     // coefficient
                     long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE >= (10000000000000000L) + Long.MIN_VALUE))
+                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -131,7 +131,7 @@ public class JavaImplDiv {
                 if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_y = 0;
                     coefficient_y = y & 0xfe03ffffffffffffL;
-                    if ((/*UnsignedLong.compare*/(y & 0x0003ffffffffffffL) + Long.MIN_VALUE >= (1000000000000000L) + Long.MIN_VALUE))
+                    if ((UnsignedLong.isGreaterOrEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
                         coefficient_y = y & 0xfe00000000000000L;
                     if ((y & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_y = y & SINFINITY_MASK64;
@@ -140,7 +140,7 @@ public class JavaImplDiv {
                     // coefficient
                     long coeff = (y & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((/*UnsignedLong.compare*/(coeff) + Long.MIN_VALUE >= (10000000000000000L) + Long.MIN_VALUE))
+                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
                         coeff = 0;
                     coefficient_y = coeff;
                     // get exponent
@@ -211,7 +211,7 @@ public class JavaImplDiv {
         }
         diff_expon = exponent_x - exponent_y + DECIMAL_EXPONENT_BIAS;
 
-        if (/*UnsignedLong.compare*/(coefficient_x) + Long.MIN_VALUE < (coefficient_y) + Long.MIN_VALUE) {
+        if (UnsignedLong.isLess(coefficient_x, coefficient_y)) {
             // get number of decimal digits for c_x, c_y
 
             //--- get number of bits in the coefficients of x and y ---
@@ -255,7 +255,7 @@ public class JavaImplDiv {
             diff_expon = diff_expon - ed2;
 
             // adjust double precision db, to ensure that later A/B - (int)(da/db) > -1
-            if (/*UnsignedLong.compare*/(coefficient_y) + Long.MIN_VALUE < (0x0020000000000000L) + Long.MIN_VALUE) {
+            if (UnsignedLong.isLess(coefficient_y, 0x0020000000000000L)) {
                 temp_b_i += 1;
                 db = Double.longBitsToDouble(temp_b_i);
             } else
@@ -387,8 +387,8 @@ public class JavaImplDiv {
             // eliminate trailing zeros
 
             // check whether CX, CY are short
-            if ((/*UnsignedLong.compare*/(coefficient_x) + Long.MIN_VALUE <= (1024) + Long.MIN_VALUE) &&
-                (/*UnsignedLong.compare*/(coefficient_y) + Long.MIN_VALUE <= (1024) + Long.MIN_VALUE)) {
+            if ((UnsignedLong.isLessOrEqual(coefficient_x, 1024)) &&
+                (UnsignedLong.isLessOrEqual(coefficient_y, 1024))) {
                 i = (int) coefficient_y - 1;
                 j = (int) coefficient_x - 1;
                 // difference in powers of 2 bid_factors for Y and X
@@ -602,7 +602,7 @@ public class JavaImplDiv {
                 long R64H;
                 R64H = __A128_w1;
                 _QM2_w0 = (__B64) + __A128_w0;
-                if ((/*UnsignedLong.compare*/(_QM2_w0) + Long.MIN_VALUE < (__B64) + Long.MIN_VALUE))
+                if ((UnsignedLong.isLess(_QM2_w0, __B64)))
                     R64H++;
                 _QM2_w1 = R64H;
             }
@@ -628,9 +628,9 @@ public class JavaImplDiv {
             remainder_h = remainder_h & QH;
 
             if (remainder_h == 0
-                && ((/*UnsignedLong.compare*/(Q_low_w1) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1) + 1]) + Long.MIN_VALUE)
+                && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]))
                 || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                && (/*UnsignedLong.compare*/(Q_low_w0) + Long.MIN_VALUE < (bid_reciprocals10_128_flat[(extra_digits << 1)]) + Long.MIN_VALUE)))) {
+                && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1)]))))) {
                 _C64--;
             }
         }
