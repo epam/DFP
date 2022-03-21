@@ -178,4 +178,16 @@ public class CompareBenchmark {
         for (int i = 0; i < 1000; ++i)
             bh.consume(JavaImplCmp.isNonNegative(decimalValues[i]));
     }
+
+    @Benchmark
+    public void isNormalNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.isNormal(decimalValues[i]));
+    }
+
+    @Benchmark
+    public void isNormalJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplCmp.bid64_isNormal(decimalValues[i]));
+    }
 }

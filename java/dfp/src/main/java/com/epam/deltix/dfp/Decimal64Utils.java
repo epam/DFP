@@ -472,7 +472,7 @@ public class Decimal64Utils {
     }
 
     public static boolean isNormal(@Decimal final long value) {
-        return NativeImpl.isNormal(value);
+        return JavaImplCmp.bid64_isNormal(value);
     }
 
     /// endregion
