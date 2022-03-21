@@ -21,9 +21,47 @@ public class MathBenchmark {
     @Setup
     public void setUp() {
         TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator(fixedSeed);
-        decimalValues = new long[1003];
+        decimalValues = new long[1004];
         for (int i = 0; i < decimalValues.length; ++i)
             decimalValues[i] = generator.nextX();
+    }
+
+    @Benchmark
+    public void minNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.min2(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void minJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplMinMax.bid64_min_fix_nan(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void maxNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.max2(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void maxJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplMinMax.bid64_max_fix_nan(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void max4Native(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.max4(decimalValues[i], decimalValues[i + 1], decimalValues[i + 2], decimalValues[i + 3]));
+    }
+
+    @Benchmark
+    public void max4Java(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplMinMax.bid64_max_fix_nan(
+                JavaImplMinMax.bid64_max_fix_nan(decimalValues[i], decimalValues[i + 1]),
+                JavaImplMinMax.bid64_max_fix_nan(decimalValues[i + 2], decimalValues[i + 3])));
     }
 
     @Benchmark

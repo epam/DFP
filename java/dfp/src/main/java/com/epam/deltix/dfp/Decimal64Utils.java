@@ -537,32 +537,36 @@ public class Decimal64Utils {
 
     @Decimal
     public static long max(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.max2(a, b);
+        return JavaImplMinMax.bid64_max_fix_nan(a, b);
     }
 
     @Decimal
     public static long max(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
-        return NativeImpl.max3(a, b, c);
+        return JavaImplMinMax.bid64_max_fix_nan(JavaImplMinMax.bid64_max_fix_nan(a, b), c);
     }
 
     @Decimal
     public static long max(@Decimal final long a, @Decimal final long b, @Decimal final long c, @Decimal final long d) {
-        return NativeImpl.max4(a, b, c, d);
+        return JavaImplMinMax.bid64_max_fix_nan(
+            JavaImplMinMax.bid64_max_fix_nan(a, b),
+            JavaImplMinMax.bid64_max_fix_nan(c, d));
     }
 
     @Decimal
     public static long min(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.min2(a, b);
+        return JavaImplMinMax.bid64_min_fix_nan(a, b);
     }
 
     @Decimal
     public static long min(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
-        return NativeImpl.min3(a, b, c);
+        return JavaImplMinMax.bid64_min_fix_nan(JavaImplMinMax.bid64_min_fix_nan(a, b), c);
     }
 
     @Decimal
     public static long min(@Decimal final long a, @Decimal final long b, @Decimal final long c, @Decimal final long d) {
-        return NativeImpl.min4(a, b, c, d);
+        return JavaImplMinMax.bid64_min_fix_nan(
+            JavaImplMinMax.bid64_min_fix_nan(a, b),
+            JavaImplMinMax.bid64_min_fix_nan(c, d));
     }
 
     /// endregion

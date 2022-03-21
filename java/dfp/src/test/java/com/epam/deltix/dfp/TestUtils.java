@@ -280,17 +280,13 @@ public class TestUtils {
             final AtomicReference<Exception> lastException = new AtomicReference<>(null);
 
             for (int ti = 0; ti < threads.length; ++ti) {
-                threads[ti] = new Thread(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                target.run();
-                            } catch (final Exception e) {
-                                lastException.set(e);
-                            }
-                        }
-                    });
+                threads[ti] = new Thread(() -> {
+                    try {
+                        target.run();
+                    } catch (final Exception e) {
+                        lastException.set(e);
+                    }
+                });
                 threads[ti].start();
             }
 
