@@ -27,6 +27,18 @@ public class MathBenchmark {
     }
 
     @Benchmark
+    public void mean2Native(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.mean2(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void meanJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplDiv.mean2(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
     public void minNative(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
             bh.consume(NativeImpl.min2(decimalValues[i], decimalValues[i + 1]));
@@ -74,6 +86,12 @@ public class MathBenchmark {
     public void divJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
             bh.consume(JavaImplDiv.bid64_div(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void div2Java(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplDiv.div2(decimalValues[i]));
     }
 
     @Benchmark

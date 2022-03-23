@@ -558,6 +558,8 @@ public class JavaImplTest {
         Decimal64Utils.fromDouble(-Math.E),
         Decimal64Utils.NaN,
         Decimal64Utils.NaN | 1000000000000000L,
+        Decimal64Utils.negate(Decimal64Utils.NaN),
+        Decimal64Utils.negate(Decimal64Utils.NaN | 1000000000000000L),
         Decimal64Utils.POSITIVE_INFINITY,
         Decimal64Utils.POSITIVE_INFINITY | 1000000000000000L,
         Decimal64Utils.NEGATIVE_INFINITY,
@@ -576,6 +578,8 @@ public class JavaImplTest {
         Decimal64Utils.ONE,
         Decimal64Utils.fromFixedPoint(10000000000000000L, 16),
         Decimal64Utils.fromLong(10000000000000000L),
+        Decimal64Utils.ONE | 0x7000000000000000L,
+        Decimal64Utils.negate(Decimal64Utils.ONE | 0x7000000000000000L),
     };
 
     @Test
@@ -673,6 +677,36 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testDiv2WithCoverage() throws Exception {
+        for (final long x : specialValues)
+            testDiv2Case(x);
+
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i)
+                testDiv2Case(random.nextX());
+        });
+    }
+
+    @Test
+    public void testDiv2Cases() {
+        testDiv2Case(0x2feb29430a256d21L);
+        testDiv2Case(0x5fe05af3107a4000L);
+        testDiv2Case(0xf7fb86f26fc0ffffL);
+        testDiv2Case(0xafe9a8434ec8e225L);
+    }
+
+    private void testDiv2Case(final long x) {
+        final long javaRet = JavaImplDiv.div2(x);
+        final long nativeRet = NativeImpl.divide(x, Decimal64Utils.TWO);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L(" + Decimal64Utils.toScientificString(x) +
+                ") / 2 = 0x" + Long.toHexString(nativeRet) + "L(" + Decimal64Utils.toScientificString(nativeRet) +
+                "), but java return 0x" + Long.toHexString(javaRet) + "L(" + Decimal64Utils.toScientificString(javaRet) + ")");
+    }
+
+    @Test
     public void testMinWithCoverage() throws Exception {
         for (final long x : specialValues)
             for (final long y : specialValues)
@@ -713,6 +747,30 @@ public class JavaImplTest {
 
         if (javaRet != nativeRet)
             throw new RuntimeException("The maximal of decimal 0x" + Long.toHexString(x) + "L vs 0x" + Long.toHexString(y) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
+    public void testMean2Coverage() throws Exception {
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                testMean2Case(x, y);
+
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i) {
+                random.makeNextPair();
+                testMean2Case(random.getX(), random.getY());
+            }
+        });
+    }
+
+    private void testMean2Case(final long x, final long y) {
+        final long javaRet = JavaImplDiv.mean2(x, y);
+        final long nativeRet = NativeImpl.mean2(x, y);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The mean of decimal 0x" + Long.toHexString(x) + "L and 0x" + Long.toHexString(y) +
                 "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
     }
 

@@ -666,12 +666,12 @@ public class Decimal64Utils {
 
     @Decimal
     public static long average(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.mean2(a, b);
+        return JavaImplDiv.mean2(a, b);
     }
 
     @Decimal
     public static long mean(@Decimal final long a, @Decimal final long b) {
-        return NativeImpl.mean2(a, b);
+        return JavaImplDiv.mean2(a, b);
     }
 
     /// endregion
