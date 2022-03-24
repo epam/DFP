@@ -1046,6 +1046,61 @@ public class JavaImplCmp {
         }
     }
 
+    public static boolean bid64_isNormal(final long /*BID_UINT64*/ x) {
+        long /*BID_UINT128*/ sig_x_prime_w0, sig_x_prime_w1;
+        long /*BID_UINT64*/ sig_x;
+        int exp_x;
+
+        if ((x & MASK_INF) == MASK_INF) {    // x is either INF or NaN
+            return false;
+        } else {
+            // decode number into exponent and significand
+            if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
+                sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
+                // check for zero or non-canonical
+                if (UnsignedLong.isGreater(sig_x, 9999999999999999L) || sig_x == 0) {
+                    return false;    // zero or non-canonical
+                }
+                exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);
+            } else {
+                sig_x = (x & MASK_BINARY_SIG1);
+                if (sig_x == 0) {
+                    return false;    // zero
+                }
+                exp_x = (int) ((x & MASK_BINARY_EXPONENT1) >>> 53);
+            }
+            // if exponent is less than -383, the number may be subnormal
+            // if (exp_x - 398 = -383) the number may be subnormal
+            if (exp_x < 15) {
+                // __mul_64x64_to_128MACH (sig_x_prime, sig_x, bid_mult_factor[exp_x]); // @AD: Note: The __mul_64x64_to_128MACH macro is the same as __mul_64x64_to_128
+                {
+                    final long __CX = sig_x;
+                    final long __CY = bid_mult_factor[exp_x];
+                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                    __CXH = __CX >>> 32;
+                    __CXL = LONG_LOW_PART & __CX;
+                    __CYH = __CY >>> 32;
+                    __CYL = LONG_LOW_PART & __CY;
+
+                    __PM = __CXH * __CYL;
+                    __PH = __CXH * __CYH;
+                    __PL = __CXL * __CYL;
+                    __PM2 = __CXL * __CYH;
+                    __PH += (__PM >>> 32);
+                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
+
+                    sig_x_prime_w1 = __PH + (__PM >>> 32);
+                    sig_x_prime_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                }
+
+                // normal
+                return sig_x_prime_w1 != 0 || UnsignedLong.isGreater(sig_x_prime_w0, 999999999999999L);
+            } else {
+                return true;    // normal
+            }
+        }
+    }
+
     public static boolean isPositive(final long value) {
         if ((value & MASK_NAN) == MASK_NAN)
             return false;
