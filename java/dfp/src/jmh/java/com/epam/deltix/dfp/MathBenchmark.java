@@ -33,7 +33,7 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void meanJava(Blackhole bh) {
+    public void mean2Java(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
             bh.consume(JavaImplDiv.mean2(decimalValues[i], decimalValues[i + 1]));
     }
