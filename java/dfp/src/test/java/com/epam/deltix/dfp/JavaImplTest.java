@@ -775,6 +775,29 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testDoubleToDecimalCoverage() throws Exception {
+        JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
+
+        for (final long x : specialValues)
+            testDoubleToDecimalCase(NativeImpl.toFloat64(x), fpsf);
+
+        checkInMultipleThreads(() -> {
+            final MersenneTwister random = new MersenneTwister();
+            for (int i = 0; i < NTests; ++i)
+                testDoubleToDecimalCase(Double.longBitsToDouble(random.nextLong()), fpsf);
+        });
+    }
+
+    private void testDoubleToDecimalCase(final double x, JavaImplParse.FloatingPointStatusFlag pfpsf) {
+        final long javaRet = JavaImplCastBinary64.binary64_to_bid64(x, BID_ROUNDING_TO_NEAREST, pfpsf);
+        final long nativeRet = NativeImpl.fromFloat64(x);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The conversion of double " + x + "(0x" + Long.toHexString(Double.doubleToRawLongBits(x)) +
+                "L) = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
     public void testToStringScientific() throws Exception {
         checkInMultipleThreads(() -> {
             final RandomDecimalsGenerator random = new RandomDecimalsGenerator();

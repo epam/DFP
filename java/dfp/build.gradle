@@ -30,19 +30,13 @@ java {
 }
 
 sourceSets {
-    main {
-        java {
-            srcDir "$projectDir/dfp/src/main/java"
-            srcDir "$projectDir/build/generated/sources/nativeWrappers"
-            srcDir "$rootDir/NativeUtils/java/main/src/main/java"
-            srcDir "$rootDir/NativeUtils/Zstandard/java/src/main/java"
+    main.java.srcDirs += [
+        "$projectDir/dfp/src/main/java",
+        "$projectDir/build/generated/sources/nativeWrappers",
+        "$rootDir/NativeUtils/java/main/src/main/java",
+        "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 
-            resources {
-                srcDirs = ["$rootDir/native/binJava/Release/"]
-                include '**/*.zst'
-            }
-        }
-    }
+    main.resources.srcDirs += "$rootDir/native/binJava/Release/"
 }
 
 dependencies {
