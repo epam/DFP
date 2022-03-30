@@ -78,6 +78,7 @@ OPN(roundTowardsPositiveInfinity, bid64_round_integral_positive(x), BID_UINT64 x
 OPN(roundTowardsNegativeInfinity, bid64_round_integral_negative(x), BID_UINT64 x)
 OPN(roundTowardsZero, bid64_round_integral_zero(x), BID_UINT64 x)
 OPN(roundToNearestTiesAwayFromZero, bid64_round_integral_nearest_away(x), BID_UINT64 x)
+OPN(roundToNearestTiesToEven, bid64_round_integral_nearest_even(x), BID_UINT64 x)
 
 //endregion
 
