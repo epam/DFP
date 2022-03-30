@@ -10,7 +10,7 @@ public class JavaImplCastBinary64 {
     private JavaImplCastBinary64() {
     }
 
-    public static long binary64_to_bid64(double x, final int rnd_mode, final JavaImplParse.FloatingPointStatusFlag pfpsf) {
+    public static long binary64_to_bid64(double x, final int rnd_mode/*, final JavaImplParse.FloatingPointStatusFlag pfpsf*/) {
         long /*BID_UINT128*/ c_w0, c_w1;
         long /*BID_UINT64*/ c_prov;
         long /*BID_UINT128*/ m_min_w0, m_min_w1;
@@ -37,10 +37,10 @@ public class JavaImplCastBinary64 {
                 c_w1 = c_w1 << l;
                 e = -(l + 1074);
                 t = 0;
-                __set_status_flags(pfpsf, BID_DENORMAL_EXCEPTION);
+                //__set_status_flags(pfpsf, BID_DENORMAL_EXCEPTION);
             } else if (e == ((1L << 11) - 1)) {
                 if (c_w1 == 0) return return_bid64_inf(s);
-                if ((c_w1 & (1L << 51)) == 0) __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
+                //if ((c_w1 & (1L << 51)) == 0) __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
                 return return_bid64_nan(s, c_w1 << 13, 0L);
             } else {
                 c_w1 += 1L << 52;
@@ -418,9 +418,9 @@ public class JavaImplCastBinary64 {
         // Set the inexact flag as appropriate and check underflow
         // It's no doubt superfluous to check inexactness, but anyway...
 
-        if ((z_w4 != 0) || (z_w3 != 0)) {
-            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-        }
+//        if ((z_w4 != 0) || (z_w3 != 0)) {
+//            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//        }
         // Package up the result
 
         return return_bid64(s, e_out, c_prov);
@@ -914,7 +914,19 @@ public class JavaImplCastBinary64 {
             int valuesCount = 0;
 
             final byte[] readBuffer = new byte[Long.SIZE / Byte.SIZE];
-            while (resourceStream.read(readBuffer) == readBuffer.length) {
+            while (true) {
+                int bufferPosition = 0;
+                while (bufferPosition < readBuffer.length) {
+                    final int readCount = resourceStream.read(readBuffer, bufferPosition, readBuffer.length - bufferPosition);
+                    if (readCount == -1) {
+                        bufferPosition = -1;
+                        break;
+                    }
+                    bufferPosition += readCount;
+                }
+                if (bufferPosition == -1)
+                    break;
+
                 final long longValue =
                     (((long) readBuffer[7] << 56) +
                         ((long) (readBuffer[6] & 255) << 48) +

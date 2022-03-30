@@ -776,20 +776,18 @@ public class JavaImplTest {
 
     @Test
     public void testDoubleToDecimalCoverage() throws Exception {
-        JavaImplParse.FloatingPointStatusFlag fpsf = new JavaImplParse.FloatingPointStatusFlag();
-
         for (final long x : specialValues)
-            testDoubleToDecimalCase(NativeImpl.toFloat64(x), fpsf);
+            testDoubleToDecimalCase(NativeImpl.toFloat64(x));
 
         checkInMultipleThreads(() -> {
             final MersenneTwister random = new MersenneTwister();
             for (int i = 0; i < NTests; ++i)
-                testDoubleToDecimalCase(Double.longBitsToDouble(random.nextLong()), fpsf);
+                testDoubleToDecimalCase(Double.longBitsToDouble(random.nextLong()));
         });
     }
 
-    private void testDoubleToDecimalCase(final double x, JavaImplParse.FloatingPointStatusFlag pfpsf) {
-        final long javaRet = JavaImplCastBinary64.binary64_to_bid64(x, BID_ROUNDING_TO_NEAREST, pfpsf);
+    private void testDoubleToDecimalCase(final double x) {
+        final long javaRet = JavaImplCastBinary64.binary64_to_bid64(x, BID_ROUNDING_TO_NEAREST);
         final long nativeRet = NativeImpl.fromFloat64(x);
 
         if (javaRet != nativeRet)

@@ -3,6 +3,8 @@ package com.epam.deltix.dfp;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+import static com.epam.deltix.dfp.JavaImpl.BID_ROUNDING_TO_NEAREST;
+
 /**
  * Contains common arithmetical routines for 64-bit Decimal Floating Point numbers as defined by IEEE-754 2008.
  * <p>
@@ -384,7 +386,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long fromDouble(final double value) {
-        return NativeImpl.fromFloat64(value);
+        return JavaImplCastBinary64.binary64_to_bid64(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
