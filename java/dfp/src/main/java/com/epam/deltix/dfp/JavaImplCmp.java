@@ -2,7 +2,7 @@ package com.epam.deltix.dfp;
 
 import static com.epam.deltix.dfp.JavaImplAdd.*;
 
-public class JavaImplCmp {
+class JavaImplCmp {
     private JavaImplCmp() {
     }
 

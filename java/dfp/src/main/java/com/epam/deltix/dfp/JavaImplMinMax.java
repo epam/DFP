@@ -3,7 +3,7 @@ package com.epam.deltix.dfp;
 import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
 import static com.epam.deltix.dfp.JavaImplCmp.*;
 
-public class JavaImplMinMax {
+class JavaImplMinMax {
     private JavaImplMinMax() {
     }
 

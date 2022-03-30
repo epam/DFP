@@ -15,7 +15,7 @@ import static com.epam.deltix.dfp.JavaImplAdd.SMALL_COEFF_MASK64;
 import static com.epam.deltix.dfp.JavaImplAdd.SPECIAL_ENCODING_MASK64;
 import static com.epam.deltix.dfp.JavaImplParse.*;
 
-public class JavaImplMul {
+class JavaImplMul {
     private JavaImplMul() {
     }
 

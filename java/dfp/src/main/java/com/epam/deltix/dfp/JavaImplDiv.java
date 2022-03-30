@@ -7,7 +7,7 @@ import static com.epam.deltix.dfp.JavaImplMul.get_BID64;
 import static com.epam.deltix.dfp.JavaImplParse.bid_recip_scale;
 import static com.epam.deltix.dfp.JavaImplParse.bid_reciprocals10_128_flat;
 
-public class JavaImplDiv {
+class JavaImplDiv {
     private JavaImplDiv() {
     }
 
