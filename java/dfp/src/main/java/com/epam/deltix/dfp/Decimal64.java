@@ -660,6 +660,10 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return new Decimal64(Decimal64Utils.multiplyAndAdd(value, m.value, a.value));
     }
 
+    public Decimal64 scaleByPowerOfTen(final int n) {
+        return new Decimal64(Decimal64Utils.scaleByPowerOfTen(value, n));
+    }
+
     public Decimal64 average(final Decimal64 other) {
         return new Decimal64(Decimal64Utils.average(value, other.value));
     }

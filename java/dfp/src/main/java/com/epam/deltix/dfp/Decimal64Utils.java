@@ -1705,6 +1705,19 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#scaleByPowerOfTen(int)}, adds null checks; do not use directly.
+     *
+     * @param a DFP argument
+     * @param n Scale argument
+     * @return ..
+     */
+    @Decimal
+    public static long scaleByPowerOfTenChecked(@Decimal final long a, final int n) {
+        checkNull(a);
+        return scaleByPowerOfTen(a, n);
+    }
+    
+    /**
      * Implements {@link Decimal64#average(Decimal64)}, adds null checks; do not use directly.
      *
      * @param a DFP argument
