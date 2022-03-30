@@ -42,8 +42,19 @@ public class RoundingBenchmark {
     }
 
     @Benchmark
+    public long roundToNearestTiesToEven() {
+        return Decimal64Utils.roundToNearestTiesToEven(decimalValue);
+    }
+
+    @Benchmark
     public long roundToNearestTiesAwayFromZeroD5() {
         return Decimal64Utils.roundToNearestTiesAwayFromZero(decimalValue,
+            Decimal64Utils.fromFixedPoint(125, 3));
+    }
+
+    @Benchmark
+    public long roundToNearestTiesToEvenD5() {
+        return Decimal64Utils.roundToNearestTiesToEven(decimalValue,
             Decimal64Utils.fromFixedPoint(125, 3));
     }
 

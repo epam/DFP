@@ -722,6 +722,10 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return new Decimal64(Decimal64Utils.roundToNearestTiesAwayFromZero(value));
     }
 
+    public Decimal64 roundToNearestTiesToEven() {
+        return new Decimal64(Decimal64Utils.roundToNearestTiesToEven(value));
+    }
+
     public Decimal64 roundTowardsPositiveInfinity(final Decimal64 multiple) {
         return new Decimal64(Decimal64Utils.roundTowardsPositiveInfinity(value, multiple.value));
     }
@@ -732,6 +736,10 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
 
     public Decimal64 roundToNearestTiesAwayFromZero(final Decimal64 multiple) {
         return new Decimal64(Decimal64Utils.roundToNearestTiesAwayFromZero(value, multiple.value));
+    }
+
+    public Decimal64 roundToNearestTiesToEven(final Decimal64 multiple) {
+        return new Decimal64(Decimal64Utils.roundToNearestTiesToEven(value, multiple.value));
     }
 
     /// endregion

@@ -592,4 +592,63 @@ public class Decimal64UtilsTest {
             "-1000", "-999.95"
         );
     }
+
+    @Test
+    public void roundToNearestTiesToEven() {
+        final String message = "checkRoundToNearestTiesToEven()";
+
+        applyToPairs(
+            new BiConsumer<String, String>() {
+                @Override
+                public void accept(String a, String b) {
+                    checkFunction(
+                        new Function<Long, Long>() {
+                            @Override
+                            public Long apply(Long aLong) {
+                                return Decimal64Utils.roundToNearestTiesToEven(aLong);
+                            }
+                        }, a, b, message);
+                }
+            },
+            "-1", "-1.0",
+            "-1", "-0.7",
+            "0", "-0.5",
+            "0", "-0.2",
+            "0", "0.0",
+            "0", "0.2",
+            "0", "0.5",
+            "1", "0.7",
+            "1", "1.0",
+            "10000", "9999.5",
+            "-10000", "-9999.5"
+        );
+
+        @Decimal final long multiple = Decimal64Utils.parse("0.1");
+
+        applyToPairs(
+            new BiConsumer<String, String>() {
+                @Override
+                public void accept(String a, String b) {
+                    checkFunction(
+                        new Function<Long, Long>() {
+                            @Override
+                            public Long apply(Long x) {
+                                return Decimal64Utils.roundToNearestTiesToEven(x, multiple);
+                            }
+                        }, a, b, message);
+                }
+            },
+            "-0.1", "-0.10",
+            "-0.1", "-0.07",
+            "0", "-0.05",
+            "0", "-0.02",
+            "0", "0.0",
+            "0", "0.02",
+            "0", "0.05",
+            "0.1", "0.07",
+            "0.1", "0.10",
+            "1000", "999.95",
+            "-1000", "-999.95"
+        );
+    }
 }
