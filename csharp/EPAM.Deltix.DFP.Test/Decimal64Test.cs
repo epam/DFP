@@ -632,7 +632,7 @@ namespace EPAM.Deltix.DFP.Test
 			CheckInMultipleThreads(() =>
 			{
 				Random random = new Random();
-				for (int i = 0; i < 10000000; ++i)
+				for (int i = 0; i < 1000000; ++i)
 				{
 					var x = Decimal64.FromFixedPoint(random.Next() << 32 | random.Next(), -(random.Next(80) - 40 - 15));
 
