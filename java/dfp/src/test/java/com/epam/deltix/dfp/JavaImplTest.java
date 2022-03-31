@@ -794,7 +794,7 @@ public class JavaImplTest {
     public void testFormatting() throws Exception {
         checkInMultipleThreads(() -> {
             final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i)
+            for (int i = 0; i < NTests / 10; ++i)
                 checkFormattingValue(random.nextX());
         });
     }
