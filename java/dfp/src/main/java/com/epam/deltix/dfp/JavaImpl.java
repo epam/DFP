@@ -105,7 +105,7 @@ class JavaImpl {
     }
 
     public static boolean signBit(final long value) {
-        return (value & MASK_SIGN) == MASK_SIGN;
+        return value < 0;
     }
 
     public static boolean isFinite(final long value) {

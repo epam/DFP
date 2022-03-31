@@ -751,7 +751,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     /**
      * Returns the unscaled value of the {@code DFP} in the same way as {@link BigDecimal#unscaledValue()} do.
      *
-     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
+     * @param abnormalReturn The value returned for abnormal values (NaN, +Inf, -Inf).
      * @return the unscaled value of {@code DFP} value.
      */
     public long getUnscaledValue(final long abnormalReturn) {
@@ -771,7 +771,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     /**
      * Returns the scale of the {@code DFP} in the same way as {@link BigDecimal#scale()} do.
      *
-     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
+     * @param abnormalReturn The value returned for abnormal values (NaN, +Inf, -Inf).
      * @return the scale of {@code DFP} value.
      */
     public int getScale(final int abnormalReturn) {
