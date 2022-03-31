@@ -4,6 +4,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.junit.Test;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -968,5 +969,38 @@ public class JavaImplTest {
     public void tryParseInvalidString() {
         final @Decimal long value = Decimal64Utils.tryParse("INVALID", Decimal64Utils.NaN);
         assertTrue(Decimal64Utils.isNaN(value));
+    }
+
+    @Test
+    public void testPartsSplitWithCoverage() throws Exception {
+        for (final long x : specialValues) {
+            if (!Decimal64Utils.isFinite(x))
+                continue;
+            testPartsSplitCase(x);
+        }
+
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests / 10; ++i)
+                testPartsSplitCase(random.nextX());
+        });
+    }
+
+    private void testPartsSplitCase(final long testValue) {
+        final BigDecimal bd = Decimal64Utils.toBigDecimal(testValue);
+
+        final long mantissa = Decimal64Utils.getUnscaledValue(testValue);
+        final int exp = Decimal64Utils.getScale(testValue);
+
+        assertEquals("The decimal 0x" + Long.toHexString(testValue) + "L(=" +
+                Decimal64Utils.toScientificString(testValue) + ") unscaled value error.",
+            bd.unscaledValue().longValueExact(), mantissa);
+
+        assertEquals("The decimal 0x" + Long.toHexString(testValue) + "L(=" +
+            Decimal64Utils.toScientificString(testValue) + ") exponent error.", bd.scale(), exp);
+
+        assertTrue("The decimal 0x" + Long.toHexString(testValue) + "L(=" +
+                Decimal64Utils.toScientificString(testValue) + ") reconstruction error.",
+            Decimal64Utils.equals(testValue, Decimal64Utils.fromFixedPoint(mantissa, exp)));
     }
 }

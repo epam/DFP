@@ -3,6 +3,9 @@ package com.epam.deltix.dfp;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+import static com.epam.deltix.dfp.JavaImpl.isSpecial;
+import static com.epam.deltix.dfp.JavaImplAdd.*;
+
 /**
  * Contains common arithmetical routines for 64-bit Decimal Floating Point numbers as defined by IEEE-754 2008.
  * <p>
@@ -926,6 +929,77 @@ public class Decimal64Utils {
 
     /// endregion
 
+    /// region Parts processing
+
+    /**
+     * Returns the unscaled value of the {@code DFP} in the same way as {@link BigDecimal#unscaledValue()} do.
+     * For abnormal values return {@code Long.MIN_VALUE}.
+     *
+     * @param value {@code DFP} argument as long
+     * @return the unscaled value of {@code DFP} value.
+     */
+    public static long getUnscaledValue(@Decimal final long value) {
+        return getUnscaledValue(value, Long.MIN_VALUE);
+    }
+
+    /**
+     * Returns the unscaled value of the {@code DFP} in the same way as {@link BigDecimal#unscaledValue()} do.
+     *
+     * @param value          {@code DFP} argument as long
+     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
+     * @return the unscaled value of {@code DFP} value.
+     */
+    public static long getUnscaledValue(@Decimal final long value, final long abnormalReturn) {
+        final boolean sign = JavaImpl.signBit(value);
+
+        if (!JavaImpl.isSpecial(value)) {
+            final long coefficient = (value & SMALL_COEFF_MASK64);
+            return sign ? -coefficient : coefficient;
+        } else {
+            // special encodings
+            if ((value & INFINITY_MASK64) == INFINITY_MASK64) {
+                return abnormalReturn;    // NaN or Infinity
+            } else {
+                long coeff = (value & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
+                if (UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L))
+                    coeff = 0;
+                return sign ? -coeff : coeff;
+            }
+        }
+    }
+
+    /**
+     * Returns the scale of the {@code DFP} in the same way as {@link BigDecimal#scale()} do.
+     * For abnormal values return {@code Integer.MIN_VALUE}.
+     *
+     * @param value {@code DFP} argument as long
+     * @return the scale of {@code DFP} value.
+     */
+    public static int getScale(@Decimal final long value) {
+        return getScale(value, Integer.MIN_VALUE);
+    }
+
+    /**
+     * Returns the scale of the {@code DFP} in the same way as {@link BigDecimal#scale()} do.
+     *
+     * @param value          {@code DFP} argument as long
+     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
+     * @return the scale of {@code DFP} value.
+     */
+    public static int getScale(@Decimal final long value, final int abnormalReturn) {
+        if (!isSpecial(value)) {
+            return -((int) ((value >>> EXPONENT_SHIFT_SMALL64) & EXPONENT_MASK64) - JavaImpl.EXPONENT_BIAS);
+        } else {
+            // special encodings
+            if ((value & INFINITY_MASK64) == INFINITY_MASK64)
+                return abnormalReturn;
+            else
+                return -((int) ((value >>> EXPONENT_SHIFT_LARGE64) & EXPONENT_MASK64) - JavaImpl.EXPONENT_BIAS);
+        }
+    }
+
+    /// endregion
+
     /// region Special
 
     /**
@@ -1716,7 +1790,7 @@ public class Decimal64Utils {
         checkNull(a);
         return scaleByPowerOfTen(a, n);
     }
-    
+
     /**
      * Implements {@link Decimal64#average(Decimal64)}, adds null checks; do not use directly.
      *
@@ -2010,6 +2084,50 @@ public class Decimal64Utils {
     public static boolean equalsChecked(@Decimal final long a, final Object b) {
         checkNull(a);
         return equals(a, ((Decimal64) b).value);
+    }
+
+    /**
+     * Implements {@link Decimal64#getUnscaledValue()}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    public static long getUnscaledValueChecked(@Decimal final long value) {
+        checkNull(value);
+        return getUnscaledValue(value);
+    }
+
+    /**
+     * Implements {@link Decimal64#getUnscaledValue(long)}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    public static long getUnscaledValueChecked(@Decimal final long value, final long abnormalReturn) {
+        checkNull(value);
+        return getUnscaledValue(value, abnormalReturn);
+    }
+
+    /**
+     * Implements {@link Decimal64#getScale()}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    public static int getScaleChecked(@Decimal final long value) {
+        checkNull(value);
+        return getScale(value);
+    }
+
+    /**
+     * Implements {@link Decimal64#getScale(int)}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    public static int getScaleChecked(@Decimal final long value, final int abnormalReturn) {
+        checkNull(value);
+        return getScale(value, abnormalReturn);
     }
 
     /**
