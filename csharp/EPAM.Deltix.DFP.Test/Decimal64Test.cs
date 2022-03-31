@@ -796,7 +796,7 @@ namespace EPAM.Deltix.DFP.Test
 				value = value.Substring(1);
 			}
 
-			if (value.Equals("NaN") || value.Equals("Infinity"))
+			if (value.Contains("NaN") || value.Contains("Infinity"))
 				return valueIn;
 
 			int latestPoint;
