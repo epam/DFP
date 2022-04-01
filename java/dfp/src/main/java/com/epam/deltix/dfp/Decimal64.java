@@ -660,6 +660,10 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return new Decimal64(Decimal64Utils.multiplyAndAdd(value, m.value, a.value));
     }
 
+    public Decimal64 scaleByPowerOfTen(final int n) {
+        return new Decimal64(Decimal64Utils.scaleByPowerOfTen(value, n));
+    }
+
     public Decimal64 average(final Decimal64 other) {
         return new Decimal64(Decimal64Utils.average(value, other.value));
     }
@@ -718,6 +722,10 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return new Decimal64(Decimal64Utils.roundToNearestTiesAwayFromZero(value));
     }
 
+    public Decimal64 roundToNearestTiesToEven() {
+        return new Decimal64(Decimal64Utils.roundToNearestTiesToEven(value));
+    }
+
     public Decimal64 roundTowardsPositiveInfinity(final Decimal64 multiple) {
         return new Decimal64(Decimal64Utils.roundTowardsPositiveInfinity(value, multiple.value));
     }
@@ -728,6 +736,54 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
 
     public Decimal64 roundToNearestTiesAwayFromZero(final Decimal64 multiple) {
         return new Decimal64(Decimal64Utils.roundToNearestTiesAwayFromZero(value, multiple.value));
+    }
+
+    public Decimal64 roundToNearestTiesToEven(final Decimal64 multiple) {
+        return new Decimal64(Decimal64Utils.roundToNearestTiesToEven(value, multiple.value));
+    }
+
+    /// endregion
+
+    /// region Parts processing
+
+    /**
+     * Returns the unscaled value of the {@code DFP} in the same way as {@link BigDecimal#unscaledValue()} do.
+     * For abnormal values return {@code Long.MIN_VALUE}.
+     *
+     * @return the unscaled value of {@code DFP} value.
+     */
+    public long getUnscaledValue() {
+        return Decimal64Utils.getUnscaledValue(value);
+    }
+
+    /**
+     * Returns the unscaled value of the {@code DFP} in the same way as {@link BigDecimal#unscaledValue()} do.
+     *
+     * @param abnormalReturn The value returned for abnormal values (NaN, +Inf, -Inf).
+     * @return the unscaled value of {@code DFP} value.
+     */
+    public long getUnscaledValue(final long abnormalReturn) {
+        return Decimal64Utils.getUnscaledValue(value, abnormalReturn);
+    }
+
+    /**
+     * Returns the scale of the {@code DFP} in the same way as {@link BigDecimal#scale()} do.
+     * For abnormal values return {@code Integer.MIN_VALUE}.
+     *
+     * @return the scale of {@code DFP} value.
+     */
+    public int getScale() {
+        return Decimal64Utils.getScale(value);
+    }
+
+    /**
+     * Returns the scale of the {@code DFP} in the same way as {@link BigDecimal#scale()} do.
+     *
+     * @param abnormalReturn The value returned for abnormal values (NaN, +Inf, -Inf).
+     * @return the scale of {@code DFP} value.
+     */
+    public int getScale(final int abnormalReturn) {
+        return Decimal64Utils.getScale(value, abnormalReturn);
     }
 
     /// endregion

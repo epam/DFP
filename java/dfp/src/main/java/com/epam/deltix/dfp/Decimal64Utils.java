@@ -3,6 +3,8 @@ package com.epam.deltix.dfp;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+import static com.epam.deltix.dfp.JavaImpl.isSpecial;
+import static com.epam.deltix.dfp.JavaImplAdd.*;
 import static com.epam.deltix.dfp.JavaImpl.BID_ROUNDING_TO_NEAREST;
 
 /**
@@ -662,7 +664,7 @@ public class Decimal64Utils {
     }
 
     @Decimal
-    public static long scaleByPowerOfTen(@Decimal final long a, @Decimal final int n) {
+    public static long scaleByPowerOfTen(@Decimal final long a, final int n) {
         return NativeImpl.scaleByPowerOfTen(a, n);
     }
 
@@ -837,6 +839,18 @@ public class Decimal64Utils {
     }
 
     /**
+     * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
+     * with ties rounding to even
+     *
+     * @param value {@code DFP} argument
+     * @return the value of the argument rounded to the nearest mathematical integer
+     */
+    @Decimal
+    public static long roundToNearestTiesToEven(@Decimal final long value) {
+        return NativeImpl.roundToNearestTiesToEven(value);
+    }
+
+    /**
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
      * <p>
@@ -924,6 +938,97 @@ public class Decimal64Utils {
 
         @Decimal final long ratio = NativeImpl.roundToNearestTiesAwayFromZero(divide(value, multiple));
         return multiply(ratio, multiple);
+    }
+
+    /**
+     * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
+     * with ties rounding to even.
+     *
+     * @param value    {@code DFP} argument
+     * @param multiple rounding precision expressed as {@code DFP} number (e.g. 0.001 will round to 3 digits after decimal point)
+     * @return If {@code DFP value} is finite, returns {@code value} rounded to a multiple of {@code multiple},
+     * otherwise {@code value} is returned unchanged.
+     */
+    @Decimal
+    public static long roundToNearestTiesToEven(@Decimal final long value, @Decimal final long multiple) {
+        if (!isFinite(multiple) || isNonPositive(multiple))
+            throw new IllegalArgumentException("Multiple must be a positive finite number.");
+        if (isNaN(value))
+            return value;
+
+        @Decimal final long ratio = NativeImpl.roundToNearestTiesToEven(divide(value, multiple));
+        return multiply(ratio, multiple);
+    }
+
+    /// endregion
+
+    /// region Parts processing
+
+    /**
+     * Returns the unscaled value of the {@code DFP} in the same way as {@link BigDecimal#unscaledValue()} do.
+     * For abnormal values return {@code Long.MIN_VALUE}.
+     *
+     * @param value {@code DFP} argument as long
+     * @return the unscaled value of {@code DFP} value.
+     */
+    public static long getUnscaledValue(@Decimal final long value) {
+        return getUnscaledValue(value, Long.MIN_VALUE);
+    }
+
+    /**
+     * Returns the unscaled value of the {@code DFP} in the same way as {@link BigDecimal#unscaledValue()} do.
+     *
+     * @param value          {@code DFP} argument as long
+     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
+     * @return the unscaled value of {@code DFP} value.
+     */
+    public static long getUnscaledValue(@Decimal final long value, final long abnormalReturn) {
+        final boolean sign = JavaImpl.signBit(value);
+
+        if (!JavaImpl.isSpecial(value)) {
+            final long coefficient = (value & SMALL_COEFF_MASK64);
+            return sign ? -coefficient : coefficient;
+        } else {
+            // special encodings
+            if ((value & INFINITY_MASK64) == INFINITY_MASK64) {
+                return abnormalReturn;    // NaN or Infinity
+            } else {
+                long coeff = (value & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
+                if (UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L))
+                    coeff = 0;
+                return sign ? -coeff : coeff;
+            }
+        }
+    }
+
+    /**
+     * Returns the scale of the {@code DFP} in the same way as {@link BigDecimal#scale()} do.
+     * For abnormal values return {@code Integer.MIN_VALUE}.
+     *
+     * @param value {@code DFP} argument as long
+     * @return the scale of {@code DFP} value.
+     */
+    public static int getScale(@Decimal final long value) {
+        return getScale(value, Integer.MIN_VALUE);
+    }
+
+    /**
+     * Returns the scale of the {@code DFP} in the same way as {@link BigDecimal#scale()} do.
+     *
+     * @param value          {@code DFP} argument as long
+     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
+     * @return the scale of {@code DFP} value.
+     */
+    public static int getScale(@Decimal final long value, final int abnormalReturn) {
+        if (!isSpecial(value)) {
+            return -((int) ((value >>> EXPONENT_SHIFT_SMALL64) & EXPONENT_MASK64) - JavaImpl.EXPONENT_BIAS);
+        } else {
+            // special encodings
+            if ((value & INFINITY_MASK64) == INFINITY_MASK64)
+                return abnormalReturn;
+            else
+                return -((int) ((value >>> EXPONENT_SHIFT_LARGE64) & EXPONENT_MASK64) - JavaImpl.EXPONENT_BIAS);
+        }
     }
 
     /// endregion
@@ -1707,6 +1812,19 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#scaleByPowerOfTen(int)}, adds null checks; do not use directly.
+     *
+     * @param a DFP argument
+     * @param n Scale argument
+     * @return ..
+     */
+    @Decimal
+    public static long scaleByPowerOfTenChecked(@Decimal final long a, final int n) {
+        checkNull(a);
+        return scaleByPowerOfTen(a, n);
+    }
+
+    /**
      * Implements {@link Decimal64#average(Decimal64)}, adds null checks; do not use directly.
      *
      * @param a DFP argument
@@ -1881,6 +1999,18 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#roundToNearestTiesToEven()}, adds null checks; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    @Decimal
+    public static long roundToNearestTiesToEvenChecked(@Decimal final long value) {
+        checkNull(value);
+        return roundToNearestTiesToEven(value);
+    }
+
+    /**
      * Implements {@link Decimal64#roundTowardsPositiveInfinity()}, adds null checks; do not use directly.
      *
      * @param value    DFP argument
@@ -1889,7 +2019,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsPositiveInfinityChecked(@Decimal final long value, @Decimal final long multiple) {
-        checkNull(value);
+        checkNull(value, multiple);
         return roundTowardsPositiveInfinity(value, multiple);
     }
 
@@ -1902,7 +2032,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsNegativeInfinityChecked(@Decimal final long value, @Decimal final long multiple) {
-        checkNull(value);
+        checkNull(value, multiple);
         return roundTowardsNegativeInfinity(value, multiple);
     }
 
@@ -1915,8 +2045,21 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundToNearestTiesAwayFromZeroChecked(@Decimal final long value, @Decimal final long multiple) {
-        checkNull(value);
+        checkNull(value, multiple);
         return roundToNearestTiesAwayFromZero(value, multiple);
+    }
+
+    /**
+     * Implements {@link Decimal64#roundToNearestTiesToEven()}, adds null checks; do not use directly.
+     *
+     * @param value    DFP argument
+     * @param multiple DFP argument
+     * @return ..
+     */
+    @Decimal
+    public static long roundToNearestTiesToEvenChecked(@Decimal final long value, @Decimal final long multiple) {
+        checkNull(value, multiple);
+        return roundToNearestTiesToEven(value, multiple);
     }
 
     /**
@@ -1999,6 +2142,50 @@ public class Decimal64Utils {
     public static boolean equalsChecked(@Decimal final long a, final Object b) {
         checkNull(a);
         return equals(a, ((Decimal64) b).value);
+    }
+
+    /**
+     * Implements {@link Decimal64#getUnscaledValue()}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    public static long getUnscaledValueChecked(@Decimal final long value) {
+        checkNull(value);
+        return getUnscaledValue(value);
+    }
+
+    /**
+     * Implements {@link Decimal64#getUnscaledValue(long)}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    public static long getUnscaledValueChecked(@Decimal final long value, final long abnormalReturn) {
+        checkNull(value);
+        return getUnscaledValue(value, abnormalReturn);
+    }
+
+    /**
+     * Implements {@link Decimal64#getScale()}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    public static int getScaleChecked(@Decimal final long value) {
+        checkNull(value);
+        return getScale(value);
+    }
+
+    /**
+     * Implements {@link Decimal64#getScale(int)}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    public static int getScaleChecked(@Decimal final long value, final int abnormalReturn) {
+        checkNull(value);
+        return getScale(value, abnormalReturn);
     }
 
     /**

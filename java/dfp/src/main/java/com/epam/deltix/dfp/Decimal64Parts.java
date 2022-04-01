@@ -5,7 +5,7 @@ package com.epam.deltix.dfp;
  * Supposed to be used with ver performance-sensitive code and therefore does not perform range checks
  * Also, not supposed to represent non-finite DFP64 values
  */
-public class Decimal64Parts {
+class Decimal64Parts {
     long coefficient;
     long signMask;
     int exponent;

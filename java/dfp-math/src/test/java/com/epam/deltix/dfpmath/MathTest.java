@@ -10,9 +10,8 @@ import org.apache.commons.math3.special.Gamma;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import static com.epam.deltix.dfp.TestUtils.toParts;
+import static com.epam.deltix.dfp.TestUtils.*;
 import static com.epam.deltix.dfpmath.Decimal64MathUtils.*;
-import static com.epam.deltix.dfp.TestUtils.assertDecimalEqual;
 import static com.epam.deltix.dfp.Decimal64Utils.*;
 
 public class MathTest {
@@ -966,12 +965,12 @@ public class MathTest {
     public void testQuantize() {
         final long x = scalbn(fromInt32(1234), 5);
         final long y = scalbn(fromInt32(56789), -2);
-        Assert.assertEquals(5, toParts(x).getUnbiasedExponent());
-        Assert.assertEquals(-2, toParts(y).getUnbiasedExponent());
+        Assert.assertEquals(5, getUnbiasedExponent(x));
+        Assert.assertEquals(-2, getUnbiasedExponent(y));
         final long z = quantize(x, y);
         assertDecimalEqual(x, z);
-        Assert.assertEquals(toParts(y).getUnbiasedExponent(),
-            toParts(z).getUnbiasedExponent());
+        Assert.assertEquals(getUnbiasedExponent(y),
+            getUnbiasedExponent(z));
     }
 
     @Test
