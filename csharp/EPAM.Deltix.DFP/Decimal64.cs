@@ -685,6 +685,11 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.roundToNearestTiesAwayFromZero(Bits));
 		}
 
+		public Decimal64 RoundToNearestTiesToEven()
+		{
+			return new Decimal64(NativeImpl.roundToNearestTiesToEven(Bits));
+		}
+
 		public Decimal64 RoundTowardsPositiveInfinity(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
@@ -715,6 +720,17 @@ namespace EPAM.Deltix.DFP
 				return this;
 
 			UInt64 ratio = NativeImpl.roundToNearestTiesAwayFromZero(NativeImpl.divide(Bits, multiple.Bits));
+			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
+		}
+
+		public Decimal64 RoundToNearestTiesToEven(Decimal64 multiple)
+		{
+			if (!multiple.IsFinite() || multiple.IsNonPositive())
+				throw new ArgumentException("Multiple must be a positive finite number.");
+			if (IsNaN())
+				return this;
+
+			UInt64 ratio = NativeImpl.roundToNearestTiesToEven(NativeImpl.divide(Bits, multiple.Bits));
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 

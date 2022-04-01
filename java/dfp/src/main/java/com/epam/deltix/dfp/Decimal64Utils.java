@@ -838,6 +838,18 @@ public class Decimal64Utils {
     }
 
     /**
+     * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
+     * with ties rounding to even
+     *
+     * @param value {@code DFP} argument
+     * @return the value of the argument rounded to the nearest mathematical integer
+     */
+    @Decimal
+    public static long roundToNearestTiesToEven(@Decimal final long value) {
+        return NativeImpl.roundToNearestTiesToEven(value);
+    }
+
+    /**
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
      * <p>
@@ -924,6 +936,26 @@ public class Decimal64Utils {
             return value;
 
         @Decimal final long ratio = NativeImpl.roundToNearestTiesAwayFromZero(divide(value, multiple));
+        return multiply(ratio, multiple);
+    }
+
+    /**
+     * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
+     * with ties rounding to even.
+     *
+     * @param value    {@code DFP} argument
+     * @param multiple rounding precision expressed as {@code DFP} number (e.g. 0.001 will round to 3 digits after decimal point)
+     * @return If {@code DFP value} is finite, returns {@code value} rounded to a multiple of {@code multiple},
+     * otherwise {@code value} is returned unchanged.
+     */
+    @Decimal
+    public static long roundToNearestTiesToEven(@Decimal final long value, @Decimal final long multiple) {
+        if (!isFinite(multiple) || isNonPositive(multiple))
+            throw new IllegalArgumentException("Multiple must be a positive finite number.");
+        if (isNaN(value))
+            return value;
+
+        @Decimal final long ratio = NativeImpl.roundToNearestTiesToEven(divide(value, multiple));
         return multiply(ratio, multiple);
     }
 
@@ -1966,6 +1998,18 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#roundToNearestTiesToEven()}, adds null checks; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    @Decimal
+    public static long roundToNearestTiesToEvenChecked(@Decimal final long value) {
+        checkNull(value);
+        return roundToNearestTiesToEven(value);
+    }
+
+    /**
      * Implements {@link Decimal64#roundTowardsPositiveInfinity()}, adds null checks; do not use directly.
      *
      * @param value    DFP argument
@@ -1974,7 +2018,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsPositiveInfinityChecked(@Decimal final long value, @Decimal final long multiple) {
-        checkNull(value);
+        checkNull(value, multiple);
         return roundTowardsPositiveInfinity(value, multiple);
     }
 
@@ -1987,7 +2031,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsNegativeInfinityChecked(@Decimal final long value, @Decimal final long multiple) {
-        checkNull(value);
+        checkNull(value, multiple);
         return roundTowardsNegativeInfinity(value, multiple);
     }
 
@@ -2000,8 +2044,21 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundToNearestTiesAwayFromZeroChecked(@Decimal final long value, @Decimal final long multiple) {
-        checkNull(value);
+        checkNull(value, multiple);
         return roundToNearestTiesAwayFromZero(value, multiple);
+    }
+
+    /**
+     * Implements {@link Decimal64#roundToNearestTiesToEven()}, adds null checks; do not use directly.
+     *
+     * @param value    DFP argument
+     * @param multiple DFP argument
+     * @return ..
+     */
+    @Decimal
+    public static long roundToNearestTiesToEvenChecked(@Decimal final long value, @Decimal final long multiple) {
+        checkNull(value, multiple);
+        return roundToNearestTiesToEven(value, multiple);
     }
 
     /**
