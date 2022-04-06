@@ -1,6 +1,6 @@
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
-apply plugin: 'java-library'
+apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 if (isReleaseVersion) {
@@ -120,7 +120,8 @@ if (isReleaseVersion) {
 jar {
     manifest {
         attributes 'Implementation-Title': 'Deltix Decimal Floating-Point Math Arithmetic Library',
-            'Implementation-Version': archiveVersion
+            'Implementation-Version': archiveVersion,
+            'Main-Class': 'com.epam.deltix.dfpmath.Demo'
     }
     from("$rootDir") {
         include 'LICENSE'
