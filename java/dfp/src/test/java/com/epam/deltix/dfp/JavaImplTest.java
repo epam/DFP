@@ -4,6 +4,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.junit.Test;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -454,42 +455,38 @@ public class JavaImplTest {
     public void TestRoundRandomly() throws Exception {
         final int randomPointMaxOffset = Decimal64Utils.MAX_SIGNIFICAND_DIGITS + Decimal64Utils.MAX_SIGNIFICAND_DIGITS / 4;
 
-        checkInMultipleThreads(
-            new Runnable() {
-                @Override
-                public void run() {
-                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator(
-                        new MersenneTwister(), 1,
-                        Decimal64Utils.MIN_EXPONENT + randomPointMaxOffset,
-                        Decimal64Utils.MAX_EXPONENT - randomPointMaxOffset);
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator(
+                new MersenneTwister(), 1,
+                Decimal64Utils.MIN_EXPONENT + randomPointMaxOffset,
+                Decimal64Utils.MAX_EXPONENT - randomPointMaxOffset);
 
-                    for (int ri = 0; ri < NTests / 10 /* Test will be very slow without this division */ ; ++ri) {
-                        final int randomOffset = random.generator.nextInt(randomPointMaxOffset * 2 + 1) - randomPointMaxOffset;
+            for (int ri = 0; ri < NTests / 10 /* Test will be very slow without this division */ ; ++ri) {
+                final int randomOffset = random.generator.nextInt(randomPointMaxOffset * 2 + 1) - randomPointMaxOffset;
 
-                        final long inValue = random.nextX();
-                        final int roundPoint = random.getXExp() + randomOffset;
-                        final RoundType roundType;
-                        switch (random.generator.nextInt(4)) {
-                            case 0:
-                                roundType = RoundType.ROUND;
-                                break;
-                            case 1:
-                                roundType = RoundType.TRUNC;
-                                break;
-                            case 2:
-                                roundType = RoundType.FLOOR;
-                                break;
-                            case 3:
-                                roundType = RoundType.CEIL;
-                                break;
-                            default:
-                                throw new RuntimeException("Unsupported case for round type generation.");
-                        }
-
-                        checkRound(inValue, -roundPoint, roundType);
-                    }
+                final long inValue = random.nextX();
+                final int roundPoint = random.getXExp() + randomOffset;
+                final RoundType roundType;
+                switch (random.generator.nextInt(4)) {
+                    case 0:
+                        roundType = RoundType.ROUND;
+                        break;
+                    case 1:
+                        roundType = RoundType.TRUNC;
+                        break;
+                    case 2:
+                        roundType = RoundType.FLOOR;
+                        break;
+                    case 3:
+                        roundType = RoundType.CEIL;
+                        break;
+                    default:
+                        throw new RuntimeException("Unsupported case for round type generation.");
                 }
-            });
+
+                checkRound(inValue, -roundPoint, roundType);
+            }
+        });
     }
 
     @Test
@@ -531,15 +528,11 @@ public class JavaImplTest {
 
     @Test
     public void testToStringRandomly() throws Exception {
-        checkInMultipleThreads(
-            new Runnable() {
-                @Override
-                public void run() {
-                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-                    for (int ri = 0; ri < NTests; ++ri)
-                        checkStrEq(random.nextX());
-                }
-            });
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int ri = 0; ri < NTests; ++ri)
+                checkStrEq(random.nextX());
+        });
     }
 
     private static void checkStrEq(final long value) {
@@ -566,6 +559,8 @@ public class JavaImplTest {
         Decimal64Utils.fromDouble(-Math.E),
         Decimal64Utils.NaN,
         Decimal64Utils.NaN | 1000000000000000L,
+        Decimal64Utils.negate(Decimal64Utils.NaN),
+        Decimal64Utils.negate(Decimal64Utils.NaN | 1000000000000000L),
         Decimal64Utils.POSITIVE_INFINITY,
         Decimal64Utils.POSITIVE_INFINITY | 1000000000000000L,
         Decimal64Utils.NEGATIVE_INFINITY,
@@ -574,9 +569,18 @@ public class JavaImplTest {
         JavaImplAdd.SPECIAL_ENCODING_MASK64 | 1000000000000000L,
         Decimal64Utils.fromFixedPoint(0L, -300),
         Decimal64Utils.fromFixedPoint(0L, 300),
+        Decimal64Utils.fromFixedPoint(1L, Decimal64Utils.MIN_EXPONENT),
+        Decimal64Utils.fromFixedPoint(1L, Decimal64Utils.MAX_EXPONENT),
+        Decimal64Utils.MIN_VALUE,
+        Decimal64Utils.MAX_VALUE,
+        Decimal64Utils.MIN_POSITIVE_VALUE,
+        Decimal64Utils.MAX_NEGATIVE_VALUE,
+        Decimal64Utils.fromFixedPoint(1L, 398),
         Decimal64Utils.ONE,
         Decimal64Utils.fromFixedPoint(10000000000000000L, 16),
         Decimal64Utils.fromLong(10000000000000000L),
+        Decimal64Utils.ONE | 0x7000000000000000L,
+        Decimal64Utils.negate(Decimal64Utils.ONE | 0x7000000000000000L),
     };
 
     @Test
@@ -588,17 +592,13 @@ public class JavaImplTest {
             for (final long y : specialValues)
                 testAddCase(x, y);
 
-        checkInMultipleThreads(
-            new Runnable() {
-                @Override
-                public void run() {
-                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-                    for (int i = 0; i < NTests; ++i) {
-                        random.makeNextPair();
-                        testAddCase(random.getX(), random.getY());
-                    }
-                }
-            });
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i) {
+                random.makeNextPair();
+                testAddCase(random.getX(), random.getY());
+            }
+        });
     }
 
     @Test
@@ -625,17 +625,13 @@ public class JavaImplTest {
             for (final long y : specialValues)
                 testMulCase(x, y);
 
-        checkInMultipleThreads(
-            new Runnable() {
-                @Override
-                public void run() {
-                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-                    for (int i = 0; i < NTests; ++i) {
-                        random.makeNextPair();
-                        testMulCase(random.getX(), random.getY());
-                    }
-                }
-            });
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i) {
+                random.makeNextPair();
+                testMulCase(random.getX(), random.getY());
+            }
+        });
     }
 
     private void testMulCase(final long x, final long y) {
@@ -656,17 +652,13 @@ public class JavaImplTest {
             for (final long y : specialValues)
                 testDivCase(x, y);
 
-        checkInMultipleThreads(
-            new Runnable() {
-                @Override
-                public void run() {
-                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-                    for (int i = 0; i < NTests; ++i) {
-                        random.makeNextPair();
-                        testDivCase(random.getX(), random.getY());
-                    }
-                }
-            });
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i) {
+                random.makeNextPair();
+                testDivCase(random.getX(), random.getY());
+            }
+        });
     }
 
     @Test
@@ -686,35 +678,125 @@ public class JavaImplTest {
     }
 
     @Test
-    public void testToStringScientific() throws Exception {
-        checkInMultipleThreads(
-            new Runnable() {
-                @Override
-                public void run() {
-                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-                    for (int i = 0; i < NTests; ++i) {
-                        final long x = random.nextX();
-                        final String xs = Decimal64Utils.toScientificString(x);
-                        final long y = Decimal64Utils.parse(xs);
+    public void testDiv2WithCoverage() throws Exception {
+        for (final long x : specialValues)
+            testDiv2Case(x);
 
-                        if (!Decimal64Utils.equals(x, y))
-                            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L = " + Decimal64Utils.toString(x) + " != " + xs + "(" + Decimal64Utils.toString(y) + ")");
-                    }
-                }
-            });
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i)
+                testDiv2Case(random.nextX());
+        });
+    }
+
+    @Test
+    public void testDiv2Cases() {
+        testDiv2Case(0x2feb29430a256d21L);
+        testDiv2Case(0x5fe05af3107a4000L);
+        testDiv2Case(0xf7fb86f26fc0ffffL);
+        testDiv2Case(0xafe9a8434ec8e225L);
+    }
+
+    private void testDiv2Case(final long x) {
+        final long javaRet = JavaImplDiv.div2(x);
+        final long nativeRet = NativeImpl.divide(x, Decimal64Utils.TWO);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L(" + Decimal64Utils.toScientificString(x) +
+                ") / 2 = 0x" + Long.toHexString(nativeRet) + "L(" + Decimal64Utils.toScientificString(nativeRet) +
+                "), but java return 0x" + Long.toHexString(javaRet) + "L(" + Decimal64Utils.toScientificString(javaRet) + ")");
+    }
+
+    @Test
+    public void testMinWithCoverage() throws Exception {
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                testMinCase(x, y);
+
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i)
+                testMinCase(random.nextX(), random.generator.nextDouble() < 0.1 ? random.getX() : random.nextY());
+        });
+    }
+
+    private void testMinCase(final long x, final long y) {
+        final long javaRet = JavaImplMinMax.bid64_min_fix_nan(x, y);
+        final long nativeRet = NativeImpl.min2(x, y);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The minimal of decimal 0x" + Long.toHexString(x) + "L vs 0x" + Long.toHexString(y) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
+    public void testMaxWithCoverage() throws Exception {
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                testMaxCase(x, y);
+
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i)
+                testMaxCase(random.nextX(), random.generator.nextDouble() < 0.1 ? random.getX() : random.nextY());
+        });
+    }
+
+    private void testMaxCase(final long x, final long y) {
+        final long javaRet = JavaImplMinMax.bid64_max_fix_nan(x, y);
+        final long nativeRet = NativeImpl.max2(x, y);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The maximal of decimal 0x" + Long.toHexString(x) + "L vs 0x" + Long.toHexString(y) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
+    public void testMean2Coverage() throws Exception {
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                testMean2Case(x, y);
+
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i) {
+                random.makeNextPair();
+                testMean2Case(random.getX(), random.getY());
+            }
+        });
+    }
+
+    private void testMean2Case(final long x, final long y) {
+        final long javaRet = JavaImplDiv.mean2(x, y);
+        final long nativeRet = NativeImpl.mean2(x, y);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The mean of decimal 0x" + Long.toHexString(x) + "L and 0x" + Long.toHexString(y) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
+    public void testToStringScientific() throws Exception {
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i) {
+                final long x = random.nextX();
+                final String xs = Decimal64Utils.toScientificString(x);
+                final long y = Decimal64Utils.parse(xs);
+
+                if (!Decimal64Utils.equals(x, y))
+                    throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L = " + Decimal64Utils.toString(x) + " != " + xs + "(" + Decimal64Utils.toString(y) + ")");
+            }
+        });
     }
 
     @Test
     public void testFormatting() throws Exception {
-        checkInMultipleThreads(
-            new Runnable() {
-                @Override
-                public void run() {
-                    final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-                    for (int i = 0; i < NTests; ++i)
-                        checkFormattingValue(random.nextX());
-                }
-            });
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests / 10; ++i)
+                checkFormattingValue(random.nextX());
+        });
     }
 
     @Test
@@ -887,5 +969,38 @@ public class JavaImplTest {
     public void tryParseInvalidString() {
         final @Decimal long value = Decimal64Utils.tryParse("INVALID", Decimal64Utils.NaN);
         assertTrue(Decimal64Utils.isNaN(value));
+    }
+
+    @Test
+    public void testPartsSplitWithCoverage() throws Exception {
+        for (final long x : specialValues) {
+            if (!Decimal64Utils.isFinite(x))
+                continue;
+            testPartsSplitCase(x);
+        }
+
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests / 10; ++i)
+                testPartsSplitCase(random.nextX());
+        });
+    }
+
+    private void testPartsSplitCase(final long testValue) {
+        final BigDecimal bd = Decimal64Utils.toBigDecimal(testValue);
+
+        final long mantissa = Decimal64Utils.getUnscaledValue(testValue);
+        final int exp = Decimal64Utils.getScale(testValue);
+
+        assertEquals("The decimal 0x" + Long.toHexString(testValue) + "L(=" +
+                Decimal64Utils.toScientificString(testValue) + ") unscaled value error.",
+            bd.unscaledValue().longValueExact(), mantissa);
+
+        assertEquals("The decimal 0x" + Long.toHexString(testValue) + "L(=" +
+            Decimal64Utils.toScientificString(testValue) + ") exponent error.", bd.scale(), exp);
+
+        assertTrue("The decimal 0x" + Long.toHexString(testValue) + "L(=" +
+                Decimal64Utils.toScientificString(testValue) + ") reconstruction error.",
+            Decimal64Utils.equals(testValue, Decimal64Utils.fromFixedPoint(mantissa, exp)));
     }
 }

@@ -1,11 +1,13 @@
 package com.epam.deltix.dfp;
 
+import static com.epam.deltix.dfp.JavaImpl.MASK_SIGN;
+import static com.epam.deltix.dfp.JavaImpl.MASK_SIGN_INFINITY_NAN;
 import static com.epam.deltix.dfp.JavaImplAdd.*;
 import static com.epam.deltix.dfp.JavaImplMul.get_BID64;
 import static com.epam.deltix.dfp.JavaImplParse.bid_recip_scale;
 import static com.epam.deltix.dfp.JavaImplParse.bid_reciprocals10_128_flat;
 
-public class JavaImplDiv {
+class JavaImplDiv {
     private JavaImplDiv() {
     }
 
@@ -636,6 +638,86 @@ public class JavaImplDiv {
         }
 
         return sgn | _C64;
+    }
+
+    public static long div2(final long x) {
+        //valid_x = unpack_BID64 (&sign_x, &exponent_x, &coefficient_x, x);
+        final long sign_x;
+        int exponent_x;
+        long coefficient_x;
+        final long valid_x;
+        {
+            sign_x = x & 0x8000000000000000L;
+
+            if ((x & SPECIAL_ENCODING_MASK64) != SPECIAL_ENCODING_MASK64) {
+                // exponent
+                long tmp = x >>> EXPONENT_SHIFT_SMALL64;
+                exponent_x = (int) (tmp & EXPONENT_MASK64);
+                // coefficient
+                coefficient_x = (x & SMALL_COEFF_MASK64);
+
+                valid_x = coefficient_x;
+            } else {
+                // special encodings
+                if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
+                    exponent_x = 0;
+                    coefficient_x = x & 0xfe03ffffffffffffL;
+                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                        coefficient_x = x & 0xfe00000000000000L;
+                    if ((x & NAN_MASK64) == INFINITY_MASK64)
+                        coefficient_x = x & SINFINITY_MASK64;
+                    valid_x = 0;    // NaN or Infinity
+                } else {
+                    // coefficient
+                    long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
+                    // check for non-canonical values
+                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                        coeff = 0;
+                    coefficient_x = coeff;
+                    // get exponent
+                    long tmp = x >>> EXPONENT_SHIFT_LARGE64;
+                    exponent_x = (int) (tmp & EXPONENT_MASK64);
+                    valid_x = coeff;
+                }
+            }
+        }
+
+        if (valid_x == 0) {
+            // x is Inf. or NaN
+
+            // test if x is NaN
+            if ((x & NAN_MASK64) == NAN_MASK64) {
+                return coefficient_x & QUIET_MASK64;
+            }
+            // x is Infinity?
+            if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
+                // return +/-Inf
+                return (x & 0x8000000000000000L) | INFINITY_MASK64;
+            }
+            // x==0
+            {
+                if (exponent_x > DECIMAL_MAX_EXPON_64)
+                    exponent_x = DECIMAL_MAX_EXPON_64;
+                return (sign_x) | (((long) exponent_x) << 53);
+            }
+        }
+
+        if ((coefficient_x & 1) == 0) {
+            coefficient_x >>>= 1;
+        } else {
+            if (UnsignedLong.isLess(coefficient_x, 2000000000000000L)) {
+                coefficient_x *= 5;
+                exponent_x--;
+            } else {
+                coefficient_x = ((coefficient_x + 1) / 2) & (~1);
+            }
+        }
+
+        return get_BID64(sign_x, exponent_x, coefficient_x);
+    }
+
+    public static long mean2(final long x, final long y) {
+        return div2(JavaImplAdd.bid64_add(x, y));
     }
 
     static final long[] bid_power10_index_binexp = {

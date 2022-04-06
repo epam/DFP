@@ -7,7 +7,7 @@ class JavaImplAdd {
     static final long SPECIAL_ENCODING_MASK64 = 0x6000000000000000L;
     static final long INFINITY_MASK64 = 0x7800000000000000L;
     static final long SINFINITY_MASK64 = 0xf800000000000000L;
-    //static final long SSNAN_MASK64 =            0xfc00000000000000L;
+    static final long SSNAN_MASK64 =            0xfc00000000000000L;
     static final long NAN_MASK64 = 0x7c00000000000000L;
     //static final long SNAN_MASK64 =             0x7e00000000000000L;
     static final long QUIET_MASK64 = 0xfdffffffffffffffL;

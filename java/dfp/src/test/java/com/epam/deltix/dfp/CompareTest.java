@@ -139,4 +139,9 @@ public class CompareTest {
     public void isNonNegativeMtTest() throws Exception {
         checkMtTest(NativeImpl::isNonNegative, JavaImplCmp::isNonNegative);
     }
+
+    @Test
+    public void isNormalMtTest() throws Exception {
+        checkMtTest(NativeImpl::isNormal, JavaImplCmp::bid64_isNormal);
+    }
 }

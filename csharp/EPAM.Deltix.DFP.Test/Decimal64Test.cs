@@ -632,7 +632,7 @@ namespace EPAM.Deltix.DFP.Test
 			CheckInMultipleThreads(() =>
 			{
 				Random random = new Random();
-				for (int i = 0; i < 10000000; ++i)
+				for (int i = 0; i < 1000000; ++i)
 				{
 					var x = Decimal64.FromFixedPoint(random.Next() << 32 | random.Next(), -(random.Next(80) - 40 - 15));
 
@@ -796,7 +796,7 @@ namespace EPAM.Deltix.DFP.Test
 				value = value.Substring(1);
 			}
 
-			if (value.Equals("NaN") || value.Equals("Infinity"))
+			if (value.Contains("NaN") || value.Contains("Infinity"))
 				return valueIn;
 
 			int latestPoint;
@@ -983,19 +983,31 @@ namespace EPAM.Deltix.DFP.Test
 
 		static Decimal64[] specialValues = {
 			Decimal64.FromDouble(Math.PI),
+			Decimal64.FromDouble(-Math.E),
 			Decimal64.NaN,
-			Decimal64.FromUnderlying( Decimal64.NaN.Bits | 1000000000000000L),
+			Decimal64.FromUnderlying(Decimal64.NaN.Bits | 1000000000000000UL),
+			Decimal64.NaN.Negate(),
+			Decimal64.FromUnderlying(Decimal64.NaN.Bits | 1000000000000000UL).Negate(),
 			Decimal64.PositiveInfinity,
-			Decimal64.FromUnderlying(Decimal64.PositiveInfinity.Bits | 1000000000000000L),
+			Decimal64.FromUnderlying(Decimal64.PositiveInfinity.Bits | 1000000000000000UL),
 			Decimal64.NegativeInfinity,
-			Decimal64.FromUnderlying(Decimal64.NegativeInfinity.Bits | 1000000000000000L),
+			Decimal64.FromUnderlying(Decimal64.NegativeInfinity.Bits | 1000000000000000UL),
 			Decimal64.Zero,
-			Decimal64.FromUnderlying(DotNetReImpl.SPECIAL_ENCODING_MASK64 | 1000000000000000L),
+			Decimal64.FromUnderlying(DotNetReImpl.SPECIAL_ENCODING_MASK64 | 1000000000000000UL),
 			Decimal64.FromFixedPoint(0L, -300),
 			Decimal64.FromFixedPoint(0L, 300),
+			Decimal64.FromFixedPoint(1L, DotNetImpl.MinExponent),
+			Decimal64.FromFixedPoint(1L, DotNetImpl.MaxExponent),
+			Decimal64.MinValue,
+			Decimal64.MaxValue,
+			Decimal64.MinPositiveValue,
+			Decimal64.MaxNegativeValue,
+			Decimal64.FromFixedPoint(1L, 398),
 			Decimal64.One,
 			Decimal64.FromFixedPoint(10000000000000000L, 16),
 			Decimal64.FromLong(10000000000000000L),
+			Decimal64.FromUnderlying(Decimal64.One.Bits | 0x7000000000000000UL),
+			Decimal64.FromUnderlying(Decimal64.One.Bits | 0x7000000000000000UL).Negate(),
 		};
 
 		[Test]
@@ -1041,6 +1053,21 @@ namespace EPAM.Deltix.DFP.Test
 			Assert.AreEqual(Decimal64.Zero, zeroP.Round(0, RoundType.Ceil));
 		}
 
+		[Test]
+		public void TestPartsSplit()
+		{
+			foreach (var testValue in specialValues)
+			{
+				if (!testValue.IsFinite())
+					continue;
+
+				var mantissa = testValue.GetUnscaledValue();
+				var exp = testValue.GetScale();
+
+				Assert.AreEqual(testValue, Decimal64.FromFixedPoint(mantissa, exp),
+					$"The decimal 0x{testValue.Bits:X}UL(={testValue.ToScientificString()}) reconstruction error.");
+			}
+		}
 
 		readonly int N = 5000000;
 

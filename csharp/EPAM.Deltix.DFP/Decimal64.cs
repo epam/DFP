@@ -685,6 +685,11 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.roundToNearestTiesAwayFromZero(Bits));
 		}
 
+		public Decimal64 RoundToNearestTiesToEven()
+		{
+			return new Decimal64(NativeImpl.roundToNearestTiesToEven(Bits));
+		}
+
 		public Decimal64 RoundTowardsPositiveInfinity(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
@@ -718,10 +723,97 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
+		public Decimal64 RoundToNearestTiesToEven(Decimal64 multiple)
+		{
+			if (!multiple.IsFinite() || multiple.IsNonPositive())
+				throw new ArgumentException("Multiple must be a positive finite number.");
+			if (IsNaN())
+				return this;
+
+			UInt64 ratio = NativeImpl.roundToNearestTiesToEven(NativeImpl.divide(Bits, multiple.Bits));
+			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
+		}
+
 		public Decimal64 Round(int n, RoundType roundType)
 		{
 			return new Decimal64(DotNetImpl.Round(Bits, n, roundType));
 		}
+
+		#endregion
+
+		#region Parts processing
+
+		/// <summary>
+		/// Returns the unscaled value of the <see cref="Decimal64"/> in the same way as Java's BigDecimal#unscaledValue() do.
+		/// For abnormal values return <see cref="long.MinValue"/>.
+		/// </summary>
+		/// <returns>The unscaled value of the <see cref="Decimal64"/>.</returns>
+		public long GetUnscaledValue() => GetUnscaledValue(long.MinValue);
+
+		/// <summary>
+		/// Returns the unscaled value of the <see cref="Decimal64"/> in the same way as Java's BigDecimal#unscaledValue() do.
+		/// </summary>
+		/// <param name="abnormalReturn">The value returned for abnormal values (NaN, +Inf, -Inf).</param>
+		/// <returns>The unscaled value of the <see cref="Decimal64"/>.</returns>
+		public long GetUnscaledValue(long abnormalReturn)
+		{
+			var value = Bits;
+			bool sign = DotNetImpl.SignBit(value);
+
+			if ((value & DotNetImpl.SpecialEncodingMask) != DotNetImpl.SpecialEncodingMask)
+			{
+				long coefficient = (long)(value & DotNetReImpl.SMALL_COEFF_MASK64);
+				return sign ? -coefficient : coefficient;
+			}
+			else
+			{
+				// special encodings
+				if ((value & DotNetReImpl.INFINITY_MASK64) == DotNetReImpl.INFINITY_MASK64)
+				{
+					return abnormalReturn;    // NaN or Infinity
+				}
+				else
+				{
+					ulong coeff = (value & DotNetReImpl.LARGE_COEFF_MASK64) | DotNetReImpl.LARGE_COEFF_HIGH_BIT64;
+					if (coeff >= 10000000000000000UL)
+						coeff = 0;
+					return sign ? -(long)coeff : (long)coeff;
+				}
+			}
+
+		}
+
+		/// <summary>
+		/// Returns the scale of the <see cref="Decimal64"/> value in the same way as Java's BigDecimal#scale() do.
+		/// For abnormal values return <see cref="int.MinValue"/>.
+		/// </summary>
+		/// <returns>The scale of the <see cref="Decimal64"/>.</returns>
+		public int GetScale() => GetScale(int.MinValue);
+
+		/// <summary>
+		/// Returns the scale of the <see cref="Decimal64"/> value in the same way as Java's BigDecimal#scale() do.
+		/// </summary>
+		/// <param name="abnormalReturn">The value returned for abnormal values (NaN, +Inf, -Inf).</param>
+		/// <returns>The scale of the <see cref="Decimal64"/>.</returns>
+		public int GetScale(int abnormalReturn)
+		{
+			var value = Bits;
+
+			if ((value & DotNetImpl.SpecialEncodingMask) != DotNetImpl.SpecialEncodingMask)
+			{
+				return -((int)((value >> DotNetReImpl.EXPONENT_SHIFT_SMALL64) & DotNetReImpl.EXPONENT_MASK64) - DotNetReImpl.DECIMAL_EXPONENT_BIAS);
+			}
+			else
+			{
+				// special encodings
+				if ((value & DotNetReImpl.INFINITY_MASK64) == DotNetReImpl.INFINITY_MASK64)
+					return abnormalReturn;
+				else
+					return -((int)((value >> DotNetReImpl.EXPONENT_SHIFT_LARGE64) & DotNetReImpl.EXPONENT_MASK64) - DotNetReImpl.DECIMAL_EXPONENT_BIAS);
+			}
+		}
+
+		/// endregion
 
 		#endregion
 
