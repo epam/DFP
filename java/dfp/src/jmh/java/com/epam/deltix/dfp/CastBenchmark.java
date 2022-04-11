@@ -15,14 +15,18 @@ import static com.epam.deltix.dfp.JavaImpl.BID_ROUNDING_TO_NEAREST;
 @State(Scope.Thread)
 public class CastBenchmark {
     private double[] doubleValues;
+    private long[] decimalValues;
     public static int fixedSeed = 42 * 42 * 42 * 42 * 42;
 
     @Setup
     public void setUp() {
-        final MersenneTwister random = new MersenneTwister(fixedSeed);
-        doubleValues = new double[1004];
-        for (int i = 0; i < doubleValues.length; ++i)
-            doubleValues[i] = Double.longBitsToDouble(random.nextLong());
+        TestUtils.RandomDecimalsGenerator random = new TestUtils.RandomDecimalsGenerator(fixedSeed);
+        doubleValues = new double[1000];
+        decimalValues = new long[1000];
+        for (int i = 0; i < doubleValues.length; ++i) {
+            doubleValues[i] = Double.longBitsToDouble(random.generator.nextLong());
+            decimalValues[i] = random.nextX();
+        }
     }
 
     @Benchmark
@@ -35,5 +39,17 @@ public class CastBenchmark {
     public void doubleToDecimalJava(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
             bh.consume(JavaImplCastBinary64.binary64_to_bid64(doubleValues[i], BID_ROUNDING_TO_NEAREST));
+    }
+
+    @Benchmark
+    public void decimalToDoubleNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.toFloat64(decimalValues[i]));
+    }
+
+    @Benchmark
+    public void decimalToDoubleJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplCastBinary64.bid64_to_binary64(decimalValues[i], BID_ROUNDING_TO_NEAREST));
     }
 }

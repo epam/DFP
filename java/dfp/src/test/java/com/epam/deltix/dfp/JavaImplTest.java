@@ -555,8 +555,8 @@ public class JavaImplTest {
 
     @Decimal
     static final long[] specialValues = {
-        Decimal64Utils.fromDouble(Math.PI),
-        Decimal64Utils.fromDouble(-Math.E),
+        NativeImpl.fromFloat64(Math.PI),
+        NativeImpl.fromFloat64(-Math.E),
         Decimal64Utils.NaN,
         Decimal64Utils.NaN | 1000000000000000L,
         Decimal64Utils.negate(Decimal64Utils.NaN),
@@ -567,18 +567,18 @@ public class JavaImplTest {
         Decimal64Utils.NEGATIVE_INFINITY | 1000000000000000L,
         Decimal64Utils.ZERO,
         JavaImplAdd.SPECIAL_ENCODING_MASK64 | 1000000000000000L,
-        Decimal64Utils.fromFixedPoint(0L, -300),
-        Decimal64Utils.fromFixedPoint(0L, 300),
-        Decimal64Utils.fromFixedPoint(1L, Decimal64Utils.MIN_EXPONENT),
-        Decimal64Utils.fromFixedPoint(1L, Decimal64Utils.MAX_EXPONENT),
+        NativeImpl.fromFixedPoint64(0L, -300),
+        NativeImpl.fromFixedPoint64(0L, 300),
+        NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MIN_EXPONENT),
+        NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MAX_EXPONENT),
         Decimal64Utils.MIN_VALUE,
         Decimal64Utils.MAX_VALUE,
         Decimal64Utils.MIN_POSITIVE_VALUE,
         Decimal64Utils.MAX_NEGATIVE_VALUE,
-        Decimal64Utils.fromFixedPoint(1L, 398),
+        NativeImpl.fromFixedPoint64(1L, 398),
         Decimal64Utils.ONE,
-        Decimal64Utils.fromFixedPoint(10000000000000000L, 16),
-        Decimal64Utils.fromLong(10000000000000000L),
+        NativeImpl.fromFixedPoint64(10000000000000000L, 16),
+        NativeImpl.fromInt64(10000000000000000L),
         Decimal64Utils.ONE | 0x7000000000000000L,
         Decimal64Utils.negate(Decimal64Utils.ONE | 0x7000000000000000L),
     };
@@ -793,6 +793,27 @@ public class JavaImplTest {
 
         if (javaRet != nativeRet)
             throw new RuntimeException("The conversion of double " + x + "(0x" + Long.toHexString(Double.doubleToRawLongBits(x)) +
+                "L) = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
+    public void testDecimalToDoubleCoverage() throws Exception {
+        for (final long x : specialValues)
+            testDecimalToDoubleCase(x);
+
+        checkInMultipleThreads(() -> {
+            final MersenneTwister random = new MersenneTwister();
+            for (int i = 0; i < NTests; ++i)
+                testDecimalToDoubleCase(random.nextLong());
+        });
+    }
+
+    private void testDecimalToDoubleCase(final long x) {
+        final long javaRet = Double.doubleToRawLongBits(JavaImplCastBinary64.bid64_to_binary64(x, BID_ROUNDING_TO_NEAREST));
+        final long nativeRet = Double.doubleToRawLongBits(NativeImpl.toFloat64(x));
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The conversion of decimal 0x" + Long.toHexString(x) +
                 "L) = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
     }
 

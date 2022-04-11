@@ -10,6 +10,9 @@ public class JavaImplCastBinary64 {
     private JavaImplCastBinary64() {
     }
 
+    // BINARY_TINY_DETECTION_AFTER_ROUNDING defined to: 1
+
+
     public static long binary64_to_bid64(double x, final int rnd_mode/*, final JavaImplParse.FloatingPointStatusFlag pfpsf*/) {
         long /*BID_UINT128*/ c_w0, c_w1;
         long /*BID_UINT64*/ c_prov;
@@ -427,146 +430,256 @@ public class JavaImplCastBinary64 {
     }
 
 
-//	return NativeImpl.toFloat64(value);     //OPNR(toFloat64, double, bid64_to_binary64(x), BID_UINT64 x)
-//
-//// **********************************************************************
-//
-//#if DECIMAL_CALL_BY_REFERENCE
-//void
-//bid64_to_binary64 (double *pres, BID_UINT64 * px
-//                   _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
-//                   _EXC_INFO_PARAM) {
-//  BID_UINT64 x = *px;
-//#if !DECIMAL_GLOBAL_ROUNDING
-//  _IDEC_round rnd_mode = *prnd_mode;
-//#endif
-//#else
-//RES_WRAPFN_DFP(double, bid64_to_binary64, 64)
-//double
-//bid64_to_binary64 (BID_UINT64 x
-//                   _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
-//                   _EXC_INFO_PARAM) {
-//#endif
-//
-//  BID_UINT64 c_prov;
-//  BID_UINT128 c;
-//  BID_UINT128 m_min;
-//  int s, e, k, e_out;
-//  BID_UINT256 r;
-//  BID_UINT384 z;
-//
-//  unpack_bid64 (x, s, e, k, (c_w1), return_binary64_zero (s),
-//                return_binary64_inf (s), return_binary64_nan);
-//
-//// Correct to 2^112 <= c < 2^113 with corresponding exponent adding 113-54=59
-//// In fact shift a further 6 places ready for reciprocal multiplication
-//// Thus (113-54)+6=65, a shift of 1 given that we've already upacked in c.w[1]
-//
-//  c_w1 = c_w1 << 1;
-//  c_w0 = 0;
-//  k = k + 59;
-//
-//// Check for "trivial" overflow, when 10^e * 1 > 2^{sci_emax+1}, just to
-//// keep tables smaller (it would be intercepted later otherwise).
-////
-//// (Note that we may have normalized the coefficient, but we have a
-////  corresponding exponent postcorrection to account for; this can
-////  afford to be conservative anyway.)
-////
-//// We actually check if e >= ceil((sci_emax + 1) * log_10(2))
-//// which in this case is 2 >= ceil(1024 * log_10(2)) = ceil(308.25) = 309
-//
-//  if (e >= 309) {
-//    __set_status_flags(pfpsf, BID_OVERFLOW_INEXACT_EXCEPTION);
-//    return_binary64_ovf (s);
-//  }
-//// Also check for "trivial" underflow, when 10^e * 2^113 <= 2^emin * 1/4,
-//// so test e <= floor((emin - 115) * log_10(2))
-//// In this case just fix ourselves at that value for uniformity.
-////
-//// This is important not only to keep the tables small but to maintain the
-//// testing of the round/sticky words as a correct rounding method
-//
-//  if (e <= -358)
-//    e = -358;
-//
-//// Look up the breakpoint and approximate exponent
-//
-//  m_min = (bid_breakpoints_binary64 + 358)[e];
-//  e_out = (bid_exponents_binary64 + 358)[e] - k;
-//
-//// Choose provisional exponent and reciprocal multiplier based on breakpoint
-//
-//  if (le128 (c_w1, c_w0, m_min_w1, m_min_w0)) {
-//    r = (bid_multipliers1_binary64 + 358)[e];
-//  } else {
-//    r = (bid_multipliers2_binary64 + 358)[e];
-//    e_out = e_out + 1;
-//  }
-//
-//// Do the reciprocal multiplication
-//
-//    __mul_64x256_to_320(z, c_w1, r);
-//    z_w5=z_w4; z_w4=z_w3; z_w3=z_w2; z_w2=z_w1; z_w1=z_w0; z_w0=0;
-//
-//// Check for exponent underflow and compensate by shifting the product
-//// Cut off the process at precision+2, since we can't really shift further
-//    if (e_out < 1) {
-//    int d;
-//    d = 1 - e_out;
-//    if (d > 55)
-//      d = 55;
-//    e_out = 1;
-//    srl256_short (z_w5, z_w4, z_w3, z_w2, d);
-//  }
-//  c_prov = z_w5;
-//
-//// Round using round-sticky words
-//// If we spill into the next binade, correct
-//// Flag underflow where it may be needed even for |result| = SNN
-//
-//  if (lt128
-//      (bid_roundbound_128[(rnd_mode << 2) + ((s & 1) << 1) + (c_prov & 1)].
-//       w[1],
-//       bid_roundbound_128[(rnd_mode << 2) + ((s & 1) << 1) +
-//                      (c_prov & 1)].w[0], z_w4, z_w3)) {
-//    c_prov = c_prov + 1;
-//    if (c_prov == (1ull << 53)) {
-//      c_prov = 1ull << 52;
-//      e_out = e_out + 1;
-//    }
-//#if BINARY_TINY_DETECTION_AFTER_ROUNDING
-//    else if ((c_prov == (1ull << 52)) && (e_out == 1))
-//    {
-//      if (rnd_mode + (s & 1) == 2)
-//        __set_status_flags(pfpsf,BID_UNDERFLOW_EXCEPTION);
-//    }
-//#endif
-//  }
-//// Check for overflow
-//
-//  if (e_out >= 2047) {
-//    __set_status_flags(pfpsf, BID_OVERFLOW_INEXACT_EXCEPTION);
-//    return_binary64_ovf (s);
-//  }
-//// Modify exponent for a tiny result, otherwise lop the implicit bit
-//
-//  if (UnsignedLong.isLess(c_prov , (1ull << 52)))
-//    e_out = 0;
-//  else
-//    c_prov = c_prov & ((1ull << 52) - 1);
-//
-//// Set the inexact and underflow flag as appropriate
-//
-//  if ((z_w4 != 0) || (z_w3 != 0)) {
-//    __set_status_flags(pfpsf,BID_INEXACT_EXCEPTION);
-//    if (e_out == 0)
-//      __set_status_flags(pfpsf,BID_UNDERFLOW_EXCEPTION);
-//  }
-//// Package up the result as a binary floating-point number
-//
-//  return_binary64 (s, e_out, c_prov);
-//}
+    public static double bid64_to_binary64(final long /*BID_UINT64*/ x, final int rnd_mode/*, final JavaImplParse.FloatingPointStatusFlag pfpsf*/) {
+
+        long /*BID_UINT64*/ c_prov;
+        long /*BID_UINT128*/ c_w0, c_w1;
+        long /*BID_UINT128*/ m_min_w0, m_min_w1;
+        int s, e, k, e_out;
+        long /*BID_UINT256*/ r_w0, r_w1, r_w2, r_w3;
+        long /*BID_UINT384*/ z_w0, z_w1, z_w2, z_w3, z_w4, z_w5;
+
+        //unpack_bid64 (x, s, e, k, (c_w1), return_binary64_zero (s), return_binary64_inf (s), return_binary64_nan);
+        //#define unpack_bid64(x,s,e,k,c,zero,inf,nan)
+        {
+            s = (int) (x >>> 63);
+            if ((x & (3L << 61)) == (3L << 61)) {
+                if ((x & (0xFL << 59)) == (0xFL << 59)) {
+                    if ((x & (0x1FL << 58)) != (0x1FL << 58))
+                        return return_binary64_inf(s);
+//                    if ((x & (1L << 57)) != 0)
+//                        __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
+                    return return_binary64_nan(s, (UnsignedLong.isGreater(x & 0x3FFFFFFFFFFFFL, 999999999999999L) ? 0 : (x << 14)), 0L);
+                }
+                e = (int) (((x >>> 51) & ((1L << 10) - 1)) - 398);
+                c_w1 = (1L << 53) + (x & ((1L << 51) - 1));
+                if (UnsignedLong.isGreater(c_w1, 9999999999999999L))
+                    return return_binary64_zero(s);
+                k = 0;
+            } else {
+                e = (int) (((x >>> 53) & ((1L << 10) - 1)) - 398);
+                c_w1 = x & ((1L << 53) - 1);
+                if (c_w1 == 0)
+                    return return_binary64_zero(s);
+                k = clz64_nz(c_w1) - 10;
+                c_w1 = c_w1 << k;
+            }
+        }
+
+        // Correct to 2^112 <= c < 2^113 with corresponding exponent adding 113-54=59
+        // In fact shift a further 6 places ready for reciprocal multiplication
+        // Thus (113-54)+6=65, a shift of 1 given that we've already upacked in c.w[1]
+
+        c_w1 = c_w1 << 1;
+        c_w0 = 0;
+        k = k + 59;
+
+        // Check for "trivial" overflow, when 10^e * 1 > 2^{sci_emax+1}, just to
+        // keep tables smaller (it would be intercepted later otherwise).
+        //
+        // (Note that we may have normalized the coefficient, but we have a
+        //  corresponding exponent postcorrection to account for; this can
+        //  afford to be conservative anyway.)
+        //
+        // We actually check if e >= ceil((sci_emax + 1) * log_10(2))
+        // which in this case is 2 >= ceil(1024 * log_10(2)) = ceil(308.25) = 309
+
+        if (e >= 309) {
+//            __set_status_flags(pfpsf, BID_OVERFLOW_INEXACT_EXCEPTION);
+            return return_binary64_ovf(s, rnd_mode);
+        }
+
+        // Also check for "trivial" underflow, when 10^e * 2^113 <= 2^emin * 1/4,
+        // so test e <= floor((emin - 115) * log_10(2))
+        // In this case just fix ourselves at that value for uniformity.
+        //
+        // This is important not only to keep the tables small but to maintain the
+        // testing of the round/sticky words as a correct rounding method
+
+        if (e <= -358)
+            e = -358;
+
+        // Look up the breakpoint and approximate exponent
+
+        final int bid_breakpoints_binary64_index = (358 + e) << 1;
+        m_min_w0 = bid_breakpoints_binary64_flat[bid_breakpoints_binary64_index];
+        m_min_w1 = bid_breakpoints_binary64_flat[bid_breakpoints_binary64_index + 1];
+        e_out = bid_exponents_binary64[358 + e] - k;
+
+        // Choose provisional exponent and reciprocal multiplier based on breakpoint
+
+        final long[] bid_multipliers_binary64_flat;
+        if (le128(c_w1, c_w0, m_min_w1, m_min_w0)) {
+            bid_multipliers_binary64_flat = bid_multipliers1_binary64_flat;
+        } else {
+            bid_multipliers_binary64_flat = bid_multipliers2_binary64_flat;
+            e_out = e_out + 1;
+        }
+        final int bid_multipliers_binary64_index = (358 + e) << 2;
+        r_w0 = bid_multipliers_binary64_flat[bid_multipliers_binary64_index];
+        r_w1 = bid_multipliers_binary64_flat[bid_multipliers_binary64_index + 1];
+        r_w2 = bid_multipliers_binary64_flat[bid_multipliers_binary64_index + 2];
+        r_w3 = bid_multipliers_binary64_flat[bid_multipliers_binary64_index + 3];
+
+        // Do the reciprocal multiplication
+
+        //__mul_64x256_to_320(z, c_w1, r);
+        {
+            long /*BID_UINT128*/ lP0_w0, lP0_w1, lP1_w0, lP1_w1, lP2_w0, lP2_w1, lP3_w0, lP3_w1;
+            long /*BID_UINT64*/ lC;
+            //__mul_64x64_to_128(lP0, c_w1, r_w0);
+            {
+                long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+                CXH = c_w1 >>> 32;
+                CXL = LONG_LOW_PART & c_w1;
+                CYH = r_w0 >>> 32;
+                CYL = LONG_LOW_PART & r_w0;
+                PM = CXH * CYL;
+                PH = CXH * CYH;
+                PL = CXL * CYL;
+                PM2 = CXL * CYH;
+                PH += PM >>> 32;
+                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                lP0_w1 = PH + (PM >>> 32);
+                lP0_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+            }
+            //__mul_64x64_to_128(lP1, c_w1, r_w1);
+            {
+                long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+                CXH = c_w1 >>> 32;
+                CXL = LONG_LOW_PART & c_w1;
+                CYH = r_w1 >>> 32;
+                CYL = LONG_LOW_PART & r_w1;
+                PM = CXH * CYL;
+                PH = CXH * CYH;
+                PL = CXL * CYL;
+                PM2 = CXL * CYH;
+                PH += PM >>> 32;
+                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                lP1_w1 = PH + (PM >>> 32);
+                lP1_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+            }
+            //__mul_64x64_to_128(lP2, c_w1, r_w2);
+            {
+                long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+                CXH = c_w1 >>> 32;
+                CXL = LONG_LOW_PART & c_w1;
+                CYH = r_w2 >>> 32;
+                CYL = LONG_LOW_PART & r_w2;
+                PM = CXH * CYL;
+                PH = CXH * CYH;
+                PL = CXL * CYL;
+                PM2 = CXL * CYH;
+                PH += PM >>> 32;
+                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                lP2_w1 = PH + (PM >>> 32);
+                lP2_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+            }
+            //__mul_64x64_to_128(lP3, c_w1, r_w3);
+            {
+                long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+                CXH = c_w1 >>> 32;
+                CXL = LONG_LOW_PART & c_w1;
+                CYH = r_w3 >>> 32;
+                CYL = LONG_LOW_PART & r_w3;
+                PM = CXH * CYL;
+                PH = CXH * CYH;
+                PL = CXL * CYL;
+                PM2 = CXL * CYH;
+                PH += PM >>> 32;
+                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
+                lP3_w1 = PH + (PM >>> 32);
+                lP3_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+            }
+            z_w0 = lP0_w0;
+            //__add_carry_out(P_w1,lC,lP1_w0,lP0_w1);
+            {
+                long /*BID_UINT64*/ X1 = lP1_w0;
+                z_w1 = lP1_w0 + lP0_w1;
+                lC = UnsignedLong.isLess(z_w1, X1) ? 1 : 0;
+            }
+            //__add_carry_in_out(P_w2,lC,lP2_w0,lP1_w1,lC);
+            {
+                long /*BID_UINT64*/ X1 = lP2_w0 + lC;
+                z_w2 = X1 + lP1_w1;
+                lC = (UnsignedLong.isLess(z_w2, X1) || UnsignedLong.isLess(X1, lC)) ? 1 : 0;
+            }
+            //__add_carry_in_out(P_w3,lC,lP3_w0,lP2_w1,lC);
+            {
+                long /*BID_UINT64*/ X1 = lP3_w0 + lC;
+                z_w3 = X1 + lP2_w1;
+                lC = (UnsignedLong.isLess(z_w3, X1) || UnsignedLong.isLess(X1, lC)) ? 1 : 0;
+            }
+            z_w4 = lP3_w1 + lC;
+        }
+
+        z_w5 = z_w4;
+        z_w4 = z_w3;
+        z_w3 = z_w2;
+        z_w2 = z_w1;
+        z_w1 = z_w0;
+        z_w0 = 0;
+
+        // Check for exponent underflow and compensate by shifting the product
+        // Cut off the process at precision+2, since we can't really shift further
+        if (e_out < 1) {
+            int d;
+            d = 1 - e_out;
+            if (d > 55)
+                d = 55;
+            e_out = 1;
+            //srl256_short(z_w5, z_w4, z_w3, z_w2, d);
+            {
+                z_w2 = (z_w3 << (64 - d)) + (z_w2 >>> d);
+                z_w3 = (z_w4 << (64 - d)) + (z_w3 >>> d);
+                z_w4 = (z_w5 << (64 - d)) + (z_w4 >>> d);
+                z_w5 = z_w5 >>> d;
+            }
+        }
+        c_prov = z_w5;
+
+        // Round using round-sticky words
+        // If we spill into the next binade, correct
+        // Flag underflow where it may be needed even for |result| = SNN
+
+        final int bid_roundbound_128_index = ((rnd_mode << 2) + ((s & 1) << 1) + (int) (c_prov & 1)) << 1;
+        if (lt128
+            (bid_roundbound_128_flat[bid_roundbound_128_index + 1],
+                bid_roundbound_128_flat[bid_roundbound_128_index], z_w4, z_w3)) {
+            c_prov = c_prov + 1;
+            if (c_prov == (1L << 53)) {
+                c_prov = 1L << 52;
+                e_out = e_out + 1;
+            }
+//            else if ((c_prov == (1L << 52)) && (e_out == 1)) {
+//                if (rnd_mode + (s & 1) == 2)
+//                    __set_status_flags(pfpsf, BID_UNDERFLOW_EXCEPTION);
+//            }
+        }
+        // Check for overflow
+
+        if (e_out >= 2047) {
+//            __set_status_flags(pfpsf, BID_OVERFLOW_INEXACT_EXCEPTION);
+            return return_binary64_ovf(s, rnd_mode);
+        }
+        // Modify exponent for a tiny result, otherwise lop the implicit bit
+
+        if (UnsignedLong.isLess(c_prov, (1L << 52)))
+            e_out = 0;
+        else
+            c_prov = c_prov & ((1L << 52) - 1);
+
+        // Set the inexact and underflow flag as appropriate
+
+//        if (z_w4 != 0 || z_w3 != 0) {
+//            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//            if (e_out == 0)
+//                __set_status_flags(pfpsf, BID_UNDERFLOW_EXCEPTION);
+//        }
+        // Package up the result as a binary floating-point number
+
+        return return_binary64(s, e_out, c_prov);
+    }
 
     static long return_bid64_zero(final int s) {
         return return_bid64(s, 398, 0);
@@ -597,8 +710,37 @@ public class JavaImplCastBinary64 {
         return UnsignedLong.isLess(x_hi, y_hi) || ((x_hi == y_hi) && UnsignedLong.isLessOrEqual(x_lo, y_lo));
     }
 
-// Counting leading zeros in an unsigned 64-bit word
-// The "_nz" version will return the wrong answer (63) for zero inputs
+    static double return_binary64_zero(final long /*BID_UINT64*/ s) {
+        return return_binary64(s, 0, 0);
+    }
+
+    static double return_binary64_inf(final long /*BID_UINT64*/ s) {
+        return return_binary64(s, 2047, 0);
+    }
+
+    static double return_binary64_nan(final long /*BID_UINT64*/s, final long /*BID_UINT64*/c_hi, final long /*BID_UINT64*/c_lo) {
+        return return_binary64(s, 2047, (c_hi >>> 13) + (1L << 51));
+    }
+
+    static double return_binary64(final long /*BID_UINT64*/ s, final long /*BID_UINT64*/ e, final long c) {
+        final long x_out_i = (s << 63) + (e << 52) + (c);
+        return Double.longBitsToDouble(x_out_i);
+    }
+
+    static double return_binary64_ovf(final long /*BID_UINT64*/s, final int rnd_mode) {
+        if ((rnd_mode == BID_ROUNDING_TO_ZERO) ||
+            (rnd_mode == ((s != 0) ? BID_ROUNDING_UP : BID_ROUNDING_DOWN)))
+            return return_binary64_max(s);
+        else
+            return return_binary64_inf(s);
+    }
+
+    static double return_binary64_max(final long /*BID_UINT64*/s) {
+        return return_binary64(s, 2046, (1L << 52) - 1L);
+    }
+
+    // Counting leading zeros in an unsigned 64-bit word
+    // The "_nz" version will return the wrong answer (63) for zero inputs
 
     static final long CLZ64_MASK32 = 0xFFFFFFFF00000000L;
     static final long CLZ64_MASK16 = 0xFFFF0000FFFF0000L;
@@ -897,11 +1039,54 @@ public class JavaImplCastBinary64 {
         766, 766, 766, 767, 767
     };
 
+    static final int[] bid_exponents_binary64 = {
+        -55, -51, -48, -45, -41, -38, -35, -31, -28, -25, -22, -18, -15, -12, -8, -5, -2, 2, 5, 8, 12, 15,
+        18, 22, 25, 28, 32, 35, 38, 42, 45, 48, 52, 55, 58, 62, 65, 68, 71, 75, 78, 81, 85, 88, 91, 95, 98,
+        101, 105, 108, 111, 115, 118, 121, 125, 128, 131, 135, 138, 141, 145, 148, 151, 155, 158, 161, 164,
+        168, 171, 174, 178, 181, 184, 188, 191, 194, 198, 201, 204, 208, 211, 214, 218, 221, 224, 228, 231,
+        234, 238, 241, 244, 248, 251, 254, 258, 261, 264, 267, 271, 274, 277, 281, 284, 287, 291, 294, 297,
+        301, 304, 307, 311, 314, 317, 321, 324, 327, 331, 334, 337, 341, 344, 347, 351, 354, 357, 360, 364,
+        367, 370, 374, 377, 380, 384, 387, 390, 394, 397, 400, 404, 407, 410, 414, 417, 420, 424, 427, 430,
+        434, 437, 440, 444, 447, 450, 454, 457, 460, 463, 467, 470, 473, 477, 480, 483, 487, 490, 493, 497,
+        500, 503, 507, 510, 513, 517, 520, 523, 527, 530, 533, 537, 540, 543, 547, 550, 553, 556, 560, 563,
+        566, 570, 573, 576, 580, 583, 586, 590, 593, 596, 600, 603, 606, 610, 613, 616, 620, 623, 626, 630,
+        633, 636, 640, 643, 646, 649, 653, 656, 659, 663, 666, 669, 673, 676, 679, 683, 686, 689, 693, 696,
+        699, 703, 706, 709, 713, 716, 719, 723, 726, 729, 733, 736, 739, 743, 746, 749, 752, 756, 759, 762,
+        766, 769, 772, 776, 779, 782, 786, 789, 792, 796, 799, 802, 806, 809, 812, 816, 819, 822, 826, 829,
+        832, 836, 839, 842, 845, 849, 852, 855, 859, 862, 865, 869, 872, 875, 879, 882, 885, 889, 892, 895,
+        899, 902, 905, 909, 912, 915, 919, 922, 925, 929, 932, 935, 939, 942, 945, 948, 952, 955, 958, 962,
+        965, 968, 972, 975, 978, 982, 985, 988, 992, 995, 998, 1002, 1005, 1008, 1012, 1015, 1018, 1022, 1025,
+        1028, 1032, 1035, 1038, 1041, 1045, 1048, 1051, 1055, 1058, 1061, 1065, 1068, 1071, 1075, 1078, 1081,
+        1085, 1088, 1091, 1095, 1098, 1101, 1105, 1108, 1111, 1115, 1118, 1121, 1125, 1128, 1131, 1134, 1138,
+        1141, 1144, 1148, 1151, 1154, 1158, 1161, 1164, 1168, 1171, 1174, 1178, 1181, 1184, 1188, 1191, 1194,
+        1198, 1201, 1204, 1208, 1211, 1214, 1218, 1221, 1224, 1228, 1231, 1234, 1237, 1241, 1244, 1247, 1251,
+        1254, 1257, 1261, 1264, 1267, 1271, 1274, 1277, 1281, 1284, 1287, 1291, 1294, 1297, 1301, 1304, 1307,
+        1311, 1314, 1317, 1321, 1324, 1327, 1330, 1334, 1337, 1340, 1344, 1347, 1350, 1354, 1357, 1360, 1364,
+        1367, 1370, 1374, 1377, 1380, 1384, 1387, 1390, 1394, 1397, 1400, 1404, 1407, 1410, 1414, 1417, 1420,
+        1424, 1427, 1430, 1433, 1437, 1440, 1443, 1447, 1450, 1453, 1457, 1460, 1463, 1467, 1470, 1473, 1477,
+        1480, 1483, 1487, 1490, 1493, 1497, 1500, 1503, 1507, 1510, 1513, 1517, 1520, 1523, 1526, 1530, 1533,
+        1536, 1540, 1543, 1546, 1550, 1553, 1556, 1560, 1563, 1566, 1570, 1573, 1576, 1580, 1583, 1586, 1590,
+        1593, 1596, 1600, 1603, 1606, 1610, 1613, 1616, 1620, 1623, 1626, 1629, 1633, 1636, 1639, 1643, 1646,
+        1649, 1653, 1656, 1659, 1663, 1666, 1669, 1673, 1676, 1679, 1683, 1686, 1689, 1693, 1696, 1699, 1703,
+        1706, 1709, 1713, 1716, 1719, 1722, 1726, 1729, 1732, 1736, 1739, 1742, 1746, 1749, 1752, 1756, 1759,
+        1762, 1766, 1769, 1772, 1776, 1779, 1782, 1786, 1789, 1792, 1796, 1799, 1802, 1806, 1809, 1812, 1815,
+        1819, 1822, 1825, 1829, 1832, 1835, 1839, 1842, 1845, 1849, 1852, 1855, 1859, 1862, 1865, 1869, 1872,
+        1875, 1879, 1882, 1885, 1889, 1892, 1895, 1899, 1902, 1905, 1909, 1912, 1915, 1918, 1922, 1925, 1928,
+        1932, 1935, 1938, 1942, 1945, 1948, 1952, 1955, 1958, 1962, 1965, 1968, 1972, 1975, 1978, 1982, 1985,
+        1988, 1992, 1995, 1998, 2002, 2005, 2008, 2011, 2015, 2018, 2021, 2025, 2028, 2031, 2035, 2038, 2041,
+        2045, 2048, 2051, 2055, 2058, 2061, 2065, 2068, 2071, 2075, 2078, 2081, 2085, 2088, 2091, 2095, 2098,
+        2101, 2105, 2108, 2111, 2114, 2118, 2121, 2124, 2128, 2131, 2134, 2138, 2141, 2144, 2148, 2151, 2154, 2158, 2161
+    };
+
     static {
         final String root = JavaImplCastBinary64.class.getPackage().getName().replace('.', '/') + '/';
         bid_breakpoints_bid64_flat = loadResource(root + "bid_breakpoints_bid64.bin", bid_exponents_bid64.length * 2);
         bid_multipliers1_bid64_flat = loadResource(root + "bid_multipliers1_bid64.bin", bid_exponents_bid64.length * 4);
         bid_multipliers2_bid64_flat = loadResource(root + "bid_multipliers2_bid64.bin", bid_exponents_bid64.length * 4);
+
+        bid_breakpoints_binary64_flat = loadResource(root + "bid_breakpoints_binary64.bin", bid_exponents_binary64.length * 2);
+        bid_multipliers1_binary64_flat = loadResource(root + "bid_multipliers1_binary64.bin", bid_exponents_binary64.length * 4);
+        bid_multipliers2_binary64_flat = loadResource(root + "bid_multipliers2_binary64.bin", bid_exponents_binary64.length * 4);
     }
 
     static long[] loadResource(final String resourceName, final int requiredSize) {
@@ -960,4 +1145,8 @@ public class JavaImplCastBinary64 {
     static final long[] /*BID_UINT128*/ bid_breakpoints_bid64_flat;
     static final long[] /*BID_UINT256*/ bid_multipliers1_bid64_flat;
     static final long[] /*BID_UINT256*/ bid_multipliers2_bid64_flat;
+
+    static final long[] /*BID_UINT128*/ bid_breakpoints_binary64_flat;
+    static final long[] /*BID_UINT256*/ bid_multipliers1_binary64_flat;
+    static final long[] /*BID_UINT256*/ bid_multipliers2_binary64_flat;
 }

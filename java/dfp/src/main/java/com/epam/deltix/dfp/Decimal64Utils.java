@@ -399,7 +399,7 @@ public class Decimal64Utils {
      * @return {@code double} value
      */
     public static double toDouble(@Decimal final long value) {
-        return NativeImpl.toFloat64(value);
+        return JavaImplCastBinary64.bid64_to_binary64(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
