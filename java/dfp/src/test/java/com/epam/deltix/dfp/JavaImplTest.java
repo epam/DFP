@@ -819,8 +819,6 @@ public class JavaImplTest {
 
     @Test
     public void testInt64ToDecimalCoverage() throws Exception {
-        testInt64ToDecimalCase(0xf26f62067d5355a6L);
-
         for (final long x : specialValues)
             testInt64ToDecimalCase(x);
 

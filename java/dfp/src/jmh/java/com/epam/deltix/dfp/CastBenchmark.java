@@ -52,4 +52,28 @@ public class CastBenchmark {
         for (int i = 0; i < 1000; ++i)
             bh.consume(JavaImplCastBinary64.bid64_to_binary64(decimalValues[i], BID_ROUNDING_TO_NEAREST));
     }
+
+    @Benchmark
+    public void int64ToDecimalNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.fromInt64(decimalValues[i] /* reinterpret decimal as just long */ ));
+    }
+
+    @Benchmark
+    public void int64ToDecimalJava(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplCast.bid64_from_int64(decimalValues[i] /* reinterpret decimal as just long */, BID_ROUNDING_TO_NEAREST));
+    }
+
+    @Benchmark
+    public void decimalToInt64Native(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.toInt64(decimalValues[i]));
+    }
+
+    @Benchmark
+    public void decimalToInt64Java(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplCast.bid64_to_int64_xint(decimalValues[i]));
+    }
 }

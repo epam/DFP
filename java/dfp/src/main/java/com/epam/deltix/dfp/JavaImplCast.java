@@ -565,8 +565,8 @@ public class JavaImplCast {
             C = ~x + 1;
         else
             C = x;
-        if (C <= BID64_SIG_MAX) {    // |C| <= 10^16-1 and the result is exact
-            if (C < 0x0020000000000000L) {    // C < 2^53
+        if (UnsignedLong.isLessOrEqual(C, BID64_SIG_MAX)) {    // |C| <= 10^16-1 and the result is exact
+            if (UnsignedLong.isLess(C, 0x0020000000000000L)) {    // C < 2^53
                 res = x_sign | 0x31c0000000000000L | C;
             } else {    // C >= 2^53
                 res = x_sign | 0x6c70000000000000L | (C & 0x0007ffffffffffffL);
@@ -574,10 +574,10 @@ public class JavaImplCast {
         } else {    // |C| >= 10^16 and the result may be inexact
             // the smallest |C| is 10^16 which has 17 decimal digits
             // the largest |C| is 0x8000000000000000 = 9223372036854775808 w/ 19 digits
-            if (C < 0x16345785d8a0000L) {    // x < 10^17
+            if (UnsignedLong.isLess(C, 0x16345785d8a0000L)) {    // x < 10^17
                 q = 17;
                 ind = 1;    // number of digits to remove for q = 17
-            } else if (C < 0xde0b6b3a7640000L) {    // C < 10^18
+            } else if (UnsignedLong.isLess(C, 0xde0b6b3a7640000L)) {    // C < 10^18
                 q = 18;
                 ind = 2;    // number of digits to remove for q = 18
             } else {    // C < 10^19
@@ -644,7 +644,7 @@ public class JavaImplCast {
                 // __Cstar = __P128 >> Ex
                 // __fstar = low Ex bits of __P128
                 __shift = bid_Ex64m64[__ind];    // in [3, 56]
-                __Cstar = __P128_w1 >> __shift;
+                __Cstar = __P128_w1 >>> __shift;
                 __fstar_w1 = __P128_w1 & bid_mask64[__ind];
                 __fstar_w0 = __P128_w0;
                 // the top Ex bits of 10^(-__x) are T* = bid_ten2mxtrunc64[__ind], e.g.
@@ -664,19 +664,19 @@ public class JavaImplCast {
                 //   the result is exact
                 // else // if (f* - 1/2 > T*) then
                 //   the result is inexact
-                if (UnsignedLong.isGreater(__fstar_w1 , bid_half64[__ind]) ||
-                    (__fstar_w1 == bid_half64[__ind] && __fstar_w0!=0)) {
+                if (UnsignedLong.isGreater(__fstar_w1, bid_half64[__ind]) ||
+                    (__fstar_w1 == bid_half64[__ind] && __fstar_w0 != 0)) {
                     // f* > 1/2 and the result may be exact
                     // Calculate f* - 1/2
                     __tmp64 = __fstar_w1 - bid_half64[__ind];
-                    if (__tmp64!=0 || UnsignedLong.isGreater(__fstar_w0 , bid_ten2mxtrunc64[__ind])) {    // f* - 1/2 > 10^(-__x)
+                    if (__tmp64 != 0 || UnsignedLong.isGreater(__fstar_w0, bid_ten2mxtrunc64[__ind])) {    // f* - 1/2 > 10^(-__x)
                         is_inexact_lt_midpoint = 1;
                     }    // else the result is exact
                 } else {    // the result is inexact; f2* <= 1/2
                     is_inexact_gt_midpoint = 1;
                 }
                 // check for midpoints (could do this before determining inexactness)
-                if (__fstar_w1 == 0 && __fstar_w0 <= bid_ten2mxtrunc64[__ind]) {
+                if (__fstar_w1 == 0 && UnsignedLong.isLessOrEqual(__fstar_w0, bid_ten2mxtrunc64[__ind])) {
                     // the result is a midpoint
                     if ((__Cstar & 0x01) != 0) {    // __Cstar is odd; MP in [EVEN, ODD]
                         // if floor(C*) is odd C = floor(C*) - 1; the result may be 0
@@ -702,7 +702,7 @@ public class JavaImplCast {
             }
 
 
-            if (incr_exp!=0)
+            if (incr_exp != 0)
                 ind++;
             // set the inexact flag
 //            if (is_inexact_lt_midpoint!=0 || is_inexact_gt_midpoint!=0 ||
@@ -710,26 +710,26 @@ public class JavaImplCast {
 //                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
             // general correction from RN to RA, RM, RP, RZ; result uses ind for exp
             if (rnd_mode != BID_ROUNDING_TO_NEAREST) {
-                if ((x_sign==0
-                    && ((rnd_mode == BID_ROUNDING_UP && is_inexact_lt_midpoint!=0)
+                if ((x_sign == 0
+                    && ((rnd_mode == BID_ROUNDING_UP && is_inexact_lt_midpoint != 0)
                     ||
                     ((rnd_mode == BID_ROUNDING_TIES_AWAY
-                        || rnd_mode == BID_ROUNDING_UP) && is_midpoint_gt_even!=0)))
-                    || (x_sign!=0
-                    && ((rnd_mode == BID_ROUNDING_DOWN && is_inexact_lt_midpoint!=0)
+                        || rnd_mode == BID_ROUNDING_UP) && is_midpoint_gt_even != 0)))
+                    || (x_sign != 0
+                    && ((rnd_mode == BID_ROUNDING_DOWN && is_inexact_lt_midpoint != 0)
                     ||
                     ((rnd_mode == BID_ROUNDING_TIES_AWAY
                         || rnd_mode == BID_ROUNDING_DOWN)
-                        && is_midpoint_gt_even!=0)))) {
+                        && is_midpoint_gt_even != 0)))) {
                     res = res + 1;
                     if (res == 0x002386f26fc10000L) {    // res = 10^16 => rounding overflow
                         res = 0x00038d7ea4c68000L;    // 10^15
                         ind = ind + 1;
                     }
-                } else if ((is_midpoint_lt_even!=0 || is_inexact_gt_midpoint!=0) &&
-                    ((x_sign!=0 && (rnd_mode == BID_ROUNDING_UP ||
+                } else if ((is_midpoint_lt_even != 0 || is_inexact_gt_midpoint != 0) &&
+                    ((x_sign != 0 && (rnd_mode == BID_ROUNDING_UP ||
                         rnd_mode == BID_ROUNDING_TO_ZERO)) ||
-                        (x_sign==0 && (rnd_mode == BID_ROUNDING_DOWN ||
+                        (x_sign == 0 && (rnd_mode == BID_ROUNDING_DOWN ||
                             rnd_mode == BID_ROUNDING_TO_ZERO)))) {
                     res = res - 1;
                     // check if we crossed into the lower decade
@@ -741,7 +741,7 @@ public class JavaImplCast {
                     ;    // exact, the result is already correct
                 }
             }
-            if (UnsignedLong.isLess(res , 0x0020000000000000L)) {    // res < 2^53
+            if (UnsignedLong.isLess(res, 0x0020000000000000L)) {    // res < 2^53
                 res = x_sign | (((long) ind + 398) << 53) | res;
             } else {    // res >= 2^53
                 res =
