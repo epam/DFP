@@ -410,7 +410,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long fromLong(final long value) {
-        return NativeImpl.fromInt64(value);
+        return JavaImplCast.bid64_from_int64(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -421,7 +421,7 @@ public class Decimal64Utils {
      * @return {@code long} integer value
      */
     public static long toLong(@Decimal final long value) {
-        return NativeImpl.toInt64(value);
+        return JavaImplCast.bid64_to_int64_xint(value);
     }
 
     /**
@@ -444,7 +444,7 @@ public class Decimal64Utils {
      * @return {@code int} value
      */
     public static int toInt(@Decimal final long value) {
-        return (int) NativeImpl.toInt64(value);
+        return (int) toLong(value);
     }
 
     /// endregion

@@ -814,7 +814,51 @@ public class JavaImplTest {
 
         if (javaRet != nativeRet)
             throw new RuntimeException("The conversion of decimal 0x" + Long.toHexString(x) +
-                "L) = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
+    public void testInt64ToDecimalCoverage() throws Exception {
+        testInt64ToDecimalCase(0xf26f62067d5355a6L);
+
+        for (final long x : specialValues)
+            testInt64ToDecimalCase(x);
+
+        checkInMultipleThreads(() -> {
+            final MersenneTwister random = new MersenneTwister();
+            for (int i = 0; i < NTests; ++i)
+                testInt64ToDecimalCase(random.nextLong());
+        });
+    }
+
+    private void testInt64ToDecimalCase(final long x) {
+        final long javaRet = JavaImplCast.bid64_from_int64(x, BID_ROUNDING_TO_NEAREST);
+        final long nativeRet = NativeImpl.fromInt64(x);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The conversion of 0x" + Long.toHexString(x) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    }
+
+    @Test
+    public void testDecimalToInt64Coverage() throws Exception {
+        for (final long x : specialValues)
+            testDecimalToInt64Case(x);
+
+        checkInMultipleThreads(() -> {
+            final MersenneTwister random = new MersenneTwister();
+            for (int i = 0; i < NTests; ++i)
+                testDecimalToInt64Case(random.nextLong());
+        });
+    }
+
+    private void testDecimalToInt64Case(final long x) {
+        final long javaRet = JavaImplCast.bid64_to_int64_xint(x);
+        final long nativeRet = NativeImpl.toInt64(x);
+
+        if (javaRet != nativeRet)
+            throw new RuntimeException("The conversion of decimal 0x" + Long.toHexString(x) +
+                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
     }
 
     @Test
