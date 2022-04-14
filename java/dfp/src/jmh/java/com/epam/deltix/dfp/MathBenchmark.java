@@ -9,8 +9,6 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_TO_NEAREST;
-
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Warmup(time = 3, iterations = 1)
@@ -35,10 +33,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void multiplyByInt32Java(Blackhole bh) {
+    public void multiplyByInt32(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplMul.bid64_mul(decimalValues[i],
-                JavaImpl.fromInt32((int) decimalValues[i + 1])));
+            bh.consume(Decimal64Utils.multiplyByInteger(decimalValues[i], (int) decimalValues[i + 1]));
     }
 
     @Benchmark
@@ -48,10 +45,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void multiplyByInt64Java(Blackhole bh) {
+    public void multiplyByInt64(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplMul.bid64_mul(decimalValues[i],
-                JavaImplCast.bid64_from_int64(decimalValues[i + 1], BID_ROUNDING_TO_NEAREST)));
+            bh.consume(Decimal64Utils.multiplyByInteger(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
@@ -61,10 +57,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void divideByInt32Java(Blackhole bh) {
+    public void divideByInt32(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplDiv.bid64_div(decimalValues[i],
-                JavaImpl.fromInt32((int) decimalValues[i + 1])));
+            bh.consume(Decimal64Utils.divideByInteger(decimalValues[i], (int) decimalValues[i + 1]));
     }
 
     @Benchmark
@@ -74,10 +69,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void divideByInt64Java(Blackhole bh) {
+    public void divideByInt64(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplDiv.bid64_div(decimalValues[i],
-                JavaImplCast.bid64_from_int64(decimalValues[i + 1], BID_ROUNDING_TO_NEAREST)));
+            bh.consume(Decimal64Utils.divideByInteger(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
@@ -87,9 +81,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void mean2Java(Blackhole bh) {
+    public void mean2(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplDiv.mean2(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(Decimal64Utils.mean(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
@@ -99,9 +93,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void minJava(Blackhole bh) {
+    public void min(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplMinMax.bid64_min_fix_nan(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(Decimal64Utils.min(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
@@ -111,9 +105,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void maxJava(Blackhole bh) {
+    public void max(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplMinMax.bid64_max_fix_nan(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(Decimal64Utils.max(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
@@ -123,11 +117,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void max4Java(Blackhole bh) {
+    public void max4(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplMinMax.bid64_max_fix_nan(
-                JavaImplMinMax.bid64_max_fix_nan(decimalValues[i], decimalValues[i + 1]),
-                JavaImplMinMax.bid64_max_fix_nan(decimalValues[i + 2], decimalValues[i + 3])));
+            bh.consume(Decimal64Utils.max(decimalValues[i], decimalValues[i + 1], decimalValues[i + 2], decimalValues[i + 3]));
     }
 
     @Benchmark
@@ -137,13 +129,13 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void divJava(Blackhole bh) {
+    public void div(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplDiv.bid64_div(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(Decimal64Utils.divide(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
-    public void div2Java(Blackhole bh) {
+    public void div2(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
             bh.consume(JavaImplDiv.div2(decimalValues[i]));
     }
@@ -155,9 +147,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void mulJava(Blackhole bh) {
+    public void mul(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplMul.bid64_mul(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(Decimal64Utils.multiply(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark
@@ -167,9 +159,9 @@ public class MathBenchmark {
     }
 
     @Benchmark
-    public void addJava(Blackhole bh) {
+    public void add(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplAdd.bid64_add(decimalValues[i], decimalValues[i + 1]));
+            bh.consume(Decimal64Utils.add(decimalValues[i], decimalValues[i + 1]));
     }
 
     @Benchmark

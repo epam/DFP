@@ -670,6 +670,13 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testToFixedPointCoverage() throws Exception {
+        checkWithCoverage(
+            (x, n) -> NativeImpl.toFixedPoint(x, (int) (n % 450)),
+            (x, n) -> Decimal64Utils.toFixedPoint(x, (int) (n % 450)));
+    }
+
+    @Test
     public void testToStringScientific() throws Exception {
         checkInMultipleThreads(() -> {
             final RandomDecimalsGenerator random = new RandomDecimalsGenerator();

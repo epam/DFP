@@ -373,7 +373,7 @@ public class Decimal64Utils {
      * @return fixed-point decimal value represented as @{code long}
      */
     public static long toFixedPoint(@Decimal final long value, final int numberOfDigits) {
-        return NativeImpl.toFixedPoint(value, numberOfDigits);
+        return JavaImplCast.bid64_to_int64_xint(JavaImplEtc.bid64_scalbn(value, numberOfDigits));
     }
 
     /**

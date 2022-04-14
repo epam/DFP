@@ -36,9 +36,9 @@ public class CastBenchmark {
     }
 
     @Benchmark
-    public void doubleToDecimalJava(Blackhole bh) {
+    public void doubleToDecimal(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCastBinary64.binary64_to_bid64(doubleValues[i], BID_ROUNDING_TO_NEAREST));
+            bh.consume(Decimal64Utils.fromDouble(doubleValues[i]));
     }
 
     @Benchmark
@@ -48,21 +48,21 @@ public class CastBenchmark {
     }
 
     @Benchmark
-    public void decimalToDoubleJava(Blackhole bh) {
+    public void decimalToDouble(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCastBinary64.bid64_to_binary64(decimalValues[i], BID_ROUNDING_TO_NEAREST));
+            bh.consume(Decimal64Utils.toDouble(decimalValues[i]));
     }
 
     @Benchmark
     public void int64ToDecimalNative(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(NativeImpl.fromInt64(decimalValues[i] /* reinterpret decimal as just long */ ));
+            bh.consume(NativeImpl.fromInt64(decimalValues[i] /* reinterpret decimal as just long */));
     }
 
     @Benchmark
-    public void int64ToDecimalJava(Blackhole bh) {
+    public void int64ToDecimal(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCast.bid64_from_int64(decimalValues[i] /* reinterpret decimal as just long */, BID_ROUNDING_TO_NEAREST));
+            bh.consume(Decimal64Utils.fromLong(decimalValues[i] /* reinterpret decimal as just long */));
     }
 
     @Benchmark
@@ -72,8 +72,46 @@ public class CastBenchmark {
     }
 
     @Benchmark
-    public void decimalToInt64Java(Blackhole bh) {
+    public void decimalToInt64(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
-            bh.consume(JavaImplCast.bid64_to_int64_xint(decimalValues[i]));
+            bh.consume(Decimal64Utils.toLong(decimalValues[i]));
+    }
+
+    @Benchmark
+    public void scaleByPowerOfTenNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.scaleByPowerOfTen(decimalValues[i], (int) (decimalValues[i + 1] % 50)));
+    }
+
+    @Benchmark
+    public void scaleByPowerOfTen(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.scaleByPowerOfTen(decimalValues[i], (int) (decimalValues[i + 1] % 50)));
+    }
+
+
+    @Benchmark
+    public void fromFixedPointNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.fromFixedPoint64(decimalValues[i], (int) (decimalValues[i + 1] % 50)));
+    }
+
+    @Benchmark
+    public void fromFixedPoint(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.fromFixedPoint(decimalValues[i], (int) (decimalValues[i + 1] % 50)));
+    }
+
+
+    @Benchmark
+    public void toFixedPointNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.toFixedPoint(decimalValues[i], (int) (decimalValues[i + 1] % 50)));
+    }
+
+    @Benchmark
+    public void toFixedPoint(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.toFixedPoint(decimalValues[i], (int) (decimalValues[i + 1] % 50)));
     }
 }
