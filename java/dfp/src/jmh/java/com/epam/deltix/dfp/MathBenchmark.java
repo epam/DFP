@@ -165,6 +165,30 @@ public class MathBenchmark {
     }
 
     @Benchmark
+    public void nextUpNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.nextUp(decimalValues[i]));
+    }
+
+    @Benchmark
+    public void nextUp(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.nextUp(decimalValues[i]));
+    }
+
+    @Benchmark
+    public void nextDownNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.nextDown(decimalValues[i]));
+    }
+
+    @Benchmark
+    public void nextDown(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.nextDown(decimalValues[i]));
+    }
+
+    @Benchmark
     public void nopJustIter(Blackhole bh) {
         for (int i = 1; i < 1000; ++i)
             bh.consume(decimalValues[i]);

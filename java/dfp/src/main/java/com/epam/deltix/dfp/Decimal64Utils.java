@@ -1039,7 +1039,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long nextUp(@Decimal final long value) {
-        return NativeImpl.nextUp(value);
+        return JavaImplEtc.bid64_nextup(value);
     }
 
     /**
@@ -1050,7 +1050,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long nextDown(@Decimal final long value) {
-        return NativeImpl.nextDown(value);
+        return JavaImplEtc.bid64_nextdown(value);
     }
 
     /**

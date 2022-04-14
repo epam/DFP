@@ -677,6 +677,16 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testNextUpCoverage() throws Exception {
+        checkWithCoverage(NativeImpl::nextUp, Decimal64Utils::nextUp);
+    }
+
+    @Test
+    public void testNextDownCoverage() throws Exception {
+        checkWithCoverage(NativeImpl::nextDown, Decimal64Utils::nextDown);
+    }
+
+    @Test
     public void testToStringScientific() throws Exception {
         checkInMultipleThreads(() -> {
             final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
