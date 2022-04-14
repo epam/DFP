@@ -608,6 +608,30 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testMultiplyByInt32Coverage() throws Exception {
+        checkWithCoverage((a, b) -> NativeImpl.multiplyByInt32(a, (int) b),
+            (a, b) -> JavaImplMul.bid64_mul(a, JavaImpl.fromInt32((int) b)));
+    }
+
+    @Test
+    public void testMultiplyByInt64Coverage() throws Exception {
+        checkWithCoverage(NativeImpl::multiplyByInt64,
+            (a, b) -> JavaImplMul.bid64_mul(a, JavaImplCast.bid64_from_int64(b, BID_ROUNDING_TO_NEAREST)));
+    }
+
+    @Test
+    public void testDivideByInt32Coverage() throws Exception {
+        checkWithCoverage((a, b) -> NativeImpl.divideByInt32(a, (int) b),
+            (a, b) -> JavaImplDiv.bid64_div(a, JavaImpl.fromInt32((int) b)));
+    }
+
+    @Test
+    public void testDivideByInt64Coverage() throws Exception {
+        checkWithCoverage(NativeImpl::divideByInt64,
+            (a, b) -> JavaImplDiv.bid64_div(a, JavaImplCast.bid64_from_int64(b, BID_ROUNDING_TO_NEAREST)));
+    }
+
+    @Test
     public void testDoubleToDecimalCoverage() throws Exception {
         checkWithCoverage(
             x -> NativeImpl.fromFloat64(Double.longBitsToDouble(x)),

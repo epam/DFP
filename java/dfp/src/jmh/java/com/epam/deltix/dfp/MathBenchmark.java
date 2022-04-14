@@ -9,6 +9,8 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
 
+import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_TO_NEAREST;
+
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Warmup(time = 3, iterations = 1)
@@ -24,6 +26,58 @@ public class MathBenchmark {
         decimalValues = new long[1004];
         for (int i = 0; i < decimalValues.length; ++i)
             decimalValues[i] = generator.nextX();
+    }
+
+    @Benchmark
+    public void multiplyByInt32Native(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.multiplyByInt32(decimalValues[i], (int) decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void multiplyByInt32Java(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplMul.bid64_mul(decimalValues[i],
+                JavaImpl.fromInt32((int) decimalValues[i + 1])));
+    }
+
+    @Benchmark
+    public void multiplyByInt64Native(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.multiplyByInt64(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void multiplyByInt64Java(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplMul.bid64_mul(decimalValues[i],
+                JavaImplCast.bid64_from_int64(decimalValues[i + 1], BID_ROUNDING_TO_NEAREST)));
+    }
+
+    @Benchmark
+    public void divideByInt32Native(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.divideByInt32(decimalValues[i], (int) decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void divideByInt32Java(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplDiv.bid64_div(decimalValues[i],
+                JavaImpl.fromInt32((int) decimalValues[i + 1])));
+    }
+
+    @Benchmark
+    public void divideByInt64Native(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.divideByInt64(decimalValues[i], decimalValues[i + 1]));
+    }
+
+    @Benchmark
+    public void divideByInt64Java(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(JavaImplDiv.bid64_div(decimalValues[i],
+                JavaImplCast.bid64_from_int64(decimalValues[i + 1], BID_ROUNDING_TO_NEAREST)));
     }
 
     @Benchmark

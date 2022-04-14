@@ -624,12 +624,12 @@ public class Decimal64Utils {
 
     @Decimal
     public static long multiplyByInteger(@Decimal final long a, final int b) {
-        return NativeImpl.multiplyByInt32(a, b);
+        return JavaImplMul.bid64_mul(a, JavaImpl.fromInt32(b));
     }
 
     @Decimal
     public static long multiplyByInteger(@Decimal final long a, final long b) {
-        return NativeImpl.multiplyByInt64(a, b);
+        return JavaImplMul.bid64_mul(a, JavaImplCast.bid64_from_int64(b, BID_ROUNDING_TO_NEAREST));
     }
 
     @Decimal
@@ -639,12 +639,12 @@ public class Decimal64Utils {
 
     @Decimal
     public static long divideByInteger(@Decimal final long a, final int b) {
-        return NativeImpl.divideByInt32(a, b);
+        return JavaImplDiv.bid64_div(a, JavaImpl.fromInt32(b));
     }
 
     @Decimal
     public static long divideByInteger(@Decimal final long a, final long b) {
-        return NativeImpl.divideByInt64(a, b);
+        return JavaImplDiv.bid64_div(a, JavaImplCast.bid64_from_int64(b, BID_ROUNDING_TO_NEAREST));
     }
 
     /**
