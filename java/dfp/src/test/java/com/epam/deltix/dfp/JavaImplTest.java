@@ -10,7 +10,6 @@ import java.util.Random;
 
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
-import static com.epam.deltix.dfp.TestUtils.checkInMultipleThreads;
 import static org.junit.Assert.*;
 
 public class JavaImplTest {
@@ -553,310 +552,83 @@ public class JavaImplTest {
         checkStrEq(Decimal64Utils.parse("-0.1239867"));
     }
 
-    @Decimal
-    static final long[] specialValues = {
-        NativeImpl.fromFloat64(Math.PI),
-        NativeImpl.fromFloat64(-Math.E),
-        Decimal64Utils.NaN,
-        Decimal64Utils.NaN | 1000000000000000L,
-        Decimal64Utils.negate(Decimal64Utils.NaN),
-        Decimal64Utils.negate(Decimal64Utils.NaN | 1000000000000000L),
-        Decimal64Utils.POSITIVE_INFINITY,
-        Decimal64Utils.POSITIVE_INFINITY | 1000000000000000L,
-        Decimal64Utils.NEGATIVE_INFINITY,
-        Decimal64Utils.NEGATIVE_INFINITY | 1000000000000000L,
-        Decimal64Utils.ZERO,
-        JavaImplAdd.SPECIAL_ENCODING_MASK64 | 1000000000000000L,
-        NativeImpl.fromFixedPoint64(0L, -300),
-        NativeImpl.fromFixedPoint64(0L, 300),
-        NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MIN_EXPONENT),
-        NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MAX_EXPONENT),
-        Decimal64Utils.MIN_VALUE,
-        Decimal64Utils.MAX_VALUE,
-        Decimal64Utils.MIN_POSITIVE_VALUE,
-        Decimal64Utils.MAX_NEGATIVE_VALUE,
-        NativeImpl.fromFixedPoint64(1L, 398),
-        Decimal64Utils.ONE,
-        NativeImpl.fromFixedPoint64(10000000000000000L, 16),
-        NativeImpl.fromInt64(10000000000000000L),
-        Decimal64Utils.ONE | 0x7000000000000000L,
-        Decimal64Utils.negate(Decimal64Utils.ONE | 0x7000000000000000L),
-    };
-
     @Test
     public void testAddWithCoverage() throws Exception {
-        testAddCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
-            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
+        checkCases(NativeImpl::add2, JavaImplAdd::bid64_add,
+            ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L,
+            0xecb08366cd530a32L, 0xb2fc7ab89d54c15dL,
+            0x335bb3b1068d9bd8L, 0x32ee619e7226bc85L);
 
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testAddCase(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i) {
-                random.makeNextPair();
-                testAddCase(random.getX(), random.getY());
-            }
-        });
-    }
-
-    @Test
-    public void testAddCases() {
-        testAddCase(0xecb08366cd530a32L, 0xb2fc7ab89d54c15dL);
-        testAddCase(0x335bb3b1068d9bd8L, 0x32ee619e7226bc85L);
-    }
-
-    private void testAddCase(final long x, final long y) {
-        final long javaRet = JavaImplAdd.bid64_add(x, y);
-        final long nativeRet = NativeImpl.add2(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L + 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::add2, JavaImplAdd::bid64_add);
     }
 
     @Test
     public void testMulWithCoverage() throws Exception {
-        testMulCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+        checkCases(NativeImpl::multiply2, JavaImplMul::bid64_mul,
+            ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
             MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
 
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testMulCase(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i) {
-                random.makeNextPair();
-                testMulCase(random.getX(), random.getY());
-            }
-        });
-    }
-
-    private void testMulCase(final long x, final long y) {
-        final long javaRet = JavaImplMul.bid64_mul(x, y);
-        final long nativeRet = NativeImpl.multiply2(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L * 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::multiply2, JavaImplMul::bid64_mul);
     }
 
     @Test
     public void testDivWithCoverage() throws Exception {
-        testDivCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
-            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
+        checkCases(NativeImpl::divide, JavaImplDiv::bid64_div,
+            ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L,
+            0x31a000000000000dL, 0x2e800000000006d1L,
+            0x30A0EFABDABB1574L, 0x30A0000062DF732AL,
+            0x31c38d7ea4c68000L, 0xafb1c37937e08001L);
 
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testDivCase(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i) {
-                random.makeNextPair();
-                testDivCase(random.getX(), random.getY());
-            }
-        });
-    }
-
-    @Test
-    public void testDivCases() {
-        testDivCase(0x31a000000000000dL, 0x2e800000000006d1L);
-        testDivCase(0x30A0EFABDABB1574L, 0x30A0000062DF732AL);
-        testDivCase(0x31c38d7ea4c68000L, 0xafb1c37937e08001L);
-    }
-
-    private void testDivCase(final long x, final long y) {
-        final long javaRet = JavaImplDiv.bid64_div(x, y);
-        final long nativeRet = NativeImpl.divide(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L / 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::divide, JavaImplDiv::bid64_div);
     }
 
     @Test
     public void testDiv2WithCoverage() throws Exception {
-        for (final long x : specialValues)
-            testDiv2Case(x);
+        checkCases(x -> NativeImpl.divide(x, Decimal64Utils.TWO), JavaImplDiv::div2,
+            0x2feb29430a256d21L, 0x5fe05af3107a4000L, 0xf7fb86f26fc0ffffL, 0xafe9a8434ec8e225L);
 
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i)
-                testDiv2Case(random.nextX());
-        });
-    }
-
-    @Test
-    public void testDiv2Cases() {
-        testDiv2Case(0x2feb29430a256d21L);
-        testDiv2Case(0x5fe05af3107a4000L);
-        testDiv2Case(0xf7fb86f26fc0ffffL);
-        testDiv2Case(0xafe9a8434ec8e225L);
-    }
-
-    private void testDiv2Case(final long x) {
-        final long javaRet = JavaImplDiv.div2(x);
-        final long nativeRet = NativeImpl.divide(x, Decimal64Utils.TWO);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L(" + Decimal64Utils.toScientificString(x) +
-                ") / 2 = 0x" + Long.toHexString(nativeRet) + "L(" + Decimal64Utils.toScientificString(nativeRet) +
-                "), but java return 0x" + Long.toHexString(javaRet) + "L(" + Decimal64Utils.toScientificString(javaRet) + ")");
+        checkWithCoverage(x -> NativeImpl.divide(x, Decimal64Utils.TWO), JavaImplDiv::div2);
     }
 
     @Test
     public void testMinWithCoverage() throws Exception {
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testMinCase(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i)
-                testMinCase(random.nextX(), random.generator.nextDouble() < 0.1 ? random.getX() : random.nextY());
-        });
-    }
-
-    private void testMinCase(final long x, final long y) {
-        final long javaRet = JavaImplMinMax.bid64_min_fix_nan(x, y);
-        final long nativeRet = NativeImpl.min2(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The minimal of decimal 0x" + Long.toHexString(x) + "L vs 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::min2, JavaImplMinMax::bid64_min_fix_nan);
     }
 
     @Test
     public void testMaxWithCoverage() throws Exception {
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testMaxCase(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i)
-                testMaxCase(random.nextX(), random.generator.nextDouble() < 0.1 ? random.getX() : random.nextY());
-        });
-    }
-
-    private void testMaxCase(final long x, final long y) {
-        final long javaRet = JavaImplMinMax.bid64_max_fix_nan(x, y);
-        final long nativeRet = NativeImpl.max2(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The maximal of decimal 0x" + Long.toHexString(x) + "L vs 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::max2, JavaImplMinMax::bid64_max_fix_nan);
     }
 
     @Test
     public void testMean2Coverage() throws Exception {
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testMean2Case(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i) {
-                random.makeNextPair();
-                testMean2Case(random.getX(), random.getY());
-            }
-        });
-    }
-
-    private void testMean2Case(final long x, final long y) {
-        final long javaRet = JavaImplDiv.mean2(x, y);
-        final long nativeRet = NativeImpl.mean2(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The mean of decimal 0x" + Long.toHexString(x) + "L and 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::mean2, JavaImplDiv::mean2);
     }
 
     @Test
     public void testDoubleToDecimalCoverage() throws Exception {
-        for (final long x : specialValues)
-            testDoubleToDecimalCase(NativeImpl.toFloat64(x));
-
-        checkInMultipleThreads(() -> {
-            final MersenneTwister random = new MersenneTwister();
-            for (int i = 0; i < NTests; ++i)
-                testDoubleToDecimalCase(Double.longBitsToDouble(random.nextLong()));
-        });
-    }
-
-    private void testDoubleToDecimalCase(final double x) {
-        final long javaRet = JavaImplCastBinary64.binary64_to_bid64(x, BID_ROUNDING_TO_NEAREST);
-        final long nativeRet = NativeImpl.fromFloat64(x);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The conversion of double " + x + "(0x" + Long.toHexString(Double.doubleToRawLongBits(x)) +
-                "L) = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(
+            x -> NativeImpl.fromFloat64(Double.longBitsToDouble(x)),
+            x -> JavaImplCastBinary64.binary64_to_bid64(Double.longBitsToDouble(x), BID_ROUNDING_TO_NEAREST));
     }
 
     @Test
     public void testDecimalToDoubleCoverage() throws Exception {
-        for (final long x : specialValues)
-            testDecimalToDoubleCase(x);
-
-        checkInMultipleThreads(() -> {
-            final MersenneTwister random = new MersenneTwister();
-            for (int i = 0; i < NTests; ++i)
-                testDecimalToDoubleCase(random.nextLong());
-        });
-    }
-
-    private void testDecimalToDoubleCase(final long x) {
-        final long javaRet = Double.doubleToRawLongBits(JavaImplCastBinary64.bid64_to_binary64(x, BID_ROUNDING_TO_NEAREST));
-        final long nativeRet = Double.doubleToRawLongBits(NativeImpl.toFloat64(x));
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The conversion of decimal 0x" + Long.toHexString(x) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(
+            x -> Double.doubleToRawLongBits(NativeImpl.toFloat64(x)),
+            x -> Double.doubleToRawLongBits(JavaImplCastBinary64.bid64_to_binary64(x, BID_ROUNDING_TO_NEAREST)));
     }
 
     @Test
     public void testInt64ToDecimalCoverage() throws Exception {
-        for (final long x : specialValues)
-            testInt64ToDecimalCase(x);
-
-        checkInMultipleThreads(() -> {
-            final MersenneTwister random = new MersenneTwister();
-            for (int i = 0; i < NTests; ++i)
-                testInt64ToDecimalCase(random.nextLong());
-        });
-    }
-
-    private void testInt64ToDecimalCase(final long x) {
-        final long javaRet = JavaImplCast.bid64_from_int64(x, BID_ROUNDING_TO_NEAREST);
-        final long nativeRet = NativeImpl.fromInt64(x);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The conversion of 0x" + Long.toHexString(x) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::fromInt64, x -> JavaImplCast.bid64_from_int64(x, BID_ROUNDING_TO_NEAREST));
     }
 
     @Test
     public void testDecimalToInt64Coverage() throws Exception {
-        for (final long x : specialValues)
-            testDecimalToInt64Case(x);
-
-        checkInMultipleThreads(() -> {
-            final MersenneTwister random = new MersenneTwister();
-            for (int i = 0; i < NTests; ++i)
-                testDecimalToInt64Case(random.nextLong());
-        });
-    }
-
-    private void testDecimalToInt64Case(final long x) {
-        final long javaRet = JavaImplCast.bid64_to_int64_xint(x);
-        final long nativeRet = NativeImpl.toInt64(x);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The conversion of decimal 0x" + Long.toHexString(x) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::toInt64, JavaImplCast::bid64_to_int64_xint);
     }
 
     @Test

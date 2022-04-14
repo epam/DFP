@@ -12,6 +12,38 @@ import static com.epam.deltix.dfp.Decimal64Utils.toDebugString;
 import static org.junit.Assert.assertEquals;
 
 public class TestUtils {
+    static final int NTests = 10_000_000;
+
+    @Decimal
+    static final long[] specialValues = {
+        NativeImpl.fromFloat64(Math.PI),
+        NativeImpl.fromFloat64(-Math.E),
+        Decimal64Utils.NaN,
+        Decimal64Utils.NaN | 1000000000000000L,
+        Decimal64Utils.negate(Decimal64Utils.NaN),
+        Decimal64Utils.negate(Decimal64Utils.NaN | 1000000000000000L),
+        Decimal64Utils.POSITIVE_INFINITY,
+        Decimal64Utils.POSITIVE_INFINITY | 1000000000000000L,
+        Decimal64Utils.NEGATIVE_INFINITY,
+        Decimal64Utils.NEGATIVE_INFINITY | 1000000000000000L,
+        Decimal64Utils.ZERO,
+        JavaImplAdd.SPECIAL_ENCODING_MASK64 | 1000000000000000L,
+        NativeImpl.fromFixedPoint64(0L, -300),
+        NativeImpl.fromFixedPoint64(0L, 300),
+        NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MIN_EXPONENT),
+        NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MAX_EXPONENT),
+        Decimal64Utils.MIN_VALUE,
+        Decimal64Utils.MAX_VALUE,
+        Decimal64Utils.MIN_POSITIVE_VALUE,
+        Decimal64Utils.MAX_NEGATIVE_VALUE,
+        NativeImpl.fromFixedPoint64(1L, 398),
+        Decimal64Utils.ONE,
+        NativeImpl.fromFixedPoint64(10000000000000000L, 16),
+        NativeImpl.fromInt64(10000000000000000L),
+        Decimal64Utils.ONE | 0x7000000000000000L,
+        Decimal64Utils.negate(Decimal64Utils.ONE | 0x7000000000000000L),
+    };
+
     public interface Consumer<T> {
         void accept(T t);
     }
@@ -263,8 +295,6 @@ public class TestUtils {
 
     static final Random rng = new Random();
 
-    static final int NTests = 10_000_000;
-
     public static void checkInMultipleThreads(final Runnable target) throws Exception {
         checkInMultipleThreads(Runtime.getRuntime().availableProcessors(), target);
     }
@@ -388,5 +418,66 @@ public class TestUtils {
                 ", yExp=" + yExp +
                 '}';
         }
+    }
+
+    public static void checkWithCoverage(final TwoArgFn refFn, final TwoArgFn testFn) throws Exception {
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                checkCase(x, y, refFn, testFn);
+
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i) {
+                random.makeNextPair();
+                checkCase(random.getX(), random.getY(), refFn, testFn);
+            }
+        });
+    }
+
+    public static void checkWithCoverage(final OneArgFn refFn, final OneArgFn testFn) throws Exception {
+        for (final long x : specialValues)
+            checkCase(x, refFn, testFn);
+
+        checkInMultipleThreads(() -> {
+            final MersenneTwister random = new MersenneTwister();
+            for (int i = 0; i < NTests; ++i)
+                checkCase(random.nextLong(), refFn, testFn);
+        });
+    }
+
+    public interface TwoArgFn {
+        long apply(final long x, final long y);
+    }
+
+    public static void checkCase(final long x, final long y, final TwoArgFn refFn, final TwoArgFn testFn) {
+        final long testRet = testFn.apply(x, y);
+        final long refRet = refFn.apply(x, y);
+
+        if (testRet != refRet)
+            throw new RuntimeException("The function(0x" + Long.toHexString(x) + "L, 0x" + Long.toHexString(y) +
+                "L) = 0x" + Long.toHexString(refRet) + "L, but test return 0x" + Long.toHexString(testRet) + "L");
+    }
+
+    public interface OneArgFn {
+        long apply(final long x);
+    }
+
+    public static void checkCase(final long x, final OneArgFn refFn, final OneArgFn testFn) {
+        final long testRet = testFn.apply(x);
+        final long refRet = refFn.apply(x);
+
+        if (testRet != refRet)
+            throw new RuntimeException("The function(0x" + Long.toHexString(x) + "L) = 0x" +
+                Long.toHexString(refRet) + "L, but test return 0x" + Long.toHexString(testRet) + "L");
+    }
+
+    public static void checkCases(final OneArgFn refFn, final OneArgFn testFn, final long... x) {
+        for (final long testValue : x)
+            checkCase(testValue, refFn, testFn);
+    }
+
+    public static void checkCases(final TwoArgFn refFn, final TwoArgFn testFn, final long... xy) {
+        for (int i = 0; i < xy.length; i += 2)
+            checkCase(xy[i], xy[i + 1], refFn, testFn);
     }
 }

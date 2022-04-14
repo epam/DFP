@@ -2,9 +2,7 @@ package com.epam.deltix.dfp;
 
 import org.junit.Test;
 
-import static com.epam.deltix.dfp.JavaImplTest.specialValues;
-import static com.epam.deltix.dfp.TestUtils.NTests;
-import static com.epam.deltix.dfp.TestUtils.checkInMultipleThreads;
+import static com.epam.deltix.dfp.TestUtils.*;
 
 public class CompareTest {
     interface IDecimalCompare {
@@ -60,24 +58,7 @@ public class CompareTest {
 
     @Test
     public void compareMtTest() throws Exception {
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                compareCheck(x, y);
-
-        checkInMultipleThreads(() -> {
-            final TestUtils.RandomDecimalsGenerator random = new TestUtils.RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i)
-                compareCheck(random.nextX(), random.generator.nextDouble() < 0.1 ? random.getX() : random.nextY());
-        });
-    }
-
-    static void compareCheck(final long x, final long y) {
-        final int nativeRet = NativeImpl.compare(x, y);
-        final int javaRet = JavaImplCmp.compare(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L vs 0x" +
-                Long.toHexString(y) + "L = " + nativeRet + ", but java return " + javaRet);
+        checkWithCoverage(NativeImpl::compare, JavaImplCmp::compare);
     }
 
     @Test

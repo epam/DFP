@@ -444,7 +444,7 @@ public class Decimal64Utils {
      * @return {@code int} value
      */
     public static int toInt(@Decimal final long value) {
-        return (int) toLong(value);
+        return (int) JavaImplCast.bid64_to_int64_xint(value);
     }
 
     /// endregion
