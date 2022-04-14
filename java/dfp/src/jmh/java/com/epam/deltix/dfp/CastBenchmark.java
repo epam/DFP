@@ -21,8 +21,8 @@ public class CastBenchmark {
     @Setup
     public void setUp() {
         TestUtils.RandomDecimalsGenerator random = new TestUtils.RandomDecimalsGenerator(fixedSeed);
-        doubleValues = new double[1000];
-        decimalValues = new long[1000];
+        doubleValues = new double[1001];
+        decimalValues = new long[1001];
         for (int i = 0; i < doubleValues.length; ++i) {
             doubleValues[i] = Double.longBitsToDouble(random.generator.nextLong());
             decimalValues[i] = random.nextX();
