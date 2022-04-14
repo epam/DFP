@@ -16,9 +16,6 @@ import static com.epam.deltix.dfp.JavaImpl.BID_ROUNDING_TO_NEAREST;
  * information) and binary (base-2) fractions.
  */
 public class Decimal64Utils {
-    private Decimal64Utils() {
-    }
-
     /// region Constants
 
     /**
@@ -342,8 +339,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long fromFixedPoint(final long mantissa, final int numberOfDigits) {
-        // TODO: Can also create java version for this one
-        return NativeImpl.fromFixedPoint64(mantissa, numberOfDigits);
+        return JavaImplEtc.bid64_scalbn(JavaImplCast.bid64_from_int64(mantissa, BID_ROUNDING_TO_NEAREST), -numberOfDigits);
     }
 
     /**
@@ -665,7 +661,7 @@ public class Decimal64Utils {
 
     @Decimal
     public static long scaleByPowerOfTen(@Decimal final long a, final int n) {
-        return NativeImpl.scaleByPowerOfTen(a, n);
+        return JavaImplEtc.bid64_scalbn(a, n);
     }
 
     @Decimal

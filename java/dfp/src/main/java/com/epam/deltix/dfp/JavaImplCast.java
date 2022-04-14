@@ -4,7 +4,7 @@ import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
 import static com.epam.deltix.dfp.JavaImplCmp.*;
 import static com.epam.deltix.dfp.JavaImplParse.*;
 
-public class JavaImplCast {
+class JavaImplCast {
     private JavaImplCast() {
     }
 

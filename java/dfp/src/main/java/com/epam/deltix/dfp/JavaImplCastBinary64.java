@@ -6,7 +6,7 @@ import java.util.Arrays;
 import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
 import static com.epam.deltix.dfp.JavaImplParse.*;
 
-public class JavaImplCastBinary64 {
+class JavaImplCastBinary64 {
     private JavaImplCastBinary64() {
     }
 

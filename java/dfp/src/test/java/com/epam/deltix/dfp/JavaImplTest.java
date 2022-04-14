@@ -252,12 +252,12 @@ public class JavaImplTest {
 
     @Test(expected = NumberFormatException.class)
     public void parseEmptyString() {
-        JavaImpl.parse("asdf", 0, 0, 0);
+        JavaImpl.parse("asdf", 0, 0, BID_ROUNDING_TO_NEAREST);
     }
 
     @Test(expected = NumberFormatException.class)
     public void parseNonDigits() {
-        JavaImpl.parse("asdf", 0, 4, 0);
+        JavaImpl.parse("asdf", 0, 4, BID_ROUNDING_TO_NEAREST);
     }
 
     @Test
@@ -507,7 +507,7 @@ public class JavaImplTest {
     }
 
     private static void checkRound(final long inValue, final int roundPoint, final RoundType roundType) {
-        final long testValue = JavaImpl.round(inValue, roundPoint, roundType);
+        final long testValue = Decimal64Utils.round(inValue, roundPoint, roundType);
         final String inStr = Decimal64Utils.toString(inValue);
         final String roundStr = round(inStr, roundPoint, roundType);
         final String testStr = Decimal64Utils.toString(testValue);
@@ -537,7 +537,7 @@ public class JavaImplTest {
     private static void checkStrEq(final long value) {
         try {
             final String inStr = JavaImpl.appendToRefImpl(value, new StringBuilder()).toString();
-            final String testStr = JavaImpl.fastToString(value);
+            final String testStr = Decimal64Utils.toString(value);
             if (!inStr.equals(testStr))
                 throw new RuntimeException("Case toString(" + value + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
         } catch (final IOException e) {
@@ -554,34 +554,34 @@ public class JavaImplTest {
 
     @Test
     public void testAddWithCoverage() throws Exception {
-        checkCases(NativeImpl::add2, JavaImplAdd::bid64_add,
+        checkCases(NativeImpl::add2, Decimal64Utils::add,
             ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
             MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L,
             0xecb08366cd530a32L, 0xb2fc7ab89d54c15dL,
             0x335bb3b1068d9bd8L, 0x32ee619e7226bc85L);
 
-        checkWithCoverage(NativeImpl::add2, JavaImplAdd::bid64_add);
+        checkWithCoverage(NativeImpl::add2, Decimal64Utils::add);
     }
 
     @Test
     public void testMulWithCoverage() throws Exception {
-        checkCases(NativeImpl::multiply2, JavaImplMul::bid64_mul,
+        checkCases(NativeImpl::multiply2, Decimal64Utils::multiply,
             ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
             MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
 
-        checkWithCoverage(NativeImpl::multiply2, JavaImplMul::bid64_mul);
+        checkWithCoverage(NativeImpl::multiply2, Decimal64Utils::multiply);
     }
 
     @Test
     public void testDivWithCoverage() throws Exception {
-        checkCases(NativeImpl::divide, JavaImplDiv::bid64_div,
+        checkCases(NativeImpl::divide, Decimal64Utils::divide,
             ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
             MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L,
             0x31a000000000000dL, 0x2e800000000006d1L,
             0x30A0EFABDABB1574L, 0x30A0000062DF732AL,
             0x31c38d7ea4c68000L, 0xafb1c37937e08001L);
 
-        checkWithCoverage(NativeImpl::divide, JavaImplDiv::bid64_div);
+        checkWithCoverage(NativeImpl::divide, Decimal64Utils::divide);
     }
 
     @Test
@@ -594,65 +594,79 @@ public class JavaImplTest {
 
     @Test
     public void testMinWithCoverage() throws Exception {
-        checkWithCoverage(NativeImpl::min2, JavaImplMinMax::bid64_min_fix_nan);
+        checkWithCoverage(NativeImpl::min2, Decimal64Utils::min);
     }
 
     @Test
     public void testMaxWithCoverage() throws Exception {
-        checkWithCoverage(NativeImpl::max2, JavaImplMinMax::bid64_max_fix_nan);
+        checkWithCoverage(NativeImpl::max2, Decimal64Utils::max);
     }
 
     @Test
     public void testMean2Coverage() throws Exception {
-        checkWithCoverage(NativeImpl::mean2, JavaImplDiv::mean2);
+        checkWithCoverage(NativeImpl::mean2, Decimal64Utils::mean);
     }
 
     @Test
     public void testMultiplyByInt32Coverage() throws Exception {
-        checkWithCoverage((a, b) -> NativeImpl.multiplyByInt32(a, (int) b),
-            (a, b) -> JavaImplMul.bid64_mul(a, JavaImpl.fromInt32((int) b)));
+        checkWithCoverage(
+            (a, b) -> NativeImpl.multiplyByInt32(a, (int) b),
+            (a, b) -> Decimal64Utils.multiplyByInteger(a, (int) b));
     }
 
     @Test
     public void testMultiplyByInt64Coverage() throws Exception {
-        checkWithCoverage(NativeImpl::multiplyByInt64,
-            (a, b) -> JavaImplMul.bid64_mul(a, JavaImplCast.bid64_from_int64(b, BID_ROUNDING_TO_NEAREST)));
+        checkWithCoverage(NativeImpl::multiplyByInt64, Decimal64Utils::multiplyByInteger);
     }
 
     @Test
     public void testDivideByInt32Coverage() throws Exception {
-        checkWithCoverage((a, b) -> NativeImpl.divideByInt32(a, (int) b),
-            (a, b) -> JavaImplDiv.bid64_div(a, JavaImpl.fromInt32((int) b)));
+        checkWithCoverage(
+            (a, b) -> NativeImpl.divideByInt32(a, (int) b),
+            (a, b) -> Decimal64Utils.divideByInteger(a, (int) b));
     }
 
     @Test
     public void testDivideByInt64Coverage() throws Exception {
-        checkWithCoverage(NativeImpl::divideByInt64,
-            (a, b) -> JavaImplDiv.bid64_div(a, JavaImplCast.bid64_from_int64(b, BID_ROUNDING_TO_NEAREST)));
+        checkWithCoverage(NativeImpl::divideByInt64, Decimal64Utils::divideByInteger);
     }
 
     @Test
     public void testDoubleToDecimalCoverage() throws Exception {
         checkWithCoverage(
             x -> NativeImpl.fromFloat64(Double.longBitsToDouble(x)),
-            x -> JavaImplCastBinary64.binary64_to_bid64(Double.longBitsToDouble(x), BID_ROUNDING_TO_NEAREST));
+            x -> Decimal64Utils.fromDouble(Double.longBitsToDouble(x)));
     }
 
     @Test
     public void testDecimalToDoubleCoverage() throws Exception {
         checkWithCoverage(
             x -> Double.doubleToRawLongBits(NativeImpl.toFloat64(x)),
-            x -> Double.doubleToRawLongBits(JavaImplCastBinary64.bid64_to_binary64(x, BID_ROUNDING_TO_NEAREST)));
+            x -> Double.doubleToRawLongBits(Decimal64Utils.toDouble(x)));
     }
 
     @Test
     public void testInt64ToDecimalCoverage() throws Exception {
-        checkWithCoverage(NativeImpl::fromInt64, x -> JavaImplCast.bid64_from_int64(x, BID_ROUNDING_TO_NEAREST));
+        checkWithCoverage(NativeImpl::fromInt64, Decimal64Utils::fromLong);
     }
 
     @Test
     public void testDecimalToInt64Coverage() throws Exception {
-        checkWithCoverage(NativeImpl::toInt64, JavaImplCast::bid64_to_int64_xint);
+        checkWithCoverage(NativeImpl::toInt64, Decimal64Utils::toLong);
+    }
+
+    @Test
+    public void testScaleByPowerOfTenCoverage() throws Exception {
+        checkWithCoverage(
+            (x, n) -> NativeImpl.scaleByPowerOfTen(x, (int) (n % 450)),
+            (x, n) -> Decimal64Utils.scaleByPowerOfTen(x, (int) (n % 450)));
+    }
+
+    @Test
+    public void testFromFixedPoint64Coverage() throws Exception {
+        checkWithCoverage(
+            (x, n) -> NativeImpl.fromFixedPoint64(x, (int) (n % 450)),
+            (x, n) -> Decimal64Utils.fromFixedPoint(x, (int) (n % 450)));
     }
 
     @Test
