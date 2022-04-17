@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Random;
 
+import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
 import static org.junit.Assert.*;
@@ -674,6 +675,31 @@ public class JavaImplTest {
         checkWithCoverage(
             (x, n) -> NativeImpl.toFixedPoint(x, (int) (n % 450)),
             (x, n) -> Decimal64Utils.toFixedPoint(x, (int) (n % 450)));
+    }
+
+    @Test
+    public void testRoundTowardsPositiveInfinity() throws Exception {
+        checkWithCoverage(NativeImpl::roundTowardsPositiveInfinity, Decimal64Utils::roundTowardsPositiveInfinity);
+    }
+
+    @Test
+    public void testRoundTowardsNegativeInfinity() throws Exception {
+        checkWithCoverage(NativeImpl::roundTowardsNegativeInfinity, Decimal64Utils::roundTowardsNegativeInfinity);
+    }
+
+    @Test
+    public void testRoundTowardsZero() throws Exception {
+        checkWithCoverage(NativeImpl::roundTowardsZero, Decimal64Utils::roundTowardsZero);
+    }
+
+    @Test
+    public void testRoundToNearestTiesAwayFromZero() throws Exception {
+        checkWithCoverage(NativeImpl::roundToNearestTiesAwayFromZero, Decimal64Utils::roundToNearestTiesAwayFromZero);
+    }
+
+    @Test
+    public void testRoundToNearestTiesToEven() throws Exception {
+        checkWithCoverage(NativeImpl::roundToNearestTiesToEven, Decimal64Utils::roundToNearestTiesToEven);
     }
 
     @Test

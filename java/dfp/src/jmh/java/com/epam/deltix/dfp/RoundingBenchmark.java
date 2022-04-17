@@ -1,80 +1,89 @@
 package com.epam.deltix.dfp;
 
+import org.apache.commons.math3.random.MersenneTwister;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.infra.Blackhole;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-@Warmup(time = 2, iterations = 3)
-@Measurement(time = 2, iterations = 3)
+@Warmup(time = 3, iterations = 1)
+@Measurement(time = 3, iterations = 3)
 @State(Scope.Thread)
-@Fork(2)
 public class RoundingBenchmark {
-    /* 123.456789123, 1.23 */
-    @Param({"3503800633551035011", "3566850904877432955"})
-    private long decimalValue;
+    private long[] decimalValues;
+    public static int fixedSeed = 42 * 42 * 42 * 42 * 42;
 
     @Setup
     public void setUp() {
-        decimalValue = Decimal64Utils.fromDouble(new Random().nextDouble());
+        final TestUtils.RandomDecimalsGenerator generator =
+            new TestUtils.RandomDecimalsGenerator(new MersenneTwister(fixedSeed), 64,
+                -MAX_SIGNIFICAND_DIGITS, -MAX_SIGNIFICAND_DIGITS + 1);
+        decimalValues = new long[1000];
+        for (int i = 0; i < decimalValues.length; ++i)
+            decimalValues[i] = generator.nextX();
     }
 
     @Benchmark
-    public long roundCeil() {
-        return Decimal64Utils.ceiling(decimalValue);
+    public void roundTowardsPositiveInfinityNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.roundTowardsPositiveInfinity(decimalValues[i]));
     }
 
     @Benchmark
-    public long roundCeilJava() {
-        return Decimal64Utils.round(decimalValue, 0, RoundType.CEIL);
+    public void roundTowardsPositiveInfinity(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.roundTowardsPositiveInfinity(decimalValues[i]));
     }
 
     @Benchmark
-    public long roundToNearestTiesAwayFromZero() {
-        return Decimal64Utils.roundToNearestTiesAwayFromZero(decimalValue);
+    public void roundTowardsNegativeInfinityNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.roundTowardsNegativeInfinity(decimalValues[i]));
     }
 
     @Benchmark
-    public long roundToNearestTiesToEven() {
-        return Decimal64Utils.roundToNearestTiesToEven(decimalValue);
+    public void roundTowardsNegativeInfinity(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.roundTowardsNegativeInfinity(decimalValues[i]));
     }
 
     @Benchmark
-    public long roundToNearestTiesAwayFromZeroD5() {
-        return Decimal64Utils.roundToNearestTiesAwayFromZero(decimalValue,
-            Decimal64Utils.fromFixedPoint(125, 3));
+    public void roundTowardsZeroNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.roundTowardsZero(decimalValues[i]));
     }
 
     @Benchmark
-    public long roundToNearestTiesToEvenD5() {
-        return Decimal64Utils.roundToNearestTiesToEven(decimalValue,
-            Decimal64Utils.fromFixedPoint(125, 3));
+    public void roundTowardsZero(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.roundTowardsZero(decimalValues[i]));
     }
 
     @Benchmark
-    public long roundTowardsNegativeInfinity() {
-        return Decimal64Utils.roundTowardsNegativeInfinity(decimalValue);
+    public void roundToNearestTiesAwayFromZeroNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.roundToNearestTiesAwayFromZero(decimalValues[i]));
     }
 
     @Benchmark
-    public long roundTowardsNegativeInfinityD5() {
-        return Decimal64Utils.roundTowardsNegativeInfinity(decimalValue,
-            Decimal64Utils.fromFixedPoint(125, 3));
+    public void roundToNearestTiesAwayFromZero(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.roundToNearestTiesAwayFromZero(decimalValues[i]));
     }
 
-    public static void main(final String[] args) throws RunnerException {
-        final Options opt = new OptionsBuilder()
-            .include(".*" + RoundingBenchmark.class.getSimpleName() + ".*")
-            .forks(1)
-            .build();
-        new Runner(opt).run();
+    @Benchmark
+    public void roundToNearestTiesToEvenNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.roundToNearestTiesToEven(decimalValues[i]));
+    }
+
+    @Benchmark
+    public void roundToNearestTiesToEven(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.roundToNearestTiesToEven(decimalValues[i]));
     }
 }
-

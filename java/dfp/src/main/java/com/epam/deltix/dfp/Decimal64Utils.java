@@ -704,7 +704,7 @@ public class Decimal64Utils {
     @Decimal
     @Deprecated
     public static long ceil(@Decimal final long value) {
-        return NativeImpl.roundTowardsPositiveInfinity(value);
+        return JavaImplRound.bid64_round_integral_positive(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -720,7 +720,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long ceiling(@Decimal final long value) {
-        return NativeImpl.roundTowardsPositiveInfinity(value);
+        return JavaImplRound.bid64_round_integral_positive(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -734,7 +734,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsPositiveInfinity(@Decimal final long value) {
-        return NativeImpl.roundTowardsPositiveInfinity(value);
+        return JavaImplRound.bid64_round_integral_positive(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -748,7 +748,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long floor(@Decimal final long value) {
-        return NativeImpl.roundTowardsNegativeInfinity(value);
+        return JavaImplRound.bid64_round_integral_negative(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -761,7 +761,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsNegativeInfinity(@Decimal final long value) {
-        return NativeImpl.roundTowardsNegativeInfinity(value);
+        return JavaImplRound.bid64_round_integral_negative(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -775,7 +775,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long truncate(@Decimal final long value) {
-        return NativeImpl.roundTowardsZero(value);
+        return JavaImplRound.bid64_round_integral_zero(value, BID_ROUNDING_TO_NEAREST);
     }
 
 
@@ -789,7 +789,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsZero(@Decimal final long value) {
-        return NativeImpl.roundTowardsZero(value);
+        return JavaImplRound.bid64_round_integral_zero(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -819,7 +819,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long round(@Decimal final long value) {
-        return NativeImpl.roundToNearestTiesAwayFromZero(value);
+        return JavaImplRound.bid64_round_integral_nearest_away(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -831,7 +831,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundToNearestTiesAwayFromZero(@Decimal final long value) {
-        return NativeImpl.roundToNearestTiesAwayFromZero(value);
+        return JavaImplRound.bid64_round_integral_nearest_away(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -843,7 +843,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundToNearestTiesToEven(@Decimal final long value) {
-        return NativeImpl.roundToNearestTiesToEven(value);
+        return JavaImplRound.bid64_round_integral_nearest_even(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -932,7 +932,7 @@ public class Decimal64Utils {
         if (isNaN(value))
             return value;
 
-        @Decimal final long ratio = NativeImpl.roundToNearestTiesAwayFromZero(divide(value, multiple));
+        @Decimal final long ratio = JavaImplRound.bid64_round_integral_nearest_away(divide(value, multiple), BID_ROUNDING_TO_NEAREST);
         return multiply(ratio, multiple);
     }
 
@@ -952,7 +952,7 @@ public class Decimal64Utils {
         if (isNaN(value))
             return value;
 
-        @Decimal final long ratio = NativeImpl.roundToNearestTiesToEven(divide(value, multiple));
+        @Decimal final long ratio = JavaImplRound.bid64_round_integral_nearest_even(divide(value, multiple), BID_ROUNDING_TO_NEAREST);
         return multiply(ratio, multiple);
     }
 

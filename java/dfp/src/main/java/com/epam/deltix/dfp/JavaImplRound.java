@@ -14,7 +14,7 @@ class JavaImplRound {
     private JavaImplRound() {
     }
 
-    public static long bid64_round_integral_exact(long /*BID_UINT64*/ x, final int rnd_mode, final JavaImplParse.FloatingPointStatusFlag pfpsf) {
+    public static long bid64_round_integral_exact(long /*BID_UINT64*/ x, final int rnd_mode/*, final JavaImplParse.FloatingPointStatusFlag pfpsf*/) {
         long /*BID_UINT64*/ res = 0xbaddbaddbaddbaddL;
         long /*BID_UINT64*/ x_sign;
         int exp;            // unbiased exponent
@@ -37,7 +37,7 @@ class JavaImplRound {
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
             if ((x & MASK_SNAN) == MASK_SNAN) {    // SNaN
                 // set invalid flag
-                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
+//                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
                 // return quiet (SNaN)
                 res = x & 0xfdffffffffffffffL;
             } else {    // QNaN
@@ -75,28 +75,28 @@ class JavaImplRound {
             case BID_ROUNDING_TIES_AWAY:
                 // return 0 if (exp <= -(p+1))
                 if (exp <= -17) {
-                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     return x_sign | 0x31c0000000000000L;
                 }
                 break;
             case BID_ROUNDING_DOWN:
                 // return 0 if (exp <= -p)
                 if (exp <= -16) {
-                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     return x_sign != 0 ? 0xb1c0000000000001L : 0x31c0000000000000L;
                 }
                 break;
             case BID_ROUNDING_UP:
                 // return 0 if (exp <= -p)
                 if (exp <= -16) {
-                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     return x_sign != 0 ? 0xb1c0000000000000L : 0x31c0000000000001L;
                 }
                 break;
             case BID_ROUNDING_TO_ZERO:
                 // return 0 if (exp <= -p)
                 if (exp <= -16) {
-                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     return x_sign | 0x31c0000000000000L;
                 }
                 break;
@@ -190,36 +190,39 @@ class JavaImplRound {
                     //   the result is exact
                     // else // if (f* - 1/2 > T*) then
                     //   the result is inexact
-                    if (ind - 1 <= 2) {
-                        if (UnsignedLong.isGreater(fstar_w0, 0x8000000000000000L)) {
-                            // f* > 1/2 and the result may be exact
-                            // fstar.w[0] - 0x8000000000000000L is f* - 1/2
-                            if (UnsignedLong.isGreater(fstar_w0 - 0x8000000000000000L, bid_ten2mk64[ind - 1])) {
-                                // set the inexact flag
-                                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-                            }    // else the result is exact
-                        } else {    // the result is inexact; f2* <= 1/2
-                            // set the inexact flag
-                            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-                        }
-                    } else {    // if 3 <= ind - 1 <= 21
-                        if (UnsignedLong.isGreater(fstar_w1, bid_onehalf128[ind - 1]) || (fstar_w1 == bid_onehalf128[ind - 1] && fstar_w0 != 0)) {
-                            // f2* > 1/2 and the result may be exact
-                            // Calculate f2* - 1/2
-                            if (UnsignedLong.isGreater(fstar_w1, bid_onehalf128[ind - 1]) || UnsignedLong.isGreater(fstar_w0, bid_ten2mk64[ind - 1])) {
-                                // set the inexact flag
-                                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-                            }    // else the result is exact
-                        } else {    // the result is inexact; f2* <= 1/2
-                            // set the inexact flag
-                            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-                        }
-                    }
+//                    if (ind - 1 <= 2) {
+//                        if (UnsignedLong.isGreater(fstar_w0, 0x8000000000000000L)) {
+//                            // f* > 1/2 and the result may be exact
+//                            // fstar.w[0] - 0x8000000000000000L is f* - 1/2
+//                            if (UnsignedLong.isGreater(fstar_w0 - 0x8000000000000000L, bid_ten2mk64[ind - 1])) {
+//                                // set the inexact flag
+//                                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                            }    // else the result is exact
+//                        }
+//                        else {    // the result is inexact; f2* <= 1/2
+//                            // set the inexact flag
+//                            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                        }
+//                    }
+//                    else {    // if 3 <= ind - 1 <= 21
+//                        if (UnsignedLong.isGreater(fstar_w1, bid_onehalf128[ind - 1]) || (fstar_w1 == bid_onehalf128[ind - 1] && fstar_w0 != 0)) {
+//                            // f2* > 1/2 and the result may be exact
+//                            // Calculate f2* - 1/2
+//                            if (UnsignedLong.isGreater(fstar_w1, bid_onehalf128[ind - 1]) || UnsignedLong.isGreater(fstar_w0, bid_ten2mk64[ind - 1])) {
+//                                // set the inexact flag
+//                                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                            }    // else the result is exact
+//                        }
+//                        else {    // the result is inexact; f2* <= 1/2
+//                            // set the inexact flag
+//                            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                        }
+//                    }
                     // set exponent to zero as it was negative before.
                     return x_sign | 0x31c0000000000000L | res;
                 } else {    // if exp < 0 and q + exp < 0
                     // the result is +0 or -0
-                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     return x_sign | 0x31c0000000000000L;
                 }
                 //break;
@@ -284,36 +287,36 @@ class JavaImplRound {
                     //   the result is exact
                     // else // if (f* - 1/2 > T*) then
                     //   the result is inexact
-                    if (ind - 1 <= 2) {
-                        if (UnsignedLong.isGreater(fstar_w0, 0x8000000000000000L)) {
-                            // f* > 1/2 and the result may be exact
-                            // fstar.w[0] - 0x8000000000000000L is f* - 1/2
-                            if (UnsignedLong.isGreater(fstar_w0 - 0x8000000000000000L, bid_ten2mk64[ind - 1])) {
-                                // set the inexact flag
-                                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-                            }    // else the result is exact
-                        } else {    // the result is inexact; f2* <= 1/2
-                            // set the inexact flag
-                            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-                        }
-                    } else {    // if 3 <= ind - 1 <= 21
-                        if (UnsignedLong.isGreater(fstar_w1, bid_onehalf128[ind - 1]) || (fstar_w1 == bid_onehalf128[ind - 1] && fstar_w0 != 0)) {
-                            // f2* > 1/2 and the result may be exact
-                            // Calculate f2* - 1/2
-                            if (UnsignedLong.isGreater(fstar_w1, bid_onehalf128[ind - 1]) || UnsignedLong.isGreater(fstar_w0, bid_ten2mk64[ind - 1])) {
-                                // set the inexact flag
-                                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-                            }    // else the result is exact
-                        } else {    // the result is inexact; f2* <= 1/2
-                            // set the inexact flag
-                            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-                        }
-                    }
+//                    if (ind - 1 <= 2) {
+//                        if (UnsignedLong.isGreater(fstar_w0, 0x8000000000000000L)) {
+//                            // f* > 1/2 and the result may be exact
+//                            // fstar.w[0] - 0x8000000000000000L is f* - 1/2
+//                            if (UnsignedLong.isGreater(fstar_w0 - 0x8000000000000000L, bid_ten2mk64[ind - 1])) {
+//                                // set the inexact flag
+//                                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                            }    // else the result is exact
+//                        } else {    // the result is inexact; f2* <= 1/2
+//                            // set the inexact flag
+//                            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                        }
+//                    } else {    // if 3 <= ind - 1 <= 21
+//                        if (UnsignedLong.isGreater(fstar_w1, bid_onehalf128[ind - 1]) || (fstar_w1 == bid_onehalf128[ind - 1] && fstar_w0 != 0)) {
+//                            // f2* > 1/2 and the result may be exact
+//                            // Calculate f2* - 1/2
+//                            if (UnsignedLong.isGreater(fstar_w1, bid_onehalf128[ind - 1]) || UnsignedLong.isGreater(fstar_w0, bid_ten2mk64[ind - 1])) {
+//                                // set the inexact flag
+//                                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                            }    // else the result is exact
+//                        } else {    // the result is inexact; f2* <= 1/2
+//                            // set the inexact flag
+//                            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                        }
+//                    }
                     // set exponent to zero as it was negative before.
                     return x_sign | 0x31c0000000000000L | res;
                 } else {    // if exp < 0 and q + exp < 0
                     // the result is +0 or -0
-                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     return x_sign | 0x31c0000000000000L;
                 }
                 //break;
@@ -373,13 +376,13 @@ class JavaImplRound {
                             // if negative and not exact, increment magnitude
                             res++;
                         }
-                        __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                        __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     }
                     // set exponent to zero as it was negative before.
                     return x_sign | 0x31c0000000000000L | res;
                 } else {    // if exp < 0 and q + exp <= 0
                     // the result is +0 or -1
-                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     return x_sign != 0 ? 0xb1c0000000000001L : 0x31c0000000000000L;
                 }
                 //break;
@@ -439,13 +442,13 @@ class JavaImplRound {
                             // if positive and not exact, increment magnitude
                             res++;
                         }
-                        __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                        __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     }
                     // set exponent to zero as it was negative before.
                     return x_sign | 0x31c0000000000000L | res;
                 } else {    // if exp < 0 and q + exp <= 0
                     // the result is -0 or +1
-                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     return x_sign != 0 ? 0xb1c0000000000000L : 0x31c0000000000001L;
                 }
                 //break;
@@ -500,14 +503,14 @@ class JavaImplRound {
                         fstar_w0 = P128_w0;
                     }
                     // if (f* > 10^(-x)) then the result is inexact
-                    if ((fstar_w1 != 0) || UnsignedLong.isGreaterOrEqual(fstar_w0, bid_ten2mk64[ind - 1])) {
-                        __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
-                    }
+//                    if ((fstar_w1 != 0) || UnsignedLong.isGreaterOrEqual(fstar_w0, bid_ten2mk64[ind - 1])) {
+//                        __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    }
                     // set exponent to zero as it was negative before.
                     return x_sign | 0x31c0000000000000L | res;
                 } else {    // if exp < 0 and q + exp < 0
                     // the result is +0 or -0
-                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+//                    __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
                     return x_sign | 0x31c0000000000000L;
                 }
                 //break;
@@ -515,7 +518,7 @@ class JavaImplRound {
         return res;
     }
 
-    public static long bid64_round_integral_nearest_even(long /*BID_UINT64*/ x, final int rnd_mode, final JavaImplParse.FloatingPointStatusFlag pfpsf) {
+    public static long bid64_round_integral_nearest_even(long /*BID_UINT64*/ x, final int rnd_mode/*, final JavaImplParse.FloatingPointStatusFlag pfpsf*/) {
         long /*BID_UINT64*/ res = 0xbaddbaddbaddbaddL;
         long /*BID_UINT64*/ x_sign;
         int exp;            // unbiased exponent
@@ -537,7 +540,7 @@ class JavaImplRound {
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
             if ((x & MASK_SNAN) == MASK_SNAN) {    // SNaN
                 // set invalid flag
-                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
+//                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
                 // return quiet (SNaN)
                 res = x & 0xfdffffffffffffffL;
             } else {    // QNaN
@@ -660,7 +663,7 @@ class JavaImplRound {
         }
     }
 
-    public static long bid64_round_integral_negative(long /*BID_UINT64*/ x, final int rnd_mode, final JavaImplParse.FloatingPointStatusFlag pfpsf) {
+    public static long bid64_round_integral_negative(long /*BID_UINT64*/ x, final int rnd_mode/*, final JavaImplParse.FloatingPointStatusFlag pfpsf*/) {
         long /*BID_UINT64*/ res = 0xbaddbaddbaddbaddL;
         long /*BID_UINT64*/ x_sign;
         int exp;            // unbiased exponent
@@ -683,7 +686,7 @@ class JavaImplRound {
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
             if ((x & MASK_SNAN) == MASK_SNAN) {    // SNaN
                 // set invalid flag
-                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
+//                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
                 // return quiet (SNaN)
                 res = x & 0xfdffffffffffffffL;
             } else {    // QNaN
@@ -809,7 +812,7 @@ class JavaImplRound {
         }
     }
 
-    public static long bid64_round_integral_positive(long /*BID_UINT64*/ x, final int rnd_mode, final JavaImplParse.FloatingPointStatusFlag pfpsf) {
+    public static long bid64_round_integral_positive(long /*BID_UINT64*/ x, final int rnd_mode/*, final JavaImplParse.FloatingPointStatusFlag pfpsf*/) {
         long /*BID_UINT64*/ res = 0xbaddbaddbaddbaddL;
         long /*BID_UINT64*/ x_sign;
         int exp;            // unbiased exponent
@@ -832,7 +835,7 @@ class JavaImplRound {
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
             if ((x & MASK_SNAN) == MASK_SNAN) {    // SNaN
                 // set invalid flag
-                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
+//                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
                 // return quiet (SNaN)
                 res = x & 0xfdffffffffffffffL;
             } else {    // QNaN
@@ -958,7 +961,7 @@ class JavaImplRound {
         }
     }
 
-    public static long bid64_round_integral_zero(long /*BID_UINT64*/ x, final int rnd_mode, final JavaImplParse.FloatingPointStatusFlag pfpsf) {
+    public static long bid64_round_integral_zero(long /*BID_UINT64*/ x, final int rnd_mode/*, final JavaImplParse.FloatingPointStatusFlag pfpsf*/) {
         long /*BID_UINT64*/ res = 0xbaddbaddbaddbaddL;
         long /*BID_UINT64*/ x_sign;
         int exp;            // unbiased exponent
@@ -980,7 +983,7 @@ class JavaImplRound {
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
             if ((x & MASK_SNAN) == MASK_SNAN) {    // SNaN
                 // set invalid flag
-                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
+//                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
                 // return quiet (SNaN)
                 res = x & 0xfdffffffffffffffL;
             } else {    // QNaN
@@ -1095,7 +1098,7 @@ class JavaImplRound {
         }
     }
 
-    public static long bid64_round_integral_nearest_away(long /*BID_UINT64*/ x, final int rnd_mode, final JavaImplParse.FloatingPointStatusFlag pfpsf) {
+    public static long bid64_round_integral_nearest_away(long /*BID_UINT64*/ x, final int rnd_mode/*, final JavaImplParse.FloatingPointStatusFlag pfpsf*/) {
         long /*BID_UINT64*/ res = 0xbaddbaddbaddbaddL;
         long /*BID_UINT64*/ x_sign;
         int exp;            // unbiased exponent
@@ -1116,7 +1119,7 @@ class JavaImplRound {
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
             if ((x & MASK_SNAN) == MASK_SNAN) {    // SNaN
                 // set invalid flag
-                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
+//                __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
                 // return quiet (SNaN)
                 res = x & 0xfdffffffffffffffL;
             } else {    // QNaN
