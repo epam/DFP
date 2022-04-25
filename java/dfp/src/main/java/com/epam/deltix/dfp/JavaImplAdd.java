@@ -301,7 +301,7 @@ class JavaImplAdd {
         //--- get number of bits in the coefficients of x and y ---
 
         // version 2 (original)
-        long tempxi = Double.doubleToLongBits((double) coefficient_a);
+        long tempxi = Double.doubleToRawLongBits((double) coefficient_a);
         bin_expon_ca = (int) ((tempxi & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff;
 
         if (diff_dec_expon > MAX_FORMAT_DIGITS) {
@@ -321,7 +321,7 @@ class JavaImplAdd {
             /* get binary coefficients of x and y */
 
             //--- get number of bits in the coefficients of x and y ---
-            tempxi = Double.doubleToLongBits((double) coefficient_a);
+            tempxi = Double.doubleToRawLongBits((double) coefficient_a);
             bin_expon_ca = (int) ((tempxi & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff;
 
             if (diff_dec_expon > MAX_FORMAT_DIGITS) {

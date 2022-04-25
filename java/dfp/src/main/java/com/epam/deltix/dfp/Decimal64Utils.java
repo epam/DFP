@@ -656,7 +656,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long multiplyAndAdd(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
-        return NativeImpl.multiplyAndAdd(a, b, c);
+        return JavaImplFma.bid64_fma(a, b, c);
     }
 
     @Decimal

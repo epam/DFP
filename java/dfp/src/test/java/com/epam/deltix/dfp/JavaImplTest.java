@@ -554,6 +554,29 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testFmaWithCoverage() throws Exception {
+        for (final long x : specialValues)
+            for (final long y : specialValues)
+                for (final long z : specialValues)
+                    checkFmaCase(x, y, z);
+
+        checkInMultipleThreads(() -> {
+            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+            for (int i = 0; i < NTests; ++i)
+                checkFmaCase(random.nextX(), random.nextX(), random.nextX());
+        });
+    }
+
+    public static void checkFmaCase(final long x, final long y, final long z) {
+        final long testRet = Decimal64Utils.multiplyAndAdd(x, y, z);
+        final long refRet = NativeImpl.multiplyAndAdd(x, y, z);
+
+        if (testRet != refRet)
+            throw new RuntimeException("The function(0x" + Long.toHexString(x) + "L, 0x" + Long.toHexString(y) +
+                "L, 0x" + Long.toHexString(z) + "L) = 0x" + Long.toHexString(refRet) + "L, but test return 0x" + Long.toHexString(testRet) + "L");
+    }
+
+    @Test
     public void testAddWithCoverage() throws Exception {
         checkCases(NativeImpl::add2, Decimal64Utils::add,
             ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,

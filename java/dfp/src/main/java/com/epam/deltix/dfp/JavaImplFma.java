@@ -574,7 +574,7 @@ class JavaImplFma {
 
         diff_expon = exponent_z - exponent_y;
 
-        final long tempx_i = Double.doubleToRawLongBits((double) coefficient_z);
+        final long tempx_i = UnsignedLong.longToDoubleRawBits(coefficient_z);
         bin_expon = (int) (((tempx_i & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff);
         scale_cz = bid_estimate_decimal_digits[bin_expon];
         if (UnsignedLong.isGreaterOrEqual(coefficient_z, bid_power10_table_128_BID_UINT128[(scale_cz << 1) /*+ 0*/]))
@@ -627,7 +627,7 @@ class JavaImplFma {
 
         //--- get number of bits in the coefficients of x and y ---
 
-        tempx_i = Double.doubleToRawLongBits((double) coefficient_a);
+        tempx_i = UnsignedLong.longToDoubleRawBits(coefficient_a);
         bin_expon_ca = (int) (((tempx_i & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff);
 
         if (coefficient_a == 0) {
@@ -650,7 +650,7 @@ class JavaImplFma {
             /* get binary coefficients of x and y */
 
             //--- get number of bits in the coefficients of x and y ---
-            tempx_i = Double.doubleToRawLongBits((double) coefficient_a);
+            tempx_i = UnsignedLong.longToDoubleRawBits(coefficient_a);
             bin_expon_ca = (int) (((tempx_i & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff);
 
             if (diff_dec_expon > MAX_FORMAT_DIGITS) {
@@ -976,20 +976,20 @@ class JavaImplFma {
         }
 
 //        if (rmode == 0)    //BID_ROUNDING_TO_NEAREST
-            if ((C64 & 1) != 0) {
-                // check whether fractional part of initial_P/10^extra_digits
-                // is exactly .5
-                // this is the same as fractional part of
-                //      (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
+        if ((C64 & 1) != 0) {
+            // check whether fractional part of initial_P/10^extra_digits
+            // is exactly .5
+            // this is the same as fractional part of
+            //      (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
-                // get remainder
-                remainder_h = CT_w1 << (64 - amount);
+            // get remainder
+            remainder_h = CT_w1 << (64 - amount);
 
-                // test whether fractional part is 0
-                if (remainder_h == 0 && UnsignedLong.isLess(CT_w0, bid_reciprocals10_64[extra_digits])) {
-                    C64--;
-                }
+            // test whether fractional part is 0
+            if (remainder_h == 0 && UnsignedLong.isLess(CT_w0, bid_reciprocals10_64[extra_digits])) {
+                C64--;
             }
+        }
 
 //        status = BID_INEXACT_EXCEPTION;
 
@@ -1185,7 +1185,7 @@ class JavaImplFma {
 //            rmode = 3 - rmode;
 
         //--- get number of bits in the coefficients of x and y ---
-        tempx_i = Double.doubleToRawLongBits((double) coefficient_z);
+        tempx_i = UnsignedLong.longToDoubleRawBits(coefficient_z);
         bin_expon = (int) (((tempx_i & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff);
         // get number of decimal digits in the coeff_x
         digits_z = bid_estimate_decimal_digits[bin_expon];
@@ -1907,7 +1907,7 @@ class JavaImplFma {
         if (exponent_x > exponent_y) {
             // normalize x
             //--- get number of bits in the coefficients of x and y ---
-            tempx_i = Double.doubleToRawLongBits((double) coefficient_x);
+            tempx_i = UnsignedLong.longToDoubleRawBits(coefficient_x);
             bin_expon_cx = (int) (((tempx_i & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff);
             // get number of decimal digits in the coeff_x
             digits_x = bid_estimate_decimal_digits[bin_expon_cx];
@@ -2367,7 +2367,7 @@ class JavaImplFma {
         if (X_w1 == 0) {
             if (X_w0 == 0) return 0;
             //--- get number of bits in the coefficients of x and y ---
-            tempx_i = Double.doubleToRawLongBits((double) X_w0);
+            tempx_i = UnsignedLong.longToDoubleRawBits(X_w0);
             bin_expon_cx = (int) (((tempx_i & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff);
             // get number of decimal digits in the coeff_x
             digits_x = bid_estimate_decimal_digits[bin_expon_cx];
@@ -2375,7 +2375,7 @@ class JavaImplFma {
                 digits_x++;
             return digits_x;
         }
-        tempx_i = Double.doubleToRawLongBits((double) X_w1);
+        tempx_i = UnsignedLong.longToDoubleRawBits(X_w1);
         bin_expon_cx = (int) (((tempx_i & MASK_BINARY_EXPONENT) >>> 52) - 0x3ff);
         // get number of decimal digits in the coeff_x
         digits_x = bid_estimate_decimal_digits[bin_expon_cx + 64];

@@ -193,9 +193,9 @@ class JavaImplMul {
         }
         //--- get number of bits in the coefficients of x and y ---
         // version 2 (original)
-        long tempxi = Double.doubleToLongBits((double) coefficient_x);
+        long tempxi = Double.doubleToRawLongBits((double) coefficient_x);
         bin_expon_cx = (int) ((tempxi & MASK_BINARY_EXPONENT) >>> 52);
-        long tempyi = Double.doubleToLongBits((double) coefficient_y);
+        long tempyi = Double.doubleToRawLongBits((double) coefficient_y);
         bin_expon_cy = (int) ((tempyi & MASK_BINARY_EXPONENT) >>> 52);
 
         // magnitude estimate for coefficient_x*coefficient_y is

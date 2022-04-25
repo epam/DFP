@@ -215,14 +215,14 @@ class JavaImplDiv {
             // get number of decimal digits for c_x, c_y
 
             //--- get number of bits in the coefficients of x and y ---
-            tempx_i = Float.floatToIntBits(/*The UnsignedLong.floatValue is not required, because coefficient_x is always positive*/coefficient_x);
-            tempy_i = Float.floatToIntBits(/*The UnsignedLong.floatValue is not required, because coefficient_x is always positive*/coefficient_y);
+            tempx_i = Float.floatToRawIntBits(/*The UnsignedLong.floatValue is not required, because coefficient_x is always positive*/coefficient_x);
+            tempy_i = Float.floatToRawIntBits(/*The UnsignedLong.floatValue is not required, because coefficient_y is always positive*/coefficient_y);
             bin_index = (tempy_i - tempx_i) >>> 23;
 
             A = coefficient_x * bid_power10_index_binexp[bin_index];
             B = coefficient_y;
 
-            temp_b_i = Double.doubleToLongBits(/*The UnsignedLong.doubleValue is not required, because coefficient_x is always positive*/B);
+            temp_b_i = Double.doubleToRawLongBits(/*The UnsignedLong.doubleValue is not required, because coefficient_y is always positive*/B);
 
             // compare A, B
             DU = (A - B) >>> 63;
@@ -271,7 +271,7 @@ class JavaImplDiv {
             db = UnsignedLong.doubleValue(coefficient_y);
 
             final double tempq_d = da / db;
-            tempq_i = Double.doubleToLongBits(tempq_d);
+            tempq_i = Double.doubleToRawLongBits(tempq_d);
             Q = UnsignedLong.fromDouble(tempq_d);
 
             R = coefficient_x - coefficient_y * Q;
