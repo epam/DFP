@@ -27,6 +27,18 @@ public class MathBenchmark {
     }
 
     @Benchmark
+    public void fmaNative(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(NativeImpl.multiplyAndAdd(decimalValues[i], decimalValues[i + 1], decimalValues[i + 2]));
+    }
+
+    @Benchmark
+    public void fma(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.multiplyAndAdd(decimalValues[i], decimalValues[i + 1], decimalValues[i + 2]));
+    }
+
+    @Benchmark
     public void multiplyByInt32Native(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
             bh.consume(NativeImpl.multiplyByInt32(decimalValues[i], (int) decimalValues[i + 1]));
