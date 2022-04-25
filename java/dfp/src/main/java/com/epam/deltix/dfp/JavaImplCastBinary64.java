@@ -3,8 +3,7 @@ package com.epam.deltix.dfp;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
-import static com.epam.deltix.dfp.JavaImplParse.*;
+import static com.epam.deltix.dfp.JavaImplAdd.*;
 
 class JavaImplCastBinary64 {
     private JavaImplCastBinary64() {
@@ -118,8 +117,8 @@ class JavaImplCastBinary64 {
                     return return_bid64(s, 398, cint_w0);
             } else if (a <= 48) {
                 final int bid_coefflimits_bid64_index = a << 1;
-                long /*BID_UINT128*/ pow5_w0 = bid_coefflimits_bid64_flat[bid_coefflimits_bid64_index],
-                    pow5_w1 = bid_coefflimits_bid64_flat[bid_coefflimits_bid64_index + 1];
+                long /*BID_UINT128*/ pow5_w0 = bid_coefflimits_bid64_BID_UINT128[bid_coefflimits_bid64_index],
+                    pow5_w1 = bid_coefflimits_bid64_BID_UINT128[bid_coefflimits_bid64_index + 1];
                 //srl128 (cint_w1, cint_w0, 8 + t);
                 {
                     final int __c = 8 + t;
@@ -138,8 +137,8 @@ class JavaImplCastBinary64 {
                 if (le128(cint_w1, cint_w0, pow5_w1, pow5_w0)) {
                     long /*BID_UINT128*/ cc_w1 = cint_w1, cc_w0 = cint_w0;
                     final int bid_power_five_index = a << 1;
-                    pow5_w0 = bid_power_five_flat[bid_power_five_index];
-                    pow5_w1 = bid_power_five_flat[bid_power_five_index + 1];
+                    pow5_w0 = bid_power_five_BID_UINT128[bid_power_five_index];
+                    pow5_w1 = bid_power_five_BID_UINT128[bid_power_five_index + 1];
 
                     //__mul_128x128_low (cc, cc, pow5);
                     {
@@ -189,24 +188,24 @@ class JavaImplCastBinary64 {
         // Now look up our exponent e, and the breakpoint between e and e+1
 
         final int bid_breakpoints_bid64_index = (1437 + e) << 1;
-        m_min_w0 = bid_breakpoints_bid64_flat[bid_breakpoints_bid64_index];
-        m_min_w1 = bid_breakpoints_bid64_flat[bid_breakpoints_bid64_index + 1];
+        m_min_w0 = bid_breakpoints_bid64_BID_UINT128[bid_breakpoints_bid64_index];
+        m_min_w1 = bid_breakpoints_bid64_BID_UINT128[bid_breakpoints_bid64_index + 1];
         e_out = bid_exponents_bid64[1437 + e];
 
         // Choose exponent and reciprocal multiplier based on breakpoint
 
-        final long[] bid_multipliers_bid64_flat;
+        final long[] bid_multipliers_bid64_BID_UINT256;
         if (le128(c_w1, c_w0, m_min_w1, m_min_w0)) {
-            bid_multipliers_bid64_flat = bid_multipliers1_bid64_flat;
+            bid_multipliers_bid64_BID_UINT256 = bid_multipliers1_bid64_BID_UINT256;
         } else {
-            bid_multipliers_bid64_flat = bid_multipliers2_bid64_flat;
+            bid_multipliers_bid64_BID_UINT256 = bid_multipliers2_bid64_BID_UINT256;
             e_out = e_out + 1;
         }
         final int bid_multipliers_bid64_index = (1437 + e) << 2;
-        r_w0 = bid_multipliers_bid64_flat[bid_multipliers_bid64_index];
-        r_w1 = bid_multipliers_bid64_flat[bid_multipliers_bid64_index + 1];
-        r_w2 = bid_multipliers_bid64_flat[bid_multipliers_bid64_index + 2];
-        r_w3 = bid_multipliers_bid64_flat[bid_multipliers_bid64_index + 3];
+        r_w0 = bid_multipliers_bid64_BID_UINT256[bid_multipliers_bid64_index];
+        r_w1 = bid_multipliers_bid64_BID_UINT256[bid_multipliers_bid64_index + 1];
+        r_w2 = bid_multipliers_bid64_BID_UINT256[bid_multipliers_bid64_index + 2];
+        r_w3 = bid_multipliers_bid64_BID_UINT256[bid_multipliers_bid64_index + 3];
 
         // Do the reciprocal multiplication
 
@@ -408,8 +407,8 @@ class JavaImplCastBinary64 {
 
         final int bid_roundbound_128_index = ((rnd_mode << 2) + ((s & 1) << 1) + (int) (c_prov & 1)) << 1;
         if (lt128
-            (bid_roundbound_128_flat[bid_roundbound_128_index + 1],
-                bid_roundbound_128_flat[bid_roundbound_128_index], z_w4, z_w3)) {
+            (bid_roundbound_128_BID_UINT128[bid_roundbound_128_index + 1],
+                bid_roundbound_128_BID_UINT128[bid_roundbound_128_index], z_w4, z_w3)) {
             c_prov = c_prov + 1;
             if (c_prov == 10000000000000000L) {
                 c_prov = 1000000000000000L;
@@ -502,24 +501,24 @@ class JavaImplCastBinary64 {
         // Look up the breakpoint and approximate exponent
 
         final int bid_breakpoints_binary64_index = (358 + e) << 1;
-        m_min_w0 = bid_breakpoints_binary64_flat[bid_breakpoints_binary64_index];
-        m_min_w1 = bid_breakpoints_binary64_flat[bid_breakpoints_binary64_index + 1];
+        m_min_w0 = bid_breakpoints_binary64_BID_UINT128[bid_breakpoints_binary64_index];
+        m_min_w1 = bid_breakpoints_binary64_BID_UINT128[bid_breakpoints_binary64_index + 1];
         e_out = bid_exponents_binary64[358 + e] - k;
 
         // Choose provisional exponent and reciprocal multiplier based on breakpoint
 
-        final long[] bid_multipliers_binary64_flat;
+        final long[] bid_multipliers_binary64_BID_UINT256;
         if (le128(c_w1, c_w0, m_min_w1, m_min_w0)) {
-            bid_multipliers_binary64_flat = bid_multipliers1_binary64_flat;
+            bid_multipliers_binary64_BID_UINT256 = bid_multipliers1_binary64_BID_UINT256;
         } else {
-            bid_multipliers_binary64_flat = bid_multipliers2_binary64_flat;
+            bid_multipliers_binary64_BID_UINT256 = bid_multipliers2_binary64_BID_UINT256;
             e_out = e_out + 1;
         }
         final int bid_multipliers_binary64_index = (358 + e) << 2;
-        r_w0 = bid_multipliers_binary64_flat[bid_multipliers_binary64_index];
-        r_w1 = bid_multipliers_binary64_flat[bid_multipliers_binary64_index + 1];
-        r_w2 = bid_multipliers_binary64_flat[bid_multipliers_binary64_index + 2];
-        r_w3 = bid_multipliers_binary64_flat[bid_multipliers_binary64_index + 3];
+        r_w0 = bid_multipliers_binary64_BID_UINT256[bid_multipliers_binary64_index];
+        r_w1 = bid_multipliers_binary64_BID_UINT256[bid_multipliers_binary64_index + 1];
+        r_w2 = bid_multipliers_binary64_BID_UINT256[bid_multipliers_binary64_index + 2];
+        r_w3 = bid_multipliers_binary64_BID_UINT256[bid_multipliers_binary64_index + 3];
 
         // Do the reciprocal multiplication
 
@@ -644,8 +643,8 @@ class JavaImplCastBinary64 {
 
         final int bid_roundbound_128_index = ((rnd_mode << 2) + ((s & 1) << 1) + (int) (c_prov & 1)) << 1;
         if (lt128
-            (bid_roundbound_128_flat[bid_roundbound_128_index + 1],
-                bid_roundbound_128_flat[bid_roundbound_128_index], z_w4, z_w3)) {
+            (bid_roundbound_128_BID_UINT128[bid_roundbound_128_index + 1],
+                bid_roundbound_128_BID_UINT128[bid_roundbound_128_index], z_w4, z_w3)) {
             c_prov = c_prov + 1;
             if (c_prov == (1L << 53)) {
                 c_prov = 1L << 52;
@@ -778,7 +777,7 @@ class JavaImplCastBinary64 {
         return (n == 0 ? 64 : ctz64_1bit(n & -n));
     }
 
-    static final long[] /*BID_UINT128*/ bid_coefflimits_bid64_flat = {
+    static final long[] /*BID_UINT128*/ bid_coefflimits_bid64_BID_UINT128 = {
         0x002386F26FC10000L, 0x0000000000000000L,
         0x00071AFD498D0000L, 0x0000000000000000L,
         0x00016BCC41E90000L, 0x0000000000000000L,
@@ -830,7 +829,7 @@ class JavaImplCastBinary64 {
         0x0000000000000000L, 0x0000000000000000L,
     };
 
-    static final long[] /*BID_UINT128*/ bid_power_five_flat = {
+    static final long[] /*BID_UINT128*/ bid_power_five_BID_UINT128 = {
         0x0000000000000001L, 0x0000000000000000L,
         0x0000000000000005L, 0x0000000000000000L,
         0x0000000000000019L, 0x0000000000000000L,
@@ -882,7 +881,7 @@ class JavaImplCastBinary64 {
         0x95D69670B12B7F41L, 0x0000AF298D050E43L,
     };
 
-    static final long[] /*BID_UINT128*/ bid_roundbound_128_flat = {
+    static final long[] /*BID_UINT128*/ bid_roundbound_128_BID_UINT128 = {
         0x0000000000000000L, 0x8000000000000000L,
         0xFFFFFFFFFFFFFFFFL, 0x7FFFFFFFFFFFFFFFL,
         0x0000000000000000L, 0x8000000000000000L,
@@ -1080,13 +1079,13 @@ class JavaImplCastBinary64 {
 
     static {
         final String root = JavaImplCastBinary64.class.getPackage().getName().replace('.', '/') + '/';
-        bid_breakpoints_bid64_flat = loadResource(root + "bid_breakpoints_bid64.bin", bid_exponents_bid64.length * 2);
-        bid_multipliers1_bid64_flat = loadResource(root + "bid_multipliers1_bid64.bin", bid_exponents_bid64.length * 4);
-        bid_multipliers2_bid64_flat = loadResource(root + "bid_multipliers2_bid64.bin", bid_exponents_bid64.length * 4);
+        bid_breakpoints_bid64_BID_UINT128 = loadResource(root + "bid_breakpoints_bid64.bin", bid_exponents_bid64.length * 2);
+        bid_multipliers1_bid64_BID_UINT256 = loadResource(root + "bid_multipliers1_bid64.bin", bid_exponents_bid64.length * 4);
+        bid_multipliers2_bid64_BID_UINT256 = loadResource(root + "bid_multipliers2_bid64.bin", bid_exponents_bid64.length * 4);
 
-        bid_breakpoints_binary64_flat = loadResource(root + "bid_breakpoints_binary64.bin", bid_exponents_binary64.length * 2);
-        bid_multipliers1_binary64_flat = loadResource(root + "bid_multipliers1_binary64.bin", bid_exponents_binary64.length * 4);
-        bid_multipliers2_binary64_flat = loadResource(root + "bid_multipliers2_binary64.bin", bid_exponents_binary64.length * 4);
+        bid_breakpoints_binary64_BID_UINT128 = loadResource(root + "bid_breakpoints_binary64.bin", bid_exponents_binary64.length * 2);
+        bid_multipliers1_binary64_BID_UINT256 = loadResource(root + "bid_multipliers1_binary64.bin", bid_exponents_binary64.length * 4);
+        bid_multipliers2_binary64_BID_UINT256 = loadResource(root + "bid_multipliers2_binary64.bin", bid_exponents_binary64.length * 4);
     }
 
     static long[] loadResource(final String resourceName, final int requiredSize) {
@@ -1142,11 +1141,11 @@ class JavaImplCastBinary64 {
         }
     }
 
-    static final long[] /*BID_UINT128*/ bid_breakpoints_bid64_flat;
-    static final long[] /*BID_UINT256*/ bid_multipliers1_bid64_flat;
-    static final long[] /*BID_UINT256*/ bid_multipliers2_bid64_flat;
+    static final long[] /*BID_UINT128*/ bid_breakpoints_bid64_BID_UINT128;
+    static final long[] /*BID_UINT256*/ bid_multipliers1_bid64_BID_UINT256;
+    static final long[] /*BID_UINT256*/ bid_multipliers2_bid64_BID_UINT256;
 
-    static final long[] /*BID_UINT128*/ bid_breakpoints_binary64_flat;
-    static final long[] /*BID_UINT256*/ bid_multipliers1_binary64_flat;
-    static final long[] /*BID_UINT256*/ bid_multipliers2_binary64_flat;
+    static final long[] /*BID_UINT128*/ bid_breakpoints_binary64_BID_UINT128;
+    static final long[] /*BID_UINT256*/ bid_multipliers1_binary64_BID_UINT256;
+    static final long[] /*BID_UINT256*/ bid_multipliers2_binary64_BID_UINT256;
 }

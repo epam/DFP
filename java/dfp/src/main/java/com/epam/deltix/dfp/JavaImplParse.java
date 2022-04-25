@@ -8,12 +8,6 @@ class JavaImplParse {
     private JavaImplParse() {
     }
 
-    public static final int BID_ROUNDING_TO_NEAREST = 0x00000;
-    public static final int BID_ROUNDING_DOWN = 0x00001;
-    public static final int BID_ROUNDING_UP = 0x00002;
-    public static final int BID_ROUNDING_TO_ZERO = 0x00003;
-    public static final int BID_ROUNDING_TIES_AWAY = 0x00004;
-
     public static final int BID_EXACT_STATUS = 0x00000000;
 
     public static final int DEC_FE_INVALID = 0x01;
@@ -34,7 +28,6 @@ class JavaImplParse {
     public static final int BID_INVALID_FORMAT = 0x10000;
 
     //public static final int MAX_FORMAT_DIGITS = 16;
-    public static final int DECIMAL_EXPONENT_BIAS = 398;
     public static final int MAX_DECIMAL_EXPONENT = 767;
 
     private static char tolower_macro(char x) {
@@ -398,7 +391,7 @@ class JavaImplParse {
         public long w0, w1;
     }
 
-    public static long[] bid_reciprocals10_128_flat = {
+    public static long[] /*BID_UINT128*/ bid_reciprocals10_128_BID_UINT128 = {
         0L, 0L,    // 0 extra digits
         0x3333333333333334L, 0x3333333333333333L,    // 1 extra digit
         0x51eb851eb851eb86L, 0x051eb851eb851eb8L,    // 2 extra digits
@@ -510,21 +503,18 @@ class JavaImplParse {
         //__mul_64x128_full(out QH, out Q_low, C128.w0, bid_reciprocals10_128_flat[extra_digits << 1], bid_reciprocals10_128_flat[(extra_digits << 1) + 1]);
         //public static void __mul_64x128_full(/*out*/ long Ph, /*out*/ final BID_UINT128 Ql, final long A, final long B_w0, final long B_w1)
         {
-            final long _A = C128_w0;
-            final long _B_w0 = bid_reciprocals10_128_flat[extra_digits << 1];
-            final long _B_w1 = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
+            final long _B_w0 = bid_reciprocals10_128_BID_UINT128[extra_digits << 1];
+            final long _B_w1 = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1];
 
             long _ALBL_w0, _ALBL_w1, _ALBH_w0, _ALBH_w1, _QM2_w0, _QM2_w1;
 
             //__mul_64x64_to_128(out ALBH, A, B.w1);
             {
-                final long __CX = _A;
-                final long __CY = _B_w1;
                 long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
+                __CXH = C128_w0 >>> 32;
+                __CXL = LONG_LOW_PART & C128_w0;
+                __CYH = _B_w1 >>> 32;
+                __CYL = LONG_LOW_PART & _B_w1;
 
                 __PM = __CXH * __CYL;
                 __PH = __CXH * __CYH;
@@ -538,13 +528,11 @@ class JavaImplParse {
             }
             //__mul_64x64_to_128(out ALBL, A, B.w0);
             {
-                final long __CX = _A;
-                final long __CY = _B_w0;
                 long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
+                __CXH = C128_w0 >>> 32;
+                __CXL = LONG_LOW_PART & C128_w0;
+                __CYH = _B_w0 >>> 32;
+                __CYL = LONG_LOW_PART & _B_w0;
 
                 __PM = __CXH * __CYL;
                 __PH = __CXH * __CYH;
@@ -560,13 +548,10 @@ class JavaImplParse {
             Q_low_w0 = _ALBL_w0;
             //__add_128_64(out QM2, ALBH, ALBL.w1);
             {
-                final long __A128_w0 = _ALBH_w0;
-                final long __A128_w1 = _ALBH_w1;
-                final long __B64 = _ALBL_w1;
                 long R64H;
-                R64H = __A128_w1;
-                _QM2_w0 = (__B64) + __A128_w0;
-                if ((UnsignedLong.isLess(_QM2_w0, __B64)))
+                R64H = _ALBH_w1;
+                _QM2_w0 = (_ALBL_w1) + _ALBH_w0;
+                if ((UnsignedLong.isLess(_QM2_w0, _ALBL_w1)))
                     R64H++;
                 _QM2_w1 = R64H;
             }
@@ -592,9 +577,9 @@ class JavaImplParse {
                 remainder_h = remainder_h & QH;
 
                 if (remainder_h == 0
-                    && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]))
-                    || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                    && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]))))) {
+                    && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]))
+                    || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]
+                    && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) /*+ 0*/]))))) {
                     _C64--;
                 }
             }
@@ -612,17 +597,17 @@ class JavaImplParse {
                 case BID_ROUNDING_TIES_AWAY:
                     // test whether fractional part is 0
                     if (remainder_h == 0x8000000000000000L
-                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]))
-                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0])))))
+                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]))
+                        || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]
+                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) /*+ 0*/])))))
                         status = BID_EXACT_STATUS;
                     break;
                 case BID_ROUNDING_DOWN:
                 case BID_ROUNDING_TO_ZERO:
                     if (remainder_h == 0
-                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]))
-                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0])))))
+                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]))
+                        || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]
+                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) /*+ 0*/])))))
                         status = BID_EXACT_STATUS;
                     break;
                 default:
@@ -630,23 +615,19 @@ class JavaImplParse {
                     long CY;
                     //__add_carry_out(out Stemp_w0, out CY, Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]);
                 {
-                    final long __X = Q_low_w0;
-                    final long __Y = bid_reciprocals10_128_flat[(extra_digits << 1) + 0];
+                    final long __Y = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) /*+ 0*/];
 
-                    final long __X1 = __X;
-                    Stemp_w0 = __X + __Y;
-                    CY = (UnsignedLong.isLess(Stemp_w0, __X1)) ? 1L : 0;
+                    Stemp_w0 = Q_low_w0 + __Y;
+                    CY = (UnsignedLong.isLess(Stemp_w0, Q_low_w0)) ? 1L : 0;
                 }
                 //__add_carry_in_out(out Stemp_w1, out carry, Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1], CY);
                 {
-                    final long __X = Q_low_w1;
-                    final long __Y = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
-                    final long __CI = CY;
+                    final long __Y = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1];
 
                     final long __X1;
-                    __X1 = __X + __CI;
+                    __X1 = Q_low_w1 + CY;
                     Stemp_w1 = __X1 + __Y;
-                    carry = ((UnsignedLong.isLess(Stemp_w1, __X1)) || (UnsignedLong.isLess(__X1, __CI))) ? 1L : 0;
+                    carry = ((UnsignedLong.isLess(Stemp_w1, __X1)) || (UnsignedLong.isLess(__X1, CY))) ? 1L : 0;
                 }
 
                 if ((UnsignedLong.isGreaterOrEqual((remainder_h >>> (64 - amount)) + carry, 1L << amount)))
@@ -701,21 +682,18 @@ class JavaImplParse {
                 //public static void __mul_64x128_full(/*out*/ long Ph, /*out*/ final BID_UINT128 Ql, final long A, final long B_w0, final long B_w1)
                 {
 
-                    final long _A = coeff;
-                    final long _B_w0 = bid_reciprocals10_128_flat[extra_digits << 1];
-                    final long _B_w1 = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
+                    final long _B_w0 = bid_reciprocals10_128_BID_UINT128[extra_digits << 1];
+                    final long _B_w1 = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1];
 
                     long _ALBL_w0, _ALBL_w1, _ALBH_w0, _ALBH_w1, _QM2_w0, _QM2_w1;
 
                     //__mul_64x64_to_128(out ALBH, A, B.w1);
                     {
-                        final long __CX = _A;
-                        final long __CY = _B_w1;
                         long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = __CX >>> 32;
-                        __CXL = LONG_LOW_PART & __CX;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
+                        __CXH = coeff >>> 32;
+                        __CXL = LONG_LOW_PART & coeff;
+                        __CYH = _B_w1 >>> 32;
+                        __CYL = LONG_LOW_PART & _B_w1;
 
                         __PM = __CXH * __CYL;
                         __PH = __CXH * __CYH;
@@ -729,13 +707,11 @@ class JavaImplParse {
                     }
                     //__mul_64x64_to_128(out ALBL, A, B.w0);
                     {
-                        final long __CX = _A;
-                        final long __CY = _B_w0;
                         long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = __CX >>> 32;
-                        __CXL = LONG_LOW_PART & __CX;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
+                        __CXH = coeff >>> 32;
+                        __CXL = LONG_LOW_PART & coeff;
+                        __CYH = _B_w0 >>> 32;
+                        __CYL = LONG_LOW_PART & _B_w0;
 
                         __PM = __CXH * __CYL;
                         __PH = __CXH * __CYH;
@@ -751,13 +727,10 @@ class JavaImplParse {
                     Q_low_w0 = _ALBL_w0;
                     //__add_128_64(out QM2, ALBH, ALBL.w1);
                     {
-                        final long __A128_w0 = _ALBH_w0;
-                        final long __A128_w1 = _ALBH_w1;
-                        final long __B64 = _ALBL_w1;
                         long R64H;
-                        R64H = __A128_w1;
-                        _QM2_w0 = (__B64) + __A128_w0;
-                        if ((UnsignedLong.isLess(_QM2_w0, __B64)))
+                        R64H = _ALBH_w1;
+                        _QM2_w0 = (_ALBL_w1) + _ALBH_w0;
+                        if ((UnsignedLong.isLess(_QM2_w0, _ALBL_w1)))
                             R64H++;
                         _QM2_w1 = R64H;
                     }
@@ -782,9 +755,9 @@ class JavaImplParse {
                         remainder_h = remainder_h & QH;
 
                         if (remainder_h == 0
-                            && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]))
-                            || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                            && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]))))) {
+                            && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]))
+                            || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]
+                            && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) /*+ 0*/]))))) {
                             _C64--;
                         }
                     }
@@ -802,17 +775,17 @@ class JavaImplParse {
                         case BID_ROUNDING_TIES_AWAY:
                             // test whether fractional part is 0
                             if (remainder_h == 0x8000000000000000L
-                                && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]))
-                                || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                                && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0])))))
+                                && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]))
+                                || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]
+                                && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) /*+ 0*/])))))
                                 status = BID_EXACT_STATUS;
                             break;
                         case BID_ROUNDING_DOWN:
                         case BID_ROUNDING_TO_ZERO:
                             if (remainder_h == 0
-                                && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1])))
-                                || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                                && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]))))
+                                && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1])))
+                                || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]
+                                && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) /*+ 0*/]))))
                                 status = BID_EXACT_STATUS;
                             break;
                         default:
@@ -820,23 +793,19 @@ class JavaImplParse {
                             long CY;
                             //__add_carry_out(out Stemp_w0, out CY, Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]);
                         {
-                            final long __X = Q_low_w0;
-                            final long __Y = bid_reciprocals10_128_flat[(extra_digits << 1) + 0];
+                            final long __Y = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) /*+ 0*/];
 
-                            final long __X1 = __X;
-                            Stemp_w0 = __X + __Y;
-                            CY = (UnsignedLong.isLess(Stemp_w0, __X1)) ? 1L : 0;
+                            Stemp_w0 = Q_low_w0 + __Y;
+                            CY = (UnsignedLong.isLess(Stemp_w0, Q_low_w0)) ? 1L : 0;
                         }
                         //__add_carry_in_out(out Stemp_w1, out carry, Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1], CY);
                         {
-                            final long __X = Q_low_w1;
-                            final long __Y = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
-                            final long __CI = CY;
+                            final long __Y = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1];
 
                             final long __X1;
-                            __X1 = __X + __CI;
+                            __X1 = Q_low_w1 + CY;
                             Stemp_w1 = __X1 + __Y;
-                            carry = ((UnsignedLong.isLess(Stemp_w1, __X1)) || (UnsignedLong.isLess(__X1, __CI))) ? 1L : 0;
+                            carry = ((UnsignedLong.isLess(Stemp_w1, __X1)) || (UnsignedLong.isLess(__X1, CY))) ? 1L : 0;
                         }
 
                         if ((UnsignedLong.isGreaterOrEqual((remainder_h >>> (64 - amount)) + carry, 1L << amount)))

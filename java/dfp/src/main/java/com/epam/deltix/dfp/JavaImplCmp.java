@@ -12,7 +12,6 @@ class JavaImplCmp {
     static final long MASK_BINARY_EXPONENT2 = 0x1ff8000000000000L;
     static final long MASK_BINARY_SIG2 = 0x0007ffffffffffffL;
     static final long MASK_BINARY_OR2 = 0x0020000000000000L;
-    static final int UPPER_EXPON_LIMIT = 51;
     static final long MASK_EXP = 0x7ffe000000000000L;
     static final long MASK_EXP2 = 0x1fff800000000000L;
     static final long MASK_SPECIAL = 0x7800000000000000L;

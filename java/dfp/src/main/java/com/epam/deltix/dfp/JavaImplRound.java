@@ -1,14 +1,8 @@
 package com.epam.deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_DOWN;
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_TIES_AWAY;
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_TO_NEAREST;
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_TO_ZERO;
-import static com.epam.deltix.dfp.JavaImplAdd.BID_ROUNDING_UP;
-import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
+import static com.epam.deltix.dfp.JavaImplAdd.*;
 import static com.epam.deltix.dfp.JavaImplCast.*;
 import static com.epam.deltix.dfp.JavaImplCmp.*;
-import static com.epam.deltix.dfp.JavaImplParse.*;
 
 class JavaImplRound {
     private JavaImplRound() {

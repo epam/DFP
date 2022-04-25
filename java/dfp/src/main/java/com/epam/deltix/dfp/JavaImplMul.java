@@ -259,8 +259,8 @@ class JavaImplMul {
             // get number of decimal digits in the product
             digits_p = bid_estimate_decimal_digits[bp];
             if (!(__unsigned_compare_gt_128(
-                bid_power10_table_128_flat[(digits_p << 1) + 0],
-                bid_power10_table_128_flat[(digits_p << 1) + 1], P_w0, P_w1)))
+                bid_power10_table_128_BID_UINT128[(digits_p << 1) + 0],
+                bid_power10_table_128_BID_UINT128[(digits_p << 1) + 1], P_w0, P_w1)))
                 digits_p++;    // if bid_power10_table_128[digits_p] <= P
 
             // determine number of decimal digits to be rounded out
@@ -284,8 +284,8 @@ class JavaImplMul {
                         {
                             final long _A_w0 = P_w0;
                             final long _A_w1 = P_w1;
-                            final long _B_w0 = bid_reciprocals10_128_flat[(16 << 1) + 0];
-                            final long _B_w1 = bid_reciprocals10_128_flat[(16 << 1) + 1];
+                            final long _B_w0 = bid_reciprocals10_128_BID_UINT128[(16 << 1) /*+ 0*/];
+                            final long _B_w1 = bid_reciprocals10_128_BID_UINT128[(16 << 1) + 1];
 
                             long _ALBL_w0, _ALBH_w0, _AHBL_w0, _AHBH_w0, _QM_w0, _QM2_w0;
                             long _ALBL_w1, _ALBH_w1, _AHBL_w1, _AHBH_w1, _QM_w1, _QM2_w1;
@@ -439,9 +439,9 @@ class JavaImplMul {
                         remainder_h = remainder_h & Q_high_w0;
 
                         extra_digits -= 16;
-                        if (remainder_h != 0 || ((UnsignedLong.isGreater(Q_low_w1, bid_reciprocals10_128_flat[(16 << 1) + 1]))
-                            || (Q_low_w1 == bid_reciprocals10_128_flat[(16 << 1) + 1]
-                            && (UnsignedLong.isGreaterOrEqual(Q_low_w0, bid_reciprocals10_128_flat[(16 << 1) + 0]))))) {
+                        if (remainder_h != 0 || ((UnsignedLong.isGreater(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(16 << 1) + 1]))
+                            || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(16 << 1) + 1]
+                            && (UnsignedLong.isGreaterOrEqual(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(16 << 1) + 0]))))) {
                             round_up = 1;
                             // __set_status_flags(pfpsf, BID_UNDERFLOW_EXCEPTION | BID_INEXACT_EXCEPTION);
                             P_w0 = (P_w0 << 3) + (P_w0 << 1);
@@ -479,8 +479,8 @@ class JavaImplMul {
                 {
                     final long _A_w0 = P_w0;
                     final long _A_w1 = P_w1;
-                    final long _B_w0 = bid_reciprocals10_128_flat[(extra_digits << 1) + 0];
-                    final long _B_w1 = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
+                    final long _B_w0 = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 0];
+                    final long _B_w1 = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1];
 
                     long _ALBL_w0, _ALBH_w0, _AHBL_w0, _AHBH_w0, _QM_w0, _QM2_w0;
                     long _ALBL_w1, _ALBH_w1, _AHBL_w1, _AHBH_w1, _QM_w1, _QM2_w1;
@@ -641,9 +641,9 @@ class JavaImplMul {
 
                     // test whether fractional part is 0
                     if (remainder_h == 0
-                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]))
-                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]))))) {
+                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]))
+                        || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]
+                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 0]))))) {
                         C64--;
                     }
                 }
@@ -658,7 +658,7 @@ class JavaImplMul {
         }
     }
 
-    static final long[] bid_power10_table_128_flat = {
+    static final long[] /*BID_UINT128*/ bid_power10_table_128_BID_UINT128 = {
         0x0000000000000001L, 0x0000000000000000L,    // 10^0
         0x000000000000000aL, 0x0000000000000000L,    // 10^1
         0x0000000000000064L, 0x0000000000000000L,    // 10^2
@@ -725,8 +725,8 @@ class JavaImplMul {
                 {
 
                     final long _A = C128_w0;
-                    final long _B_w0 = bid_reciprocals10_128_flat[extra_digits << 1];
-                    final long _B_w1 = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
+                    final long _B_w0 = bid_reciprocals10_128_BID_UINT128[extra_digits << 1];
+                    final long _B_w1 = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1];
 
                     long _ALBL_w0, _ALBL_w1, _ALBH_w0, _ALBH_w1, _QM2_w0, _QM2_w1;
 
@@ -805,9 +805,9 @@ class JavaImplMul {
                     remainder_h = remainder_h & QH;
 
                     if (remainder_h == 0
-                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]))
-                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]))))) {
+                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]))
+                        || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]
+                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 0]))))) {
                         _C64--;
                     }
                 }
@@ -875,8 +875,8 @@ class JavaImplMul {
                 {
 
                     final long _A = coeff;
-                    final long _B_w0 = bid_reciprocals10_128_flat[extra_digits << 1];
-                    final long _B_w1 = bid_reciprocals10_128_flat[(extra_digits << 1) + 1];
+                    final long _B_w0 = bid_reciprocals10_128_BID_UINT128[extra_digits << 1];
+                    final long _B_w1 = bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1];
 
                     long _ALBL_w0, _ALBL_w1, _ALBH_w0, _ALBH_w1, _QM2_w0, _QM2_w1;
 
@@ -955,9 +955,9 @@ class JavaImplMul {
                     remainder_h = remainder_h & QH;
 
                     if (remainder_h == 0
-                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_flat[(extra_digits << 1) + 1]))
-                        || (Q_low_w1 == bid_reciprocals10_128_flat[(extra_digits << 1) + 1]
-                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_flat[(extra_digits << 1) + 0]))))) {
+                        && ((UnsignedLong.isLess(Q_low_w1, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]))
+                        || (Q_low_w1 == bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 1]
+                        && (UnsignedLong.isLess(Q_low_w0, bid_reciprocals10_128_BID_UINT128[(extra_digits << 1) + 0]))))) {
                         _C64--;
                     }
                 }
@@ -1012,7 +1012,12 @@ class JavaImplMul {
     //  return 0 if A<=B
     //  non-zero if A>B
     static boolean __unsigned_compare_gt_128(final long A_w0, final long A_w1, final long B_w0, final long B_w1) {
-        return ((UnsignedLong.isGreater(A_w1, B_w1))) ||
-            ((A_w1 == B_w1) && ((UnsignedLong.isGreater(A_w0, B_w0))));
+        return UnsignedLong.isGreater(A_w1, B_w1) ||
+            (A_w1 == B_w1 && UnsignedLong.isGreater(A_w0, B_w0));
+    }
+
+    static boolean __unsigned_compare_ge_128(final long A_w0, final long A_w1, final long B_w0, final long B_w1) {
+        return UnsignedLong.isGreater(A_w1, B_w1) ||
+            (A_w1 == B_w1 && UnsignedLong.isGreaterOrEqual(A_w0, B_w0));
     }
 }

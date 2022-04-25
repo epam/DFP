@@ -1,8 +1,7 @@
 package com.epam.deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
+import static com.epam.deltix.dfp.JavaImplAdd.*;
 import static com.epam.deltix.dfp.JavaImplCmp.*;
-import static com.epam.deltix.dfp.JavaImplParse.*;
 
 class JavaImplCast {
     private JavaImplCast() {
@@ -511,7 +510,7 @@ class JavaImplCast {
     // bid_ten2mk128trunc[] contains T*, the top Ex >= 128 bits of 10^(-k),
     // for 1 <= k <= 34
     // the 64-bit word order is L, H
-    static long[] /*BID_UINT128*/ bid_ten2mk128trunc_flat = {
+    static long[] /*BID_UINT128*/ bid_ten2mk128trunc_BID_UINT128 = {
         0x9999999999999999L, 0x1999999999999999L,    //  10^(-1) * 2^128
         0x28f5c28f5c28f5c2L, 0x028f5c28f5c28f5cL,    //  10^(-2) * 2^128
         0x9db22d0e56041893L, 0x004189374bc6a7efL,    //  10^(-3) * 2^128

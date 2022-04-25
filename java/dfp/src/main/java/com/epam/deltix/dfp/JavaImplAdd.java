@@ -182,40 +182,38 @@ class JavaImplAdd {
 
         // long valid_y = unpack_BID64(&sign_y, &exponent_y, &coefficient_y, y);
         {
-            {
-                sign_y = y & 0x8000000000000000L;
+            sign_y = y & 0x8000000000000000L;
 
-                if ((y & SPECIAL_ENCODING_MASK64) != SPECIAL_ENCODING_MASK64) {
-                    // exponent
-                    tmp = y >>> EXPONENT_SHIFT_SMALL64;
-                    exponent_y = (int) (tmp & EXPONENT_MASK64);
-                    // coefficient
-                    coefficient_y = (y & SMALL_COEFF_MASK64);
+            if ((y & SPECIAL_ENCODING_MASK64) != SPECIAL_ENCODING_MASK64) {
+                // exponent
+                tmp = y >>> EXPONENT_SHIFT_SMALL64;
+                exponent_y = (int) (tmp & EXPONENT_MASK64);
+                // coefficient
+                coefficient_y = (y & SMALL_COEFF_MASK64);
 
-                    valid_y = coefficient_y;
+                valid_y = coefficient_y;
+            } else {
+                // special encodings
+                // coefficient
+                long coeff = (y & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
+
+                if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
+                    exponent_y = 0;
+                    coefficient_y = y & 0xfe03ffffffffffffL;
+                    if ((UnsignedLong.isGreaterOrEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
+                        coefficient_y = y & 0xfe00000000000000L;
+                    if ((y & NAN_MASK64) == INFINITY_MASK64)
+                        coefficient_y = y & SINFINITY_MASK64;
+                    valid_y = 0;    // NaN or Infinity
                 } else {
-                    // special encodings
-                    // coefficient
-                    long coeff = (y & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
-
-                    if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
-                        exponent_y = 0;
-                        coefficient_y = y & 0xfe03ffffffffffffL;
-                        if ((UnsignedLong.isGreaterOrEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
-                            coefficient_y = y & 0xfe00000000000000L;
-                        if ((y & NAN_MASK64) == INFINITY_MASK64)
-                            coefficient_y = y & SINFINITY_MASK64;
-                        valid_y = 0;    // NaN or Infinity
-                    } else {
-                        // check for non-canonical values
-                        if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
-                            coeff = 0;
-                        coefficient_y = coeff;
-                        // get exponent
-                        tmp = y >>> EXPONENT_SHIFT_LARGE64;
-                        exponent_y = (int) (tmp & EXPONENT_MASK64);
-                        valid_y = coeff;
-                    }
+                    // check for non-canonical values
+                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                        coeff = 0;
+                    coefficient_y = coeff;
+                    // get exponent
+                    tmp = y >>> EXPONENT_SHIFT_LARGE64;
+                    exponent_y = (int) (tmp & EXPONENT_MASK64);
+                    valid_y = coeff;
                 }
             }
         }
@@ -907,7 +905,7 @@ class JavaImplAdd {
             500000000000000000L    // 18 extra digits
         };
 
-    static final long[][] bid_round_const_table = {
+    static final long[][] /*BID_UINT64*/ bid_round_const_table = {
         bid_round_const_table_nearest,
         {    // RD
             0L,    // 0 extra digits
