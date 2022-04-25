@@ -76,7 +76,7 @@ class JavaImpl {
     public static long fromFixedPoint32(final int mantissa, final int numDigits) {
         return numDigits + (Integer.MIN_VALUE + BIASED_EXPONENT_MAX_VALUE - EXPONENT_BIAS)
             > (Integer.MIN_VALUE + BIASED_EXPONENT_MAX_VALUE) ?
-            NativeImpl.fromFixedPoint64(mantissa, numDigits) : fromFixedPointFastUnchecked(mantissa, numDigits);
+            Decimal64Utils.fromFixedPoint(mantissa, numDigits) : fromFixedPointFastUnchecked(mantissa, numDigits);
     }
 
 

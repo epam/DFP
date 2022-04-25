@@ -34,13 +34,13 @@ java {
 }
 
 sourceSets {
-    main.java.srcDirs += [
-        "$projectDir/dfp/src/main/java",
+    test.java.srcDirs += [
+        "$projectDir/dfp/src/test/java",
         "$projectDir/build/generated/sources/nativeWrappers",
         "$rootDir/NativeUtils/java/main/src/main/java",
         "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 
-    main.resources.srcDirs += "$rootDir/native/binJava/Release/"
+    test.resources.srcDirs += "$rootDir/native/binJava/Release/"
 }
 
 dependencies {
@@ -137,7 +137,6 @@ jar {
     from("$rootDir") {
         include 'intel-eula.txt'
     }
-    setEntryCompression ZipEntryCompression.STORED
 }
 
 jmh {
