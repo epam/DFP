@@ -16,27 +16,27 @@ namespace EPAM.Deltix.DFP
 		private const bool ToStringRemoveTrailingZeroes = true; // Controls if ToString removes trailing zeroes or not
 
 		#region Constants
-		public const UInt64 PositiveInfinity		= 0x7800000000000000UL;
-		public const UInt64 NegativeInfinity		= 0xF800000000000000UL;
-		public const UInt64 NaN						= 0x7C00000000000000UL;
-		public const UInt64 Null					= 0xFFFFFFFFFFFFFF80UL;	// = -0x80
+		public const UInt64 PositiveInfinity = 0x7800000000000000UL;
+		public const UInt64 NegativeInfinity = 0xF800000000000000UL;
+		public const UInt64 NaN = 0x7C00000000000000UL;
+		public const UInt64 Null = 0xFFFFFFFFFFFFFF80UL;    // = -0x80
 
-		public const UInt64 MinValue				= 0xF7FB86F26FC0FFFFUL;
-		public const UInt64 MaxValue				= 0x77FB86F26FC0FFFFUL;
+		public const UInt64 MinValue = 0xF7FB86F26FC0FFFFUL;
+		public const UInt64 MaxValue = 0x77FB86F26FC0FFFFUL;
 
-		public const UInt64 MinPositiveValue		= 0x0000000000000001UL;
-		public const UInt64 MaxNegativeValue		= 0x8000000000000001UL;
-		
-		public const UInt64 Zero					= 0x31C0000000000000UL; // e=0, m=0, sign=0
-		public const UInt64 One						= Zero + 1;		// = Zero + 1
-		public const UInt64 Two						= Zero + 2;
-		public const UInt64 Ten						= Zero + 10;
-		public const UInt64 Hundred					= Zero + 100;
-		public const UInt64 Thousand				= Zero + 1000;
-		public const UInt64 Million					= Zero + 1000000;
+		public const UInt64 MinPositiveValue = 0x0000000000000001UL;
+		public const UInt64 MaxNegativeValue = 0x8000000000000001UL;
 
-		public const UInt64 OneTenth				= 0x31A0000000000000UL + 1;
-		public const UInt64 OneHundredth			= 0x3180000000000000UL + 1;
+		public const UInt64 Zero = 0x31C0000000000000UL; // e=0, m=0, sign=0
+		public const UInt64 One = Zero + 1;     // = Zero + 1
+		public const UInt64 Two = Zero + 2;
+		public const UInt64 Ten = Zero + 10;
+		public const UInt64 Hundred = Zero + 100;
+		public const UInt64 Thousand = Zero + 1000;
+		public const UInt64 Million = Zero + 1000000;
+
+		public const UInt64 OneTenth = 0x31A0000000000000UL + 1;
+		public const UInt64 OneHundredth = 0x3180000000000000UL + 1;
 
 		public static BID_UINT64[] PowersOfTen = {
 			/*  0 */ 1L,
@@ -199,7 +199,7 @@ namespace EPAM.Deltix.DFP
 				Int32 signAndExp = ((Int16*)&dec)[1];
 				if (0 == ((UInt32*)&dec)[1] && mantissa64 <= 0x20000000000000)
 					return ((UInt64)signAndExp & SignMask) + mantissa64 +
-					       ((UInt64)(UInt32)(BaseExponent - signAndExp) << 53);
+						   ((UInt64)(UInt32)(BaseExponent - signAndExp) << 53);
 			}
 
 			return FromDecimalFallback(dec);
@@ -271,7 +271,7 @@ namespace EPAM.Deltix.DFP
 						return Zero;
 				}
 
-				NeedCanonize:
+			NeedCanonize:
 				for (Int64 n = m; ;)
 				{
 					Int64 mNext = n / 10;
@@ -282,7 +282,7 @@ namespace EPAM.Deltix.DFP
 					signAndExp += 1L << ExponentShiftSmall;
 				}
 
-				NeedAdjustment:
+			NeedAdjustment:
 				// Check the last digit
 
 				Int64 m1 = m + 1;
@@ -365,7 +365,7 @@ namespace EPAM.Deltix.DFP
 
 		#region Rounding
 
-		public static UInt64 Round(UInt64 value, int n, RoundType roundType)
+		public static UInt64 Round(UInt64 value, int n, RoundingMode roundType)
 		{
 			if (!IsFinite(value))
 				return value;
@@ -429,10 +429,10 @@ namespace EPAM.Deltix.DFP
 			int addExponent = 0;
 			{ // Truncate all digits except last one
 				int absPower = -exponent;
-				if (absPower >= 16)
+				if (absPower >= MaxFormatDigits)
 				{
 					divFactor = MaxCoefficient + 1;
-					int expShift = 16;
+					int expShift = MaxFormatDigits;
 					addExponent = absPower - expShift;
 
 				}
@@ -445,27 +445,44 @@ namespace EPAM.Deltix.DFP
 			// Process last digit
 			switch (roundType)
 			{
-				case RoundType.Round:
-					partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
+				case RoundingMode.Up:
+					partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
 					break;
 
-				case RoundType.Trunc:
+				case RoundingMode.Down:
 					partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
 					break;
 
-				case RoundType.Floor:
+				case RoundingMode.Ceiling:
+					if (partsSignMask == 0/*!parts.isNegative()*/)
+						partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+					else
+						partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+					break;
+
+				case RoundingMode.Floor:
 					if (partsSignMask == 0/*!parts.isNegative()*/)
 						partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
 					else
 						partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
 					break;
 
-				case RoundType.Ceil:
-					if (partsSignMask == 0/*!parts.isNegative()*/)
-						partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
-					else
-						partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+				case RoundingMode.HalfUp:
+					partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
 					break;
+
+				case RoundingMode.HalfDown:
+					partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
+					break;
+
+				case RoundingMode.HalfEven:
+					partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
+					break;
+
+				case RoundingMode.Unnecessary:
+					if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/ || partsCoefficient % divFactor != 0)
+						throw new ArithmeticException("Rounding necessary");
+					return value;
 
 				default:
 					throw new ArgumentException("Unsupported roundType(=" + roundType + ") value.");
@@ -484,7 +501,7 @@ namespace EPAM.Deltix.DFP
 		#region Formatting & Parsing
 
 		public static String ToString(UInt64 value)
-		{ 
+		{
 			if (!IsFinite(value))
 			{
 				return
@@ -535,7 +552,8 @@ namespace EPAM.Deltix.DFP
 					for (int i = nZeros; i != 0; --i)
 						p[i] = '0';
 
-					do {
+					do
+					{
 						// This is to make the code generator generate 1 DIV instead of 2
 						Int64 old = coefficient + '0';
 						coefficient /= 10;
@@ -546,7 +564,9 @@ namespace EPAM.Deltix.DFP
 						*p-- = '-';
 
 					return new string(p + 1, 0, (int)(e - p));
-				} else {
+				}
+				else
+				{
 					int dotPos = BaseExponent - exponent;
 					int nAlloc = (20 + BaseExponent) - exponent;
 					char* s = stackalloc char[nAlloc];
@@ -557,7 +577,7 @@ namespace EPAM.Deltix.DFP
 						Int64 old = coefficient + '0';
 						coefficient /= 10;
 						*p = '.';
-						p += 0 == dotPos-- ? -1: 0; // Hopefully branch-free method to insert decimal dot
+						p += 0 == dotPos-- ? -1 : 0; // Hopefully branch-free method to insert decimal dot
 						*p-- = (char)(old - coefficient * 10); // = [old - new * 10]
 					} while (coefficient != 0);
 					// Haven't placed the dot yet?
@@ -615,7 +635,7 @@ namespace EPAM.Deltix.DFP
 			{
 				char* buffer = stackalloc char[MaxFormatDigits * 4];
 
-				char *bi = buffer + MaxFormatDigits * 2 + 2, be = bi;
+				char* bi = buffer + MaxFormatDigits * 2 + 2, be = bi;
 				while (coefficient > 0)
 				{
 					var c = coefficient;
@@ -852,52 +872,52 @@ namespace EPAM.Deltix.DFP
 			return sb.ToString();
 		}
 
-	#endregion
-	#region Conversion
+		#endregion
+		#region Conversion
 
-	#endregion
+		#endregion
 
-	#region Private constants
+		#region Private constants
 
-		public const UInt64 SignMask				= 0x8000000000000000UL;
+		public const UInt64 SignMask = 0x8000000000000000UL;
 
-		public const UInt64 InfinityMask			= 0x7800000000000000UL;
-		public const UInt64 SignedInfinityMask		= 0xF800000000000000UL;
+		public const UInt64 InfinityMask = 0x7800000000000000UL;
+		public const UInt64 SignedInfinityMask = 0xF800000000000000UL;
 
-		public const UInt64 NaNMask				= 0x7C00000000000000UL;
-		public const UInt64 SignalingNaNMask		= 0xFC00000000000000UL;
+		public const UInt64 NaNMask = 0x7C00000000000000UL;
+		public const UInt64 SignalingNaNMask = 0xFC00000000000000UL;
 
-		public const UInt64 SteeringBitsMask		= 0x6000000000000000UL;
-		public const UInt64 MaskBinarySig1			= 0x001FFFFFFFFFFFFFUL;
-		public const UInt64 MaskBinarySig2			= 0x0007FFFFFFFFFFFFUL;
-		public const UInt64 MaskBinaryOr2			= 0x0020000000000000UL;
+		public const UInt64 SteeringBitsMask = 0x6000000000000000UL;
+		public const UInt64 MaskBinarySig1 = 0x001FFFFFFFFFFFFFUL;
+		public const UInt64 MaskBinarySig2 = 0x0007FFFFFFFFFFFFUL;
+		public const UInt64 MaskBinaryOr2 = 0x0020000000000000UL;
 
-		public const UInt64 SpecialEncodingMask	= 0x6000000000000000UL;
+		public const UInt64 SpecialEncodingMask = 0x6000000000000000UL;
 
-		public const UInt64 LargeCoefficientMask	= 0x0007FFFFFFFFFFFFUL;
+		public const UInt64 LargeCoefficientMask = 0x0007FFFFFFFFFFFFUL;
 		public const UInt64 LargeCoefficientHighBits = 0x0020000000000000UL;
-		public const UInt64 SmallCoefficientMask	= 0x001FFFFFFFFFFFFFUL;
+		public const UInt64 SmallCoefficientMask = 0x001FFFFFFFFFFFFFUL;
 
-		public const UInt64 MinCoefficient			= 0UL;
-		public const UInt64 MaxCoefficient			= 9999999999999999UL;
+		public const UInt64 MinCoefficient = 0UL;
+		public const UInt64 MaxCoefficient = 9999999999999999UL;
 
-		public const UInt64 ShiftedExponentMask	= 0x3FF;
-		public const Int32 ExponentShiftLarge		= 51;
-		public const Int32 ExponentShiftSmall		= 53;
+		public const UInt64 ShiftedExponentMask = 0x3FF;
+		public const Int32 ExponentShiftLarge = 51;
+		public const Int32 ExponentShiftSmall = 53;
 		public const UInt64 LargeCoefficientExponentMask = ShiftedExponentMask << ExponentShiftLarge;
 		public const UInt64 SmallCoefficientExponentMask = ShiftedExponentMask << ExponentShiftSmall;
 
-		public const Int32 MinExponent				= -383;
-		public const Int32 MaxExponent				= 384;
-		public const Int32 BiasedExponentMaxValue	= 767;
-		public const Int32 BaseExponent			= 0x18E;
+		public const Int32 MinExponent = -383;
+		public const Int32 MaxExponent = 384;
+		public const Int32 BiasedExponentMaxValue = 767;
+		public const Int32 BaseExponent = 0x18E;
 
-		public const Int32 MaxFormatDigits			= 16;
-		public const Int32 BidRoundingToNearest	= 0x00000;
-		public const Int32 BidRoundingDown			= 0x00001;
-		public const Int32 BidRoundingUp			= 0x00002;
-		public const Int32 BidRoundingToZero		= 0x00003;
-		public const Int32 BidRoundingTiesAway		= 0x00004;
+		public const Int32 MaxFormatDigits = 16;
+		public const Int32 BidRoundingToNearest = 0x00000;
+		public const Int32 BidRoundingDown = 0x00001;
+		public const Int32 BidRoundingUp = 0x00002;
+		public const Int32 BidRoundingToZero = 0x00003;
+		public const Int32 BidRoundingTiesAway = 0x00004;
 
 		private static readonly UInt64[,] BidRoundConstTable = new UInt64[,]
 		{
@@ -1255,10 +1275,14 @@ namespace EPAM.Deltix.DFP
 					{
 						if (!isNegative)
 							r = MaxValue;
-					} else
-					if (roundingMode == BidRoundingToZero) { 
+					}
+					else
+					if (roundingMode == BidRoundingToZero)
+					{
 						r = sgn | MaxValue;
-					} else if (roundingMode == BidRoundingUp) { 	
+					}
+					else if (roundingMode == BidRoundingUp)
+					{
 						if (isNegative)
 							r = MinValue;
 					}
@@ -1321,7 +1345,7 @@ namespace EPAM.Deltix.DFP
 			coefficient = (x & LargeCoefficientMask) | LargeCoefficientHighBits;
 			if (coefficient >= 10000000000000000UL)
 				coefficient = 0;
-			
+
 			return coefficient;
 		}
 

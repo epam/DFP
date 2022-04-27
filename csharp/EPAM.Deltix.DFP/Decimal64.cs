@@ -734,7 +734,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
-		public Decimal64 Round(int n, RoundType roundType)
+		public Decimal64 Round(int n, RoundingMode roundType)
 		{
 			return new Decimal64(DotNetImpl.Round(Bits, n, roundType));
 		}
