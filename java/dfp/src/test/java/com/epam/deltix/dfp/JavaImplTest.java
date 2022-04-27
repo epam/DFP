@@ -5,10 +5,13 @@ import org.junit.Test;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Random;
 
 import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
+import static com.epam.deltix.dfp.Decimal64Utils.longValueChecked;
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
 import static org.junit.Assert.*;
@@ -310,147 +313,6 @@ public class JavaImplTest {
             throw new RuntimeException("TestValue(=" + Decimal64Utils.toString(value) + ") check error: refCond(=" + refCond + ") != testCond(" + testCond + ").");
     }
 
-    private static String round(String valueIn, final int n, final RoundType roundType) {
-        String value = valueIn;
-
-        boolean isNegSign = false;
-        if (value.charAt(0) == '-' || value.charAt(0) == '+') {
-            isNegSign = value.charAt(0) == '-';
-            value = value.substring(1);
-        }
-
-        if (value.equals("NaN") || value.equals("Infinity"))
-            return valueIn;
-
-        int latestPoint;
-        {
-            int dotPoint = value.indexOf('.');
-            if (dotPoint < 0)
-                dotPoint = value.length();
-            latestPoint = dotPoint + n + (n > 0 ? 0 : -1);
-            if (latestPoint >= value.length() - 1)
-                return (isNegSign ? "-" : "") + value;
-            if (latestPoint < 0) {
-                final String zerosStr;
-                {
-                    final StringBuilder zeros = new StringBuilder(-latestPoint);
-                    for (int i = 0; i < -latestPoint; ++i)
-                        zeros.append('0');
-                    zerosStr = zeros.toString();
-                }
-                value = zerosStr + value;
-                latestPoint += zerosStr.length();
-            }
-        }
-
-        {
-            value = '0' + value;
-            latestPoint += 1;
-        }
-
-        final String fixedPart = value.substring(0, latestPoint + 1);
-        final int fixedExp;
-        {
-            int dotPoint = value.indexOf('.');
-            if (dotPoint < 0)
-                dotPoint = value.length();
-            fixedExp = Math.max(0, dotPoint - 1 - latestPoint);
-        }
-        switch (roundType) {
-            case ROUND:
-                if (latestPoint + 1 >= value.length())
-                    return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-                char nextChar = '0';
-                if (latestPoint + 1 < value.length())
-                    nextChar = value.charAt(latestPoint + 1);
-                if (nextChar == '.')
-                    nextChar = latestPoint + 2 < value.length() ? value.charAt(latestPoint + 2) : '0';
-                return formatMantissaExp(isNegSign, nextChar >= '5' ? incMantissa(fixedPart) : fixedPart, fixedExp);
-            case TRUNC:
-                return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-            case FLOOR:
-                if (!isNegSign)
-                    return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-                else
-                    return formatMantissaExp(isNegSign, isNonZero(value, latestPoint + 1) ? incMantissa(fixedPart) : fixedPart, fixedExp);
-            case CEIL:
-                if (!isNegSign)
-                    return formatMantissaExp(isNegSign, isNonZero(value, latestPoint + 1) ? incMantissa(fixedPart) : fixedPart, fixedExp);
-                else
-                    return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-            default:
-                throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
-        }
-    }
-
-    private static String formatMantissaExp(final boolean isNegSign, String value, final int exp) {
-        if (exp > 0) {
-            final StringBuilder sb = new StringBuilder(exp);
-            for (int i = 0; i < exp; ++i)
-                sb.append('0');
-            value = value + sb;
-        }
-
-        {
-            int leftIndex;
-            for (leftIndex = 0; leftIndex < value.length(); ++leftIndex)
-                if (value.charAt(leftIndex) != '0')
-                    break;
-            if (leftIndex < value.length() && value.charAt(leftIndex) == '.')
-                leftIndex--;
-            value = value.substring(leftIndex);
-        }
-
-        {
-            final int dotIndex = value.indexOf('.');
-            if (dotIndex >= 0) {
-                int rightIndex = value.length();
-                while (rightIndex > dotIndex && (value.charAt(rightIndex - 1) == '0'))
-                    --rightIndex;
-                if (rightIndex - 1 == dotIndex)
-                    rightIndex = dotIndex;
-                value = value.substring(0, rightIndex);
-            }
-        }
-
-        return value.isEmpty() || value.equals("0") ? "0" : (isNegSign ? "-" : "") + value;
-    }
-
-    private static String incMantissa(final String str) {
-        char[] chars = str.toCharArray();
-        int carry = 1;
-        for (int ii = chars.length - 1; ii >= 0 && carry > 0; --ii) {
-            if (chars[ii] == '.' || chars[ii] == '-')
-                continue;
-            if (chars[ii] < '0' && chars[ii] > '9')
-                throw new IllegalArgumentException("Unsupported character at [" + ii + "] in string '" + str + "'.");
-            final int ch = chars[ii] - '0' + carry;
-            if (ch > 9) {
-                chars[ii] = '0';
-                carry = 1;
-            } else {
-                chars[ii] = (char) ('0' + ch);
-                carry = 0;
-            }
-        }
-        if (carry != 0) {
-            chars = Arrays.copyOf(chars, chars.length + 1);
-            final int firstDigit = chars[0] == '-' ? 1 : 0;
-            System.arraycopy(chars, firstDigit, chars, firstDigit + 1, chars.length - 1 - firstDigit);
-            chars[firstDigit] = '1';
-        }
-        return new String(chars);
-    }
-
-    private static boolean isNonZero(final String str, final int i) {
-        for (int ii = i, ie = str.length(); ii < ie; ++ii) {
-            final char c = str.charAt(ii);
-            if (c >= '1' && c <= '9')
-                return true;
-        }
-        return false;
-    }
-
     @Test
     public void TestRoundRandomly() throws Exception {
         final int randomPointMaxOffset = Decimal64Utils.MAX_SIGNIFICAND_DIGITS + Decimal64Utils.MAX_SIGNIFICAND_DIGITS / 4;
@@ -461,29 +323,14 @@ public class JavaImplTest {
                 Decimal64Utils.MIN_EXPONENT + randomPointMaxOffset,
                 Decimal64Utils.MAX_EXPONENT - randomPointMaxOffset);
 
+            final RoundingMode[] roundingModes = RoundingMode.values();
+
             for (int ri = 0; ri < NTests / 10 /* Test will be very slow without this division */ ; ++ri) {
                 final int randomOffset = random.generator.nextInt(randomPointMaxOffset * 2 + 1) - randomPointMaxOffset;
 
                 final long inValue = random.nextX();
                 final int roundPoint = random.getXExp() + randomOffset;
-                final RoundType roundType;
-                switch (random.generator.nextInt(4)) {
-                    case 0:
-                        roundType = RoundType.ROUND;
-                        break;
-                    case 1:
-                        roundType = RoundType.TRUNC;
-                        break;
-                    case 2:
-                        roundType = RoundType.FLOOR;
-                        break;
-                    case 3:
-                        roundType = RoundType.CEIL;
-                        break;
-                    default:
-                        throw new RuntimeException("Unsupported case for round type generation.");
-                }
-
+                final RoundingMode roundType = roundingModes[random.generator.nextInt(roundingModes.length)];
                 checkRound(inValue, -roundPoint, roundType);
             }
         });
@@ -493,28 +340,115 @@ public class JavaImplTest {
     public void TestRoundCase() {
         for (final long testValue : specialValues)
             for (final int roundPoint : new int[]{20, 10, 5, 3, 1, 0, -1, -2, -6, -11, -19})
-                for (final RoundType roundType : RoundType.values())
+                for (final RoundingMode roundType : RoundingMode.values())
                     checkRound(testValue, roundPoint, roundType);
 
-        checkRound(-5787416479386436811L, 1, RoundType.ROUND);
-        checkRound(3439124486823148033L, 1, RoundType.FLOOR);
-        checkRound(-1444740417884338647L, 0, RoundType.ROUND);
-        checkRound(3439028411434681001L, -7, RoundType.ROUND);
-        checkRound(-5778759999361643774L, 2, RoundType.ROUND);
-        checkRound(3448058746773778910L, -4, RoundType.CEIL);
-        checkRound(1417525816301142050L, -209, RoundType.CEIL);
-        checkRound(2996092184105885832L, -61, RoundType.CEIL);
-        checkRound(-922689384669825404L, -236, RoundType.FLOOR);
+        checkRound(0x2feb29430a256d21L, -1, RoundingMode.UP);
+        checkRound(-5787416479386436811L, 1, RoundingMode.HALF_UP);
+        checkRound(3439124486823148033L, 1, RoundingMode.FLOOR);
+        checkRound(-1444740417884338647L, 0, RoundingMode.HALF_UP);
+        checkRound(3439028411434681001L, -7, RoundingMode.HALF_UP);
+        checkRound(-5778759999361643774L, 2, RoundingMode.HALF_UP);
+        checkRound(3448058746773778910L, -4, RoundingMode.CEILING);
+        checkRound(1417525816301142050L, -209, RoundingMode.CEILING);
+        checkRound(2996092184105885832L, -61, RoundingMode.CEILING);
+        checkRound(-922689384669825404L, -236, RoundingMode.FLOOR);
     }
 
-    private static void checkRound(final long inValue, final int roundPoint, final RoundType roundType) {
-        final long testValue = Decimal64Utils.round(inValue, roundPoint, roundType);
-        final String inStr = Decimal64Utils.toString(inValue);
-        final String roundStr = round(inStr, roundPoint, roundType);
-        final String testStr = Decimal64Utils.toString(testValue);
-        if (!roundStr.equals(testStr))
-            throw new RuntimeException("Case checkRound(" + inValue + "L, " + roundPoint + ", RoundType." + roundType +
-                "); error: input value (=" + inStr + ") string rounding (=" + roundStr + ") != decimal rounding (=" + testStr + ")");
+    @Test
+    public void TestRoundFromJavadoc() {
+        final String[] inputStrings = {"5.5", "2.5", "1.6", "1.1", "1.0", "-1.0", "-1.1", "-1.6", "-2.5", "-5.5"};
+        final long[] inputNumbers = new long[inputStrings.length];
+        for (int i = 0; i < inputNumbers.length; ++i)
+            inputNumbers[i] = Decimal64Utils.parse(inputStrings[i]);
+
+        checkRoundCases(inputNumbers, RoundingMode.UP, new int[]{6, 3, 2, 2, 1, -1, -2, -2, -3, -6});
+        checkRoundCases(inputNumbers, RoundingMode.DOWN, new int[]{5, 2, 1, 1, 1, -1, -1, -1, -2, -5});
+        checkRoundCases(inputNumbers, RoundingMode.CEILING, new int[]{6, 3, 2, 2, 1, -1, -1, -1, -2, -5});
+        checkRoundCases(inputNumbers, RoundingMode.FLOOR, new int[]{5, 2, 1, 1, 1, -1, -2, -2, -3, -6});
+        checkRoundCases(inputNumbers, RoundingMode.HALF_UP, new int[]{6, 3, 2, 1, 1, -1, -1, -2, -3, -6});
+        checkRoundCases(inputNumbers, RoundingMode.HALF_DOWN, new int[]{5, 2, 2, 1, 1, -1, -1, -2, -2, -5});
+        checkRoundCases(inputNumbers, RoundingMode.HALF_EVEN, new int[]{6, 2, 2, 1, 1, -1, -1, -2, -2, -6});
+
+        final ArithmeticException expectedException = new ArithmeticException("Rounding necessary");
+        final Object[] refUnnecessary = {
+            expectedException,
+            expectedException,
+            expectedException,
+            expectedException,
+            Decimal64Utils.fromInt(1),
+            Decimal64Utils.fromInt(-1),
+            expectedException,
+            expectedException,
+            expectedException,
+            expectedException
+        };
+        for (int i = 0; i < inputNumbers.length; ++i) {
+            Object testRet;
+            try {
+                testRet = Decimal64Utils.round(inputNumbers[i], 0, RoundingMode.UNNECESSARY);
+            } catch (ArithmeticException e) {
+                testRet = e;
+            }
+            Object refRet = refUnnecessary[i];
+            final boolean isEq;
+            if (testRet instanceof ArithmeticException || refRet instanceof ArithmeticException)
+                isEq = testRet.toString().equals(refRet.toString());
+            else
+                isEq = Decimal64Utils.isEqual((long) testRet, (long) refRet);
+            if (!isEq)
+                throw new RuntimeException("The round(0x" + Long.toHexString(inputNumbers[i]) + "L, 0, " + RoundingMode.UNNECESSARY +
+                    ") = " + refUnnecessary[i] + ", but test return " + testRet);
+        }
+    }
+
+    private static void checkRoundCases(final long[] inputNumbers, final RoundingMode roundType, final int[] refValue) {
+        for (int i = 0; i < inputNumbers.length; ++i) {
+            final long testRet = Decimal64Utils.round(inputNumbers[i], 0, roundType);
+            final long refRet = Decimal64Utils.fromInt(refValue[i]);
+            if (!Decimal64Utils.isEqual(refRet, testRet))
+                throw new RuntimeException("The round(0x" + Long.toHexString(inputNumbers[i]) + "L(=" +
+                    Decimal64Utils.toScientificString(inputNumbers[i]) + "), 0, " + roundType +
+                    ") = 0x" + Long.toHexString(refRet) + "L(=" + Decimal64Utils.toScientificString(refRet) +
+                    "), but test return 0x" + Long.toHexString(testRet) + "L(=" + Decimal64Utils.toScientificString(testRet) + ")");
+        }
+    }
+
+    private static BigDecimal posOffset = new BigDecimal("1e+500");
+    private static BigDecimal negOffset = new BigDecimal("-1e+500");
+
+    private static void checkRound(final long inValue, final int roundPoint, final RoundingMode roundType) {
+        String testStr;
+        try {
+            final long testValue = Decimal64Utils.round(inValue, roundPoint, roundType);
+            if (Decimal64Utils.isFinite(testValue))
+                testStr = Decimal64Utils.toBigDecimal(testValue).stripTrailingZeros().toString();
+            else
+                testStr = Decimal64Utils.toString(testValue);
+        } catch (final ArithmeticException e) {
+            testStr = e.toString();
+        }
+
+        String refStr;
+        if (Decimal64Utils.isFinite(inValue)) {
+            try {
+                BigDecimal bd = Decimal64Utils.toBigDecimal(inValue);
+                BigDecimal offset = Decimal64Utils.isPositive(inValue) ? posOffset : negOffset;
+                bd = bd.add(offset);
+                final int newPrecision = bd.precision() - bd.scale() + roundPoint;
+                refStr = bd.round(new MathContext(newPrecision, roundType)).subtract(offset).stripTrailingZeros().toString();
+            } catch (final ArithmeticException e) {
+                refStr = e.toString();
+            }
+        } else {
+            refStr = Decimal64Utils.toString(inValue);
+        }
+
+        if (!refStr.equals(testStr))
+            throw new RuntimeException("Case checkRound(0x" + Long.toHexString(inValue) +
+                "L, " + roundPoint + ", " + roundType.getClass().getSimpleName() + "." + roundType +
+                "); error: Value " + Decimal64Utils.toScientificString(inValue) +
+                " BigDecimal rounding (=" + refStr + ") != Decimal64Utils rounding (=" + testStr + ")");
     }
 
     @Test
@@ -523,7 +457,7 @@ public class JavaImplTest {
         final long f = 0x2F638D7EA4C68000L; // 0.0001
         final long zeroP = Decimal64Utils.multiply(zeroU, f);
 
-        assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.round(zeroP, 0, RoundType.CEIL));
+        assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.round(zeroP, 0, RoundingMode.CEILING));
     }
 
     @Test
@@ -723,6 +657,31 @@ public class JavaImplTest {
     @Test
     public void testRoundToNearestTiesToEven() throws Exception {
         checkWithCoverage(NativeImpl::roundToNearestTiesToEven, Decimal64Utils::roundToNearestTiesToEven);
+    }
+
+    @Test
+    public void testRoundCeiling() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundTowardsPositiveInfinity, x -> Decimal64Utils.round(x, 0, RoundingMode.CEILING));
+    }
+
+    @Test
+    public void testRoundFloor() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundTowardsNegativeInfinity, x -> Decimal64Utils.round(x, 0, RoundingMode.FLOOR));
+    }
+
+    @Test
+    public void testRoundDown() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundTowardsZero, x -> Decimal64Utils.round(x, 0, RoundingMode.DOWN));
+    }
+
+    @Test
+    public void testRoundHalfUp() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundToNearestTiesAwayFromZero, x -> Decimal64Utils.round(x, 0, RoundingMode.HALF_UP));
+    }
+
+    @Test
+    public void testRoundHalfEven() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundToNearestTiesToEven, x -> Decimal64Utils.round(x, 0, RoundingMode.HALF_EVEN));
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.epam.deltix.dfp;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static com.epam.deltix.dfp.JavaImpl.isSpecial;
 import static com.epam.deltix.dfp.JavaImplAdd.*;
@@ -683,11 +684,11 @@ public class Decimal64Utils {
      *
      * @param value     {@code DFP} argument to round
      * @param n         the number of decimals to use when rounding the number
-     * @param roundType {@code RoundType} type of rounding
+     * @param roundType {@code RoundingMode} type of rounding
      * @return {@code DFP} the rounded value
      */
     @Decimal
-    public static long round(@Decimal final long value, final int n, final RoundType roundType) {
+    public static long round(@Decimal final long value, final int n, final RoundingMode roundType) {
         return JavaImpl.round(value, n, roundType);
     }
 
@@ -1864,11 +1865,11 @@ public class Decimal64Utils {
      *
      * @param value     {@code DFP} argument to round
      * @param n         the number of decimals to use when rounding the number
-     * @param roundType {@code RoundType} type of rounding
+     * @param roundType {@code RoundingMode} type of rounding
      * @return {@code DFP} the rounded value
      */
     @Decimal
-    public static long roundChecked(@Decimal final long value, final int n, final RoundType roundType) {
+    public static long roundChecked(@Decimal final long value, final int n, final RoundingMode roundType) {
         checkNull(value);
         return round(value, n, roundType);
     }

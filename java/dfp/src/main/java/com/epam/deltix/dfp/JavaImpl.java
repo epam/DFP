@@ -3,6 +3,7 @@ package com.epam.deltix.dfp;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.Arrays;
 
 class JavaImpl {
@@ -2176,7 +2177,7 @@ class JavaImpl {
         return signMask + ((long) exponent << EXPONENT_SHIFT_SMALL) + coefficient;
     }
 
-    public static long round(final long value, final int n, final RoundType roundType) {
+    public static long round(final long value, final int n, final RoundingMode roundType) {
         if (isNonFinite(value))
             return value;
         if (n > JavaImpl.MAX_EXPONENT)
@@ -2236,9 +2237,9 @@ class JavaImpl {
         int addExponent = 0;
         { // Truncate all digits except last one
             int absPower = -exponent;
-            if (absPower >= 16) {
+            if (absPower >= MAX_FORMAT_DIGITS) {
                 divFactor = MAX_COEFFICIENT + 1;
-                final int expShift = 16;
+                final int expShift = MAX_FORMAT_DIGITS;
                 addExponent = absPower - expShift;
 
             } else {
@@ -2248,12 +2249,19 @@ class JavaImpl {
 
         // Process last digit
         switch (roundType) {
-            case ROUND:
-                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
+            case UP:
+                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
                 break;
 
-            case TRUNC:
+            case DOWN:
                 partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+                break;
+
+            case CEILING:
+                if (partsSignMask >= 0/*!parts.isNegative()*/)
+                    partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                else
+                    partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
                 break;
 
             case FLOOR:
@@ -2263,12 +2271,22 @@ class JavaImpl {
                     partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
                 break;
 
-            case CEIL:
-                if (partsSignMask >= 0/*!parts.isNegative()*/)
-                    partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
-                else
-                    partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+            case HALF_UP:
+                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
                 break;
+
+            case HALF_DOWN:
+                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
+                break;
+
+            case HALF_EVEN:
+                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
+                break;
+
+            case UNNECESSARY:
+                if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/ || partsCoefficient % divFactor != 0)
+                    throw new ArithmeticException("Rounding necessary");
+                return value;
 
             default:
                 throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");

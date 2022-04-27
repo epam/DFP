@@ -4,6 +4,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
+import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
 import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
@@ -85,5 +86,40 @@ public class RoundingBenchmark {
     public void roundToNearestTiesToEven(Blackhole bh) {
         for (int i = 0; i < 1000; ++i)
             bh.consume(Decimal64Utils.roundToNearestTiesToEven(decimalValues[i]));
+    }
+
+    @Benchmark
+    public void roundUp(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i) bh.consume(Decimal64Utils.round(decimalValues[i], 0, RoundingMode.UP));
+    }
+
+    @Benchmark
+    public void roundDown(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i) bh.consume(Decimal64Utils.round(decimalValues[i], 0, RoundingMode.DOWN));
+    }
+
+    @Benchmark
+    public void roundCeiling(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i) bh.consume(Decimal64Utils.round(decimalValues[i], 0, RoundingMode.CEILING));
+    }
+
+    @Benchmark
+    public void roundFloor(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i) bh.consume(Decimal64Utils.round(decimalValues[i], 0, RoundingMode.FLOOR));
+    }
+
+    @Benchmark
+    public void roundHalfUp(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i) bh.consume(Decimal64Utils.round(decimalValues[i], 0, RoundingMode.HALF_UP));
+    }
+
+    @Benchmark
+    public void roundHalfDown(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i) bh.consume(Decimal64Utils.round(decimalValues[i], 0, RoundingMode.HALF_DOWN));
+    }
+
+    @Benchmark
+    public void roundHalfEven(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i) bh.consume(Decimal64Utils.round(decimalValues[i], 0, RoundingMode.HALF_EVEN));
     }
 }

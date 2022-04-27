@@ -445,6 +445,17 @@ public class TestUtils {
         });
     }
 
+    public static void checkEqualityWithCoverage(final OneArgFn refFn, final OneArgFn testFn) throws Exception {
+        for (final long x : specialValues)
+            checkEqualityCase(x, refFn, testFn);
+
+        checkInMultipleThreads(() -> {
+            final MersenneTwister random = new MersenneTwister();
+            for (int i = 0; i < NTests; ++i)
+                checkEqualityCase(random.nextLong(), refFn, testFn);
+        });
+    }
+
     public interface TwoArgFn {
         long apply(final long x, final long y);
     }
@@ -460,6 +471,15 @@ public class TestUtils {
 
     public interface OneArgFn {
         long apply(final long x);
+    }
+
+    public static void checkEqualityCase(final long x, final OneArgFn refFn, final OneArgFn testFn) {
+        final long testRet = testFn.apply(x);
+        final long refRet = refFn.apply(x);
+
+        if (testRet != refRet && Decimal64Utils.compareTo(testRet, refRet) != 0)
+            throw new RuntimeException("The function(0x" + Long.toHexString(x) + "L) = 0x" +
+                Long.toHexString(refRet) + "L, but test return 0x" + Long.toHexString(testRet) + "L");
     }
 
     public static void checkCase(final long x, final OneArgFn refFn, final OneArgFn testFn) {
