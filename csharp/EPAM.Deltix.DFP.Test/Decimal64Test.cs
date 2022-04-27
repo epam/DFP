@@ -866,18 +866,6 @@ namespace EPAM.Deltix.DFP.Test
 						return formatMantissaExp(isNegSign, nextChar >= '5' ? incMantissa(fixedPart) : fixedPart, fixedExp);
 					}
 
-				case RoundingMode.HalfDown:
-					{
-						if (latestPoint + 1 >= value.Length)
-							return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-						char nextChar = '0';
-						if (latestPoint + 1 < value.Length)
-							nextChar = value[latestPoint + 1];
-						if (nextChar == '.')
-							nextChar = latestPoint + 2 < value.Length ? value[latestPoint + 2] : '0';
-						return formatMantissaExp(isNegSign, nextChar > '5' ? incMantissa(fixedPart) : fixedPart, fixedExp);
-					}
-
 				default:
 					throw new ArgumentException("Unsupported roundType(=" + roundType + ") value.");
 			}
@@ -978,7 +966,7 @@ namespace EPAM.Deltix.DFP.Test
 
 					var inValue = Decimal64.FromDouble(mantissa * Math.Pow(10, tenPower));
 					int roundPoint = tenPower + randomOffset;
-					RoundingMode roundType = (RoundingMode)random.Next((int)RoundingMode.HalfUp);
+					RoundingMode roundType = (RoundingMode)random.Next((int)RoundingMode.HalfDown);
 
 					checkRound(inValue, -roundPoint, roundType);
 				}
@@ -1019,7 +1007,7 @@ namespace EPAM.Deltix.DFP.Test
 		{
 			foreach (var testValue in specialValues)
 				foreach (var roundPoint in new int[] { 20, 10, 5, 3, 1, 0, -1, -2, -6, -11, -19 })
-					for (int roundType = 0; roundType < (int)RoundingMode.HalfEven; ++roundType)
+					for (int roundType = 0; roundType < (int)RoundingMode.HalfDown; ++roundType)
 						//foreach (RoundingMode roundType in Enum.GetValues(typeof(RoundingMode)))
 						checkRound(testValue, roundPoint, (RoundingMode)roundType);
 
