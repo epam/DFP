@@ -1019,8 +1019,9 @@ namespace EPAM.Deltix.DFP.Test
 		{
 			foreach (var testValue in specialValues)
 				foreach (var roundPoint in new int[] { 20, 10, 5, 3, 1, 0, -1, -2, -6, -11, -19 })
-					foreach (RoundingMode roundType in Enum.GetValues(typeof(RoundingMode)))
-						checkRound(testValue, roundPoint, roundType);
+					for (int roundType = 0; roundType < (int)RoundingMode.HalfEven; ++roundType)
+						//foreach (RoundingMode roundType in Enum.GetValues(typeof(RoundingMode)))
+						checkRound(testValue, roundPoint, (RoundingMode)roundType);
 
 			unchecked
 			{
