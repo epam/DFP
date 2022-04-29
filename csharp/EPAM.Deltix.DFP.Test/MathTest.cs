@@ -20,7 +20,7 @@ namespace EPAM.Deltix.DFP.Test
 			return 42;
 		}
 
-#if NET40
+#if NET48
 		static readonly double log2 = Math.Log(2.0);
 
 		private static double MathLog2(double x)
