@@ -5,6 +5,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using NUnit.Framework;
 
+using static EPAM.Deltix.DFP.BidInternal;
 using static EPAM.Deltix.DFP.Test.TestUtils;
 
 namespace EPAM.Deltix.DFP.Test
@@ -680,7 +681,7 @@ namespace EPAM.Deltix.DFP.Test
 
 		private static bool DecimalParseOk(uint fpsf)
 		{
-			return (fpsf & DotNetReImpl.BID_INVALID_FORMAT) == 0;
+			return (fpsf & BID_INVALID_FORMAT) == 0;
 		}
 
 		[Test]
@@ -694,7 +695,7 @@ namespace EPAM.Deltix.DFP.Test
 				double doubleValue;
 				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
 				Assert.AreEqual(Decimal64.Zero, value);
-				Assert.AreEqual(fpsf, DotNetReImpl.BID_EXACT_STATUS);
+				Assert.AreEqual(fpsf, BID_EXACT_STATUS);
 				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
 			}
 			{
@@ -704,7 +705,7 @@ namespace EPAM.Deltix.DFP.Test
 				double doubleValue;
 				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
 				Assert.AreEqual(Decimal64.NaN, value);
-				Assert.AreEqual(fpsf, DotNetReImpl.BID_INVALID_FORMAT);
+				Assert.AreEqual(fpsf, BID_INVALID_FORMAT);
 				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
 			}
 			{
@@ -714,7 +715,7 @@ namespace EPAM.Deltix.DFP.Test
 				double doubleValue;
 				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
 				Assert.AreEqual(Decimal64.FromInt(235), value);
-				Assert.AreEqual(fpsf, DotNetReImpl.BID_EXACT_STATUS);
+				Assert.AreEqual(fpsf, BID_EXACT_STATUS);
 				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
 			}
 			{
@@ -724,7 +725,7 @@ namespace EPAM.Deltix.DFP.Test
 				double doubleValue;
 				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
 				Assert.AreEqual(Decimal64.FromFixedPoint(235, 7), value);
-				Assert.AreEqual(fpsf, DotNetReImpl.BID_EXACT_STATUS);
+				Assert.AreEqual(fpsf, BID_EXACT_STATUS);
 				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
 			}
 			{
@@ -734,7 +735,7 @@ namespace EPAM.Deltix.DFP.Test
 				double doubleValue;
 				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
 				Assert.AreEqual(Decimal64.FromFixedPoint(1234512345123451, -9), value);
-				Assert.AreEqual(fpsf, DotNetReImpl.BID_INEXACT_EXCEPTION);
+				Assert.AreEqual(fpsf, BID_INEXACT_EXCEPTION);
 				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
 			}
 			{
@@ -744,7 +745,7 @@ namespace EPAM.Deltix.DFP.Test
 				double doubleValue;
 				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
 				Assert.AreEqual(Decimal64.PositiveInfinity, value);
-				Assert.AreEqual(fpsf, DotNetReImpl.BID_INEXACT_EXCEPTION | DotNetReImpl.BID_OVERFLOW_EXCEPTION);
+				Assert.AreEqual(fpsf, BID_INEXACT_EXCEPTION | BID_OVERFLOW_EXCEPTION);
 				Assert.AreEqual(/*doubleParseOk*/ true, DecimalParseOk(fpsf));
 			}
 			{
@@ -754,7 +755,7 @@ namespace EPAM.Deltix.DFP.Test
 				double doubleValue;
 				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
 				Assert.AreEqual(Decimal64.NegativeInfinity, value);
-				Assert.AreEqual(fpsf, DotNetReImpl.BID_INEXACT_EXCEPTION | DotNetReImpl.BID_OVERFLOW_EXCEPTION);
+				Assert.AreEqual(fpsf, BID_INEXACT_EXCEPTION | BID_OVERFLOW_EXCEPTION);
 				Assert.AreEqual(/*doubleParseOk*/ true, DecimalParseOk(fpsf));
 			}
 			{
@@ -764,7 +765,7 @@ namespace EPAM.Deltix.DFP.Test
 				double doubleValue;
 				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
 				Assert.AreEqual(Decimal64.Zero, value);
-				Assert.AreEqual(fpsf, DotNetReImpl.BID_INEXACT_EXCEPTION | DotNetReImpl.BID_UNDERFLOW_EXCEPTION);
+				Assert.AreEqual(fpsf, BID_INEXACT_EXCEPTION | BID_UNDERFLOW_EXCEPTION);
 				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
 			}
 			{
@@ -774,7 +775,7 @@ namespace EPAM.Deltix.DFP.Test
 				double doubleValue;
 				var doubleParseOk = Double.TryParse(testStr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue);
 				Assert.AreEqual(Decimal64.NaN, value);
-				Assert.AreEqual(fpsf, DotNetReImpl.BID_INVALID_FORMAT);
+				Assert.AreEqual(fpsf, BID_INVALID_FORMAT);
 				Assert.AreEqual(doubleParseOk, DecimalParseOk(fpsf));
 			}
 		}
@@ -985,7 +986,7 @@ namespace EPAM.Deltix.DFP.Test
 			Decimal64.NegativeInfinity,
 			Decimal64.FromUnderlying(Decimal64.NegativeInfinity.Bits | 1000000000000000UL),
 			Decimal64.Zero,
-			Decimal64.FromUnderlying(DotNetReImpl.SPECIAL_ENCODING_MASK64 | 1000000000000000UL),
+			Decimal64.FromUnderlying(SPECIAL_ENCODING_MASK64 | 1000000000000000UL),
 			Decimal64.FromFixedPoint(0L, -300),
 			Decimal64.FromFixedPoint(0L, 300),
 			Decimal64.FromFixedPoint(1L, DotNetImpl.MinExponent),

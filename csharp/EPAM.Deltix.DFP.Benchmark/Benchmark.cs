@@ -1,14 +1,11 @@
 using System;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Attributes.Columns;
-using BenchmarkDotNet.Attributes.Exporters;
-using BenchmarkDotNet.Attributes.Jobs;
 using BenchmarkDotNet.Running;
+
+using BID_UINT64 = System.UInt64;
 
 namespace EPAM.Deltix.DFP.Benchmark
 {
-	[ClrJob(isBaseline: true), CoreJob]
-	[RPlotExporter, RankColumn]
 	public class Benchmark
 	{
 		private Decimal64 a1, b1;
@@ -30,6 +27,12 @@ namespace EPAM.Deltix.DFP.Benchmark
 		public Decimal64 AddDecimal64()
 		{
 			return a1 + b1;
+		}
+
+		[Benchmark]
+		public Decimal64 AddDecimal64Native()
+		{
+			return Decimal64.FromUnderlying(NativeImpl.add2(a1.Bits, b1.Bits));
 		}
 
 		[Benchmark]
@@ -64,7 +67,7 @@ namespace EPAM.Deltix.DFP.Benchmark
 
 		public static void Main(String[] args)
 		{
-			var summary = BenchmarkRunner.Run<Benchmark>();
+			var summary = BenchmarkRunner.Run(typeof(Benchmark).Assembly);
 		}
 	}
 }

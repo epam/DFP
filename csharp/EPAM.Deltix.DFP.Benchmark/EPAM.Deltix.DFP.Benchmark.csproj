@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net46</TargetFrameworks>
+    <TargetFrameworks>net6;net46</TargetFrameworks>
     <AssemblyName>EPAM.Deltix.DFP.Benchmark</AssemblyName>
     <RootNamespace>EPAM.Deltix.DFP.Benchmark</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.10.13" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EPAM.Deltix.DFP\EPAM.Deltix.DFP.csproj" />

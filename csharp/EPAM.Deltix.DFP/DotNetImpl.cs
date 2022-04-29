@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using static EPAM.Deltix.DFP.BidInternal;
 
 using BID_UINT64 = System.UInt64;
 using BID_UINT32 = System.UInt32;
@@ -377,49 +378,49 @@ namespace EPAM.Deltix.DFP
 			BID_UINT64 partsSignMask;
 			int partsExponent;
 			BID_UINT64 partsCoefficient;
-			// DotNetReImpl.unpack_BID64(out partsSignMask, out partsExponent, out partsCoefficient, value);
+			// unpack_BID64(out partsSignMask, out partsExponent, out partsCoefficient, value);
 			{ // Copy-paste the toParts method for speedup
 				partsSignMask = value & 0x8000000000000000UL;
 
-				if ((value & DotNetReImpl.SPECIAL_ENCODING_MASK64) == DotNetReImpl.SPECIAL_ENCODING_MASK64)
+				if ((value & SPECIAL_ENCODING_MASK64) == SPECIAL_ENCODING_MASK64)
 				{
-					//if ((value & DotNetReImpl.INFINITY_MASK64) == DotNetReImpl.INFINITY_MASK64) - Non finite values are already checked
+					//if ((value & INFINITY_MASK64) == INFINITY_MASK64) - Non finite values are already checked
 					//{
 					//	partsExponent = 0;
 					//	partsCoefficient = value & 0xfe03ffffffffffffUL;
 					//	if ((value & 0x0003ffffffffffffUL) >= 1000000000000000UL)
 					//		partsCoefficient = value & 0xfe00000000000000UL;
-					//	if ((value & DotNetReImpl.NAN_MASK64) == DotNetReImpl.INFINITY_MASK64)
-					//		partsCoefficient = value & DotNetReImpl.SINFINITY_MASK64;
+					//	if ((value & NAN_MASK64) == INFINITY_MASK64)
+					//		partsCoefficient = value & SINFINITY_MASK64;
 					//	return 0;   // NaN or Infinity
 					//} else
 					{
 						// Check for non-canonical values.
-						BID_UINT64 coeff = (value & DotNetReImpl.LARGE_COEFF_MASK64) | DotNetReImpl.LARGE_COEFF_HIGH_BIT64;
+						BID_UINT64 coeff = (value & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
 
 						// check for non-canonical values
 						if (coeff >= 10000000000000000UL)
 							coeff = 0;
 						partsCoefficient = coeff;
 						// get exponent
-						BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_LARGE64;
-						partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+						BID_UINT64 tmp = value >> EXPONENT_SHIFT_LARGE64;
+						partsExponent = (int)(tmp & EXPONENT_MASK64);
 					}
 				}
 				else
 				{
 					// exponent
-					BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_SMALL64;
-					partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					BID_UINT64 tmp = value >> EXPONENT_SHIFT_SMALL64;
+					partsExponent = (int)(tmp & EXPONENT_MASK64);
 					// coefficient
-					partsCoefficient = (value & DotNetReImpl.SMALL_COEFF_MASK64);
+					partsCoefficient = (value & SMALL_COEFF_MASK64);
 				}
 			}
 
 			if (partsCoefficient == 0)
 				return Zero;
 
-			int exponent = partsExponent - DotNetReImpl.DECIMAL_EXPONENT_BIAS + n;
+			int exponent = partsExponent - DECIMAL_EXPONENT_BIAS + n;
 
 			if (exponent >= 0) // value is already rounded
 				return value;
@@ -491,8 +492,8 @@ namespace EPAM.Deltix.DFP
 			if (partsCoefficient == 0)
 				return Zero;
 
-			BID_UINT32 fpsf = DotNetReImpl.BID_EXACT_STATUS;
-			return DotNetReImpl.get_BID64(partsSignMask, partsExponent, partsCoefficient, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf);
+			BID_UINT32 fpsf = BID_EXACT_STATUS;
+			return get_BID64(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST, ref fpsf);
 		}
 
 		#endregion

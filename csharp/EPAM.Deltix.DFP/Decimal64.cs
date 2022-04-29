@@ -4,6 +4,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 
+using static EPAM.Deltix.DFP.BidInternal;
+
+using _IDEC_flags = System.UInt32;
+
 [assembly: InternalsVisibleTo("EPAM.Deltix.DFP.Math")]
 
 namespace EPAM.Deltix.DFP
@@ -537,7 +541,7 @@ namespace EPAM.Deltix.DFP
 
 		public static Decimal64 operator +(Decimal64 a, Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.add2(a.Bits, b.Bits));
+			return new Decimal64(Bid64Add.bid64_add(a.Bits, b.Bits));
 		}
 
 		public Decimal64 Subtract(Decimal64 b)
@@ -762,19 +766,19 @@ namespace EPAM.Deltix.DFP
 
 			if ((value & DotNetImpl.SpecialEncodingMask) != DotNetImpl.SpecialEncodingMask)
 			{
-				long coefficient = (long)(value & DotNetReImpl.SMALL_COEFF_MASK64);
+				long coefficient = (long)(value & SMALL_COEFF_MASK64);
 				return sign ? -coefficient : coefficient;
 			}
 			else
 			{
 				// special encodings
-				if ((value & DotNetReImpl.INFINITY_MASK64) == DotNetReImpl.INFINITY_MASK64)
+				if ((value & INFINITY_MASK64) == INFINITY_MASK64)
 				{
 					return abnormalReturn;    // NaN or Infinity
 				}
 				else
 				{
-					ulong coeff = (value & DotNetReImpl.LARGE_COEFF_MASK64) | DotNetReImpl.LARGE_COEFF_HIGH_BIT64;
+					ulong coeff = (value & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
 					if (coeff >= 10000000000000000UL)
 						coeff = 0;
 					return sign ? -(long)coeff : (long)coeff;
@@ -801,15 +805,15 @@ namespace EPAM.Deltix.DFP
 
 			if ((value & DotNetImpl.SpecialEncodingMask) != DotNetImpl.SpecialEncodingMask)
 			{
-				return -((int)((value >> DotNetReImpl.EXPONENT_SHIFT_SMALL64) & DotNetReImpl.EXPONENT_MASK64) - DotNetReImpl.DECIMAL_EXPONENT_BIAS);
+				return -((int)((value >> EXPONENT_SHIFT_SMALL64) & EXPONENT_MASK64) - DECIMAL_EXPONENT_BIAS);
 			}
 			else
 			{
 				// special encodings
-				if ((value & DotNetReImpl.INFINITY_MASK64) == DotNetReImpl.INFINITY_MASK64)
+				if ((value & INFINITY_MASK64) == INFINITY_MASK64)
 					return abnormalReturn;
 				else
-					return -((int)((value >> DotNetReImpl.EXPONENT_SHIFT_LARGE64) & DotNetReImpl.EXPONENT_MASK64) - DotNetReImpl.DECIMAL_EXPONENT_BIAS);
+					return -((int)((value >> EXPONENT_SHIFT_LARGE64) & EXPONENT_MASK64) - DECIMAL_EXPONENT_BIAS);
 			}
 		}
 
@@ -867,9 +871,9 @@ namespace EPAM.Deltix.DFP
 		{
 			uint fpsf;
 			var ret = DotNetReImpl.bid64_from_string(text, out fpsf);
-			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
+			if ((fpsf & BID_INVALID_FORMAT) != 0)
 				throw new FormatException("Input string is not in a correct format.");
-			//else if ((fpsf & DotNetReImpl.BID_INEXACT_EXCEPTION) != 0)
+			//else if ((fpsf & BID_INEXACT_EXCEPTION) != 0)
 			//	throw new FormatException("Can't convert input string to value without precision loss.");
 			return FromUnderlying(ret);
 		}
@@ -878,7 +882,7 @@ namespace EPAM.Deltix.DFP
 		{
 			uint fpsf;
 			var ret = DotNetReImpl.bid64_from_string(text, out fpsf);
-			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
+			if ((fpsf & BID_INVALID_FORMAT) != 0)
 			{
 				result = NaN;
 				return false;

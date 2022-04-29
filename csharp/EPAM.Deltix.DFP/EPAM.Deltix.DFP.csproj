@@ -14,6 +14,7 @@
 		<RepositoryUrl>git@github.com:epam/DFP.git $(VersionSha)</RepositoryUrl>
 		<PackageTags>.NET Decimal</PackageTags>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<DefineConstants>$(DefineConstants)TRACE;IEEE_ROUND_NEAREST</DefineConstants>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\BitStream.cs" Link="ZStd\BitStream.cs" />
