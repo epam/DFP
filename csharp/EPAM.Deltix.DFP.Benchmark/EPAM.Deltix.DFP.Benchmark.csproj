@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0;net48</TargetFrameworks>
+    <TargetFrameworks>net5.0;net48</TargetFrameworks>
     <AssemblyName>EPAM.Deltix.DFP.Benchmark</AssemblyName>
     <RootNamespace>EPAM.Deltix.DFP.Benchmark</RootNamespace>
     <IsPackable>false</IsPackable>
