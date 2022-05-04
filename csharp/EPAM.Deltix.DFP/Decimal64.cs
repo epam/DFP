@@ -526,17 +526,17 @@ namespace EPAM.Deltix.DFP
 
 		public Decimal64 Add(Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.add2(Bits, b.Bits));
+			return new Decimal64(Bid64Add.bid64_add(Bits, b.Bits));
 		}
 
 		public Decimal64 Add(Decimal64 b, Decimal64 c)
 		{
-			return new Decimal64(NativeImpl.add3(Bits, b.Bits, c.Bits));
+			return new Decimal64(Bid64Add.bid64_add(Bid64Add.bid64_add(Bits, b.Bits), c.Bits));
 		}
 
 		public Decimal64 Add(Decimal64 b, Decimal64 c, Decimal64 d)
 		{
-			return new Decimal64(NativeImpl.add4(Bits, b.Bits, c.Bits, d.Bits));
+			return new Decimal64(Bid64Add.bid64_add(Bid64Add.bid64_add(Bits, b.Bits), Bid64Add.bid64_add(c.Bits, d.Bits)));
 		}
 
 		public static Decimal64 operator +(Decimal64 a, Decimal64 b)
@@ -546,12 +546,12 @@ namespace EPAM.Deltix.DFP
 
 		public Decimal64 Subtract(Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.subtract(Bits, b.Bits));
+			return new Decimal64(Bid64Add.bid64_add(Bits, DotNetImpl.Negate(b.Bits)));
 		}
 
 		public static Decimal64 operator -(Decimal64 a, Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.subtract(a.Bits, b.Bits));
+			return new Decimal64(Bid64Add.bid64_add(a.Bits, DotNetImpl.Negate(b.Bits)));
 		}
 
 		public Decimal64 Multiply(Decimal64 b)
