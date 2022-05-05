@@ -91,6 +91,14 @@ class JavaImplAdd {
         }
     }
 
+    public static long bid64_sub(final long x, long y) {
+        // check if y is not NaN
+        if (((y & NAN_MASK64) != NAN_MASK64))
+            y ^= 0x8000000000000000L;
+
+        return bid64_add(x, y);
+    }
+
     /**
      * _  Intel's original
      * _  Algorithm description:
