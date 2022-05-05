@@ -477,7 +477,7 @@ namespace EPAM.Deltix.DFP.Test
 		// [Test]
 		public void TestDecimalFromDoubleConversions1()
 		{
-			for (int i = 0; i < N; i++)
+			for (int i = 0; i < NTests; i++)
 			{
 				Decimal64 x = GetRandomDecimal();
 				CheckDoubleConversion(x, Decimal64.FromDouble(x.ToDouble()));
@@ -511,7 +511,7 @@ namespace EPAM.Deltix.DFP.Test
 		[Test]
 		public void TestFromDecimalDoubleConversions2()
 		{
-			for (int i = 0; i < N; i++)
+			for (int i = 0; i < NTests; i++)
 			{
 				Decimal64 x = GetRandomDecimal();
 				CheckDecimalDoubleConversion(x);
@@ -633,9 +633,9 @@ namespace EPAM.Deltix.DFP.Test
 			CheckInMultipleThreads(() =>
 			{
 				Random random = new Random();
-				for (int i = 0; i < 1000000; ++i)
+				for (int i = 0; i < NTests / 10; ++i)
 				{
-					var x = Decimal64.FromFixedPoint(random.Next() << 32 | random.Next(), -(random.Next(80) - 40 - 15));
+					var x = Decimal64.FromFixedPoint((long)(random.Next() << 32) | (uint)random.Next(), -(random.Next(80) - 40 - 15));
 
 					CheckFormattingValue(x);
 				}
@@ -959,7 +959,7 @@ namespace EPAM.Deltix.DFP.Test
 			CheckInMultipleThreads(() =>
 			{
 				var random = new Random();
-				for (int ri = 0; ri < 1000000; ++ri)
+				for (int ri = 0; ri < NTests; ++ri)
 				{
 					double mantissa = random.NextDouble() * 2 - 1;
 					int tenPower = random.Next(308 * 2 + 1) - 308;
@@ -973,35 +973,6 @@ namespace EPAM.Deltix.DFP.Test
 				}
 			});
 		}
-
-		static Decimal64[] specialValues = {
-			Decimal64.FromDouble(Math.PI),
-			Decimal64.FromDouble(-Math.E),
-			Decimal64.NaN,
-			Decimal64.FromUnderlying(Decimal64.NaN.Bits | 1000000000000000UL),
-			Decimal64.NaN.Negate(),
-			Decimal64.FromUnderlying(Decimal64.NaN.Bits | 1000000000000000UL).Negate(),
-			Decimal64.PositiveInfinity,
-			Decimal64.FromUnderlying(Decimal64.PositiveInfinity.Bits | 1000000000000000UL),
-			Decimal64.NegativeInfinity,
-			Decimal64.FromUnderlying(Decimal64.NegativeInfinity.Bits | 1000000000000000UL),
-			Decimal64.Zero,
-			Decimal64.FromUnderlying(SPECIAL_ENCODING_MASK64 | 1000000000000000UL),
-			Decimal64.FromFixedPoint(0L, -300),
-			Decimal64.FromFixedPoint(0L, 300),
-			Decimal64.FromFixedPoint(1L, DotNetImpl.MinExponent),
-			Decimal64.FromFixedPoint(1L, DotNetImpl.MaxExponent),
-			Decimal64.MinValue,
-			Decimal64.MaxValue,
-			Decimal64.MinPositiveValue,
-			Decimal64.MaxNegativeValue,
-			Decimal64.FromFixedPoint(1L, 398),
-			Decimal64.One,
-			Decimal64.FromFixedPoint(10000000000000000L, 16),
-			Decimal64.FromLong(10000000000000000L),
-			Decimal64.FromUnderlying(Decimal64.One.Bits | 0x7000000000000000UL),
-			Decimal64.FromUnderlying(Decimal64.One.Bits | 0x7000000000000000UL).Negate(),
-		};
 
 		[Test]
 		public void TestRoundCase()
@@ -1063,7 +1034,137 @@ namespace EPAM.Deltix.DFP.Test
 			}
 		}
 
-		readonly int N = 5000000;
+		[Test]
+		public void CoverAdd2()
+		{
+			CheckWithCoverage(NativeImpl.add2, (a, b) => a.Add(b));
+		}
+
+		[Test]
+		public void CoverAdd3()
+		{
+			CheckWithCoverage(NativeImpl.add3, (a, b, c) => a.Add(b, c));
+		}
+
+		[Test]
+		public void CoverAdd4()
+		{
+			CheckWithCoverage(NativeImpl.add4, (a, b, c, d) => a.Add(b, c, d));
+		}
+
+		[Test]
+		public void CoverAddOperator()
+		{
+			CheckWithCoverage(NativeImpl.add2, (a, b) => a + b);
+		}
+
+		[Test]
+		public void CoverSubtract()
+		{
+			CheckWithCoverage(NativeImpl.subtract, (a, b) => a.Subtract(b));
+		}
+
+		[Test]
+		public void CoverSubtractOperastor()
+		{
+			CheckWithCoverage(NativeImpl.subtract, (a, b) => a - b);
+		}
+
+		[Test]
+		public void CoverMultiply2()
+		{
+			CheckWithCoverage(NativeImpl.multiply2, (a, b) => a.Multiply(b));
+		}
+
+		[Test]
+		public void CoverMultiply3()
+		{
+			CheckWithCoverage(NativeImpl.multiply3, (a, b, c) => a.Multiply(b, c));
+		}
+
+		[Test]
+		public void CoverMultiply4()
+		{
+			CheckWithCoverage(NativeImpl.multiply4, (a, b, c, d) => a.Multiply(b, c, d));
+		}
+
+		[Test]
+		public void CoverMultiplyOperator()
+		{
+			CheckWithCoverage(NativeImpl.multiply2, (a, b) => a * b);
+		}
+
+		[Test]
+		public void CoverMultiplyByInt32()
+		{
+			CheckWithCoverage(x => (int)x.Bits, NativeImpl.multiplyByInt32, (a, b) => a.MultiplyByInteger(b));
+		}
+
+		[Test]
+		public void CoverMultiplyByInt32Operator()
+		{
+			CheckWithCoverage(x => (int)x.Bits, NativeImpl.multiplyByInt32, (a, b) => a * b);
+		}
+
+		[Test]
+		public void CoverMultiplyByInt32OperatorReorder()
+		{
+			CheckWithCoverage(x => (int)x.Bits, NativeImpl.multiplyByInt32, (a, b) => b * a);
+		}
+
+		[Test]
+		public void CoverMultiplyByInt64()
+		{
+			CheckWithCoverage(x => (long)x.Bits, NativeImpl.multiplyByInt64, (a, b) => a.MultiplyByInteger(b));
+		}
+
+		[Test]
+		public void CoverMultiplyByInt64Operator()
+		{
+			CheckWithCoverage(x => (long)x.Bits, NativeImpl.multiplyByInt64, (a, b) => a * b);
+		}
+
+		[Test]
+		public void CoverMultiplyByInt64OperatorReorder()
+		{
+			CheckWithCoverage(x => (long)x.Bits, NativeImpl.multiplyByInt64, (a, b) => b * a);
+		}
+
+		[Test]
+		public void CoverDivide()
+		{
+			CheckWithCoverage(NativeImpl.divide, (a, b) => a.Divide(b));
+		}
+
+		[Test]
+		public void CoverDivideOperator()
+		{
+			CheckWithCoverage(NativeImpl.divide, (a, b) => a / b);
+		}
+
+		[Test]
+		public void CoverDivideByInt32()
+		{
+			CheckWithCoverage(x => (int)x.Bits, NativeImpl.divideByInt32, (a, b) => a.DivideByInteger(b));
+		}
+
+		[Test]
+		public void CoverDivideByInt32Operator()
+		{
+			CheckWithCoverage(x => (int)x.Bits, NativeImpl.divideByInt32, (a, b) => a / b);
+		}
+
+		[Test]
+		public void CoverDivideByInt64()
+		{
+			CheckWithCoverage(x => (long)x.Bits, NativeImpl.divideByInt64, (a, b) => a.DivideByInteger(b));
+		}
+
+		[Test]
+		public void CoverDivideByInt64Operator()
+		{
+			CheckWithCoverage(x => (long)x.Bits, NativeImpl.divideByInt64, (a, b) => a / b);
+		}
 
 		static void Main()
 		{

@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
@@ -176,14 +177,15 @@ namespace EPAM.Deltix.DFP.Test
 			Thread[] threads = new Thread[Environment.ProcessorCount];
 			Exception lastException = null;
 
-			for (int ti = 0; ti<threads.Length; ++ti) {
+			for (int ti = 0; ti < threads.Length; ++ti)
+			{
 				threads[ti] = new Thread(() =>
 				{
 					try
 					{
 						target();
 					}
-					catch(Exception e)
+					catch (Exception e)
 					{
 						lastException = e;
 					}
@@ -197,5 +199,216 @@ namespace EPAM.Deltix.DFP.Test
 			if (lastException != null)
 				throw lastException;
 		}
+
+		public static readonly Decimal64[] specialValues = {
+			Decimal64.FromDouble(Math.PI),
+			Decimal64.FromDouble(-Math.E),
+			Decimal64.NaN,
+			Decimal64.FromUnderlying(Decimal64.NaN.Bits | 1000000000000000UL),
+			Decimal64.NaN.Negate(),
+			Decimal64.FromUnderlying(Decimal64.NaN.Bits | 1000000000000000UL).Negate(),
+			Decimal64.PositiveInfinity,
+			Decimal64.FromUnderlying(Decimal64.PositiveInfinity.Bits | 1000000000000000UL),
+			Decimal64.NegativeInfinity,
+			Decimal64.FromUnderlying(Decimal64.NegativeInfinity.Bits | 1000000000000000UL),
+			Decimal64.Zero,
+			Decimal64.FromUnderlying(BidInternal.SPECIAL_ENCODING_MASK64 | 1000000000000000UL),
+			Decimal64.FromFixedPoint(0L, -300),
+			Decimal64.FromFixedPoint(0L, 300),
+			Decimal64.FromFixedPoint(1L, DotNetImpl.MinExponent),
+			Decimal64.FromFixedPoint(1L, DotNetImpl.MaxExponent),
+			Decimal64.MinValue,
+			Decimal64.MaxValue,
+			Decimal64.MinPositiveValue,
+			Decimal64.MaxNegativeValue,
+			Decimal64.FromFixedPoint(1L, 398),
+			Decimal64.One,
+			Decimal64.FromFixedPoint(10000000000000000L, 16),
+			Decimal64.FromLong(10000000000000000L),
+			Decimal64.FromUnderlying(Decimal64.One.Bits | 0x7000000000000000UL),
+			Decimal64.FromUnderlying(Decimal64.One.Bits | 0x7000000000000000UL).Negate(),
+		};
+
+		public class RandomDecimalsGenerator
+		{
+			readonly Random generator;
+
+			readonly int mantissaMaxShift;
+			readonly int exponentRange;
+			readonly int exponentOffset;
+
+			static readonly int TwiceOfMaxSignificandDigits = Decimal64.MaxSignificandDigits * 2;
+			static readonly int HalfOfMaxSignificandDigits = Decimal64.MaxSignificandDigits / 2;
+
+			public RandomDecimalsGenerator() : this(GenerateSeed())
+			{
+			}
+
+			private static Int32 GenerateSeed()
+			{
+				var cryptoResult = new byte[4];
+				RandomNumberGenerator.Create().GetBytes(cryptoResult);
+
+				return BitConverter.ToInt32(cryptoResult, 0);
+			}
+
+			public RandomDecimalsGenerator(int randomSeed) : this(new Random(randomSeed), 1,
+					-TwiceOfMaxSignificandDigits - HalfOfMaxSignificandDigits,
+					TwiceOfMaxSignificandDigits - HalfOfMaxSignificandDigits)
+			{
+			}
+
+			public RandomDecimalsGenerator(
+				Random generator,
+				int mantissaMinBits,
+				int exponentMin,
+				int exponentMax)
+			{
+				if (generator == null)
+					throw new ArgumentException("The random argument is null.", nameof(generator));
+				if (mantissaMinBits < 1 || 64 < mantissaMinBits)
+					throw new ArgumentOutOfRangeException(nameof(mantissaMinBits), mantissaMinBits, $"The mantissaMinBits(={mantissaMinBits}) must lie in [1..64] range");
+				if (exponentMin < Decimal64.MinExponent || Decimal64.MaxExponent < exponentMin)
+					throw new ArgumentOutOfRangeException(nameof(exponentMin), exponentMin, $"The exponentMin(={exponentMin}) must lie in [{Decimal64.MinExponent}..{Decimal64.MaxExponent}] range.");
+				if (exponentMax < Decimal64.MinExponent || Decimal64.MaxExponent < exponentMax)
+					throw new ArgumentOutOfRangeException(nameof(exponentMax), exponentMax, $"The exponentMax(={exponentMax}) must lie in [{Decimal64.MinExponent}..{Decimal64.MaxExponent}] range.");
+				if (exponentMax <= exponentMin)
+					throw new ArgumentException($"The exponentMin(={exponentMin}) must be less than the exponentMax(={exponentMax}).");
+
+				this.generator = generator;
+				this.mantissaMaxShift = 64 - mantissaMinBits + 1 /*  for random.nextInt() exclusive upper bound */;
+				this.exponentRange = exponentMax - exponentMin;
+				this.exponentOffset = exponentMin;
+			}
+
+			public Decimal64 Next => Decimal64.FromFixedPoint((/*NextLong*/((long)generator.Next() << 32) | (uint)generator.Next()) >> generator.Next(mantissaMaxShift),
+						-(generator.Next(exponentRange) + exponentOffset));
+		}
+
+		public static void CheckCase(Decimal64 x, Func<ulong, ulong> refFn, Func<Decimal64, Decimal64> testFn)
+		{
+			var testRet = testFn(x);
+			var refRet = Decimal64.FromUnderlying(refFn(x.Bits));
+
+			if (testRet != refRet)
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+		}
+
+		public static void CheckWithCoverage(Func<ulong, ulong> refFn, Func<Decimal64, Decimal64> testFn)
+		{
+			foreach (var x in specialValues)
+				foreach (var y in specialValues)
+					CheckCase(x, refFn, testFn);
+
+			CheckInMultipleThreads(() =>
+			{
+				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+				for (int i = 0; i < NTests; ++i)
+					CheckCase(random.Next, refFn, testFn);
+			});
+		}
+
+		public static void CheckCase(Decimal64 x, Decimal64 y, Func<ulong, ulong, ulong> refFn, Func<Decimal64, Decimal64, Decimal64> testFn)
+		{
+			var testRet = testFn(x, y);
+			var refRet = Decimal64.FromUnderlying(refFn(x.Bits, y.Bits));
+
+			if (testRet != refRet)
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L, 0x{Convert.ToString((long)y.Bits, 16)}L) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+		}
+
+		public static void CheckWithCoverage(Func<ulong, ulong, ulong> refFn, Func<Decimal64, Decimal64, Decimal64> testFn)
+		{
+			foreach (var x in specialValues)
+				foreach (var y in specialValues)
+					CheckCase(x, y, refFn, testFn);
+
+			CheckInMultipleThreads(() =>
+			{
+				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+				for (int i = 0; i < NTests; ++i)
+					CheckCase(random.Next, random.Next, refFn, testFn);
+			});
+		}
+
+		public static void CheckCase(Decimal64 x, Decimal64 y, Decimal64 z, Func<ulong, ulong, ulong, ulong> refFn, Func<Decimal64, Decimal64, Decimal64, Decimal64> testFn)
+		{
+			var testRet = testFn(x, y, z);
+			var refRet = Decimal64.FromUnderlying(refFn(x.Bits, y.Bits, z.Bits));
+
+			if (testRet != refRet)
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L, 0x{Convert.ToString((long)y.Bits, 16)}L, 0x{Convert.ToString((long)z.Bits, 16)}L) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+		}
+
+		public static void CheckWithCoverage(Func<ulong, ulong, ulong, ulong> refFn, Func<Decimal64, Decimal64, Decimal64, Decimal64> testFn)
+		{
+			foreach (var x in specialValues)
+				foreach (var y in specialValues)
+					foreach (var z in specialValues)
+						CheckCase(x, y, z, refFn, testFn);
+
+			CheckInMultipleThreads(() =>
+			{
+				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+				for (int i = 0; i < NTests; ++i)
+					CheckCase(random.Next, random.Next, random.Next, refFn, testFn);
+			});
+		}
+
+		public static void CheckCase(Decimal64 x, Decimal64 y, Decimal64 z, Decimal64 t, Func<ulong, ulong, ulong, ulong, ulong> refFn, Func<Decimal64, Decimal64, Decimal64, Decimal64, Decimal64> testFn)
+		{
+			var testRet = testFn(x, y, z, t);
+			var refRet = Decimal64.FromUnderlying(refFn(x.Bits, y.Bits, z.Bits, t.Bits));
+
+			if (testRet != refRet)
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L, 0x{Convert.ToString((long)y.Bits, 16)}L, 0x{Convert.ToString((long)z.Bits, 16)}L, 0x{Convert.ToString((long)t.Bits, 16)}L) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+		}
+
+		public static void CheckWithCoverage(Func<ulong, ulong, ulong, ulong, ulong> refFn, Func<Decimal64, Decimal64, Decimal64, Decimal64, Decimal64> testFn)
+		{
+			foreach (var x in specialValues)
+				foreach (var y in specialValues)
+					foreach (var z in specialValues)
+						foreach (var t in specialValues)
+							CheckCase(x, y, z, t, refFn, testFn);
+
+			CheckInMultipleThreads(() =>
+			{
+				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+				for (int i = 0; i < NTests; ++i)
+					CheckCase(random.Next, random.Next, random.Next, random.Next, refFn, testFn);
+			});
+		}
+
+		public static void CheckCase<T>(Decimal64 x, Decimal64 y, Func<Decimal64, T> yConverter, Func<ulong, T, ulong> refFn, Func<Decimal64, T, Decimal64> testFn)
+		{
+			var yT = yConverter(y);
+			var testRet = testFn(x, yT);
+			var refRet = Decimal64.FromUnderlying(refFn(x.Bits, yT));
+
+			if (testRet != refRet)
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L, {yT}) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+		}
+
+		public static void CheckWithCoverage<T>(Func<Decimal64, T> yConverter, Func<ulong, T, ulong> refFn, Func<Decimal64, T, Decimal64> testFn)
+		{
+			foreach (var x in specialValues)
+				foreach (var y in specialValues)
+					CheckCase(x, y, yConverter, refFn, testFn);
+
+			CheckInMultipleThreads(() =>
+			{
+				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
+				for (int i = 0; i < NTests; ++i)
+					CheckCase(random.Next, random.Next, yConverter, refFn, testFn);
+			});
+		}
+
+		public const int NTests = 10000000;
 	}
 }

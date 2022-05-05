@@ -40,6 +40,21 @@ namespace EPAM.Deltix.DFP
 		public static readonly Decimal64 OneTenth = new Decimal64(DotNetImpl.OneTenth);
 		public static readonly Decimal64 OneHundredth = new Decimal64(DotNetImpl.OneHundredth);
 
+		/// <summary>
+		/// Maximum number of significant decimal digits that 64-bit DFP value can store.
+		/// </summary>
+		public const int MaxSignificandDigits = 16;
+
+		/// <summary>
+		/// A constant holding the maximum possible DFP64 exponent for normalized values.
+		/// </summary>
+		public const int MaxExponent = DotNetImpl.MaxExponent;
+
+		/// <summary>
+		/// A constant holding the minimum possible DFP64 exponent for normalized values.
+		/// </summary>
+		public const int MinExponent = DotNetImpl.MinExponent;
+
 		#endregion
 
 		public UInt64 Bits { get; }
