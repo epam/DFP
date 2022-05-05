@@ -1,4 +1,3 @@
-using System;
 using static EPAM.Deltix.DFP.BidDecimalData;
 using static EPAM.Deltix.DFP.BidInternal;
 
@@ -12,9 +11,37 @@ namespace EPAM.Deltix.DFP
 {
 	internal static class Bid64Add
 	{
+
+		/// <summary>
+		///  Algorithm description:
+		///
+		///   if(exponent_a < exponent_b)
+		///       switch a, b
+		///   diff_expon = exponent_a - exponent_b
+		///   if(diff_expon > 16)
+		///      return normalize(a)
+		///   if(coefficient_a*10^diff_expon guaranteed below 2^62)
+		///       S = sign_a*coefficient_a*10^diff_expon + sign_b*coefficient_b
+		///       if(|S|<10^16)
+		///           return get_BID64(sign(S),exponent_b,|S|)
+		///       else
+		///          determine number of extra digits in S (1, 2, or 3)
+		///            return rounded result
+		///   else // large exponent difference
+		///       if(number_digits(coefficient_a*10^diff_expon) +/- 10^16)
+		///          guaranteed the same as
+		///          number_digits(coefficient_a*10^diff_expon) )
+		///           S = normalize(coefficient_a + (sign_a^sign_b)*10^(16-diff_expon))
+		///           corr = 10^16 + (sign_a^sign_b)*coefficient_b
+		///           corr*10^exponent_b is rounded so it aligns with S*10^exponent_S
+		///           return get_BID64(sign_a,exponent(S),S+rounded(corr))
+		///       else
+		///         add sign_a*coefficient_a*10^diff_expon, sign_b*coefficient_b
+		///             in 128-bit integer arithmetic, then round to 16 decimal digits
+		/// </summary>
 		public static BID_UINT64 bid64_add(BID_UINT64 x, BID_UINT64 y
 #if !IEEE_ROUND_NEAREST
-			, uint rnd_mode
+			, int rnd_mode
 #endif
 #if BID_SET_STATUS_FLAGS
 			, ref _IDEC_flags pfpsf
@@ -25,15 +52,14 @@ namespace EPAM.Deltix.DFP
 			BID_UINT64 sign_x, sign_y, coefficient_x, coefficient_y, C64_new;
 			BID_UINT64 valid_x, valid_y;
 			BID_UINT64 res;
-			BID_UINT64 sign_a, sign_b, coefficient_a, coefficient_b, sign_s, sign_ab,
-			  rem_a;
+			BID_UINT64 sign_a, sign_b, coefficient_a, coefficient_b, sign_s, sign_ab, rem_a;
 			BID_UINT64 saved_ca, saved_cb, C0_64, C64, remainder_h, T1, carry, tmp;
 			int_double tempx_i;
 			int exponent_x, exponent_y, exponent_a, exponent_b, diff_dec_expon;
 			int bin_expon_ca, extra_digits, amount, scale_k, scale_ca;
-			uint rmode;
+			int rmode;
 #if BID_SET_STATUS_FLAGS
-			uint status;
+			_IDEC_flags status;
 #endif
 
 
@@ -161,7 +187,7 @@ namespace EPAM.Deltix.DFP
 			//--- get number of bits in the coefficients of x and y ---
 
 			// version 2 (original)
-			tempx_i = (BID_UINT64)BitConverter.DoubleToInt64Bits((double)coefficient_a);
+			tempx_i = doubleToBits((double)coefficient_a);
 			bin_expon_ca = (int)(((tempx_i & MASK_BINARY_EXPONENT) >> 52) - 0x3ff);
 
 			if (diff_dec_expon > MAX_FORMAT_DIGITS)
@@ -182,7 +208,7 @@ namespace EPAM.Deltix.DFP
 				/* get binary coefficients of x and y */
 
 				//--- get number of bits in the coefficients of x and y ---
-				tempx_i = (BID_UINT64)BitConverter.DoubleToInt64Bits((double)coefficient_a);
+				tempx_i = doubleToBits((double)coefficient_a);
 				bin_expon_ca = (int)(((tempx_i & MASK_BINARY_EXPONENT) >> 52) - 0x3ff);
 
 				if (diff_dec_expon > MAX_FORMAT_DIGITS)

@@ -556,82 +556,82 @@ namespace EPAM.Deltix.DFP
 
 		public Decimal64 Multiply(Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.multiply2(Bits, b.Bits));
+			return new Decimal64(Bid64Mul.bid64_mul(Bits, b.Bits));
 		}
 
 		public Decimal64 Multiply(Decimal64 b, Decimal64 c)
 		{
-			return new Decimal64(NativeImpl.multiply3(Bits, b.Bits, c.Bits));
+			return new Decimal64(Bid64Mul.bid64_mul(Bid64Mul.bid64_mul(Bits, b.Bits), c.Bits));
 		}
 
 		public Decimal64 Multiply(Decimal64 b, Decimal64 c, Decimal64 d)
 		{
-			return new Decimal64(NativeImpl.multiply4(Bits, b.Bits, c.Bits, d.Bits));
+			return new Decimal64(Bid64Mul.bid64_mul(Bid64Mul.bid64_mul(Bits, b.Bits), Bid64Mul.bid64_mul(c.Bits, d.Bits)));
 		}
 
 		public static Decimal64 operator *(Decimal64 a, Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.multiply2(a.Bits, b.Bits));
+			return new Decimal64(Bid64Mul.bid64_mul(a.Bits, b.Bits));
 		}
 
 		public Decimal64 MultiplyByInteger(Int32 b)
 		{
-			return new Decimal64(NativeImpl.multiplyByInt32(Bits, b));
+			return new Decimal64(Bid64Mul.bid64_mul(Bits, DotNetImpl.FromInt32(b)));
 		}
 
 		public Decimal64 MultiplyByInteger(Int64 b)
 		{
-			return new Decimal64(NativeImpl.multiplyByInt64(Bits, b));
+			return new Decimal64(Bid64Mul.bid64_mul(Bits, NativeImpl.fromInt64(b)));
 		}
 
 		public static Decimal64 operator *(Decimal64 a, Int32 b)
 		{
-			return new Decimal64(NativeImpl.multiplyByInt32(a.Bits, b));
+			return new Decimal64(Bid64Mul.bid64_mul(a.Bits, DotNetImpl.FromInt32(b)));
 		}
 
 		public static Decimal64 operator *(Int32 a, Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.multiplyByInt32(b.Bits, a));
+			return new Decimal64(Bid64Mul.bid64_mul(b.Bits, DotNetImpl.FromInt32(a)));
 		}
 
 		public static Decimal64 operator *(Decimal64 a, Int64 b)
 		{
-			return new Decimal64(NativeImpl.multiplyByInt64(a.Bits, b));
+			return new Decimal64(Bid64Mul.bid64_mul(a.Bits, NativeImpl.fromInt64(b)));
 		}
 
 		public static Decimal64 operator *(Int64 a, Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.multiplyByInt64(b.Bits, a));
+			return new Decimal64(Bid64Mul.bid64_mul(b.Bits, NativeImpl.fromInt64(a)));
 		}
 
 		public Decimal64 Divide(Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.divide(Bits, b.Bits));
+			return new Decimal64(Bid64Div.bid64_div(Bits, b.Bits));
 		}
 
 		public static Decimal64 operator /(Decimal64 a, Decimal64 b)
 		{
-			return new Decimal64(NativeImpl.divide(a.Bits, b.Bits));
+			return new Decimal64(Bid64Div.bid64_div(a.Bits, b.Bits));
 		}
 
 		public Decimal64 DivideByInteger(Int32 b)
 		{
-			return new Decimal64(NativeImpl.divideByInt32(Bits, b));
+			return new Decimal64(Bid64Div.bid64_div(Bits, DotNetImpl.FromInt32(b)));
 		}
 
 		public Decimal64 DivideByInteger(Int64 b)
 		{
-			return new Decimal64(NativeImpl.divideByInt64(Bits, b));
+			return new Decimal64(Bid64Div.bid64_div(Bits, NativeImpl.fromInt64(b)));
 		}
 
 		public static Decimal64 operator /(Decimal64 a, Int32 b)
 		{
-			return new Decimal64(NativeImpl.divideByInt32(a.Bits, b));
+			return new Decimal64(Bid64Div.bid64_div(a.Bits, DotNetImpl.FromInt32(b)));
 		}
 
 		public static Decimal64 operator /(Decimal64 a, Int64 b)
 		{
-			return new Decimal64(NativeImpl.divideByInt64(a.Bits, b));
+			return new Decimal64(Bid64Div.bid64_div(a.Bits, NativeImpl.fromInt64(b)));
 		}
 
 		public Decimal64 MultiplyAndAdd(Decimal64 b, Decimal64 c)
