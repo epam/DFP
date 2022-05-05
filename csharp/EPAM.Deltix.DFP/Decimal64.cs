@@ -16,28 +16,28 @@ namespace EPAM.Deltix.DFP
 	public struct Decimal64 : IComparable<Decimal64>, IEquatable<Decimal64>, ISerializable
 	{
 		#region Constants
-		public static readonly Decimal64 Null		= new Decimal64(DotNetImpl.Null);
+		public static readonly Decimal64 Null = new Decimal64(DotNetImpl.Null);
 
-		public static readonly Decimal64 NaN		= new Decimal64(DotNetImpl.NaN);
+		public static readonly Decimal64 NaN = new Decimal64(DotNetImpl.NaN);
 
 		public static readonly Decimal64 PositiveInfinity = new Decimal64(DotNetImpl.PositiveInfinity);
 		public static readonly Decimal64 NegativeInfinity = new Decimal64(DotNetImpl.NegativeInfinity);
 
-		public static readonly Decimal64 MinValue	= new Decimal64(DotNetImpl.MinValue);
-		public static readonly Decimal64 MaxValue	= new Decimal64(DotNetImpl.MaxValue);
+		public static readonly Decimal64 MinValue = new Decimal64(DotNetImpl.MinValue);
+		public static readonly Decimal64 MaxValue = new Decimal64(DotNetImpl.MaxValue);
 
 		public static readonly Decimal64 MinPositiveValue = new Decimal64(DotNetImpl.MinPositiveValue);
 		public static readonly Decimal64 MaxNegativeValue = new Decimal64(DotNetImpl.MaxNegativeValue);
 
-		public static readonly Decimal64 Zero		= new Decimal64(DotNetImpl.Zero);
-		public static readonly Decimal64 One		= new Decimal64(DotNetImpl.One);
-		public static readonly Decimal64 Two		= new Decimal64(DotNetImpl.Two);
-		public static readonly Decimal64 Ten		= new Decimal64(DotNetImpl.Ten);
-		public static readonly Decimal64 Hundred	= new Decimal64(DotNetImpl.Hundred);
-		public static readonly Decimal64 Thousand	= new Decimal64(DotNetImpl.Thousand);
-		public static readonly Decimal64 Million	= new Decimal64(DotNetImpl.Million);
+		public static readonly Decimal64 Zero = new Decimal64(DotNetImpl.Zero);
+		public static readonly Decimal64 One = new Decimal64(DotNetImpl.One);
+		public static readonly Decimal64 Two = new Decimal64(DotNetImpl.Two);
+		public static readonly Decimal64 Ten = new Decimal64(DotNetImpl.Ten);
+		public static readonly Decimal64 Hundred = new Decimal64(DotNetImpl.Hundred);
+		public static readonly Decimal64 Thousand = new Decimal64(DotNetImpl.Thousand);
+		public static readonly Decimal64 Million = new Decimal64(DotNetImpl.Million);
 
-		public static readonly Decimal64 OneTenth	= new Decimal64(DotNetImpl.OneTenth);
+		public static readonly Decimal64 OneTenth = new Decimal64(DotNetImpl.OneTenth);
 		public static readonly Decimal64 OneHundredth = new Decimal64(DotNetImpl.OneHundredth);
 
 		#endregion

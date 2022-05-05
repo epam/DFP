@@ -481,22 +481,22 @@ namespace EPAM.Deltix.DFP
 #if !IEEE_ROUND_NEAREST
 			if (rmode == 0) //BID_ROUNDING_TO_NEAREST
 #endif
-				if ((C64 & 1) != 0)
+			if ((C64 & 1) != 0)
+			{
+				// check whether fractional part of initial_P/10^extra_digits is
+				// exactly .5
+				// this is the same as fractional part of
+				//      (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
+
+				// get remainder
+				remainder_h = CT.w1 << (64 - amount);
+
+				// test whether fractional part is 0
+				if (remainder_h == 0 && (CT.w0 < bid_reciprocals10_64[extra_digits]))
 				{
-					// check whether fractional part of initial_P/10^extra_digits is
-					// exactly .5
-					// this is the same as fractional part of
-					//      (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
-
-					// get remainder
-					remainder_h = CT.w1 << (64 - amount);
-
-					// test whether fractional part is 0
-					if (remainder_h == 0 && (CT.w0 < bid_reciprocals10_64[extra_digits]))
-					{
-						C64--;
-					}
+					C64--;
 				}
+			}
 #endif
 
 #if BID_SET_STATUS_FLAGS
