@@ -1,6 +1,5 @@
 using static EPAM.Deltix.DFP.BidDecimalData;
 using static EPAM.Deltix.DFP.BidInternal;
-
 using BID_UINT64 = System.UInt64;
 using BID_SINT64 = System.Int64;
 using BID_UINT32 = System.UInt32;
@@ -22,9 +21,9 @@ namespace EPAM.Deltix.DFP
 		///  else
 		///      get long product: coefficient_x*coefficient_y
 		///      determine number of digits to round off (extra_digits)
-		///      rounding is performed as a 128x128-bit multiplication by 
+		///      rounding is performed as a 128x128-bit multiplication by
 		///         2^M[extra_digits]/10^extra_digits, followed by a shift
-		///         M[extra_digits] is sufficiently large for required accuracy 
+		///         M[extra_digits] is sufficiently large for required accuracy
 		/// </summary>
 		public static BID_UINT64 bid64_mul(BID_UINT64 x, BID_UINT64 y
 #if !IEEE_ROUND_NEAREST
@@ -43,8 +42,7 @@ namespace EPAM.Deltix.DFP
 			BID_UINT64 C64, remainder_h, carry, CY, res;
 			BID_UINT64 valid_x, valid_y;
 			int_double tempx_i, tempy_i;
-			int extra_digits, exponent_x, exponent_y, bin_expon_cx, bin_expon_cy,
-			  bin_expon_product;
+			int extra_digits, exponent_x, exponent_y, bin_expon_cx, bin_expon_cy, bin_expon_product;
 			int rmode, digits_p, bp, amount, amount2, final_exponent, round_up;
 			unsigned status, uf_status;
 
@@ -54,7 +52,6 @@ namespace EPAM.Deltix.DFP
 			// unpack arguments, check for NaN or Infinity
 			if (valid_x == 0)
 			{
-
 #if BID_SET_STATUS_FLAGS
 				if ((y & SNAN_MASK64) == SNAN_MASK64)   // y is sNaN
 					__set_status_flags(ref pfpsf, BID_INVALID_EXCEPTION);
@@ -149,7 +146,7 @@ namespace EPAM.Deltix.DFP
 			tempy_i = doubleToBits((double)coefficient_y);
 			bin_expon_cy = (int)((tempy_i & MASK_BINARY_EXPONENT) >> 52);
 
-			// magnitude estimate for coefficient_x*coefficient_y is 
+			// magnitude estimate for coefficient_x*coefficient_y is
 			//        2^(unbiased_bin_expon_cx + unbiased_bin_expon_cx)
 			bin_expon_product = bin_expon_cx + bin_expon_cy;
 
@@ -188,8 +185,7 @@ namespace EPAM.Deltix.DFP
 
 				// determine number of decimal digits to be rounded out
 				extra_digits = digits_p - MAX_FORMAT_DIGITS;
-				final_exponent =
-				  exponent_x + exponent_y + extra_digits - DECIMAL_EXPONENT_BIAS;
+				final_exponent = exponent_x + exponent_y + extra_digits - DECIMAL_EXPONENT_BIAS;
 
 #if !IEEE_ROUND_NEAREST_TIES_AWAY
 #if !IEEE_ROUND_NEAREST
@@ -299,9 +295,9 @@ namespace EPAM.Deltix.DFP
 #endif
 					if ((C64 & 1) != 0 && round_up == 0)
 					{
-						// check whether fractional part of initial_P/10^extra_digits 
+						// check whether fractional part of initial_P/10^extra_digits
 						// is exactly .5
-						// this is the same as fractional part of 
+						// this is the same as fractional part of
 						// (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
 						// get remainder
@@ -365,6 +361,7 @@ namespace EPAM.Deltix.DFP
 #endif
 						);
 				}
+
 				// go to convert_format and exit
 				C64 = __low_64(P);
 				return get_BID64(sign_x ^ sign_y, exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS, C64
@@ -374,9 +371,8 @@ namespace EPAM.Deltix.DFP
 #if BID_SET_STATUS_FLAGS
 					, ref pfpsf
 #endif
-					 );
+					);
 			}
 		}
-
 	}
 }

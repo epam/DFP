@@ -14,6 +14,7 @@ namespace EPAM.Deltix.DFP
 	{
 		internal static bool isLoaded = false;
 		internal static object isLoadedLock = new object();
+
 		internal static void Load()
 		{
 			if (isLoaded)
@@ -77,6 +78,7 @@ namespace EPAM.Deltix.DFP
 						throw new SystemException("Unsupported architecture (=" + RuntimeInformation.ProcessArchitecture + ").");
 				}
 			}
+
 			if (ResourceLoader.OS.IsLinux)
 			{
 				switch (RuntimeInformation.ProcessArchitecture)
@@ -93,6 +95,7 @@ namespace EPAM.Deltix.DFP
 						throw new SystemException("Unsupported architecture (=" + RuntimeInformation.ProcessArchitecture + ").");
 				}
 			}
+
 			if (ResourceLoader.OS.IsOsx)
 			{
 				switch (RuntimeInformation.ProcessArchitecture)
@@ -105,6 +108,7 @@ namespace EPAM.Deltix.DFP
 						throw new SystemException("Unsupported architecture (=" + RuntimeInformation.ProcessArchitecture + ").");
 				}
 			}
+
 			throw new SystemException($"Unsupported operation system: {ResourceLoader.OS.Name}.");
 #endif
 		}

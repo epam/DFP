@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using static EPAM.Deltix.DFP.BidDecimalData;
 using static EPAM.Deltix.DFP.BidInternal;
 
 using BID_UINT64 = System.UInt64;
@@ -46,9 +45,9 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
-		public unsafe static BID_UINT64 bid64_from_string(string s, out _IDEC_flags pfpsf, int rnd_mode = BID_ROUNDING_TO_NEAREST/*, _EXC_MASKS_PARAM _EXC_INFO_PARAM*/)
+		public unsafe static BID_UINT64 bid64_from_string(string s, out _IDEC_flags pfpsf,
+			int rnd_mode = BID_ROUNDING_TO_NEAREST /*, _EXC_MASKS_PARAM _EXC_INFO_PARAM*/)
 		{
-
 			BID_UINT64 coefficient_x = 0, rounded = 0;
 			int expon_x = 0, sgn_expon, ndigits, add_expon = 0, midpoint = 0, rounded_up = 0;
 			int dec_expon_scale = 0;
@@ -60,7 +59,7 @@ namespace EPAM.Deltix.DFP
 				if (*ps == '\0')
 				{
 					pfpsf = BID_INVALID_FORMAT;
-					return 0x7c00000000000000UL;                    // return qNaN
+					return 0x7c00000000000000UL; // return qNaN
 				}
 
 
@@ -73,7 +72,7 @@ namespace EPAM.Deltix.DFP
 					if (*ps == '\0')
 					{
 						pfpsf = BID_INVALID_FORMAT;
-						return 0x7c00000000000000UL;                    // return qNaN
+						return 0x7c00000000000000UL; // return qNaN
 					}
 				}
 
@@ -85,12 +84,14 @@ namespace EPAM.Deltix.DFP
 						pfpsf = BID_EXACT_STATUS;
 						return 0x7800000000000000UL | sign_x;
 					}
+
 					// return sNaN
 					if (IsStrEq(ps, "snan")) // case insensitive check for snan
 					{
 						pfpsf = BID_EXACT_STATUS;
 						return 0x7e00000000000000UL | sign_x;
 					}
+
 					if (IsStrEq(ps, "nan")) // return qNaN
 					{
 						pfpsf = BID_EXACT_STATUS;
@@ -99,7 +100,7 @@ namespace EPAM.Deltix.DFP
 					else // if c isn't a decimal point or a decimal digit, return NaN
 					{
 						pfpsf = BID_INVALID_FORMAT;
-						return 0x7c00000000000000UL;                    // return qNaN
+						return 0x7c00000000000000UL; // return qNaN
 					}
 				}
 
@@ -109,37 +110,39 @@ namespace EPAM.Deltix.DFP
 				// detect zero (and eliminate/ignore leading zeros)
 				if (*ps == '0' || *ps == '.')
 				{
-
 					if (*ps == '.')
 					{
 						rdx_pt_enc = 1;
 						ps++;
 					}
+
 					// if all numbers are zeros (with possibly 1 radix point, the number is zero
 					// should catch cases such as: 000.0
 					while (*ps == '0')
 					{
 						ps++;
-						// for numbers such as 0.0000000000000000000000000000000000001001, 
+						// for numbers such as 0.0000000000000000000000000000000000001001,
 						// we want to count the leading zeros
 						if (rdx_pt_enc != 0)
 						{
 							right_radix_leading_zeros++;
 						}
-						// if this character is a radix point, make sure we haven't already 
+
+						// if this character is a radix point, make sure we haven't already
 						// encountered one
 						if (*ps == '.')
 						{
 							if (rdx_pt_enc == 0)
 							{
 								rdx_pt_enc = 1;
-								// if this is the first radix point, and the next character is NULL, 
+								// if this is the first radix point, and the next character is NULL,
 								// we have a zero
 								if (*(ps + 1) == '\0')
 								{
 									pfpsf = BID_EXACT_STATUS;
 									return DotNetImpl.Zero | sign_x; // ((BID_UINT64)(398 - right_radix_leading_zeros) << 53) | sign_x;
 								}
+
 								ps++;
 							}
 							else
@@ -168,11 +171,13 @@ namespace EPAM.Deltix.DFP
 							pfpsf = BID_INVALID_FORMAT;
 							return DotNetImpl.NaN; // 0x7c00000000000000UL | sign_x; // return NaN
 						}
+
 						rdx_pt_enc = 1;
 						ps++;
 						c = *ps;
 						continue;
 					}
+
 					dec_expon_scale += rdx_pt_enc;
 
 					ndigits++;
@@ -188,7 +193,7 @@ namespace EPAM.Deltix.DFP
 						{
 							case BID_ROUNDING_TO_NEAREST:
 								midpoint = (c == '5' && (coefficient_x & 1) == 0) ? 1 : 0;
-								// if coefficient is even and c is 5, prepare to round up if 
+								// if coefficient is even and c is 5, prepare to round up if
 								// subsequent digit is nonzero
 								// if str[MAXDIG+1] > 5, we MUST round up
 								// if str[MAXDIG+1] == 5 and coefficient is ODD, ROUND UP!
@@ -197,29 +202,48 @@ namespace EPAM.Deltix.DFP
 									coefficient_x++;
 									rounded_up = 1;
 								}
+
 								break;
 
 							case BID_ROUNDING_DOWN:
-								if (sign_x != 0) { coefficient_x++; rounded_up = 1; }
+								if (sign_x != 0)
+								{
+									coefficient_x++;
+									rounded_up = 1;
+								}
+
 								break;
 							case BID_ROUNDING_UP:
-								if (sign_x == 0) { coefficient_x++; rounded_up = 1; }
+								if (sign_x == 0)
+								{
+									coefficient_x++;
+									rounded_up = 1;
+								}
+
 								break;
 							case BID_ROUNDING_TIES_AWAY:
-								if (c >= '5') { coefficient_x++; rounded_up = 1; }
+								if (c >= '5')
+								{
+									coefficient_x++;
+									rounded_up = 1;
+								}
+
 								break;
 						}
+
 						if (coefficient_x == 10000000000000000UL)
 						{
 							coefficient_x = 1000000000000000UL;
 							add_expon = 1;
 						}
+
 						if (c > '0')
 							rounded = 1;
 						add_expon += 1;
 					}
 					else
-					{ // ndigits > 17
+					{
+						// ndigits > 17
 						add_expon++;
 						if (midpoint != 0 && c > '0')
 						{
@@ -227,9 +251,11 @@ namespace EPAM.Deltix.DFP
 							midpoint = 0;
 							rounded_up = 1;
 						}
+
 						if (c > '0')
 							rounded = 1;
 					}
+
 					ps++;
 					c = *ps;
 				}
@@ -242,8 +268,8 @@ namespace EPAM.Deltix.DFP
 					if (rounded != 0)
 						__set_status_flags(ref pfpsf, BID_INEXACT_EXCEPTION);
 					return /*fast_get_BID64_check_OF*/get_BID64(sign_x,
-								   add_expon + DECIMAL_EXPONENT_BIAS,
-								   coefficient_x, 0, ref pfpsf);
+						add_expon + DECIMAL_EXPONENT_BIAS,
+						coefficient_x, 0, ref pfpsf);
 				}
 
 				if (c != 'E' && c != 'e')
@@ -251,6 +277,7 @@ namespace EPAM.Deltix.DFP
 					pfpsf = BID_INVALID_FORMAT;
 					return DotNetImpl.NaN; // 0x7c00000000000000UL | sign_x; // return NaN
 				}
+
 				ps++;
 				c = *ps;
 				sgn_expon = (c == '-') ? 1 : 0;
@@ -259,6 +286,7 @@ namespace EPAM.Deltix.DFP
 					ps++;
 					c = *ps;
 				}
+
 				if (c == '\0' || c < '0' || c > '9')
 				{
 					pfpsf = BID_INVALID_FORMAT;
@@ -302,6 +330,7 @@ namespace EPAM.Deltix.DFP
 					pfpsf = BID_EXACT_STATUS;
 					return get_BID64_UF(sign_x, expon_x, coefficient_x, rounded, rnd_mode, ref pfpsf);
 				}
+
 				pfpsf = BID_EXACT_STATUS;
 				return get_BID64(sign_x, expon_x, coefficient_x, rnd_mode, ref pfpsf);
 			}

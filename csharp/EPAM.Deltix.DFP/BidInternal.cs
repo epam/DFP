@@ -131,6 +131,7 @@ namespace EPAM.Deltix.DFP
 				r |= (coeff | sgn);
 				return r;
 			}
+
 			// special format
 			r = (BID_UINT64)expon;
 			r <<= EXPONENT_SHIFT_LARGE64;
@@ -165,6 +166,7 @@ namespace EPAM.Deltix.DFP
 						expon--;
 						coeff = (coeff << 3) + (coeff << 1);
 					}
+
 					if (expon > DECIMAL_MAX_EXPON_64)
 					{
 						__set_status_flags(ref fpsc, BID_OVERFLOW_EXCEPTION | BID_INEXACT_EXCEPTION);
@@ -185,6 +187,7 @@ namespace EPAM.Deltix.DFP
 									r = SMALLEST_BID64;
 								break;
 						}
+
 						return r;
 					}
 				}
@@ -353,8 +356,6 @@ namespace EPAM.Deltix.DFP
 			__add_128_64(out QM2, ALBH, ALBL.w1);
 			Ql.w1 = QM2.w0;
 		}
-
-
 
 		public static void __mul_64x128_full(out BID_UINT64 Ph, out BID_UINT128 Ql, BID_UINT64 A, BID_UINT128 B)
 		{
@@ -535,6 +536,7 @@ namespace EPAM.Deltix.DFP
 				// result is 0
 				return sgn;
 			}
+
 			// 10*coeff
 			coeff = (coeff << 3) + (coeff << 1);
 			if (sgn != 0 && (uint)(rmode - 1) < 2)
@@ -618,7 +620,6 @@ namespace EPAM.Deltix.DFP
 
 
 			return sgn | _C64;
-
 		}
 
 		public static BID_UINT64 get_BID64_UF(BID_UINT64 sgn, int expon, BID_UINT64 coeff, BID_UINT64 R)
@@ -703,7 +704,6 @@ namespace EPAM.Deltix.DFP
 #endif
 
 #if BID_SET_STATUS_FLAGS
-
 					if (is_inexact(fpsc))
 						__set_status_flags(ref fpsc, BID_UNDERFLOW_EXCEPTION);
 					else
@@ -755,6 +755,7 @@ namespace EPAM.Deltix.DFP
 					expon--;
 					coeff = (coeff << 3) + (coeff << 1);
 				}
+
 				if (expon > DECIMAL_MAX_EXPON_64)
 				{
 #if BID_SET_STATUS_FLAGS
@@ -777,6 +778,7 @@ namespace EPAM.Deltix.DFP
 								r = SMALLEST_BID64;
 							break;
 					}
+
 					return r;
 				}
 				else
@@ -825,6 +827,7 @@ namespace EPAM.Deltix.DFP
 				expon++;
 				coeff = 1000000000000000UL;
 			}
+
 			// check for possible underflow/overflow
 			if (((uint)expon) >= 3 * 256)
 			{
@@ -841,6 +844,7 @@ namespace EPAM.Deltix.DFP
 						// result is 0
 						return sgn;
 					}
+
 					if (sgn != 0 && (uint)(rmode - 1) < 2)
 						rmode = 3 - rmode;
 					// get digits to be shifted out
@@ -920,12 +924,18 @@ namespace EPAM.Deltix.DFP
 
 					return sgn | _C64;
 				}
-				if (coeff == 0) { if (expon > DECIMAL_MAX_EXPON_64) expon = DECIMAL_MAX_EXPON_64; }
+
+				if (coeff == 0)
+				{
+					if (expon > DECIMAL_MAX_EXPON_64) expon = DECIMAL_MAX_EXPON_64;
+				}
+
 				while (coeff < 1000000000000000UL && expon >= 3 * 256)
 				{
 					expon--;
 					coeff = (coeff << 3) + (coeff << 1);
 				}
+
 				if (expon > DECIMAL_MAX_EXPON_64)
 				{
 					__set_status_flags(ref fpsc, BID_OVERFLOW_EXCEPTION | BID_INEXACT_EXCEPTION);
@@ -946,6 +956,7 @@ namespace EPAM.Deltix.DFP
 								r = SMALLEST_BID64;
 							break;
 					}
+
 					return r;
 				}
 			}
@@ -1009,8 +1020,9 @@ namespace EPAM.Deltix.DFP
 						pcoefficient_x = x & 0xfe00000000000000UL;
 					if ((x & NAN_MASK64) == INFINITY_MASK64)
 						pcoefficient_x = x & SINFINITY_MASK64;
-					return 0;   // NaN or Infinity
+					return 0; // NaN or Infinity
 				}
+
 				// check for non-canonical values
 				if (coeff >= 10000000000000000UL)
 					coeff = 0;
@@ -1020,6 +1032,7 @@ namespace EPAM.Deltix.DFP
 				pexponent_x = (int)(tmp & EXPONENT_MASK64);
 				return coeff;
 			}
+
 			// exponent
 			tmp = x >> EXPONENT_SHIFT_SMALL64;
 			pexponent_x = (int)(tmp & EXPONENT_MASK64);

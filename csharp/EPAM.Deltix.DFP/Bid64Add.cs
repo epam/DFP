@@ -11,7 +11,6 @@ namespace EPAM.Deltix.DFP
 {
 	internal static class Bid64Add
 	{
-
 		/// <summary>
 		///  Algorithm description:
 		///
@@ -62,7 +61,6 @@ namespace EPAM.Deltix.DFP
 			_IDEC_flags status;
 #endif
 
-
 			valid_x = unpack_BID64(out sign_x, out exponent_x, out coefficient_x, x);
 			valid_y = unpack_BID64(out sign_y, out exponent_y, out coefficient_y, y);
 
@@ -76,7 +74,7 @@ namespace EPAM.Deltix.DFP
 				{
 #if BID_SET_STATUS_FLAGS
 					if (((x & SNAN_MASK64) == SNAN_MASK64)  // sNaN
-					|| ((y & SNAN_MASK64) == SNAN_MASK64))
+						|| ((y & SNAN_MASK64) == SNAN_MASK64))
 						__set_status_flags(ref pfpsf, BID_INVALID_EXCEPTION);
 #endif
 					return coefficient_x & QUIET_MASK64;
@@ -124,8 +122,8 @@ namespace EPAM.Deltix.DFP
 						}
 					}
 				}
-
 			}
+
 			if (valid_y == 0)
 			{
 				// y is Inf. or NaN?
@@ -139,7 +137,8 @@ namespace EPAM.Deltix.DFP
 				}
 				// y is 0
 				if (coefficient_x == 0)
-				{   // x==0
+				{
+					// x==0
 					if (exponent_x <= exponent_y)
 						res = ((BID_UINT64)exponent_x) << 53;
 					else
@@ -159,6 +158,7 @@ namespace EPAM.Deltix.DFP
 					return x;
 				}
 			}
+
 			// sort arguments by exponent
 			if (exponent_x < exponent_y)
 			{
@@ -357,7 +357,6 @@ namespace EPAM.Deltix.DFP
 				// now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
 				amount = bid_short_recip_scale[extra_digits];
 				C64 = CT.w1 >> amount;
-
 			}
 			else
 			{
@@ -415,8 +414,7 @@ namespace EPAM.Deltix.DFP
 				// filter out difficult (corner) cases
 				// this test ensures the number of digits in coefficient_a does not change
 				// after adding (the appropriately scaled and rounded) coefficient_b
-				if ((BID_UINT64)(C64 - 1000000000000000UL - 1) >
-			   9000000000000000UL - 2)
+				if ((BID_UINT64)(C64 - 1000000000000000UL - 1) > 9000000000000000UL - 2)
 				{
 					if (C64 >= 10000000000000000UL)
 					{
@@ -428,8 +426,7 @@ namespace EPAM.Deltix.DFP
 							__mul_64x64_to_128(out CA, saved_ca, 0x3333333333333334UL);
 							//reciprocals10_64[1]);
 							coefficient_a = CA.w1 >> 1;
-							rem_a =
-							  saved_ca - (coefficient_a << 3) - (coefficient_a << 1);
+							rem_a = saved_ca - (coefficient_a << 3) - (coefficient_a << 1);
 							coefficient_a = coefficient_a - T1;
 
 							saved_cb += rem_a * bid_power10_table_128[diff_dec_expon].w0;
@@ -477,9 +474,7 @@ namespace EPAM.Deltix.DFP
 						else
 							exponent_b++;
 					}
-
 				}
-
 			}
 
 #if !IEEE_ROUND_NEAREST_TIES_AWAY

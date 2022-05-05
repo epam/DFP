@@ -94,7 +94,8 @@ namespace EPAM.Deltix.DFP
 					{
 						// y==Inf, return NaN
 						if ((y & NAN_MASK64) == INFINITY_MASK64)
-						{   // Inf/Inf
+						{
+							// Inf/Inf
 #if BID_SET_STATUS_FLAGS
 							__set_status_flags(ref pfpsf, BID_INVALID_EXCEPTION);
 #endif
@@ -131,8 +132,8 @@ namespace EPAM.Deltix.DFP
 						exponent_x = 0;
 					return (sign_x ^ sign_y) | (((BID_UINT64)exponent_x) << 53);
 				}
-
 			}
+
 			if (valid_y == 0)
 			{
 				// y is Inf. or NaN
@@ -195,7 +196,6 @@ namespace EPAM.Deltix.DFP
 				}
 				else
 					db = (double)(B + 2 + (B & 1));
-
 			}
 			else
 			{
@@ -250,7 +250,6 @@ namespace EPAM.Deltix.DFP
 
 				Q *= bid_power10_table_128[ed2].w0;
 				diff_expon -= ed2;
-
 			}
 
 			if (CA.w1 == 0)
@@ -263,7 +262,6 @@ namespace EPAM.Deltix.DFP
 			}
 			else
 			{
-
 				// 2^64
 				t_scale_d = bitsToDouble(0x43f0000000000000UL);
 				// convert CA to DP
@@ -405,9 +403,10 @@ namespace EPAM.Deltix.DFP
 						amount = bid_short_recip_scale[nzeros];
 						Q = CT.w1 >> amount;
 					}
-					diff_expon += nzeros;
 
+					diff_expon += nzeros;
 				}
+
 				if (diff_expon >= 0)
 				{
 					res = fast_get_BID64_check_OF(sign_x ^ sign_y, diff_expon, Q
@@ -526,7 +525,6 @@ namespace EPAM.Deltix.DFP
     // (void) fesetexceptflag (&binaryflags, BID_FE_ALL_FLAGS);
 #endif
 				return res;
-
 			}
 		}
 	}
