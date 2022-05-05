@@ -11,6 +11,29 @@ namespace EPAM.Deltix.DFP
 {
 	internal static class Bid64Add
 	{
+		public static BID_UINT64 bid64_sub(BID_UINT64 x, BID_UINT64 y
+#if !IEEE_ROUND_NEAREST
+			, int rnd_mode
+#endif
+#if BID_SET_STATUS_FLAGS
+			, ref _IDEC_flags pfpsf
+#endif
+			)
+		{
+			// check if y is not NaN
+			if (((y & NAN_MASK64) != NAN_MASK64))
+				y ^= 0x8000000000000000UL;
+
+			return bid64_add(x, y
+#if !IEEE_ROUND_NEAREST
+				, rnd_mode
+#endif
+#if BID_SET_STATUS_FLAGS
+				, ref pfpsf
+#endif
+				);
+		}
+
 		/// <summary>
 		///  Algorithm description:
 		///
@@ -467,9 +490,9 @@ namespace EPAM.Deltix.DFP
 						if (C64_new < 10000000000000000UL)
 						{
 							C64 = C64_new;
-#if BID_SET_STATUS_FLAGS
+//#if BID_SET_STATUS_FLAGS
 							CT = CT_new;
-#endif
+//#endif
 						}
 						else
 							exponent_b++;

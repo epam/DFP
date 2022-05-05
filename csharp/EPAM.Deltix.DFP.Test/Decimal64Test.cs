@@ -1061,6 +1061,8 @@ namespace EPAM.Deltix.DFP.Test
 		[Test]
 		public void CoverSubtract()
 		{
+			CheckCase(Decimal64.FromUnderlying(0x2f00007ed74cd118UL), Decimal64.FromUnderlying(0x3180000000000001UL), NativeImpl.subtract, (a, b) => a.Subtract(b));
+
 			CheckWithCoverage(NativeImpl.subtract, (a, b) => a.Subtract(b));
 		}
 

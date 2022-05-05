@@ -561,12 +561,12 @@ namespace EPAM.Deltix.DFP
 
 		public Decimal64 Subtract(Decimal64 b)
 		{
-			return new Decimal64(Bid64Add.bid64_add(Bits, DotNetImpl.Negate(b.Bits)));
+			return new Decimal64(Bid64Add.bid64_sub(Bits, b.Bits));
 		}
 
 		public static Decimal64 operator -(Decimal64 a, Decimal64 b)
 		{
-			return new Decimal64(Bid64Add.bid64_add(a.Bits, DotNetImpl.Negate(b.Bits)));
+			return new Decimal64(Bid64Add.bid64_sub(a.Bits, b.Bits));
 		}
 
 		public Decimal64 Multiply(Decimal64 b)
