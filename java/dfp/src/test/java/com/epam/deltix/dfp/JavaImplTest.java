@@ -522,6 +522,11 @@ public class JavaImplTest {
     }
 
     @Test
+    public void testSubWithCoverage() throws Exception {
+        checkWithCoverage(NativeImpl::subtract, Decimal64Utils::subtract);
+    }
+
+    @Test
     public void testMulWithCoverage() throws Exception {
         checkCases(NativeImpl::multiply2, Decimal64Utils::multiply,
             ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,

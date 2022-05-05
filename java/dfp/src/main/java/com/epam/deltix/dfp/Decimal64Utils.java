@@ -601,7 +601,7 @@ public class Decimal64Utils {
 
     @Decimal
     public static long subtract(@Decimal final long a, @Decimal final long b) {
-        return JavaImplAdd.bid64_add(a, JavaImpl.negate(b));
+        return JavaImplAdd.bid64_sub(a, b);
     }
 
     @Decimal
