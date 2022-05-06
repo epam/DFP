@@ -2155,7 +2155,8 @@ public class Decimal64Utils {
     /**
      * Implements {@link Decimal64#getUnscaledValue(long)}, adds null check; do not use directly.
      *
-     * @param value DFP argument
+     * @param value          DFP argument
+     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
      * @return ..
      */
     public static long getUnscaledValueChecked(@Decimal final long value, final long abnormalReturn) {
@@ -2177,7 +2178,8 @@ public class Decimal64Utils {
     /**
      * Implements {@link Decimal64#getScale(int)}, adds null check; do not use directly.
      *
-     * @param value DFP argument
+     * @param value          DFP argument
+     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
      * @return ..
      */
     public static int getScaleChecked(@Decimal final long value, final int abnormalReturn) {
