@@ -559,6 +559,26 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(Bid64Add.bid64_add(a.Bits, b.Bits));
 		}
 
+		public static Decimal64 operator +(Decimal64 a, Int32 b)
+		{
+			return new Decimal64(Bid64Add.bid64_add(a.Bits, DotNetImpl.FromInt32(b)));
+		}
+
+		public static Decimal64 operator +(Int32 b, Decimal64 a)
+		{
+			return new Decimal64(Bid64Add.bid64_add(a.Bits, DotNetImpl.FromInt32(b)));
+		}
+
+		public static Decimal64 operator +(Decimal64 a, Int64 b)
+		{
+			return new Decimal64(Bid64Add.bid64_add(a.Bits, NativeImpl.fromInt64(b)));
+		}
+
+		public static Decimal64 operator +(Int64 b, Decimal64 a)
+		{
+			return new Decimal64(Bid64Add.bid64_add(a.Bits, NativeImpl.fromInt64(b)));
+		}
+
 		public Decimal64 Subtract(Decimal64 b)
 		{
 			return new Decimal64(Bid64Add.bid64_sub(Bits, b.Bits));
@@ -567,6 +587,26 @@ namespace EPAM.Deltix.DFP
 		public static Decimal64 operator -(Decimal64 a, Decimal64 b)
 		{
 			return new Decimal64(Bid64Add.bid64_sub(a.Bits, b.Bits));
+		}
+
+		public static Decimal64 operator -(Decimal64 a, Int32 b)
+		{
+			return new Decimal64(Bid64Add.bid64_sub(a.Bits, DotNetImpl.FromInt32(b)));
+		}
+
+		public static Decimal64 operator -(Int32 b, Decimal64 a)
+		{
+			return new Decimal64(Bid64Add.bid64_sub(DotNetImpl.FromInt32(b), a.Bits));
+		}
+
+		public static Decimal64 operator -(Decimal64 a, Int64 b)
+		{
+			return new Decimal64(Bid64Add.bid64_sub(a.Bits, NativeImpl.fromInt64(b)));
+		}
+
+		public static Decimal64 operator -(Int64 b, Decimal64 a)
+		{
+			return new Decimal64(Bid64Add.bid64_sub(NativeImpl.fromInt64(b), a.Bits));
 		}
 
 		public Decimal64 Multiply(Decimal64 b)

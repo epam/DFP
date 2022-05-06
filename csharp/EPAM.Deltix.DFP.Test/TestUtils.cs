@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
@@ -229,62 +228,6 @@ namespace EPAM.Deltix.DFP.Test
 			Decimal64.FromUnderlying(Decimal64.One.Bits | 0x7000000000000000UL).Negate(),
 		};
 
-		public class RandomDecimalsGenerator
-		{
-			readonly Random generator;
-
-			readonly int mantissaMaxShift;
-			readonly int exponentRange;
-			readonly int exponentOffset;
-
-			static readonly int TwiceOfMaxSignificandDigits = Decimal64.MaxSignificandDigits * 2;
-			static readonly int HalfOfMaxSignificandDigits = Decimal64.MaxSignificandDigits / 2;
-
-			public RandomDecimalsGenerator() : this(GenerateSeed())
-			{
-			}
-
-			private static Int32 GenerateSeed()
-			{
-				var cryptoResult = new byte[4];
-				RandomNumberGenerator.Create().GetBytes(cryptoResult);
-
-				return BitConverter.ToInt32(cryptoResult, 0);
-			}
-
-			public RandomDecimalsGenerator(int randomSeed) : this(new Random(randomSeed), 1,
-					-TwiceOfMaxSignificandDigits - HalfOfMaxSignificandDigits,
-					TwiceOfMaxSignificandDigits - HalfOfMaxSignificandDigits)
-			{
-			}
-
-			public RandomDecimalsGenerator(
-				Random generator,
-				int mantissaMinBits,
-				int exponentMin,
-				int exponentMax)
-			{
-				if (generator == null)
-					throw new ArgumentException("The random argument is null.", nameof(generator));
-				if (mantissaMinBits < 1 || 64 < mantissaMinBits)
-					throw new ArgumentOutOfRangeException(nameof(mantissaMinBits), mantissaMinBits, $"The mantissaMinBits(={mantissaMinBits}) must lie in [1..64] range");
-				if (exponentMin < Decimal64.MinExponent || Decimal64.MaxExponent < exponentMin)
-					throw new ArgumentOutOfRangeException(nameof(exponentMin), exponentMin, $"The exponentMin(={exponentMin}) must lie in [{Decimal64.MinExponent}..{Decimal64.MaxExponent}] range.");
-				if (exponentMax < Decimal64.MinExponent || Decimal64.MaxExponent < exponentMax)
-					throw new ArgumentOutOfRangeException(nameof(exponentMax), exponentMax, $"The exponentMax(={exponentMax}) must lie in [{Decimal64.MinExponent}..{Decimal64.MaxExponent}] range.");
-				if (exponentMax <= exponentMin)
-					throw new ArgumentException($"The exponentMin(={exponentMin}) must be less than the exponentMax(={exponentMax}).");
-
-				this.generator = generator;
-				this.mantissaMaxShift = 64 - mantissaMinBits + 1 /*  for random.nextInt() exclusive upper bound */;
-				this.exponentRange = exponentMax - exponentMin;
-				this.exponentOffset = exponentMin;
-			}
-
-			public Decimal64 Next => Decimal64.FromFixedPoint((/*NextLong*/((long)generator.Next() << 32) | (uint)generator.Next()) >> generator.Next(mantissaMaxShift),
-						-(generator.Next(exponentRange) + exponentOffset));
-		}
-
 		public static void CheckCase(Decimal64 x, Func<ulong, ulong> refFn, Func<Decimal64, Decimal64> testFn)
 		{
 			var testRet = testFn(x);
@@ -305,7 +248,7 @@ namespace EPAM.Deltix.DFP.Test
 			{
 				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
 				for (int i = 0; i < NTests; ++i)
-					CheckCase(random.Next, refFn, testFn);
+					CheckCase(random.Next(), refFn, testFn);
 			});
 		}
 
@@ -329,7 +272,7 @@ namespace EPAM.Deltix.DFP.Test
 			{
 				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
 				for (int i = 0; i < NTests; ++i)
-					CheckCase(random.Next, random.Next, refFn, testFn);
+					CheckCase(random.Next(), random.Next(), refFn, testFn);
 			});
 		}
 
@@ -354,7 +297,7 @@ namespace EPAM.Deltix.DFP.Test
 			{
 				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
 				for (int i = 0; i < NTests; ++i)
-					CheckCase(random.Next, random.Next, random.Next, refFn, testFn);
+					CheckCase(random.Next(), random.Next(), random.Next(), refFn, testFn);
 			});
 		}
 
@@ -380,7 +323,7 @@ namespace EPAM.Deltix.DFP.Test
 			{
 				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
 				for (int i = 0; i < NTests; ++i)
-					CheckCase(random.Next, random.Next, random.Next, random.Next, refFn, testFn);
+					CheckCase(random.Next(), random.Next(), random.Next(), random.Next(), refFn, testFn);
 			});
 		}
 
@@ -405,7 +348,7 @@ namespace EPAM.Deltix.DFP.Test
 			{
 				RandomDecimalsGenerator random = new RandomDecimalsGenerator();
 				for (int i = 0; i < NTests; ++i)
-					CheckCase(random.Next, random.Next, yConverter, refFn, testFn);
+					CheckCase(random.Next(), random.Next(), yConverter, refFn, testFn);
 			});
 		}
 

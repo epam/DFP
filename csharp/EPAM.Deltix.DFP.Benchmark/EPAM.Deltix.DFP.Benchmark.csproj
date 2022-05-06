@@ -7,9 +7,13 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\EPAM.Deltix.DFP.Test\RandomDecimalsGenerator.cs" Link="RandomDecimalsGenerator.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EPAM.Deltix.DFPMath\EPAM.Deltix.DFPMath.csproj" />
     <ProjectReference Include="..\EPAM.Deltix.DFP\EPAM.Deltix.DFP.csproj" />
   </ItemGroup>
 </Project>
