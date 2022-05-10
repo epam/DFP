@@ -234,8 +234,8 @@ namespace EPAM.Deltix.DFP.Test
 			var refRet = Decimal64.FromUnderlying(refFn(x.Bits));
 
 			if (testRet != refRet)
-				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L) = " +
-					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}UL) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}UL, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}UL");
 		}
 
 		public static void CheckWithCoverage(Func<ulong, ulong> refFn, Func<Decimal64, Decimal64> testFn)
@@ -258,8 +258,8 @@ namespace EPAM.Deltix.DFP.Test
 			var refRet = Decimal64.FromUnderlying(refFn(x.Bits, y.Bits));
 
 			if (testRet != refRet)
-				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L, 0x{Convert.ToString((long)y.Bits, 16)}L) = " +
-					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}UL, 0x{Convert.ToString((long)y.Bits, 16)}UL) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}UL, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}UL");
 		}
 
 		public static void CheckWithCoverage(Func<ulong, ulong, ulong> refFn, Func<Decimal64, Decimal64, Decimal64> testFn)
@@ -282,8 +282,8 @@ namespace EPAM.Deltix.DFP.Test
 			var refRet = Decimal64.FromUnderlying(refFn(x.Bits, y.Bits, z.Bits));
 
 			if (testRet != refRet)
-				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L, 0x{Convert.ToString((long)y.Bits, 16)}L, 0x{Convert.ToString((long)z.Bits, 16)}L) = " +
-					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}UL, 0x{Convert.ToString((long)y.Bits, 16)}UL, 0x{Convert.ToString((long)z.Bits, 16)}UL) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}UL, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}UL");
 		}
 
 		public static void CheckWithCoverage(Func<ulong, ulong, ulong, ulong> refFn, Func<Decimal64, Decimal64, Decimal64, Decimal64> testFn)
@@ -307,8 +307,8 @@ namespace EPAM.Deltix.DFP.Test
 			var refRet = Decimal64.FromUnderlying(refFn(x.Bits, y.Bits, z.Bits, t.Bits));
 
 			if (testRet != refRet)
-				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L, 0x{Convert.ToString((long)y.Bits, 16)}L, 0x{Convert.ToString((long)z.Bits, 16)}L, 0x{Convert.ToString((long)t.Bits, 16)}L) = " +
-					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}UL, 0x{Convert.ToString((long)y.Bits, 16)}UL, 0x{Convert.ToString((long)z.Bits, 16)}UL, 0x{Convert.ToString((long)t.Bits, 16)}UL) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}UL, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}UL");
 		}
 
 		public static void CheckWithCoverage(Func<ulong, ulong, ulong, ulong, ulong> refFn, Func<Decimal64, Decimal64, Decimal64, Decimal64, Decimal64> testFn)
@@ -334,8 +334,8 @@ namespace EPAM.Deltix.DFP.Test
 			var refRet = Decimal64.FromUnderlying(refFn(x.Bits, yT));
 
 			if (testRet != refRet)
-				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}L, {yT}) = " +
-					$"0x{Convert.ToString((long)refRet.Bits, 16)}L, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}L");
+				throw new Exception($"The function(0x{Convert.ToString((long)x.Bits, 16)}UL, {yT}) = " +
+					$"0x{Convert.ToString((long)refRet.Bits, 16)}UL, but test return 0x{Convert.ToString((long)testRet.Bits, 16)}UL");
 		}
 
 		public static void CheckWithCoverage<T>(Func<Decimal64, T> yConverter, Func<ulong, T, ulong> refFn, Func<Decimal64, T, Decimal64> testFn)

@@ -11,7 +11,9 @@ int main(int argc, char *argv[]) {
 	char *op;
 	char buff[4096];
 
-	if(argc!=4) {
+    bid64_add(0x2feb29430a256d21ULL, 0x7c00000000000000ULL);
+
+    if(argc!=4) {
 		fprintf(stderr, "Usage: <A> <op> <B>\n");
 		return -1;
 	}

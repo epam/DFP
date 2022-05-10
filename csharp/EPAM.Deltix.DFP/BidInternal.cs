@@ -88,20 +88,20 @@ namespace EPAM.Deltix.DFP
 
 		public static BID_UINT64 doubleToBits(double value)
 		{
-			//unsafe
-			//{
-			//	return *(BID_UINT64*)(&value);
-			//}
-			return (BID_UINT64)BitConverter.DoubleToInt64Bits(value);
+			unsafe
+			{
+				return *(BID_UINT64*)(&value);
+			}
+			//return (BID_UINT64)BitConverter.DoubleToInt64Bits(value);
 		}
 
 		public static double bitsToDouble(BID_UINT64 value)
 		{
-			//unsafe
-			//{
-			//	return *(BID_UINT64*)(&value);
-			//}
-			return BitConverter.Int64BitsToDouble((long)value);
+			unsafe
+			{
+				return *(double*)(&value);
+			}
+			//return BitConverter.Int64BitsToDouble((long)value);
 		}
 
 		public static BID_UINT32 floatToBits(float value)
@@ -109,6 +109,14 @@ namespace EPAM.Deltix.DFP
 			unsafe
 			{
 				return *(BID_UINT32*)(&value);
+			}
+		}
+
+		public static float bitsToFloat(BID_UINT32 value)
+		{
+			unsafe
+			{
+				return *(float*)(&value);
 			}
 		}
 
@@ -228,8 +236,63 @@ namespace EPAM.Deltix.DFP
 
 		public static BID_UINT64 fast_get_BID64_check_OF(BID_UINT64 sgn, int expon, BID_UINT64 coeff)
 		{
-			_IDEC_flags fpsc = BID_EXACT_STATUS;
-			return fast_get_BID64_check_OF(sgn, expon, coeff, BID_ROUNDING_TO_NEAREST, ref fpsc);
+			BID_UINT64 r, mask;
+
+			if (((uint)expon) >= 3 * 256 - 1)
+			{
+				if ((expon == 3 * 256 - 1) && coeff == 10000000000000000UL)
+				{
+					expon = 3 * 256;
+					coeff = 1000000000000000UL;
+				}
+
+				if (((uint)expon) >= 3 * 256)
+				{
+					while (coeff < 1000000000000000UL && expon >= 3 * 256)
+					{
+						expon--;
+						coeff = (coeff << 3) + (coeff << 1);
+					}
+
+					if (expon > DECIMAL_MAX_EXPON_64)
+					{
+						// overflow
+						return sgn | INFINITY_MASK64;
+					}
+				}
+			}
+
+			mask = 1;
+			mask <<= EXPONENT_SHIFT_SMALL64;
+
+			// check whether coefficient fits in 10*5+3 bits
+			if (coeff < mask)
+			{
+				r = (BID_UINT64)expon;
+				r <<= EXPONENT_SHIFT_SMALL64;
+				r |= (coeff | sgn);
+				return r;
+			}
+			// special format
+
+			// eliminate the case coeff==10^16 after rounding
+			if (coeff == 10000000000000000UL)
+			{
+				r = (BID_UINT64)(expon + 1);
+				r <<= EXPONENT_SHIFT_SMALL64;
+				r |= (1000000000000000UL | sgn);
+				return r;
+			}
+
+			r = (BID_UINT64)expon;
+			r <<= EXPONENT_SHIFT_LARGE64;
+			r |= (sgn | SPECIAL_ENCODING_MASK64);
+			// add coeff, without leading bits
+			mask = (mask >> 2) - 1;
+			coeff &= mask;
+			r |= coeff;
+
+			return r;
 		}
 
 		public static bool __unsigned_compare_gt_128(BID_UINT128 A, BID_UINT128 B)
