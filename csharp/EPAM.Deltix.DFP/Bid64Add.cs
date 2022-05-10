@@ -75,7 +75,7 @@ namespace EPAM.Deltix.DFP
 			BID_UINT64 valid_x, valid_y;
 			BID_UINT64 res;
 			BID_UINT64 sign_a, sign_b, coefficient_a, coefficient_b, sign_s, sign_ab, rem_a;
-			BID_UINT64 saved_ca, saved_cb, C0_64, C64, remainder_h, T1, carry, tmp;
+			BID_UINT64 saved_ca, saved_cb, C0_64, C64, remainder_h, T1/*, carry, tmp*/;
 			int_double tempx_i;
 			int exponent_x, exponent_y, exponent_a, exponent_b, diff_dec_expon;
 			int bin_expon_ca, extra_digits, amount, scale_k, scale_ca;

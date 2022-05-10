@@ -633,10 +633,12 @@ namespace EPAM.Deltix.DFP
 		//
 		public static BID_UINT64 get_BID64_small_mantissa(BID_UINT64 sgn, int expon, BID_UINT64 coeff, int rmode, ref _IDEC_flags fpsc)
 		{
-			BID_UINT128 C128, Q_low, Stemp;
-			BID_UINT64 r, mask, _C64, remainder_h, QH, carry, CY;
+			BID_UINT128 C128, Q_low/*, Stemp*/;
+			BID_UINT64 r, mask, _C64, remainder_h, QH/*, carry, CY*/;
 			int extra_digits, amount, amount2;
+#if BID_SET_STATUS_FLAGS
 			unsigned status;
+#endif
 
 			// check for possible underflow/overflow
 			if (((unsigned)expon) >= 3 * 256)

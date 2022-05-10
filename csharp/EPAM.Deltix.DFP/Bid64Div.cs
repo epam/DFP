@@ -60,7 +60,10 @@ namespace EPAM.Deltix.DFP
 			double da, db, dq, da_h, da_l;
 			int exponent_x, exponent_y, bin_expon_cx;
 			int diff_expon, ed1, ed2, bin_index;
-			int rmode, amount;
+#if !IEEE_ROUND_NEAREST
+			int rmode;
+#endif
+			int amount;
 			int nzeros, i, j, k, d5;
 			BID_UINT32 QX32, digit, digit_h, digit_low;
 			BID_UINT32* tdigit = stackalloc BID_UINT32[3];

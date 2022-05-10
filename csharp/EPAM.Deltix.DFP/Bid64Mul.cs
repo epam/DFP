@@ -34,17 +34,19 @@ namespace EPAM.Deltix.DFP
 #endif
 			)
 		{
-			BID_UINT128 P, C128, Q_high, Q_low, Stemp;
+			BID_UINT128 P, C128, Q_high, Q_low/*, Stemp*/;
 #if DECIMAL_TINY_DETECTION_AFTER_ROUNDING
 			BID_UINT128 PU;
 #endif
 			BID_UINT64 sign_x, sign_y, coefficient_x, coefficient_y;
-			BID_UINT64 C64, remainder_h, carry, CY, res;
+			BID_UINT64 C64, remainder_h/*, carry, CY*/, res;
 			BID_UINT64 valid_x, valid_y;
 			int_double tempx_i, tempy_i;
 			int extra_digits, exponent_x, exponent_y, bin_expon_cx, bin_expon_cy, bin_expon_product;
 			int rmode, digits_p, bp, amount, amount2, final_exponent, round_up;
+#if BID_SET_STATUS_FLAGS
 			unsigned status, uf_status;
+#endif
 
 			valid_x = unpack_BID64(out sign_x, out exponent_x, out coefficient_x, x);
 			valid_y = unpack_BID64(out sign_y, out exponent_y, out coefficient_y, y);
@@ -168,7 +170,9 @@ namespace EPAM.Deltix.DFP
 			}
 			else
 			{
+#if BID_SET_STATUS_FLAGS
 				uf_status = 0;
+#endif
 				// get 128-bit product: coefficient_x*coefficient_y
 				__mul_64x64_to_128(out P, coefficient_x, coefficient_y);
 
@@ -216,7 +220,9 @@ namespace EPAM.Deltix.DFP
 							return res;
 						}
 
+#if BID_SET_STATUS_FLAGS
 						uf_status = BID_UNDERFLOW_EXCEPTION;
+#endif
 #if DECIMAL_TINY_DETECTION_AFTER_ROUNDING
 						if (final_exponent == -1)
 						{
