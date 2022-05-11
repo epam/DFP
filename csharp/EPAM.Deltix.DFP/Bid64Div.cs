@@ -265,7 +265,24 @@ namespace EPAM.Deltix.DFP
 				ed1 = 15 + (int)DU;
 				ed2 = bid_estimate_decimal_digits[bin_index] + ed1;
 				T = bid_power10_table_128[ed1].w0;
-				__mul_64x64_to_128(out CA, A, T);
+				//__mul_64x64_to_128(out CA, A, T);
+				{
+					BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+					CXH = A >> 32;
+					CXL = (BID_UINT32)A;
+					CYH = T >> 32;
+					CYL = (BID_UINT32)T;
+
+					PM = CXH * CYL;
+					PH = CXH * CYH;
+					PL = CXL * CYL;
+					PM2 = CXL * CYH;
+					PH += (PM >> 32);
+					PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+					CA.w1 = PH + (PM >> 32);
+					CA.w0 = (PM << 32) + (BID_UINT32)PL;
+				}
 
 				Q = 0;
 				diff_expon = diff_expon - ed2;
@@ -327,7 +344,26 @@ namespace EPAM.Deltix.DFP
 				ed2 = 16 - bid_estimate_decimal_digits[bin_expon_cx] - (int)DU;
 
 				T = bid_power10_table_128[ed2].w0;
-				__mul_64x64_to_128(out CA, R, T);
+
+				//__mul_64x64_to_128(out CA, R, T);
+				{
+					BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+					CXH = R >> 32;
+					CXL = (BID_UINT32)R;
+					CYH = T >> 32;
+					CYL = (BID_UINT32)T;
+
+					PM = CXH * CYL;
+					PH = CXH * CYH;
+					PL = CXL * CYL;
+					PM2 = CXL * CYH;
+					PH += (PM >> 32);
+					PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+					CA.w1 = PH + (PM >> 32);
+					CA.w0 = (PM << 32) + (BID_UINT32)PL;
+				}
+
 				B = coefficient_y;
 
 				Q *= bid_power10_table_128[ed2].w0;
@@ -425,7 +461,25 @@ namespace EPAM.Deltix.DFP
 					if (d5 < nzeros)
 						nzeros = d5;
 
-					__mul_64x64_to_128(out CT, Q, bid_reciprocals10_64[nzeros]);
+					//__mul_64x64_to_128(out CT, Q, bid_reciprocals10_64[nzeros]);
+					{
+						BID_UINT64 CY = bid_reciprocals10_64[nzeros];
+						BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+						CXH = Q >> 32;
+						CXL = (BID_UINT32)Q;
+						CYH = CY >> 32;
+						CYL = (BID_UINT32)CY;
+
+						PM = CXH * CYL;
+						PH = CXH * CYH;
+						PL = CXL * CYL;
+						PM2 = CXL * CYH;
+						PH += (PM >> 32);
+						PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+						CT.w1 = PH + (PM >> 32);
+						CT.w0 = (PM << 32) + (BID_UINT32)PL;
+					}
 
 					// now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
 					amount = bid_short_recip_scale[nzeros];
@@ -479,7 +533,25 @@ namespace EPAM.Deltix.DFP
 
 					if (nzeros != 0)
 					{
-						__mul_64x64_to_128(out CT, Q, bid_reciprocals10_64[nzeros]);
+						//__mul_64x64_to_128(out CT, Q, bid_reciprocals10_64[nzeros]);
+						{
+							BID_UINT64 CY = bid_reciprocals10_64[nzeros];
+							BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+							CXH = Q >> 32;
+							CXL = (BID_UINT32)Q;
+							CYH = CY >> 32;
+							CYL = (BID_UINT32)CY;
+
+							PM = CXH * CYL;
+							PH = CXH * CYH;
+							PL = CXL * CYL;
+							PM2 = CXL * CYH;
+							PH += (PM >> 32);
+							PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+							CT.w1 = PH + (PM >> 32);
+							CT.w0 = (PM << 32) + (BID_UINT32)PL;
+						}
 
 						// now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
 						amount = bid_short_recip_scale[nzeros];
