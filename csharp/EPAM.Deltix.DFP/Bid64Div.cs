@@ -68,8 +68,87 @@ namespace EPAM.Deltix.DFP
 			BID_UINT32 QX32, digit, digit_h, digit_low;
 			BID_UINT32* tdigit = stackalloc BID_UINT32[3];
 
-			valid_x = unpack_BID64(out sign_x, out exponent_x, out coefficient_x, x);
-			valid_y = unpack_BID64(out sign_y, out exponent_y, out coefficient_y, y);
+			//valid_x = unpack_BID64(out sign_x, out exponent_x, out coefficient_x, x);
+			{
+				sign_x = x & 0x8000000000000000UL;
+
+				if ((x & SPECIAL_ENCODING_MASK64) != SPECIAL_ENCODING_MASK64)
+				{
+					// exponent
+					exponent_x = (int)((x >> EXPONENT_SHIFT_SMALL64) & EXPONENT_MASK64);
+					// coefficient
+					coefficient_x = (x & SMALL_COEFF_MASK64);
+
+					valid_x = coefficient_x;
+				}
+				else
+				{
+					// special encodings
+					if ((x & INFINITY_MASK64) == INFINITY_MASK64)
+					{
+						exponent_x = 0;
+						coefficient_x = x & 0xfe03ffffffffffffUL;
+						if ((x & 0x0003ffffffffffffUL) >= 1000000000000000UL)
+							coefficient_x = x & 0xfe00000000000000UL;
+						if ((x & NAN_MASK64) == INFINITY_MASK64)
+							coefficient_x = x & SINFINITY_MASK64;
+						valid_x = 0; // NaN or Infinity
+					}
+					else
+					{
+						// coefficient
+						BID_UINT64 coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
+						// check for non-canonical values
+						if (coeff >= 10000000000000000UL)
+							coeff = 0;
+						coefficient_x = coeff;
+						// get exponent
+						exponent_x = (int)((x >> EXPONENT_SHIFT_LARGE64) & EXPONENT_MASK64);
+						valid_x = coeff;
+					}
+				}
+			}
+
+			//valid_y = unpack_BID64(out sign_y, out exponent_y, out coefficient_y, y);
+			{
+				sign_y = y & 0x8000000000000000UL;
+
+				if ((y & SPECIAL_ENCODING_MASK64) != SPECIAL_ENCODING_MASK64)
+				{
+					// exponent
+					exponent_y = (int)((y >> EXPONENT_SHIFT_SMALL64) & EXPONENT_MASK64);
+					// coefficient
+					coefficient_y = (y & SMALL_COEFF_MASK64);
+
+					valid_y = coefficient_y;
+				}
+				else
+				{
+					// special encodings
+					if ((y & INFINITY_MASK64) == INFINITY_MASK64)
+					{
+						exponent_y = 0;
+						coefficient_y = y & 0xfe03ffffffffffffUL;
+						if ((y & 0x0003ffffffffffffUL) >= 1000000000000000UL)
+							coefficient_y = y & 0xfe00000000000000UL;
+						if ((y & NAN_MASK64) == INFINITY_MASK64)
+							coefficient_y = y & SINFINITY_MASK64;
+						valid_y = 0; // NaN or Infinity
+					}
+					else
+					{
+						// coefficient
+						BID_UINT64 coeff = (y & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
+						// check for non-canonical values
+						if (coeff >= 10000000000000000UL)
+							coeff = 0;
+						coefficient_y = coeff;
+						// get exponent
+						exponent_y = (int)((y >> EXPONENT_SHIFT_LARGE64) & EXPONENT_MASK64);
+						valid_y = coeff;
+					}
+				}
+			}
 
 			// unpack arguments, check for NaN or Infinity
 			if (valid_x == 0)

@@ -349,13 +349,15 @@ namespace EPAM.Deltix.DFP
 
 		// get full 64x64bit product
 		//
-		public static void __mul_64x64_to_128(out BID_UINT128 P, BID_UINT64 CX, BID_UINT64 CY)
+		public static void __mul_64x64_to_128(out BID_UINT128 P, BID_UINT64 CX_, BID_UINT64 CY_)
 		{
+			BID_UINT64 CX = CX_;
+			BID_UINT64 CY = CY_;
 			BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-			CXH = (CX) >> 32;
-			CXL = (BID_UINT32)(CX);
-			CYH = (CY) >> 32;
-			CYL = (BID_UINT32)(CY);
+			CXH = CX >> 32;
+			CXL = (BID_UINT32)CX;
+			CYH = CY >> 32;
+			CYL = (BID_UINT32)CY;
 
 			PM = CXH * CYL;
 			PH = CXH * CYH;
@@ -461,10 +463,11 @@ namespace EPAM.Deltix.DFP
 
 
 		// add 64-bit value to 128-bit
-		public static void __add_128_64(out BID_UINT128 R128, BID_UINT128 A128, BID_UINT64 B64)
+		public static void __add_128_64(out BID_UINT128 R128, BID_UINT128 A128_, BID_UINT64 B64_)
 		{
-			BID_UINT64 R64H;
-			R64H = A128.w1;
+			BID_UINT128 A128 = A128_;
+			BID_UINT64 B64 = B64_;
+			BID_UINT64 R64H = A128.w1;
 			R128.w0 = B64 + A128.w0;
 			if (R128.w0 < B64)
 				R64H++;
@@ -484,8 +487,10 @@ namespace EPAM.Deltix.DFP
 
 		// add 128-bit value to 128-bit
 		// assume no carry-out
-		public static void __add_128_128(out BID_UINT128 R128, BID_UINT128 A128, BID_UINT128 B128)
+		public static void __add_128_128(out BID_UINT128 R128, BID_UINT128 A128_, BID_UINT128 B128_)
 		{
+			BID_UINT128 A128 = A128_;
+			BID_UINT128 B128 = B128_;
 			BID_UINT128 Q128;
 			Q128.w1 = A128.w1 + B128.w1;
 			Q128.w0 = B128.w0 + A128.w0;
@@ -508,15 +513,13 @@ namespace EPAM.Deltix.DFP
 
 		public static void __add_carry_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y)
 		{
-			BID_UINT64 X1 = X;
 			S = X + Y;
-			CY = (S < X1) ? 1UL : 0;
+			CY = (S < X) ? 1UL : 0;
 		}
 
 		public static void __add_carry_in_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y, BID_UINT64 CI)
 		{
-			BID_UINT64 X1;
-			X1 = X + CI;
+			BID_UINT64 X1 = X + CI;
 			S = X1 + Y;
 			CY = ((S < X1) || (X1 < CI)) ? 1UL : 0;
 		}
@@ -696,8 +699,12 @@ namespace EPAM.Deltix.DFP
 		//
 		public static BID_UINT64 get_BID64_small_mantissa(BID_UINT64 sgn, int expon, BID_UINT64 coeff, int rmode, ref _IDEC_flags fpsc)
 		{
-			BID_UINT128 C128, Q_low/*, Stemp*/;
-			BID_UINT64 r, mask, _C64, remainder_h, QH/*, carry, CY*/;
+			BID_UINT128 C128, Q_low;
+#if BID_SET_STATUS_FLAGS
+			BID_UINT128 Stemp;
+			BID_UINT64 carry, CY;
+#endif
+			BID_UINT64 r, mask, _C64, remainder_h, QH;
 			int extra_digits, amount, amount2;
 #if BID_SET_STATUS_FLAGS
 			unsigned status;

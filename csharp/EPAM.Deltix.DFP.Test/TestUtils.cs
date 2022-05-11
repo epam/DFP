@@ -171,32 +171,42 @@ namespace EPAM.Deltix.DFP.Test
 
 		readonly static Random rng = new Random(55);
 
-		public static void CheckInMultipleThreads(ThreadStart target)
+		public static void CheckInMultipleThreads(ThreadStart target, int threadsCount = 0)
 		{
-			Thread[] threads = new Thread[Environment.ProcessorCount];
-			Exception lastException = null;
+			if (threadsCount <= 0)
+				threadsCount = Environment.ProcessorCount;
 
-			for (int ti = 0; ti < threads.Length; ++ti)
+			if (threadsCount == 1)
 			{
-				threads[ti] = new Thread(() =>
-				{
-					try
-					{
-						target();
-					}
-					catch (Exception e)
-					{
-						lastException = e;
-					}
-				});
-				threads[ti].Start();
+				target();
 			}
+			else
+			{
+				Thread[] threads = new Thread[threadsCount];
+				Exception lastException = null;
 
-			foreach (var thread in threads)
-				thread.Join();
+				for (int ti = 0; ti < threads.Length; ++ti)
+				{
+					threads[ti] = new Thread(() =>
+					{
+						try
+						{
+							target();
+						}
+						catch (Exception e)
+						{
+							lastException = e;
+						}
+					});
+					threads[ti].Start();
+				}
 
-			if (lastException != null)
-				throw lastException;
+				foreach (var thread in threads)
+					thread.Join();
+
+				if (lastException != null)
+					throw lastException;
+			}
 		}
 
 		public static readonly Decimal64[] specialValues = {
