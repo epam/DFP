@@ -29,33 +29,6 @@ namespace EPAM.Deltix.DFP.Benchmark
 		}
 
 		[Benchmark]
-		public BID_UINT64 Add2Call()
-		{
-			BID_UINT64 result = Decimal64.Zero.Bits;
-			for (var i = 0; i < 1000; i++)
-				result = Bid64Add.bid64_add_call(result, sumValues[i].Bits);
-			return result;
-		}
-
-		[Benchmark]
-		public BID_UINT64 Add2Inline()
-		{
-			BID_UINT64 result = Decimal64.Zero.Bits;
-			for (var i = 0; i < 1000; i++)
-				result = Bid64Add.bid64_add(result, sumValues[i].Bits);
-			return result;
-		}
-
-		[Benchmark]
-		public BID_UINT64 Add2Native()
-		{
-			BID_UINT64 result = Decimal64.Zero.Bits;
-			for (var i = 0; i < 1000; i++)
-				result = NativeImpl.add2(result, sumValues[i].Bits);
-			return result;
-		}
-
-		[Benchmark]
 		public BID_UINT64 InterateAndSum()
 		{
 			BID_UINT64 result = Decimal64.Zero.Bits;
@@ -70,6 +43,15 @@ namespace EPAM.Deltix.DFP.Benchmark
 			Decimal64 result = Decimal64.Zero;
 			for (var i = 0; i < 1000; i++)
 				result = result.Add(sumValues[i]);
+			return result;
+		}
+
+		[Benchmark]
+		public BID_UINT64 Add2Native()
+		{
+			BID_UINT64 result = Decimal64.Zero.Bits;
+			for (var i = 0; i < 1000; i++)
+				result = NativeImpl.add2(result, sumValues[i].Bits);
 			return result;
 		}
 
