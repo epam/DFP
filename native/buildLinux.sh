@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-set -ex
+set -Eeuo pipefail
+set -x
 
 CCOMPILER=${2:-clang}
-CXXCOMPILER=${2:-clang++}
+CXXCOMPILER=${2:-clang}
 VERBOSE=${3:-ON}
 
 rm -rf ./build
@@ -23,7 +24,7 @@ cmake -G "Unix Makefiles" -DVERSION_SUFFIX=$1 -DCMAKE_VERBOSE_MAKEFILE=$VERBOSE 
 make install
 
 rm -rf ./*
-cmake -G "Unix Makefiles" -DVERSION_SUFFIX=$1 -DCMAKE_VERBOSE_MAKEFILE=$VERBOSE -DCMAKE_C_COMPILER=$CCOMPILER -DCMAKE_CXX_COMPILER=$CXXCOMPILER -DCMAKE_INSTALL_PREFIX=../ -DINSTALL_SUFFIX=Linux/amd64 ../
+cmake -G "Unix Makefiles" -DVERSION_SUFFIX=$1 -DCMAKE_VERBOSE_MAKEFILE=$VERBOSE -DCMAKE_C_COMPILER=musl-gcc -DCMAKE_CXX_COMPILER=musl-gcc -DCMAKE_C_FLAGS_IN=-static -DCMAKE_INSTALL_PREFIX=../ -DINSTALL_SUFFIX=Linux/amd64 ../
 make install
 
 cd ..
