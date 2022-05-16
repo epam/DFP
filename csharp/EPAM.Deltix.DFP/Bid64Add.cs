@@ -11,7 +11,7 @@ namespace EPAM.Deltix.DFP
 {
 	internal static class Bid64Add
 	{
-		public static BID_UINT64 bid64_sub(BID_UINT64 x, BID_UINT64 y
+		public static unsafe BID_UINT64 bid64_sub(BID_UINT64 x, BID_UINT64 y
 #if !IEEE_ROUND_NEAREST
 			, int rnd_mode
 #endif
@@ -61,7 +61,7 @@ namespace EPAM.Deltix.DFP
 		///         add sign_a*coefficient_a*10^diff_expon, sign_b*coefficient_b
 		///             in 128-bit integer arithmetic, then round to 16 decimal digits
 		/// </summary>
-		public static BID_UINT64 bid64_add(BID_UINT64 x, BID_UINT64 y
+		public static unsafe BID_UINT64 bid64_add(BID_UINT64 x, BID_UINT64 y
 #if !IEEE_ROUND_NEAREST
 			, int rnd_mode
 #endif

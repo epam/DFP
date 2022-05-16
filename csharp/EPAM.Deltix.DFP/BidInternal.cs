@@ -81,50 +81,38 @@ namespace EPAM.Deltix.DFP
 		public const int BINARY_EXPONENT_BIAS = 0x3ff;
 		public const int UPPER_EXPON_LIMIT = 51;
 
-		public static void __set_status_flags(ref _IDEC_flags fpsc, _IDEC_flags status)
+		public static unsafe void __set_status_flags(ref _IDEC_flags fpsc, _IDEC_flags status)
 		{
 			fpsc |= status;
 		}
 
-		public static BID_UINT64 doubleToBits(double value)
+		public static unsafe BID_UINT64 doubleToBits(double value)
 		{
-			unsafe
-			{
-				return *(BID_UINT64*)(&value);
-			}
+			return *(BID_UINT64*)(&value);
 			//return (BID_UINT64)BitConverter.DoubleToInt64Bits(value);
 		}
 
-		public static double bitsToDouble(BID_UINT64 value)
+		public static unsafe double bitsToDouble(BID_UINT64 value)
 		{
-			unsafe
-			{
-				return *(double*)(&value);
-			}
+			return *(double*)(&value);
 			//return BitConverter.Int64BitsToDouble((long)value);
 		}
 
-		public static BID_UINT32 floatToBits(float value)
+		public static unsafe BID_UINT32 floatToBits(float value)
 		{
-			unsafe
-			{
-				return *(BID_UINT32*)(&value);
-			}
+			return *(BID_UINT32*)(&value);
 		}
 
-		public static float bitsToFloat(BID_UINT32 value)
+		public static unsafe float bitsToFloat(BID_UINT32 value)
 		{
-			unsafe
-			{
-				return *(float*)(&value);
-			}
+			return *(float*)(&value);
 		}
 
 		/// <summary>
 		/// No overflow/underflow checking
 		/// or checking for coefficients equal to 10^16 (after rounding)
 		/// </summary>
-		public static BID_UINT64 very_fast_get_BID64(BID_UINT64 sgn, int expon, BID_UINT64 coeff)
+		public static unsafe BID_UINT64 very_fast_get_BID64(BID_UINT64 sgn, int expon, BID_UINT64 coeff)
 		{
 			BID_UINT64 r, mask;
 
@@ -155,7 +143,7 @@ namespace EPAM.Deltix.DFP
 		//
 		//   no underflow checking
 		//
-		public static BID_UINT64 fast_get_BID64_check_OF(BID_UINT64 sgn, int expon, BID_UINT64 coeff, int rmode, ref uint fpsc)
+		public static unsafe BID_UINT64 fast_get_BID64_check_OF(BID_UINT64 sgn, int expon, BID_UINT64 coeff, int rmode, ref uint fpsc)
 		{
 			BID_UINT64 r, mask;
 
@@ -234,7 +222,7 @@ namespace EPAM.Deltix.DFP
 			return r;
 		}
 
-		public static BID_UINT64 fast_get_BID64_check_OF(BID_UINT64 sgn, int expon, BID_UINT64 coeff)
+		public static unsafe BID_UINT64 fast_get_BID64_check_OF(BID_UINT64 sgn, int expon, BID_UINT64 coeff)
 		{
 			BID_UINT64 r, mask;
 
@@ -295,22 +283,22 @@ namespace EPAM.Deltix.DFP
 			return r;
 		}
 
-		public static bool __unsigned_compare_gt_128(BID_UINT128 A, BID_UINT128 B)
+		public static unsafe bool __unsigned_compare_gt_128(BID_UINT128 A, BID_UINT128 B)
 		{
 			return (A.w1 > B.w1) || ((A.w1 == B.w1) && (A.w0 > B.w0));
 		}
 
-		public static bool __unsigned_compare_ge_128(BID_UINT128 A, BID_UINT128 B)
+		public static unsafe bool __unsigned_compare_ge_128(BID_UINT128 A, BID_UINT128 B)
 		{
 			return (A.w1 > B.w1) || ((A.w1 == B.w1) && (A.w0 >= B.w0));
 		}
 
-		public static bool __test_equal_128(BID_UINT128 A, BID_UINT128 B)
+		public static unsafe bool __test_equal_128(BID_UINT128 A, BID_UINT128 B)
 		{
 			return (A.w1 == B.w1) && (A.w0 == B.w0);
 		}
 
-		public static void __tight_bin_range_128(out int bp, BID_UINT128 P, int bin_expon)
+		public static unsafe void __tight_bin_range_128(out int bp, BID_UINT128 P, int bin_expon)
 		{
 			BID_UINT64 M;
 			M = 1;
@@ -330,7 +318,7 @@ namespace EPAM.Deltix.DFP
 				bp++;
 		}
 
-		public static void __mul_64x64_to_64_high_fast(out BID_UINT64 P, BID_UINT64 CX, BID_UINT64 CY)
+		public static unsafe void __mul_64x64_to_64_high_fast(out BID_UINT64 P, BID_UINT64 CX, BID_UINT64 CY)
 		{
 			BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM;
 			CXH = (CX) >> 32;
@@ -349,7 +337,7 @@ namespace EPAM.Deltix.DFP
 
 		// get full 64x64bit product
 		//
-		public static void __mul_64x64_to_128(out BID_UINT128 P, BID_UINT64 CX_, BID_UINT64 CY_)
+		public static unsafe void __mul_64x64_to_128(out BID_UINT128 P, BID_UINT64 CX_, BID_UINT64 CY_)
 		{
 			BID_UINT64 CX = CX_;
 			BID_UINT64 CY = CY_;
@@ -370,7 +358,7 @@ namespace EPAM.Deltix.DFP
 			P.w0 = (PM << 32) + (BID_UINT32)PL;
 		}
 
-		public static void __mul_128x128_high(out BID_UINT128 Q, BID_UINT128 A, BID_UINT128 B)
+		public static unsafe void __mul_128x128_high(out BID_UINT128 Q, BID_UINT128 A, BID_UINT128 B)
 		{
 			BID_UINT128 ALBL, ALBH, AHBL, AHBH, QM, QM2;
 
@@ -384,7 +372,7 @@ namespace EPAM.Deltix.DFP
 			__add_128_64(out Q, AHBH, QM2.w1);
 		}
 
-		public static void __mul_128x128_full(out BID_UINT128 Qh, out BID_UINT128 Ql, BID_UINT128 A, BID_UINT128 B)
+		public static unsafe void __mul_128x128_full(out BID_UINT128 Qh, out BID_UINT128 Ql, BID_UINT128 A, BID_UINT128 B)
 		{
 			BID_UINT128 ALBL, ALBH, AHBL, AHBH, QM, QM2;
 
@@ -400,7 +388,7 @@ namespace EPAM.Deltix.DFP
 			Ql.w1 = QM2.w0;
 		}
 
-		public static void __mul_128x128_low(out BID_UINT128 Ql, BID_UINT128 A, BID_UINT128 B)
+		public static unsafe void __mul_128x128_low(out BID_UINT128 Ql, BID_UINT128 A, BID_UINT128 B)
 		{
 			BID_UINT128 ALBL;
 			BID_UINT64 QM64;
@@ -412,7 +400,7 @@ namespace EPAM.Deltix.DFP
 			Ql.w1 = QM64 + ALBL.w1;
 		}
 
-		public static void __mul_64x128_low(out BID_UINT128 Ql, BID_UINT64 A, BID_UINT128 B)
+		public static unsafe void __mul_64x128_low(out BID_UINT128 Ql, BID_UINT64 A, BID_UINT128 B)
 		{
 			BID_UINT128 ALBL, ALBH, QM2;
 			__mul_64x64_to_128(out ALBH, A, B.w1);
@@ -422,7 +410,7 @@ namespace EPAM.Deltix.DFP
 			Ql.w1 = QM2.w0;
 		}
 
-		public static void __mul_64x128_full(out BID_UINT64 Ph, out BID_UINT128 Ql, BID_UINT64 A, BID_UINT128 B)
+		public static unsafe void __mul_64x128_full(out BID_UINT64 Ph, out BID_UINT128 Ql, BID_UINT64 A, BID_UINT128 B)
 		{
 			BID_UINT128 ALBL, ALBH, QM2;
 
@@ -435,7 +423,7 @@ namespace EPAM.Deltix.DFP
 			Ph = QM2.w1;
 		}
 
-		public static void __mul_64x128_to_192(out BID_UINT192 Q, BID_UINT64 A, BID_UINT128 B)
+		public static unsafe void __mul_64x128_to_192(out BID_UINT192 Q, BID_UINT64 A, BID_UINT128 B)
 		{
 			BID_UINT128 ALBL, ALBH, QM2;
 
@@ -448,7 +436,7 @@ namespace EPAM.Deltix.DFP
 			Q.w2 = QM2.w1;
 		}
 
-		public static void __mul_128x128_to_256(out BID_UINT256 P256, BID_UINT128 A, BID_UINT128 B)
+		public static unsafe void __mul_128x128_to_256(out BID_UINT256 P256, BID_UINT128 A, BID_UINT128 B)
 		{
 			BID_UINT128 Qll, Qlh;
 			BID_UINT64 Phl, Phh, CY1, CY2;
@@ -463,7 +451,7 @@ namespace EPAM.Deltix.DFP
 
 
 		// add 64-bit value to 128-bit
-		public static void __add_128_64(out BID_UINT128 R128, BID_UINT128 A128_, BID_UINT64 B64_)
+		public static unsafe void __add_128_64(out BID_UINT128 R128, BID_UINT128 A128_, BID_UINT64 B64_)
 		{
 			BID_UINT128 A128 = A128_;
 			BID_UINT64 B64 = B64_;
@@ -475,7 +463,7 @@ namespace EPAM.Deltix.DFP
 		}
 
 		// subtract 64-bit value from 128-bit
-		public static void __sub_128_64(out BID_UINT128 R128, BID_UINT128 A128, BID_UINT64 B64)
+		public static unsafe void __sub_128_64(out BID_UINT128 R128, BID_UINT128 A128, BID_UINT64 B64)
 		{
 			BID_UINT64 R64H;
 			R64H = A128.w1;
@@ -487,7 +475,7 @@ namespace EPAM.Deltix.DFP
 
 		// add 128-bit value to 128-bit
 		// assume no carry-out
-		public static void __add_128_128(out BID_UINT128 R128, BID_UINT128 A128_, BID_UINT128 B128_)
+		public static unsafe void __add_128_128(out BID_UINT128 R128, BID_UINT128 A128_, BID_UINT128 B128_)
 		{
 			BID_UINT128 A128 = A128_;
 			BID_UINT128 B128 = B128_;
@@ -500,7 +488,7 @@ namespace EPAM.Deltix.DFP
 			R128.w0 = Q128.w0;
 		}
 
-		public static void __sub_128_128(out BID_UINT128 R128, BID_UINT128 A128, BID_UINT128 B128)
+		public static unsafe void __sub_128_128(out BID_UINT128 R128, BID_UINT128 A128, BID_UINT128 B128)
 		{
 			BID_UINT128 Q128;
 			Q128.w1 = A128.w1 - B128.w1;
@@ -511,27 +499,27 @@ namespace EPAM.Deltix.DFP
 			R128.w0 = Q128.w0;
 		}
 
-		public static void __add_carry_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y)
+		public static unsafe void __add_carry_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y)
 		{
 			S = X + Y;
 			CY = (S < X) ? 1UL : 0;
 		}
 
-		public static void __add_carry_in_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y, BID_UINT64 CI)
+		public static unsafe void __add_carry_in_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y, BID_UINT64 CI)
 		{
 			BID_UINT64 X1 = X + CI;
 			S = X1 + Y;
 			CY = ((S < X1) || (X1 < CI)) ? 1UL : 0;
 		}
 
-		public static void __sub_borrow_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y)
+		public static unsafe void __sub_borrow_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y)
 		{
 			BID_UINT64 X1 = X;
 			S = X - Y;
 			CY = (S > X1) ? 1UL : 0;
 		}
 
-		public static void __sub_borrow_in_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y, BID_UINT64 CI)
+		public static unsafe void __sub_borrow_in_out(out BID_UINT64 S, out BID_UINT64 CY, BID_UINT64 X, BID_UINT64 Y, BID_UINT64 CI)
 		{
 			BID_UINT64 X1, X0 = X;
 			X1 = X - CI;
@@ -539,14 +527,14 @@ namespace EPAM.Deltix.DFP
 			CY = ((S > X1) || (X1 > X0)) ? 1UL : 0;
 		}
 
-		public static void __shr_128(out BID_UINT128 Q, BID_UINT128 A, int k)
+		public static unsafe void __shr_128(out BID_UINT128 Q, BID_UINT128 A, int k)
 		{
 			Q.w0 = A.w0 >> k;
 			Q.w0 |= A.w1 << (64 - k);
 			Q.w1 = A.w1 >> k;
 		}
 
-		public static void __shr_128_long(out BID_UINT128 Q, BID_UINT128 A, int k)
+		public static unsafe void __shr_128_long(out BID_UINT128 Q, BID_UINT128 A, int k)
 		{
 			if (k < 64)
 			{
@@ -561,7 +549,7 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
-		public static void __shl_128_long(out BID_UINT128 Q, BID_UINT128 A, int k)
+		public static unsafe void __shl_128_long(out BID_UINT128 Q, BID_UINT128 A, int k)
 		{
 			if (k < 64)
 			{
@@ -576,7 +564,7 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
-		public static BID_UINT64 __low_64(BID_UINT128 Q)
+		public static unsafe BID_UINT64 __low_64(BID_UINT128 Q)
 		{
 			return Q.w0;
 		}
@@ -584,7 +572,7 @@ namespace EPAM.Deltix.DFP
 		//
 		// This pack macro is used when underflow is known to occur
 		//
-		public static BID_UINT64 get_BID64_UF(BID_UINT64 sgn, int expon, BID_UINT64 coeff, BID_UINT64 R, int rmode, ref _IDEC_flags fpsc)
+		public static unsafe BID_UINT64 get_BID64_UF(BID_UINT64 sgn, int expon, BID_UINT64 coeff, BID_UINT64 R, int rmode, ref _IDEC_flags fpsc)
 		{
 			BID_UINT128 C128, Q_low, Stemp;
 			BID_UINT64 _C64, remainder_h, QH, carry, CY;
@@ -688,7 +676,7 @@ namespace EPAM.Deltix.DFP
 			return sgn | _C64;
 		}
 
-		public static BID_UINT64 get_BID64_UF(BID_UINT64 sgn, int expon, BID_UINT64 coeff, BID_UINT64 R)
+		public static unsafe BID_UINT64 get_BID64_UF(BID_UINT64 sgn, int expon, BID_UINT64 coeff, BID_UINT64 R)
 		{
 			_IDEC_flags fpsc = BID_EXACT_STATUS;
 			return get_BID64_UF(sgn, expon, coeff, R, BID_ROUNDING_TO_NEAREST, ref fpsc);
@@ -697,7 +685,7 @@ namespace EPAM.Deltix.DFP
 		//
 		//   This pack macro doesnot check for coefficients above 2^53
 		//
-		public static BID_UINT64 get_BID64_small_mantissa(BID_UINT64 sgn, int expon, BID_UINT64 coeff, int rmode, ref _IDEC_flags fpsc)
+		public static unsafe BID_UINT64 get_BID64_small_mantissa(BID_UINT64 sgn, int expon, BID_UINT64 coeff, int rmode, ref _IDEC_flags fpsc)
 		{
 			BID_UINT128 C128, Q_low;
 #if BID_SET_STATUS_FLAGS
@@ -878,7 +866,7 @@ namespace EPAM.Deltix.DFP
 			return r;
 		}
 
-		public static BID_UINT64 get_BID64_small_mantissa(BID_UINT64 sgn, int expon, BID_UINT64 coeff)
+		public static unsafe BID_UINT64 get_BID64_small_mantissa(BID_UINT64 sgn, int expon, BID_UINT64 coeff)
 		{
 			_IDEC_flags fpsc = BID_EXACT_STATUS;
 			return get_BID64_small_mantissa(sgn, expon, coeff, BID_ROUNDING_TO_NEAREST, ref fpsc);
@@ -887,7 +875,7 @@ namespace EPAM.Deltix.DFP
 		//
 		//   BID64 pack macro (general form)
 		//
-		public static BID_UINT64 get_BID64(BID_UINT64 sgn, int expon, BID_UINT64 coeff, int rmode, ref _IDEC_flags fpsc)
+		public static unsafe BID_UINT64 get_BID64(BID_UINT64 sgn, int expon, BID_UINT64 coeff, int rmode, ref _IDEC_flags fpsc)
 		{
 			BID_UINT128 Stemp, Q_low;
 			BID_UINT64 QH, r, mask, _C64, remainder_h, CY, carry;
@@ -1066,13 +1054,13 @@ namespace EPAM.Deltix.DFP
 			return r;
 		}
 
-		public static BID_UINT64 get_BID64(BID_UINT64 sgn, int expon, BID_UINT64 coeff)
+		public static unsafe BID_UINT64 get_BID64(BID_UINT64 sgn, int expon, BID_UINT64 coeff)
 		{
 			_IDEC_flags fpsc = BID_EXACT_STATUS;
 			return get_BID64(sgn, expon, coeff, BID_ROUNDING_TO_NEAREST, ref fpsc);
 		}
 
-		public static BID_UINT64 unpack_BID64(out BID_UINT64 psign_x, out int pexponent_x, out BID_UINT64 pcoefficient_x, BID_UINT64 x)
+		public static unsafe BID_UINT64 unpack_BID64(out BID_UINT64 psign_x, out int pexponent_x, out BID_UINT64 pcoefficient_x, BID_UINT64 x)
 		{
 			BID_UINT64 tmp, coeff;
 

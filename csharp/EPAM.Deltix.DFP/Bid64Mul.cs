@@ -25,7 +25,7 @@ namespace EPAM.Deltix.DFP
 		///         2^M[extra_digits]/10^extra_digits, followed by a shift
 		///         M[extra_digits] is sufficiently large for required accuracy
 		/// </summary>
-		public static BID_UINT64 bid64_mul(BID_UINT64 x, BID_UINT64 y
+		public static unsafe BID_UINT64 bid64_mul(BID_UINT64 x, BID_UINT64 y
 #if !IEEE_ROUND_NEAREST
 			, int rnd_mode
 #endif
