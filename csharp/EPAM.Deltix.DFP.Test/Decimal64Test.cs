@@ -785,7 +785,7 @@ namespace EPAM.Deltix.DFP.Test
 				throw new Exception("TestValue(=" + value + ") check error: refCond(=" + refCond + ") != testCond(" + testCond + ").");
 		}
 
-		private static String Round(String valueIn, int n, RoundType roundType)
+		private static String Round(String valueIn, int n, RoundingMode roundType)
 		{
 			string value = valueIn;
 
@@ -836,27 +836,36 @@ namespace EPAM.Deltix.DFP.Test
 			}
 			switch (roundType)
 			{
-				case RoundType.Round:
-					if (latestPoint + 1 >= value.Length)
-						return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-					char nextChar = '0';
-					if (latestPoint + 1 < value.Length)
-						nextChar = value[latestPoint + 1];
-					if (nextChar == '.')
-						nextChar = latestPoint + 2 < value.Length ? value[latestPoint + 2] : '0';
-					return formatMantissaExp(isNegSign, nextChar >= '5' ? incMantissa(fixedPart) : fixedPart, fixedExp);
-				case RoundType.Trunc:
+				case RoundingMode.Up:
+					return formatMantissaExp(isNegSign, isNonZero(value, latestPoint + 1) ? incMantissa(fixedPart) : fixedPart, fixedExp);
+
+				case RoundingMode.Down:
 					return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-				case RoundType.Floor:
-					if (!isNegSign)
-						return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-					else
-						return formatMantissaExp(isNegSign, isNonZero(value, latestPoint + 1) ? incMantissa(fixedPart) : fixedPart, fixedExp);
-				case RoundType.Ceil:
+
+				case RoundingMode.Ceiling:
 					if (!isNegSign)
 						return formatMantissaExp(isNegSign, isNonZero(value, latestPoint + 1) ? incMantissa(fixedPart) : fixedPart, fixedExp);
 					else
 						return formatMantissaExp(isNegSign, fixedPart, fixedExp);
+
+				case RoundingMode.Floor:
+					if (!isNegSign)
+						return formatMantissaExp(isNegSign, fixedPart, fixedExp);
+					else
+						return formatMantissaExp(isNegSign, isNonZero(value, latestPoint + 1) ? incMantissa(fixedPart) : fixedPart, fixedExp);
+
+				case RoundingMode.HalfUp:
+					{
+						if (latestPoint + 1 >= value.Length)
+							return formatMantissaExp(isNegSign, fixedPart, fixedExp);
+						char nextChar = '0';
+						if (latestPoint + 1 < value.Length)
+							nextChar = value[latestPoint + 1];
+						if (nextChar == '.')
+							nextChar = latestPoint + 2 < value.Length ? value[latestPoint + 2] : '0';
+						return formatMantissaExp(isNegSign, nextChar >= '5' ? incMantissa(fixedPart) : fixedPart, fixedExp);
+					}
+
 				default:
 					throw new ArgumentException("Unsupported roundType(=" + roundType + ") value.");
 			}
@@ -957,24 +966,7 @@ namespace EPAM.Deltix.DFP.Test
 
 					var inValue = Decimal64.FromDouble(mantissa * Math.Pow(10, tenPower));
 					int roundPoint = tenPower + randomOffset;
-					RoundType roundType;
-					switch (random.Next(4))
-					{
-						case 0:
-							roundType = RoundType.Round;
-							break;
-						case 1:
-							roundType = RoundType.Trunc;
-							break;
-						case 2:
-							roundType = RoundType.Floor;
-							break;
-						case 3:
-							roundType = RoundType.Ceil;
-							break;
-						default:
-							throw new Exception("Unsupported case for round type generation.");
-					}
+					RoundingMode roundType = (RoundingMode)random.Next((int)RoundingMode.HalfDown);
 
 					checkRound(inValue, -roundPoint, roundType);
 				}
@@ -1015,31 +1007,32 @@ namespace EPAM.Deltix.DFP.Test
 		{
 			foreach (var testValue in specialValues)
 				foreach (var roundPoint in new int[] { 20, 10, 5, 3, 1, 0, -1, -2, -6, -11, -19 })
-					foreach (RoundType roundType in Enum.GetValues(typeof(RoundType)))
-						checkRound(testValue, roundPoint, roundType);
+					for (int roundType = 0; roundType < (int)RoundingMode.HalfDown; ++roundType)
+						//foreach (RoundingMode roundType in Enum.GetValues(typeof(RoundingMode)))
+						checkRound(testValue, roundPoint, (RoundingMode)roundType);
 
 			unchecked
 			{
-				checkRound(Decimal64.FromUnderlying((ulong)-5787416479386436811L), 1, RoundType.Round);
-				checkRound(Decimal64.FromUnderlying(3439124486823148033L), 1, RoundType.Floor);
-				checkRound(Decimal64.FromUnderlying((ulong)-1444740417884338647L), 0, RoundType.Round);
-				checkRound(Decimal64.FromUnderlying(3439028411434681001L), -7, RoundType.Round);
-				checkRound(Decimal64.FromUnderlying((ulong)-5778759999361643774L), 2, RoundType.Round);
-				checkRound(Decimal64.FromUnderlying(3448058746773778910L), -4, RoundType.Ceil);
-				checkRound(Decimal64.FromUnderlying(1417525816301142050L), -209, RoundType.Ceil);
-				checkRound(Decimal64.FromUnderlying(2996092184105885832L), -61, RoundType.Ceil);
-				checkRound(Decimal64.FromUnderlying((ulong)-922689384669825404L), -236, RoundType.Floor);
+				checkRound(Decimal64.FromUnderlying((ulong)-5787416479386436811L), 1, RoundingMode.HalfUp);
+				checkRound(Decimal64.FromUnderlying(3439124486823148033L), 1, RoundingMode.Floor);
+				checkRound(Decimal64.FromUnderlying((ulong)-1444740417884338647L), 0, RoundingMode.HalfUp);
+				checkRound(Decimal64.FromUnderlying(3439028411434681001L), -7, RoundingMode.HalfUp);
+				checkRound(Decimal64.FromUnderlying((ulong)-5778759999361643774L), 2, RoundingMode.HalfUp);
+				checkRound(Decimal64.FromUnderlying(3448058746773778910L), -4, RoundingMode.Ceiling);
+				checkRound(Decimal64.FromUnderlying(1417525816301142050L), -209, RoundingMode.Ceiling);
+				checkRound(Decimal64.FromUnderlying(2996092184105885832L), -61, RoundingMode.Ceiling);
+				checkRound(Decimal64.FromUnderlying((ulong)-922689384669825404L), -236, RoundingMode.Floor);
 			}
 		}
 
-		private static void checkRound(Decimal64 inValue, int roundPoint, RoundType roundType)
+		private static void checkRound(Decimal64 inValue, int roundPoint, RoundingMode roundType)
 		{
 			var testValue = inValue.Round(roundPoint, roundType);
 			String inStr = inValue.ToString();
 			String roundStr = Round(inStr, roundPoint, roundType);
 			String testStr = testValue.ToString();
 			if (!roundStr.Equals(testStr))
-				throw new Exception("Case checkRound(" + inValue + "L, " + roundPoint + ", RoundType." + roundType +
+				throw new Exception("Case checkRound(" + inValue + "L, " + roundPoint + ", RoundingMode." + roundType +
 					"); error: input value (=" + inStr + ") string rounding (=" + roundStr + ") != decimal rounding (=" + testStr + ")");
 		}
 
@@ -1050,7 +1043,7 @@ namespace EPAM.Deltix.DFP.Test
 			var f = Decimal64.FromUnderlying(0x2F638D7EA4C68000UL); // 0.0001
 			var zeroP = zeroU.Multiply(f);
 
-			Assert.AreEqual(Decimal64.Zero, zeroP.Round(0, RoundType.Ceil));
+			Assert.AreEqual(Decimal64.Zero, zeroP.Round(0, RoundingMode.Ceiling));
 		}
 
 		[Test]

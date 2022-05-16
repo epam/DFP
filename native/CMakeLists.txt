@@ -5,6 +5,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_IN}")
+
 if (TARGET)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --target=${TARGET} ${TARGET_EX} --sysroot=${SYSROOT} -I${SYSROOT}/include/c++/v1 -I/usr/${TARGET}/include")
 endif()

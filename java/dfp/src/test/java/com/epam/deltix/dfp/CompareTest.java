@@ -2,9 +2,7 @@ package com.epam.deltix.dfp;
 
 import org.junit.Test;
 
-import static com.epam.deltix.dfp.JavaImplTest.specialValues;
-import static com.epam.deltix.dfp.TestUtils.NTests;
-import static com.epam.deltix.dfp.TestUtils.checkInMultipleThreads;
+import static com.epam.deltix.dfp.TestUtils.*;
 
 public class CompareTest {
     interface IDecimalCompare {
@@ -60,88 +58,71 @@ public class CompareTest {
 
     @Test
     public void compareMtTest() throws Exception {
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                compareCheck(x, y);
-
-        checkInMultipleThreads(() -> {
-            final TestUtils.RandomDecimalsGenerator random = new TestUtils.RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i)
-                compareCheck(random.nextX(), random.generator.nextDouble() < 0.1 ? random.getX() : random.nextY());
-        });
-    }
-
-    static void compareCheck(final long x, final long y) {
-        final int nativeRet = NativeImpl.compare(x, y);
-        final int javaRet = JavaImplCmp.compare(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L vs 0x" +
-                Long.toHexString(y) + "L = " + nativeRet + ", but java return " + javaRet);
+        checkWithCoverage(NativeImpl::compare, Decimal64Utils::compareTo);
     }
 
     @Test
     public void isEqualMtTest() throws Exception {
-        isCompareMtTest(NativeImpl::isEqual, JavaImplCmp::bid64_quiet_equal);
+        isCompareMtTest(NativeImpl::isEqual, Decimal64Utils::isEqual);
     }
 
     @Test
     public void isNotEqualMtTest() throws Exception {
-        isCompareMtTest(NativeImpl::isNotEqual, JavaImplCmp::bid64_quiet_not_equal);
+        isCompareMtTest(NativeImpl::isNotEqual, Decimal64Utils::isNotEqual);
     }
 
     @Test
     public void isLessMtTest() throws Exception {
-        isCompareMtTest(NativeImpl::isLess, JavaImplCmp::bid64_quiet_less);
+        isCompareMtTest(NativeImpl::isLess, Decimal64Utils::isLess);
     }
 
     @Test
     public void isLessOrEqualMtTest() throws Exception {
-        isCompareMtTest(NativeImpl::isLessOrEqual, JavaImplCmp::bid64_quiet_less_equal);
+        isCompareMtTest(NativeImpl::isLessOrEqual, Decimal64Utils::isLessOrEqual);
     }
 
     @Test
     public void isGreaterMtTest() throws Exception {
-        isCompareMtTest(NativeImpl::isGreater, JavaImplCmp::bid64_quiet_greater);
+        isCompareMtTest(NativeImpl::isGreater, Decimal64Utils::isGreater);
     }
 
     @Test
     public void isGreaterOrEqualMtTest() throws Exception {
-        isCompareMtTest(NativeImpl::isGreaterOrEqual, JavaImplCmp::bid64_quiet_greater_equal);
+        isCompareMtTest(NativeImpl::isGreaterOrEqual, Decimal64Utils::isGreaterOrEqual);
     }
 
     @Test
     public void isZeroMtTest() throws Exception {
-        checkMtTest(NativeImpl::isZero, JavaImplCmp::bid64_isZero);
+        checkMtTest(NativeImpl::isZero, Decimal64Utils::isZero);
     }
 
     @Test
     public void isNonZeroMtTest() throws Exception {
-        checkMtTest(NativeImpl::isNonZero, x -> JavaImplCmp.bid64_quiet_not_equal(x, Decimal64Utils.ZERO));
+        checkMtTest(NativeImpl::isNonZero, Decimal64Utils::isNonZero);
     }
 
     @Test
     public void isPositiveMtTest() throws Exception {
-        checkMtTest(NativeImpl::isPositive, JavaImplCmp::isPositive);
+        checkMtTest(NativeImpl::isPositive, Decimal64Utils::isPositive);
     }
 
     @Test
     public void isNegativeMtTest() throws Exception {
-        checkMtTest(NativeImpl::isNegative, JavaImplCmp::isNegative);
+        checkMtTest(NativeImpl::isNegative, Decimal64Utils::isNegative);
     }
 
     @Test
     public void isNonPositiveMtTest() throws Exception {
-        checkMtTest(NativeImpl::isNonPositive, JavaImplCmp::isNonPositive);
+        checkMtTest(NativeImpl::isNonPositive, Decimal64Utils::isNonPositive);
     }
 
     @Test
     public void isNonNegativeMtTest() throws Exception {
-        checkMtTest(NativeImpl::isNonNegative, JavaImplCmp::isNonNegative);
+        checkMtTest(NativeImpl::isNonNegative, Decimal64Utils::isNonNegative);
     }
 
     @Test
     public void isNormalMtTest() throws Exception {
-        checkMtTest(NativeImpl::isNormal, JavaImplCmp::bid64_isNormal);
+        checkMtTest(NativeImpl::isNormal, Decimal64Utils::isNormal);
     }
 }

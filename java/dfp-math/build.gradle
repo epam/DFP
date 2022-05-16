@@ -1,6 +1,6 @@
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
-apply plugin: 'java-library'
+apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 if (isReleaseVersion) {
@@ -21,18 +21,13 @@ java {
 }
 
 sourceSets {
-    main {
-        java {
-            srcDir "$projectDir/build/generated/sources/nativeWrappers"
-            srcDir "$rootDir/NativeUtils/java/main/src/main/java"
-            srcDir "$rootDir/NativeUtils/Zstandard/java/src/main/java"
+    main.java.srcDirs += [
+        "$projectDir/dfp-math/src/main/java",
+        "$projectDir/build/generated/sources/nativeWrappers",
+        "$rootDir/NativeUtils/java/main/src/main/java",
+        "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 
-            resources {
-                srcDirs = ["$rootDir/native/binmathJava/Release/"]
-                include '**/*.zst'
-            }
-        }
-    }
+    main.resources.srcDirs += "$rootDir/native/binmathJava/Release/"
 }
 
 dependencies {
@@ -120,7 +115,8 @@ if (isReleaseVersion) {
 jar {
     manifest {
         attributes 'Implementation-Title': 'Deltix Decimal Floating-Point Math Arithmetic Library',
-            'Implementation-Version': archiveVersion
+            'Implementation-Version': archiveVersion,
+            'Main-Class': 'com.epam.deltix.dfpmath.Demo'
     }
     from("$rootDir") {
         include 'LICENSE'

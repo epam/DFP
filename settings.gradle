@@ -1,6 +1,5 @@
 include(':java:systemInfo')
 include(':java:nativeWrappers')
-include(':java:decimalDemo')
 include(':native')
 include(':java:dfp')
 include(':java:dfp-math')

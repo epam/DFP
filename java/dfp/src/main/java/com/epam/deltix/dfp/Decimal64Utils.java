@@ -2,9 +2,11 @@ package com.epam.deltix.dfp;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static com.epam.deltix.dfp.JavaImpl.isSpecial;
 import static com.epam.deltix.dfp.JavaImplAdd.*;
+import static com.epam.deltix.dfp.JavaImpl.BID_ROUNDING_TO_NEAREST;
 
 /**
  * Contains common arithmetical routines for 64-bit Decimal Floating Point numbers as defined by IEEE-754 2008.
@@ -15,9 +17,6 @@ import static com.epam.deltix.dfp.JavaImplAdd.*;
  * information) and binary (base-2) fractions.
  */
 public class Decimal64Utils {
-    private Decimal64Utils() {
-    }
-
     /// region Constants
 
     /**
@@ -341,8 +340,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long fromFixedPoint(final long mantissa, final int numberOfDigits) {
-        // TODO: Can also create java version for this one
-        return NativeImpl.fromFixedPoint64(mantissa, numberOfDigits);
+        return JavaImplEtc.bid64_scalbn(JavaImplCast.bid64_from_int64(mantissa, BID_ROUNDING_TO_NEAREST), -numberOfDigits);
     }
 
     /**
@@ -376,7 +374,7 @@ public class Decimal64Utils {
      * @return fixed-point decimal value represented as @{code long}
      */
     public static long toFixedPoint(@Decimal final long value, final int numberOfDigits) {
-        return NativeImpl.toFixedPoint(value, numberOfDigits);
+        return JavaImplCast.bid64_to_int64_xint(JavaImplEtc.bid64_scalbn(value, numberOfDigits));
     }
 
     /**
@@ -387,7 +385,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long fromDouble(final double value) {
-        return NativeImpl.fromFloat64(value);
+        return JavaImplCastBinary64.binary64_to_bid64(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -398,7 +396,7 @@ public class Decimal64Utils {
      * @return {@code double} value
      */
     public static double toDouble(@Decimal final long value) {
-        return NativeImpl.toFloat64(value);
+        return JavaImplCastBinary64.bid64_to_binary64(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -409,7 +407,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long fromLong(final long value) {
-        return NativeImpl.fromInt64(value);
+        return JavaImplCast.bid64_from_int64(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -420,7 +418,7 @@ public class Decimal64Utils {
      * @return {@code long} integer value
      */
     public static long toLong(@Decimal final long value) {
-        return NativeImpl.toInt64(value);
+        return JavaImplCast.bid64_to_int64_xint(value);
     }
 
     /**
@@ -443,7 +441,7 @@ public class Decimal64Utils {
      * @return {@code int} value
      */
     public static int toInt(@Decimal final long value) {
-        return (int) NativeImpl.toInt64(value);
+        return (int) JavaImplCast.bid64_to_int64_xint(value);
     }
 
     /// endregion
@@ -603,7 +601,7 @@ public class Decimal64Utils {
 
     @Decimal
     public static long subtract(@Decimal final long a, @Decimal final long b) {
-        return JavaImplAdd.bid64_add(a, JavaImpl.negate(b));
+        return JavaImplAdd.bid64_sub(a, b);
     }
 
     @Decimal
@@ -623,12 +621,12 @@ public class Decimal64Utils {
 
     @Decimal
     public static long multiplyByInteger(@Decimal final long a, final int b) {
-        return NativeImpl.multiplyByInt32(a, b);
+        return JavaImplMul.bid64_mul(a, JavaImpl.fromInt32(b));
     }
 
     @Decimal
     public static long multiplyByInteger(@Decimal final long a, final long b) {
-        return NativeImpl.multiplyByInt64(a, b);
+        return JavaImplMul.bid64_mul(a, JavaImplCast.bid64_from_int64(b, BID_ROUNDING_TO_NEAREST));
     }
 
     @Decimal
@@ -638,12 +636,12 @@ public class Decimal64Utils {
 
     @Decimal
     public static long divideByInteger(@Decimal final long a, final int b) {
-        return NativeImpl.divideByInt32(a, b);
+        return JavaImplDiv.bid64_div(a, JavaImpl.fromInt32(b));
     }
 
     @Decimal
     public static long divideByInteger(@Decimal final long a, final long b) {
-        return NativeImpl.divideByInt64(a, b);
+        return JavaImplDiv.bid64_div(a, JavaImplCast.bid64_from_int64(b, BID_ROUNDING_TO_NEAREST));
     }
 
     /**
@@ -659,12 +657,12 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long multiplyAndAdd(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
-        return NativeImpl.multiplyAndAdd(a, b, c);
+        return JavaImplFma.bid64_fma(a, b, c);
     }
 
     @Decimal
     public static long scaleByPowerOfTen(@Decimal final long a, final int n) {
-        return NativeImpl.scaleByPowerOfTen(a, n);
+        return JavaImplEtc.bid64_scalbn(a, n);
     }
 
     @Decimal
@@ -686,11 +684,11 @@ public class Decimal64Utils {
      *
      * @param value     {@code DFP} argument to round
      * @param n         the number of decimals to use when rounding the number
-     * @param roundType {@code RoundType} type of rounding
+     * @param roundType {@code RoundingMode} type of rounding
      * @return {@code DFP} the rounded value
      */
     @Decimal
-    public static long round(@Decimal final long value, final int n, final RoundType roundType) {
+    public static long round(@Decimal final long value, final int n, final RoundingMode roundType) {
         return JavaImpl.round(value, n, roundType);
     }
 
@@ -707,7 +705,7 @@ public class Decimal64Utils {
     @Decimal
     @Deprecated
     public static long ceil(@Decimal final long value) {
-        return NativeImpl.roundTowardsPositiveInfinity(value);
+        return JavaImplRound.bid64_round_integral_positive(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -723,7 +721,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long ceiling(@Decimal final long value) {
-        return NativeImpl.roundTowardsPositiveInfinity(value);
+        return JavaImplRound.bid64_round_integral_positive(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -737,7 +735,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsPositiveInfinity(@Decimal final long value) {
-        return NativeImpl.roundTowardsPositiveInfinity(value);
+        return JavaImplRound.bid64_round_integral_positive(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -751,7 +749,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long floor(@Decimal final long value) {
-        return NativeImpl.roundTowardsNegativeInfinity(value);
+        return JavaImplRound.bid64_round_integral_negative(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -764,7 +762,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsNegativeInfinity(@Decimal final long value) {
-        return NativeImpl.roundTowardsNegativeInfinity(value);
+        return JavaImplRound.bid64_round_integral_negative(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -778,7 +776,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long truncate(@Decimal final long value) {
-        return NativeImpl.roundTowardsZero(value);
+        return JavaImplRound.bid64_round_integral_zero(value, BID_ROUNDING_TO_NEAREST);
     }
 
 
@@ -792,7 +790,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundTowardsZero(@Decimal final long value) {
-        return NativeImpl.roundTowardsZero(value);
+        return JavaImplRound.bid64_round_integral_zero(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -822,7 +820,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long round(@Decimal final long value) {
-        return NativeImpl.roundToNearestTiesAwayFromZero(value);
+        return JavaImplRound.bid64_round_integral_nearest_away(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -834,7 +832,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundToNearestTiesAwayFromZero(@Decimal final long value) {
-        return NativeImpl.roundToNearestTiesAwayFromZero(value);
+        return JavaImplRound.bid64_round_integral_nearest_away(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -846,7 +844,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long roundToNearestTiesToEven(@Decimal final long value) {
-        return NativeImpl.roundToNearestTiesToEven(value);
+        return JavaImplRound.bid64_round_integral_nearest_even(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
@@ -935,7 +933,7 @@ public class Decimal64Utils {
         if (isNaN(value))
             return value;
 
-        @Decimal final long ratio = NativeImpl.roundToNearestTiesAwayFromZero(divide(value, multiple));
+        @Decimal final long ratio = JavaImplRound.bid64_round_integral_nearest_away(divide(value, multiple), BID_ROUNDING_TO_NEAREST);
         return multiply(ratio, multiple);
     }
 
@@ -955,7 +953,7 @@ public class Decimal64Utils {
         if (isNaN(value))
             return value;
 
-        @Decimal final long ratio = NativeImpl.roundToNearestTiesToEven(divide(value, multiple));
+        @Decimal final long ratio = JavaImplRound.bid64_round_integral_nearest_even(divide(value, multiple), BID_ROUNDING_TO_NEAREST);
         return multiply(ratio, multiple);
     }
 
@@ -1042,7 +1040,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long nextUp(@Decimal final long value) {
-        return NativeImpl.nextUp(value);
+        return JavaImplEtc.bid64_nextup(value);
     }
 
     /**
@@ -1053,7 +1051,7 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long nextDown(@Decimal final long value) {
-        return NativeImpl.nextDown(value);
+        return JavaImplEtc.bid64_nextdown(value);
     }
 
     /**
@@ -1867,11 +1865,11 @@ public class Decimal64Utils {
      *
      * @param value     {@code DFP} argument to round
      * @param n         the number of decimals to use when rounding the number
-     * @param roundType {@code RoundType} type of rounding
+     * @param roundType {@code RoundingMode} type of rounding
      * @return {@code DFP} the rounded value
      */
     @Decimal
-    public static long roundChecked(@Decimal final long value, final int n, final RoundType roundType) {
+    public static long roundChecked(@Decimal final long value, final int n, final RoundingMode roundType) {
         checkNull(value);
         return round(value, n, roundType);
     }
@@ -2157,7 +2155,8 @@ public class Decimal64Utils {
     /**
      * Implements {@link Decimal64#getUnscaledValue(long)}, adds null check; do not use directly.
      *
-     * @param value DFP argument
+     * @param value          DFP argument
+     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
      * @return ..
      */
     public static long getUnscaledValueChecked(@Decimal final long value, final long abnormalReturn) {
@@ -2179,7 +2178,8 @@ public class Decimal64Utils {
     /**
      * Implements {@link Decimal64#getScale(int)}, adds null check; do not use directly.
      *
-     * @param value DFP argument
+     * @param value          DFP argument
+     * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
      * @return ..
      */
     public static int getScaleChecked(@Decimal final long value, final int abnormalReturn) {

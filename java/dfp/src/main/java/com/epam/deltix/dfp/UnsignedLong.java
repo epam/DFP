@@ -103,6 +103,10 @@ class UnsignedLong {
         return value >= 0 ? value : ((double) (value & Long.MAX_VALUE)) + Long.MAX_VALUE;
     }
 
+    public static long longToDoubleRawBits(final long x) {
+        return Double.doubleToRawLongBits(doubleValue(x));
+    }
+
     /**
      * The copy-paste of the jOOU (Apache-2.0 License)
      * org.joou.ULong.doubleValue()

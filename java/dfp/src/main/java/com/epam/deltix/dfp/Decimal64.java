@@ -2,6 +2,7 @@ package com.epam.deltix.dfp;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Holds(wraps) a scalar 64-bit Decimal Floating Point value.
@@ -677,7 +678,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
 
     /// region Rounding
 
-    public Decimal64 round(final int n, final RoundType roundType) {
+    public Decimal64 round(final int n, final RoundingMode roundType) {
         return new Decimal64(Decimal64Utils.round(value, n, roundType));
     }
 

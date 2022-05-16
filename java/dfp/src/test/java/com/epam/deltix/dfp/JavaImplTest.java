@@ -5,12 +5,15 @@ import org.junit.Test;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Random;
 
+import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
+import static com.epam.deltix.dfp.Decimal64Utils.longValueChecked;
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
-import static com.epam.deltix.dfp.TestUtils.checkInMultipleThreads;
 import static org.junit.Assert.*;
 
 public class JavaImplTest {
@@ -253,12 +256,12 @@ public class JavaImplTest {
 
     @Test(expected = NumberFormatException.class)
     public void parseEmptyString() {
-        JavaImpl.parse("asdf", 0, 0, 0);
+        JavaImpl.parse("asdf", 0, 0, BID_ROUNDING_TO_NEAREST);
     }
 
     @Test(expected = NumberFormatException.class)
     public void parseNonDigits() {
-        JavaImpl.parse("asdf", 0, 4, 0);
+        JavaImpl.parse("asdf", 0, 4, BID_ROUNDING_TO_NEAREST);
     }
 
     @Test
@@ -310,147 +313,6 @@ public class JavaImplTest {
             throw new RuntimeException("TestValue(=" + Decimal64Utils.toString(value) + ") check error: refCond(=" + refCond + ") != testCond(" + testCond + ").");
     }
 
-    private static String round(String valueIn, final int n, final RoundType roundType) {
-        String value = valueIn;
-
-        boolean isNegSign = false;
-        if (value.charAt(0) == '-' || value.charAt(0) == '+') {
-            isNegSign = value.charAt(0) == '-';
-            value = value.substring(1);
-        }
-
-        if (value.equals("NaN") || value.equals("Infinity"))
-            return valueIn;
-
-        int latestPoint;
-        {
-            int dotPoint = value.indexOf('.');
-            if (dotPoint < 0)
-                dotPoint = value.length();
-            latestPoint = dotPoint + n + (n > 0 ? 0 : -1);
-            if (latestPoint >= value.length() - 1)
-                return (isNegSign ? "-" : "") + value;
-            if (latestPoint < 0) {
-                final String zerosStr;
-                {
-                    final StringBuilder zeros = new StringBuilder(-latestPoint);
-                    for (int i = 0; i < -latestPoint; ++i)
-                        zeros.append('0');
-                    zerosStr = zeros.toString();
-                }
-                value = zerosStr + value;
-                latestPoint += zerosStr.length();
-            }
-        }
-
-        {
-            value = '0' + value;
-            latestPoint += 1;
-        }
-
-        final String fixedPart = value.substring(0, latestPoint + 1);
-        final int fixedExp;
-        {
-            int dotPoint = value.indexOf('.');
-            if (dotPoint < 0)
-                dotPoint = value.length();
-            fixedExp = Math.max(0, dotPoint - 1 - latestPoint);
-        }
-        switch (roundType) {
-            case ROUND:
-                if (latestPoint + 1 >= value.length())
-                    return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-                char nextChar = '0';
-                if (latestPoint + 1 < value.length())
-                    nextChar = value.charAt(latestPoint + 1);
-                if (nextChar == '.')
-                    nextChar = latestPoint + 2 < value.length() ? value.charAt(latestPoint + 2) : '0';
-                return formatMantissaExp(isNegSign, nextChar >= '5' ? incMantissa(fixedPart) : fixedPart, fixedExp);
-            case TRUNC:
-                return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-            case FLOOR:
-                if (!isNegSign)
-                    return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-                else
-                    return formatMantissaExp(isNegSign, isNonZero(value, latestPoint + 1) ? incMantissa(fixedPart) : fixedPart, fixedExp);
-            case CEIL:
-                if (!isNegSign)
-                    return formatMantissaExp(isNegSign, isNonZero(value, latestPoint + 1) ? incMantissa(fixedPart) : fixedPart, fixedExp);
-                else
-                    return formatMantissaExp(isNegSign, fixedPart, fixedExp);
-            default:
-                throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
-        }
-    }
-
-    private static String formatMantissaExp(final boolean isNegSign, String value, final int exp) {
-        if (exp > 0) {
-            final StringBuilder sb = new StringBuilder(exp);
-            for (int i = 0; i < exp; ++i)
-                sb.append('0');
-            value = value + sb;
-        }
-
-        {
-            int leftIndex;
-            for (leftIndex = 0; leftIndex < value.length(); ++leftIndex)
-                if (value.charAt(leftIndex) != '0')
-                    break;
-            if (leftIndex < value.length() && value.charAt(leftIndex) == '.')
-                leftIndex--;
-            value = value.substring(leftIndex);
-        }
-
-        {
-            final int dotIndex = value.indexOf('.');
-            if (dotIndex >= 0) {
-                int rightIndex = value.length();
-                while (rightIndex > dotIndex && (value.charAt(rightIndex - 1) == '0'))
-                    --rightIndex;
-                if (rightIndex - 1 == dotIndex)
-                    rightIndex = dotIndex;
-                value = value.substring(0, rightIndex);
-            }
-        }
-
-        return value.isEmpty() || value.equals("0") ? "0" : (isNegSign ? "-" : "") + value;
-    }
-
-    private static String incMantissa(final String str) {
-        char[] chars = str.toCharArray();
-        int carry = 1;
-        for (int ii = chars.length - 1; ii >= 0 && carry > 0; --ii) {
-            if (chars[ii] == '.' || chars[ii] == '-')
-                continue;
-            if (chars[ii] < '0' && chars[ii] > '9')
-                throw new IllegalArgumentException("Unsupported character at [" + ii + "] in string '" + str + "'.");
-            final int ch = chars[ii] - '0' + carry;
-            if (ch > 9) {
-                chars[ii] = '0';
-                carry = 1;
-            } else {
-                chars[ii] = (char) ('0' + ch);
-                carry = 0;
-            }
-        }
-        if (carry != 0) {
-            chars = Arrays.copyOf(chars, chars.length + 1);
-            final int firstDigit = chars[0] == '-' ? 1 : 0;
-            System.arraycopy(chars, firstDigit, chars, firstDigit + 1, chars.length - 1 - firstDigit);
-            chars[firstDigit] = '1';
-        }
-        return new String(chars);
-    }
-
-    private static boolean isNonZero(final String str, final int i) {
-        for (int ii = i, ie = str.length(); ii < ie; ++ii) {
-            final char c = str.charAt(ii);
-            if (c >= '1' && c <= '9')
-                return true;
-        }
-        return false;
-    }
-
     @Test
     public void TestRoundRandomly() throws Exception {
         final int randomPointMaxOffset = Decimal64Utils.MAX_SIGNIFICAND_DIGITS + Decimal64Utils.MAX_SIGNIFICAND_DIGITS / 4;
@@ -461,29 +323,14 @@ public class JavaImplTest {
                 Decimal64Utils.MIN_EXPONENT + randomPointMaxOffset,
                 Decimal64Utils.MAX_EXPONENT - randomPointMaxOffset);
 
+            final RoundingMode[] roundingModes = RoundingMode.values();
+
             for (int ri = 0; ri < NTests / 10 /* Test will be very slow without this division */ ; ++ri) {
                 final int randomOffset = random.generator.nextInt(randomPointMaxOffset * 2 + 1) - randomPointMaxOffset;
 
                 final long inValue = random.nextX();
                 final int roundPoint = random.getXExp() + randomOffset;
-                final RoundType roundType;
-                switch (random.generator.nextInt(4)) {
-                    case 0:
-                        roundType = RoundType.ROUND;
-                        break;
-                    case 1:
-                        roundType = RoundType.TRUNC;
-                        break;
-                    case 2:
-                        roundType = RoundType.FLOOR;
-                        break;
-                    case 3:
-                        roundType = RoundType.CEIL;
-                        break;
-                    default:
-                        throw new RuntimeException("Unsupported case for round type generation.");
-                }
-
+                final RoundingMode roundType = roundingModes[random.generator.nextInt(roundingModes.length)];
                 checkRound(inValue, -roundPoint, roundType);
             }
         });
@@ -493,28 +340,115 @@ public class JavaImplTest {
     public void TestRoundCase() {
         for (final long testValue : specialValues)
             for (final int roundPoint : new int[]{20, 10, 5, 3, 1, 0, -1, -2, -6, -11, -19})
-                for (final RoundType roundType : RoundType.values())
+                for (final RoundingMode roundType : RoundingMode.values())
                     checkRound(testValue, roundPoint, roundType);
 
-        checkRound(-5787416479386436811L, 1, RoundType.ROUND);
-        checkRound(3439124486823148033L, 1, RoundType.FLOOR);
-        checkRound(-1444740417884338647L, 0, RoundType.ROUND);
-        checkRound(3439028411434681001L, -7, RoundType.ROUND);
-        checkRound(-5778759999361643774L, 2, RoundType.ROUND);
-        checkRound(3448058746773778910L, -4, RoundType.CEIL);
-        checkRound(1417525816301142050L, -209, RoundType.CEIL);
-        checkRound(2996092184105885832L, -61, RoundType.CEIL);
-        checkRound(-922689384669825404L, -236, RoundType.FLOOR);
+        checkRound(0x2feb29430a256d21L, -1, RoundingMode.UP);
+        checkRound(-5787416479386436811L, 1, RoundingMode.HALF_UP);
+        checkRound(3439124486823148033L, 1, RoundingMode.FLOOR);
+        checkRound(-1444740417884338647L, 0, RoundingMode.HALF_UP);
+        checkRound(3439028411434681001L, -7, RoundingMode.HALF_UP);
+        checkRound(-5778759999361643774L, 2, RoundingMode.HALF_UP);
+        checkRound(3448058746773778910L, -4, RoundingMode.CEILING);
+        checkRound(1417525816301142050L, -209, RoundingMode.CEILING);
+        checkRound(2996092184105885832L, -61, RoundingMode.CEILING);
+        checkRound(-922689384669825404L, -236, RoundingMode.FLOOR);
     }
 
-    private static void checkRound(final long inValue, final int roundPoint, final RoundType roundType) {
-        final long testValue = JavaImpl.round(inValue, roundPoint, roundType);
-        final String inStr = Decimal64Utils.toString(inValue);
-        final String roundStr = round(inStr, roundPoint, roundType);
-        final String testStr = Decimal64Utils.toString(testValue);
-        if (!roundStr.equals(testStr))
-            throw new RuntimeException("Case checkRound(" + inValue + "L, " + roundPoint + ", RoundType." + roundType +
-                "); error: input value (=" + inStr + ") string rounding (=" + roundStr + ") != decimal rounding (=" + testStr + ")");
+    @Test
+    public void TestRoundFromJavadoc() {
+        final String[] inputStrings = {"5.5", "2.5", "1.6", "1.1", "1.0", "-1.0", "-1.1", "-1.6", "-2.5", "-5.5"};
+        final long[] inputNumbers = new long[inputStrings.length];
+        for (int i = 0; i < inputNumbers.length; ++i)
+            inputNumbers[i] = Decimal64Utils.parse(inputStrings[i]);
+
+        checkRoundCases(inputNumbers, RoundingMode.UP, new int[]{6, 3, 2, 2, 1, -1, -2, -2, -3, -6});
+        checkRoundCases(inputNumbers, RoundingMode.DOWN, new int[]{5, 2, 1, 1, 1, -1, -1, -1, -2, -5});
+        checkRoundCases(inputNumbers, RoundingMode.CEILING, new int[]{6, 3, 2, 2, 1, -1, -1, -1, -2, -5});
+        checkRoundCases(inputNumbers, RoundingMode.FLOOR, new int[]{5, 2, 1, 1, 1, -1, -2, -2, -3, -6});
+        checkRoundCases(inputNumbers, RoundingMode.HALF_UP, new int[]{6, 3, 2, 1, 1, -1, -1, -2, -3, -6});
+        checkRoundCases(inputNumbers, RoundingMode.HALF_DOWN, new int[]{5, 2, 2, 1, 1, -1, -1, -2, -2, -5});
+        checkRoundCases(inputNumbers, RoundingMode.HALF_EVEN, new int[]{6, 2, 2, 1, 1, -1, -1, -2, -2, -6});
+
+        final ArithmeticException expectedException = new ArithmeticException("Rounding necessary");
+        final Object[] refUnnecessary = {
+            expectedException,
+            expectedException,
+            expectedException,
+            expectedException,
+            Decimal64Utils.fromInt(1),
+            Decimal64Utils.fromInt(-1),
+            expectedException,
+            expectedException,
+            expectedException,
+            expectedException
+        };
+        for (int i = 0; i < inputNumbers.length; ++i) {
+            Object testRet;
+            try {
+                testRet = Decimal64Utils.round(inputNumbers[i], 0, RoundingMode.UNNECESSARY);
+            } catch (ArithmeticException e) {
+                testRet = e;
+            }
+            Object refRet = refUnnecessary[i];
+            final boolean isEq;
+            if (testRet instanceof ArithmeticException || refRet instanceof ArithmeticException)
+                isEq = testRet.toString().equals(refRet.toString());
+            else
+                isEq = Decimal64Utils.isEqual((long) testRet, (long) refRet);
+            if (!isEq)
+                throw new RuntimeException("The round(0x" + Long.toHexString(inputNumbers[i]) + "L, 0, " + RoundingMode.UNNECESSARY +
+                    ") = " + refUnnecessary[i] + ", but test return " + testRet);
+        }
+    }
+
+    private static void checkRoundCases(final long[] inputNumbers, final RoundingMode roundType, final int[] refValue) {
+        for (int i = 0; i < inputNumbers.length; ++i) {
+            final long testRet = Decimal64Utils.round(inputNumbers[i], 0, roundType);
+            final long refRet = Decimal64Utils.fromInt(refValue[i]);
+            if (!Decimal64Utils.isEqual(refRet, testRet))
+                throw new RuntimeException("The round(0x" + Long.toHexString(inputNumbers[i]) + "L(=" +
+                    Decimal64Utils.toScientificString(inputNumbers[i]) + "), 0, " + roundType +
+                    ") = 0x" + Long.toHexString(refRet) + "L(=" + Decimal64Utils.toScientificString(refRet) +
+                    "), but test return 0x" + Long.toHexString(testRet) + "L(=" + Decimal64Utils.toScientificString(testRet) + ")");
+        }
+    }
+
+    private static BigDecimal posOffset = new BigDecimal("1e+500");
+    private static BigDecimal negOffset = new BigDecimal("-1e+500");
+
+    private static void checkRound(final long inValue, final int roundPoint, final RoundingMode roundType) {
+        String testStr;
+        try {
+            final long testValue = Decimal64Utils.round(inValue, roundPoint, roundType);
+            if (Decimal64Utils.isFinite(testValue))
+                testStr = Decimal64Utils.toBigDecimal(testValue).stripTrailingZeros().toString();
+            else
+                testStr = Decimal64Utils.toString(testValue);
+        } catch (final ArithmeticException e) {
+            testStr = e.toString();
+        }
+
+        String refStr;
+        if (Decimal64Utils.isFinite(inValue)) {
+            try {
+                BigDecimal bd = Decimal64Utils.toBigDecimal(inValue);
+                BigDecimal offset = Decimal64Utils.isPositive(inValue) ? posOffset : negOffset;
+                bd = bd.add(offset);
+                final int newPrecision = bd.precision() - bd.scale() + roundPoint;
+                refStr = bd.round(new MathContext(newPrecision, roundType)).subtract(offset).stripTrailingZeros().toString();
+            } catch (final ArithmeticException e) {
+                refStr = e.toString();
+            }
+        } else {
+            refStr = Decimal64Utils.toString(inValue);
+        }
+
+        if (!refStr.equals(testStr))
+            throw new RuntimeException("Case checkRound(0x" + Long.toHexString(inValue) +
+                "L, " + roundPoint + ", " + roundType.getClass().getSimpleName() + "." + roundType +
+                "); error: Value " + Decimal64Utils.toScientificString(inValue) +
+                " BigDecimal rounding (=" + refStr + ") != Decimal64Utils rounding (=" + testStr + ")");
     }
 
     @Test
@@ -523,7 +457,7 @@ public class JavaImplTest {
         final long f = 0x2F638D7EA4C68000L; // 0.0001
         final long zeroP = Decimal64Utils.multiply(zeroU, f);
 
-        assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.round(zeroP, 0, RoundType.CEIL));
+        assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.round(zeroP, 0, RoundingMode.CEILING));
     }
 
     @Test
@@ -538,7 +472,7 @@ public class JavaImplTest {
     private static void checkStrEq(final long value) {
         try {
             final String inStr = JavaImpl.appendToRefImpl(value, new StringBuilder()).toString();
-            final String testStr = JavaImpl.fastToString(value);
+            final String testStr = Decimal64Utils.toString(value);
             if (!inStr.equals(testStr))
                 throw new RuntimeException("Case toString(" + value + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
         } catch (final IOException e) {
@@ -553,226 +487,216 @@ public class JavaImplTest {
         checkStrEq(Decimal64Utils.parse("-0.1239867"));
     }
 
-    @Decimal
-    static final long[] specialValues = {
-        Decimal64Utils.fromDouble(Math.PI),
-        Decimal64Utils.fromDouble(-Math.E),
-        Decimal64Utils.NaN,
-        Decimal64Utils.NaN | 1000000000000000L,
-        Decimal64Utils.negate(Decimal64Utils.NaN),
-        Decimal64Utils.negate(Decimal64Utils.NaN | 1000000000000000L),
-        Decimal64Utils.POSITIVE_INFINITY,
-        Decimal64Utils.POSITIVE_INFINITY | 1000000000000000L,
-        Decimal64Utils.NEGATIVE_INFINITY,
-        Decimal64Utils.NEGATIVE_INFINITY | 1000000000000000L,
-        Decimal64Utils.ZERO,
-        JavaImplAdd.SPECIAL_ENCODING_MASK64 | 1000000000000000L,
-        Decimal64Utils.fromFixedPoint(0L, -300),
-        Decimal64Utils.fromFixedPoint(0L, 300),
-        Decimal64Utils.fromFixedPoint(1L, Decimal64Utils.MIN_EXPONENT),
-        Decimal64Utils.fromFixedPoint(1L, Decimal64Utils.MAX_EXPONENT),
-        Decimal64Utils.MIN_VALUE,
-        Decimal64Utils.MAX_VALUE,
-        Decimal64Utils.MIN_POSITIVE_VALUE,
-        Decimal64Utils.MAX_NEGATIVE_VALUE,
-        Decimal64Utils.fromFixedPoint(1L, 398),
-        Decimal64Utils.ONE,
-        Decimal64Utils.fromFixedPoint(10000000000000000L, 16),
-        Decimal64Utils.fromLong(10000000000000000L),
-        Decimal64Utils.ONE | 0x7000000000000000L,
-        Decimal64Utils.negate(Decimal64Utils.ONE | 0x7000000000000000L),
-    };
-
     @Test
-    public void testAddWithCoverage() throws Exception {
-        testAddCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
-            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
-
+    public void testFmaWithCoverage() throws Exception {
         for (final long x : specialValues)
             for (final long y : specialValues)
-                testAddCase(x, y);
+                for (final long z : specialValues)
+                    checkFmaCase(x, y, z);
 
         checkInMultipleThreads(() -> {
             final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i) {
-                random.makeNextPair();
-                testAddCase(random.getX(), random.getY());
-            }
+            for (int i = 0; i < NTests; ++i)
+                checkFmaCase(random.nextX(), random.nextX(), random.nextX());
         });
     }
 
-    @Test
-    public void testAddCases() {
-        testAddCase(0xecb08366cd530a32L, 0xb2fc7ab89d54c15dL);
-        testAddCase(0x335bb3b1068d9bd8L, 0x32ee619e7226bc85L);
+    public static void checkFmaCase(final long x, final long y, final long z) {
+        final long testRet = Decimal64Utils.multiplyAndAdd(x, y, z);
+        final long refRet = NativeImpl.multiplyAndAdd(x, y, z);
+
+        if (testRet != refRet)
+            throw new RuntimeException("The function(0x" + Long.toHexString(x) + "L, 0x" + Long.toHexString(y) +
+                "L, 0x" + Long.toHexString(z) + "L) = 0x" + Long.toHexString(refRet) + "L, but test return 0x" + Long.toHexString(testRet) + "L");
     }
 
-    private void testAddCase(final long x, final long y) {
-        final long javaRet = JavaImplAdd.bid64_add(x, y);
-        final long nativeRet = NativeImpl.add2(x, y);
+    @Test
+    public void testAddWithCoverage() throws Exception {
+        checkCases(NativeImpl::add2, Decimal64Utils::add,
+            ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L,
+            0xecb08366cd530a32L, 0xb2fc7ab89d54c15dL,
+            0x335bb3b1068d9bd8L, 0x32ee619e7226bc85L);
 
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L + 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::add2, Decimal64Utils::add);
+    }
+
+    @Test
+    public void testSubWithCoverage() throws Exception {
+        checkWithCoverage(NativeImpl::subtract, Decimal64Utils::subtract);
     }
 
     @Test
     public void testMulWithCoverage() throws Exception {
-        testMulCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+        checkCases(NativeImpl::multiply2, Decimal64Utils::multiply,
+            ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
             MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
 
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testMulCase(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i) {
-                random.makeNextPair();
-                testMulCase(random.getX(), random.getY());
-            }
-        });
-    }
-
-    private void testMulCase(final long x, final long y) {
-        final long javaRet = JavaImplMul.bid64_mul(x, y);
-        final long nativeRet = NativeImpl.multiply2(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L * 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::multiply2, Decimal64Utils::multiply);
     }
 
     @Test
     public void testDivWithCoverage() throws Exception {
-        testDivCase(((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
-            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L);
+        checkCases(NativeImpl::divide, Decimal64Utils::divide,
+            ((long) EXPONENT_BIAS << EXPONENT_SHIFT_SMALL) | 1000000000000000L,
+            MASK_SIGN | ((long) (EXPONENT_BIAS - MAX_FORMAT_DIGITS - 1) << EXPONENT_SHIFT_SMALL) | 5000000000000001L,
+            0x31a000000000000dL, 0x2e800000000006d1L,
+            0x30A0EFABDABB1574L, 0x30A0000062DF732AL,
+            0x31c38d7ea4c68000L, 0xafb1c37937e08001L);
 
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testDivCase(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i) {
-                random.makeNextPair();
-                testDivCase(random.getX(), random.getY());
-            }
-        });
-    }
-
-    @Test
-    public void testDivCases() {
-        testDivCase(0x31a000000000000dL, 0x2e800000000006d1L);
-        testDivCase(0x30A0EFABDABB1574L, 0x30A0000062DF732AL);
-        testDivCase(0x31c38d7ea4c68000L, 0xafb1c37937e08001L);
-    }
-
-    private void testDivCase(final long x, final long y) {
-        final long javaRet = JavaImplDiv.bid64_div(x, y);
-        final long nativeRet = NativeImpl.divide(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L / 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::divide, Decimal64Utils::divide);
     }
 
     @Test
     public void testDiv2WithCoverage() throws Exception {
-        for (final long x : specialValues)
-            testDiv2Case(x);
+        checkCases(x -> NativeImpl.divide(x, Decimal64Utils.TWO), JavaImplDiv::div2,
+            0x2feb29430a256d21L, 0x5fe05af3107a4000L, 0xf7fb86f26fc0ffffL, 0xafe9a8434ec8e225L);
 
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i)
-                testDiv2Case(random.nextX());
-        });
-    }
-
-    @Test
-    public void testDiv2Cases() {
-        testDiv2Case(0x2feb29430a256d21L);
-        testDiv2Case(0x5fe05af3107a4000L);
-        testDiv2Case(0xf7fb86f26fc0ffffL);
-        testDiv2Case(0xafe9a8434ec8e225L);
-    }
-
-    private void testDiv2Case(final long x) {
-        final long javaRet = JavaImplDiv.div2(x);
-        final long nativeRet = NativeImpl.divide(x, Decimal64Utils.TWO);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The decimal 0x" + Long.toHexString(x) + "L(" + Decimal64Utils.toScientificString(x) +
-                ") / 2 = 0x" + Long.toHexString(nativeRet) + "L(" + Decimal64Utils.toScientificString(nativeRet) +
-                "), but java return 0x" + Long.toHexString(javaRet) + "L(" + Decimal64Utils.toScientificString(javaRet) + ")");
+        checkWithCoverage(x -> NativeImpl.divide(x, Decimal64Utils.TWO), JavaImplDiv::div2);
     }
 
     @Test
     public void testMinWithCoverage() throws Exception {
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testMinCase(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i)
-                testMinCase(random.nextX(), random.generator.nextDouble() < 0.1 ? random.getX() : random.nextY());
-        });
-    }
-
-    private void testMinCase(final long x, final long y) {
-        final long javaRet = JavaImplMinMax.bid64_min_fix_nan(x, y);
-        final long nativeRet = NativeImpl.min2(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The minimal of decimal 0x" + Long.toHexString(x) + "L vs 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::min2, Decimal64Utils::min);
     }
 
     @Test
     public void testMaxWithCoverage() throws Exception {
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testMaxCase(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i)
-                testMaxCase(random.nextX(), random.generator.nextDouble() < 0.1 ? random.getX() : random.nextY());
-        });
-    }
-
-    private void testMaxCase(final long x, final long y) {
-        final long javaRet = JavaImplMinMax.bid64_max_fix_nan(x, y);
-        final long nativeRet = NativeImpl.max2(x, y);
-
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The maximal of decimal 0x" + Long.toHexString(x) + "L vs 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+        checkWithCoverage(NativeImpl::max2, Decimal64Utils::max);
     }
 
     @Test
     public void testMean2Coverage() throws Exception {
-        for (final long x : specialValues)
-            for (final long y : specialValues)
-                testMean2Case(x, y);
-
-        checkInMultipleThreads(() -> {
-            final RandomDecimalsGenerator random = new RandomDecimalsGenerator();
-            for (int i = 0; i < NTests; ++i) {
-                random.makeNextPair();
-                testMean2Case(random.getX(), random.getY());
-            }
-        });
+        checkWithCoverage(NativeImpl::mean2, Decimal64Utils::mean);
     }
 
-    private void testMean2Case(final long x, final long y) {
-        final long javaRet = JavaImplDiv.mean2(x, y);
-        final long nativeRet = NativeImpl.mean2(x, y);
+    @Test
+    public void testMultiplyByInt32Coverage() throws Exception {
+        checkWithCoverage(
+            (a, b) -> NativeImpl.multiplyByInt32(a, (int) b),
+            (a, b) -> Decimal64Utils.multiplyByInteger(a, (int) b));
+    }
 
-        if (javaRet != nativeRet)
-            throw new RuntimeException("The mean of decimal 0x" + Long.toHexString(x) + "L and 0x" + Long.toHexString(y) +
-                "L = 0x" + Long.toHexString(nativeRet) + "L, but java return 0x" + Long.toHexString(javaRet) + "L");
+    @Test
+    public void testMultiplyByInt64Coverage() throws Exception {
+        checkWithCoverage(NativeImpl::multiplyByInt64, Decimal64Utils::multiplyByInteger);
+    }
+
+    @Test
+    public void testDivideByInt32Coverage() throws Exception {
+        checkWithCoverage(
+            (a, b) -> NativeImpl.divideByInt32(a, (int) b),
+            (a, b) -> Decimal64Utils.divideByInteger(a, (int) b));
+    }
+
+    @Test
+    public void testDivideByInt64Coverage() throws Exception {
+        checkWithCoverage(NativeImpl::divideByInt64, Decimal64Utils::divideByInteger);
+    }
+
+    @Test
+    public void testDoubleToDecimalCoverage() throws Exception {
+        checkWithCoverage(
+            x -> NativeImpl.fromFloat64(Double.longBitsToDouble(x)),
+            x -> Decimal64Utils.fromDouble(Double.longBitsToDouble(x)));
+    }
+
+    @Test
+    public void testDecimalToDoubleCoverage() throws Exception {
+        checkWithCoverage(
+            x -> Double.doubleToRawLongBits(NativeImpl.toFloat64(x)),
+            x -> Double.doubleToRawLongBits(Decimal64Utils.toDouble(x)));
+    }
+
+    @Test
+    public void testInt64ToDecimalCoverage() throws Exception {
+        checkWithCoverage(NativeImpl::fromInt64, Decimal64Utils::fromLong);
+    }
+
+    @Test
+    public void testDecimalToInt64Coverage() throws Exception {
+        checkWithCoverage(NativeImpl::toInt64, Decimal64Utils::toLong);
+    }
+
+    @Test
+    public void testScaleByPowerOfTenCoverage() throws Exception {
+        checkWithCoverage(
+            (x, n) -> NativeImpl.scaleByPowerOfTen(x, (int) (n % 450)),
+            (x, n) -> Decimal64Utils.scaleByPowerOfTen(x, (int) (n % 450)));
+    }
+
+    @Test
+    public void testFromFixedPoint64Coverage() throws Exception {
+        checkWithCoverage(
+            (x, n) -> NativeImpl.fromFixedPoint64(x, (int) (n % 450)),
+            (x, n) -> Decimal64Utils.fromFixedPoint(x, (int) (n % 450)));
+    }
+
+    @Test
+    public void testToFixedPointCoverage() throws Exception {
+        checkWithCoverage(
+            (x, n) -> NativeImpl.toFixedPoint(x, (int) (n % 450)),
+            (x, n) -> Decimal64Utils.toFixedPoint(x, (int) (n % 450)));
+    }
+
+    @Test
+    public void testRoundTowardsPositiveInfinity() throws Exception {
+        checkWithCoverage(NativeImpl::roundTowardsPositiveInfinity, Decimal64Utils::roundTowardsPositiveInfinity);
+    }
+
+    @Test
+    public void testRoundTowardsNegativeInfinity() throws Exception {
+        checkWithCoverage(NativeImpl::roundTowardsNegativeInfinity, Decimal64Utils::roundTowardsNegativeInfinity);
+    }
+
+    @Test
+    public void testRoundTowardsZero() throws Exception {
+        checkWithCoverage(NativeImpl::roundTowardsZero, Decimal64Utils::roundTowardsZero);
+    }
+
+    @Test
+    public void testRoundToNearestTiesAwayFromZero() throws Exception {
+        checkWithCoverage(NativeImpl::roundToNearestTiesAwayFromZero, Decimal64Utils::roundToNearestTiesAwayFromZero);
+    }
+
+    @Test
+    public void testRoundToNearestTiesToEven() throws Exception {
+        checkWithCoverage(NativeImpl::roundToNearestTiesToEven, Decimal64Utils::roundToNearestTiesToEven);
+    }
+
+    @Test
+    public void testRoundCeiling() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundTowardsPositiveInfinity, x -> Decimal64Utils.round(x, 0, RoundingMode.CEILING));
+    }
+
+    @Test
+    public void testRoundFloor() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundTowardsNegativeInfinity, x -> Decimal64Utils.round(x, 0, RoundingMode.FLOOR));
+    }
+
+    @Test
+    public void testRoundDown() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundTowardsZero, x -> Decimal64Utils.round(x, 0, RoundingMode.DOWN));
+    }
+
+    @Test
+    public void testRoundHalfUp() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundToNearestTiesAwayFromZero, x -> Decimal64Utils.round(x, 0, RoundingMode.HALF_UP));
+    }
+
+    @Test
+    public void testRoundHalfEven() throws Exception {
+        checkEqualityWithCoverage(NativeImpl::roundToNearestTiesToEven, x -> Decimal64Utils.round(x, 0, RoundingMode.HALF_EVEN));
+    }
+
+    @Test
+    public void testNextUpCoverage() throws Exception {
+        checkWithCoverage(NativeImpl::nextUp, Decimal64Utils::nextUp);
+    }
+
+    @Test
+    public void testNextDownCoverage() throws Exception {
+        checkWithCoverage(NativeImpl::nextDown, Decimal64Utils::nextDown);
     }
 
     @Test
