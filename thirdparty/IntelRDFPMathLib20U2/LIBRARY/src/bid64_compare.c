@@ -259,18 +259,12 @@ BID_TYPE_FUNCTION_ARG2_CUSTOMRESULT_NORND(int, bid64_quiet_greater, BID_UINT64, 
   }
   // if exp_x is 15 greater than exp_y, no need for compensation
   if (exp_x - exp_y > 15) {	// difference cannot be greater than 10^15
-    if (x & MASK_SIGN)	// if both are negative
-      res = 0;
-    else	// if both are positive
-      res = 1;
+    res = (x & MASK_SIGN) == 0;
     BID_RETURN (res);
   }
   // if exp_x is 15 less than exp_y, no need for compensation
   if (exp_y - exp_x > 15) {
-    if (x & MASK_SIGN)	// if both are negative
-      res = 1;
-    else	// if both are positive
-      res = 0;
+    res = (x & MASK_SIGN) != 0;
     BID_RETURN (res);
   }
   // if |exp_x - exp_y| < 15, it comes down to the compensated significand
