@@ -1,66 +1,54 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="Version.targets" />
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-        <TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
-    </PropertyGroup>
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
-        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-    </PropertyGroup>
-    <PropertyGroup>
-        <LangVersion>7.3</LangVersion>
-        <RootNamespace>EPAM.Deltix.DFP</RootNamespace>
-        <AssemblyName>EPAM.Deltix.DFP</AssemblyName>
-        <Authors>Andrei Davydov &lt;agdavydov81@gmail.com&gt;</Authors>
-        <Company>EPAM Systems</Company>
-        <Description>Deltix Decimal Floating-Point Arithmetic Library.</Description>
-        <Copyright>Copyright(C), EPAM Systems Inc.</Copyright>
-        <PackageProjectUrl>https://github.com/epam/DFP</PackageProjectUrl>
-        <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>git@github.com:epam/DFP.git $(VersionSha)</RepositoryUrl>
-        <PackageTags>.NET Decimal</PackageTags>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
-        <DefineConstants>$(DefineConstants)TRACE;IEEE_ROUND_NEAREST</DefineConstants>
-    </PropertyGroup>
-    <ItemGroup>
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\BitStream.cs" Link="ZStd\BitStream.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\blockType_e.cs" Link="ZStd\blockType_e.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\EntropyCommon.cs" Link="ZStd\EntropyCommon.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\FrameHeader.cs" Link="ZStd\FrameHeader.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\Fse.cs" Link="ZStd\Fse.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\FseDecompress.cs" Link="ZStd\FseDecompress.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\Huf.cs" Link="ZStd\Huf.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\HufDecompress.cs" Link="ZStd\HufDecompress.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\Mem.cs" Link="ZStd\Mem.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\XXH64_state_s.cs" Link="ZStd\XXH64_state_s.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\XxHash.cs" Link="ZStd\XxHash.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZStd.cs" Link="ZStd\ZStd.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZStdDecompress.cs" Link="ZStd\ZStdDecompress.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZStdErrors.cs" Link="ZStd\ZStdErrors.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZStdInternal.cs" Link="ZStd\ZStdInternal.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZSTD_format_e.cs" Link="ZStd\ZSTD_format_e.cs" />
-        <Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZSTD_frameType_e.cs" Link="ZStd\ZSTD_frameType_e.cs" />
-        <Compile Include="..\..\NativeUtils\csharp\NativeUtils\FileStream.cs" Link="NativeUtils\FileStream.cs" />
-        <Compile Include="..\..\NativeUtils\csharp\NativeUtils\FileJanitor.cs" Link="NativeUtils\FileJanitor.cs" />
-        <Compile Include="..\..\NativeUtils\csharp\NativeUtils\ResourceLoader.cs" Link="NativeUtils\ResourceLoader.cs" />
-        <Compile Include="..\..\NativeUtils\csharp\NativeUtils\ResourceLoaderUtils.cs" Link="NativeUtils\ResourceLoaderUtils.cs" />
+<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="Version.targets" />
+	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+		<TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
+	</PropertyGroup>
+	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+		<TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+	</PropertyGroup>
+	<PropertyGroup>
+		<LangVersion>7.3</LangVersion>
+		<RootNamespace>EPAM.Deltix.DFP</RootNamespace>
+		<AssemblyName>EPAM.Deltix.DFP</AssemblyName>
+		<Authors>Andrei Davydov &lt;agdavydov81@gmail.com&gt;</Authors>
+		<Company>EPAM Systems</Company>
+		<Description>Deltix Decimal Floating-Point Arithmetic Library.</Description>
+		<Copyright>Copyright(C), EPAM Systems Inc.</Copyright>
+		<PackageProjectUrl>https://github.com/epam/DFP</PackageProjectUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>git@github.com:epam/DFP.git $(VersionSha)</RepositoryUrl>
+		<PackageTags>.NET Decimal</PackageTags>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+		<DefineConstants>$(DefineConstants)TRACE;IEEE_ROUND_NEAREST</DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\BitStream.cs" Link="ZStd\BitStream.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\blockType_e.cs" Link="ZStd\blockType_e.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\EntropyCommon.cs" Link="ZStd\EntropyCommon.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\FrameHeader.cs" Link="ZStd\FrameHeader.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\Fse.cs" Link="ZStd\Fse.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\FseDecompress.cs" Link="ZStd\FseDecompress.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\Huf.cs" Link="ZStd\Huf.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\HufDecompress.cs" Link="ZStd\HufDecompress.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\Mem.cs" Link="ZStd\Mem.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\XXH64_state_s.cs" Link="ZStd\XXH64_state_s.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\XxHash.cs" Link="ZStd\XxHash.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZStd.cs" Link="ZStd\ZStd.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZStdDecompress.cs" Link="ZStd\ZStdDecompress.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZStdErrors.cs" Link="ZStd\ZStdErrors.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZStdInternal.cs" Link="ZStd\ZStdInternal.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZSTD_format_e.cs" Link="ZStd\ZSTD_format_e.cs" />
+		<Compile Include="..\..\NativeUtils\Zstandard\csharp\src\ZSTD_frameType_e.cs" Link="ZStd\ZSTD_frameType_e.cs" />
+		<Compile Include="..\..\NativeUtils\csharp\NativeUtils\FileStream.cs" Link="NativeUtils\FileStream.cs" />
+		<Compile Include="..\..\NativeUtils\csharp\NativeUtils\FileJanitor.cs" Link="NativeUtils\FileJanitor.cs" />
+		<Compile Include="..\..\NativeUtils\csharp\NativeUtils\ResourceLoader.cs" Link="NativeUtils\ResourceLoader.cs" />
+		<Compile Include="..\..\NativeUtils\csharp\NativeUtils\ResourceLoaderUtils.cs" Link="NativeUtils\ResourceLoaderUtils.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="..\..\native\binCs\Release\**\*" />
     </ItemGroup>
-
-    <Target Name="CopyResourceFiles">
-        <ItemGroup>
-            <ResourceZStd Include="..\..\native\bin\**\*" />
-        </ItemGroup>
-        <Copy SourceFiles="@(ResourceZStd)"
-              DestinationFiles="@(ResourceZStd->'%(Filename)%(Extension)'->Replace('.','_')->'$(IntermediateOutputPath)%(RecursiveDir)%(Identity)')"
-              SkipUnchangedFiles="true" />
-    </Target>
-
-    <Target Name="MakeNativeWrappers" Condition="!Exists('NativeImpl.cs')">
-        <Exec WorkingDirectory="..\.." Command="./gradlew :java:nativeWrappers:makeNativeWrappers" />
-    </Target>
-
-    <ItemGroup>
-        <EmbeddedResource Include="$(IntermediateOutputPath)\Release\**\*" />
-    </ItemGroup>
-    <Target Name="PreBuild" BeforeTargets="PreBuildEvent" DependsOnTargets="CopyResourceFiles;MakeNativeWrappers" />
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="!Exists('NativeImpl.cs')">
+		<Exec WorkingDirectory="..\.." Command="./gradlew :java:nativeWrappers:makeNativeWrappers" />
+	</Target>
 </Project>
