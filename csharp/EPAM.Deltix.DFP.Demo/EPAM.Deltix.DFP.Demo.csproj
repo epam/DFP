@@ -1,7 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <TargetFrameworks>netcoreapp3.1;net48;net6.0</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <TargetFrameworks>net6.0</TargetFrameworks>
+  </PropertyGroup>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net48;net6.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <RootNamespace>EPAM.Deltix.DFP.Demo</RootNamespace>
   </PropertyGroup>
