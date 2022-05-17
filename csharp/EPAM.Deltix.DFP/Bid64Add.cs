@@ -6,11 +6,15 @@ using BID_SINT64 = System.Int64;
 using BID_UINT32 = System.UInt32;
 using _IDEC_flags = System.UInt32;
 using int_double = System.UInt64;
+using System.Runtime.CompilerServices;
 
 namespace EPAM.Deltix.DFP
 {
 	internal static class Bid64Add
 	{
+#if NET6_0_OR_GREATER
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+#endif
 		public static unsafe BID_UINT64 bid64_sub(BID_UINT64 x, BID_UINT64 y
 #if !IEEE_ROUND_NEAREST
 			, int rnd_mode
@@ -61,6 +65,9 @@ namespace EPAM.Deltix.DFP
 		///         add sign_a*coefficient_a*10^diff_expon, sign_b*coefficient_b
 		///             in 128-bit integer arithmetic, then round to 16 decimal digits
 		/// </summary>
+#if NET6_0_OR_GREATER
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+#endif
 		public static unsafe BID_UINT64 bid64_add(BID_UINT64 x, BID_UINT64 y
 #if !IEEE_ROUND_NEAREST
 			, int rnd_mode

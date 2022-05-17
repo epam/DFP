@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="Version.targets" />
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
-		<LangVersion>6</LangVersion>
+		<TargetFrameworks>netstandard2.0;net40;net6.0</TargetFrameworks>
+		<LangVersion>8</LangVersion>
 		<RootNamespace>EPAM.Deltix.DFP</RootNamespace>
 		<AssemblyName>EPAM.Deltix.DFP</AssemblyName>
 		<Authors>Andrei Davydov &lt;agdavydov81@gmail.com&gt;</Authors>

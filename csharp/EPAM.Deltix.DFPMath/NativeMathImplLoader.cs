@@ -64,7 +64,7 @@ namespace EPAM.Deltix.DFPMath
 			}
 			throw new SystemException("Can't detect operation system.");
 #endif
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0_OR_GREATER
 			if (ResourceLoader.OS.IsWindows)
 			{
 				switch (RuntimeInformation.ProcessArchitecture)

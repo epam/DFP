@@ -8,6 +8,7 @@ using _IDEC_flags = System.UInt32;
 using int_double = System.UInt64;
 using int_float = System.UInt32;
 using unsigned = System.UInt32;
+using System.Runtime.CompilerServices;
 
 namespace EPAM.Deltix.DFP
 {
@@ -40,6 +41,9 @@ namespace EPAM.Deltix.DFP
 		///    check for underflow
 		///    round coefficient to nearest
 		/// </summary>
+#if NET6_0_OR_GREATER
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+#endif
 		public static unsafe BID_UINT64 bid64_div(BID_UINT64 x, BID_UINT64 y
 #if !IEEE_ROUND_NEAREST
 			, int rnd_mode

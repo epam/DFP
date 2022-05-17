@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="Version.targets" />
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;net40;net6.0</TargetFrameworks>
 		<LangVersion>6</LangVersion>
 		<RootNamespace>EPAM.Deltix.DFPMath</RootNamespace>
 		<AssemblyName>EPAM.Deltix.DFPMath</AssemblyName>

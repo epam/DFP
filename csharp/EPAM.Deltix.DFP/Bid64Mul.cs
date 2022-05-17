@@ -6,6 +6,7 @@ using BID_UINT32 = System.UInt32;
 using _IDEC_flags = System.UInt32;
 using int_double = System.UInt64;
 using unsigned = System.UInt32;
+using System.Runtime.CompilerServices;
 
 namespace EPAM.Deltix.DFP
 {
@@ -25,6 +26,9 @@ namespace EPAM.Deltix.DFP
 		///         2^M[extra_digits]/10^extra_digits, followed by a shift
 		///         M[extra_digits] is sufficiently large for required accuracy
 		/// </summary>
+#if NET6_0_OR_GREATER
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+#endif
 		public static unsafe BID_UINT64 bid64_mul(BID_UINT64 x, BID_UINT64 y
 #if !IEEE_ROUND_NEAREST
 			, int rnd_mode

@@ -434,6 +434,7 @@ namespace EPAM.Deltix.DFP.Test
 		[Test]
 		public void TestSerializable()
 		{
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
 			var a1 = Decimal64.FromDouble(123.45);
 			var b1 = Decimal64.FromLong(42);
 
@@ -457,6 +458,7 @@ namespace EPAM.Deltix.DFP.Test
 
 			Assert.True(a1.Equals(formatter.Deserialize(stream)));
 			stream.Close();
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
 		}
 
 		[Test]
