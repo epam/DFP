@@ -705,7 +705,64 @@ namespace EPAM.Deltix.DFP
 			C128.w0 = coeff + bid_round_const_table[rmode, extra_digits];
 
 			// get coeff*(2^M[extra_digits])/10^extra_digits
-			__mul_64x128_full(out QH, out Q_low, C128.w0, bid_reciprocals10_128[extra_digits]);
+			//__mul_64x128_full(out QH, out Q_low, C128.w0, bid_reciprocals10_128[extra_digits]);
+			{
+				BID_UINT128 ALBL, ALBH, QM2;
+				BID_UINT128 B = bid_reciprocals10_128[extra_digits];
+
+				//__mul_64x64_to_128(out ALBH, C128.w0, B.w1);
+				{
+					BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+					CXH = C128.w0 >> 32;
+					CXL = (BID_UINT32)C128.w0;
+					CYH = B.w1 >> 32;
+					CYL = (BID_UINT32)B.w1;
+
+					PM = CXH * CYL;
+					PH = CXH * CYH;
+					PL = CXL * CYL;
+					PM2 = CXL * CYH;
+					PH += (PM >> 32);
+					PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+					ALBH.w1 = PH + (PM >> 32);
+					ALBH.w0 = (PM << 32) + (BID_UINT32)PL;
+				}
+
+				//__mul_64x64_to_128(out ALBL, C128.w0, B.w0);
+				{
+					BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+					CXH = C128.w0 >> 32;
+					CXL = (BID_UINT32)C128.w0;
+					CYH = B.w0 >> 32;
+					CYL = (BID_UINT32)B.w0;
+
+					PM = CXH * CYL;
+					PH = CXH * CYH;
+					PL = CXL * CYL;
+					PM2 = CXL * CYH;
+					PH += (PM >> 32);
+					PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+					ALBL.w1 = PH + (PM >> 32);
+					ALBL.w0 = (PM << 32) + (BID_UINT32)PL;
+				}
+
+				Q_low.w0 = ALBL.w0;
+
+				//__add_128_64(out QM2, ALBH, ALBL.w1);
+				{
+					BID_UINT64 R64H = ALBH.w1;
+					QM2.w0 = ALBL.w1 + ALBH.w0;
+					if (QM2.w0 < ALBL.w1)
+						R64H++;
+					QM2.w1 = R64H;
+				}
+
+				Q_low.w1 = QM2.w0;
+				QH = QM2.w1;
+			}
+
 
 			// now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 			amount = bid_recip_scale[extra_digits];
@@ -764,8 +821,19 @@ namespace EPAM.Deltix.DFP
 						break;
 					default:
 						// round up
-						__add_carry_out(out Stemp.w0, out CY, Q_low.w0, bid_reciprocals10_128[extra_digits].w0);
-						__add_carry_in_out(out Stemp.w1, out carry, Q_low.w1, bid_reciprocals10_128[extra_digits].w1, CY);
+						//__add_carry_out(out Stemp.w0, out CY, Q_low.w0, bid_reciprocals10_128[extra_digits].w0);
+						{
+							Stemp.w0 = Q_low.w0 + bid_reciprocals10_128[extra_digits].w0;
+							CY = (Stemp.w0 < Q_low.w0) ? 1UL : 0;
+						}
+
+						//__add_carry_in_out(out Stemp.w1, out carry, Q_low.w1, bid_reciprocals10_128[extra_digits].w1, CY);
+						{
+							BID_UINT64 X1 = Q_low.w1 + CY;
+							Stemp.w1 = X1 + bid_reciprocals10_128[extra_digits].w1;
+							carry = ((Stemp.w1 < X1) || (X1 < CY)) ? 1UL : 0;
+						}
+
 						if ((remainder_h >> (64 - amount)) + carry >= (((BID_UINT64)1) << amount))
 							status = BID_EXACT_STATUS;
 						break;
@@ -840,7 +908,63 @@ namespace EPAM.Deltix.DFP
 					C128.w0 = coeff + bid_round_const_table[rmode, extra_digits];
 
 					// get coeff*(2^M[extra_digits])/10^extra_digits
-					__mul_64x128_full(out QH, out Q_low, C128.w0, bid_reciprocals10_128[extra_digits]);
+					//__mul_64x128_full(out QH, out Q_low, C128.w0, bid_reciprocals10_128[extra_digits]);
+					{
+						BID_UINT128 ALBL, ALBH, QM2;
+						BID_UINT128 B = bid_reciprocals10_128[extra_digits];
+
+						//__mul_64x64_to_128(out ALBH, C128.w0, B.w1);
+						{
+							BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+							CXH = C128.w0 >> 32;
+							CXL = (BID_UINT32)C128.w0;
+							CYH = B.w1 >> 32;
+							CYL = (BID_UINT32)B.w1;
+
+							PM = CXH * CYL;
+							PH = CXH * CYH;
+							PL = CXL * CYL;
+							PM2 = CXL * CYH;
+							PH += (PM >> 32);
+							PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+							ALBH.w1 = PH + (PM >> 32);
+							ALBH.w0 = (PM << 32) + (BID_UINT32)PL;
+						}
+
+						//__mul_64x64_to_128(out ALBL, C128.w0, B.w0);
+						{
+							BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+							CXH = C128.w0 >> 32;
+							CXL = (BID_UINT32)C128.w0;
+							CYH = B.w0 >> 32;
+							CYL = (BID_UINT32)B.w0;
+
+							PM = CXH * CYL;
+							PH = CXH * CYH;
+							PL = CXL * CYL;
+							PM2 = CXL * CYH;
+							PH += (PM >> 32);
+							PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+							ALBL.w1 = PH + (PM >> 32);
+							ALBL.w0 = (PM << 32) + (BID_UINT32)PL;
+						}
+
+						Q_low.w0 = ALBL.w0;
+
+						//__add_128_64(out QM2, ALBH, ALBL.w1);
+						{
+							BID_UINT64 R64H = ALBH.w1;
+							QM2.w0 = ALBL.w1 + ALBH.w0;
+							if (QM2.w0 < ALBL.w1)
+								R64H++;
+							QM2.w1 = R64H;
+						}
+
+						Q_low.w1 = QM2.w0;
+						QH = QM2.w1;
+					}
 
 					// now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 					amount = bid_recip_scale[extra_digits];
@@ -902,8 +1026,19 @@ namespace EPAM.Deltix.DFP
 								break;
 							default:
 								// round up
-								__add_carry_out(out Stemp.w0, out CY, Q_low.w0, bid_reciprocals10_128[extra_digits].w0);
-								__add_carry_in_out(out Stemp.w1, out carry, Q_low.w1, bid_reciprocals10_128[extra_digits].w1, CY);
+								//__add_carry_out(out Stemp.w0, out CY, Q_low.w0, bid_reciprocals10_128[extra_digits].w0);
+								{
+									Stemp.w0 = Q_low.w0 + bid_reciprocals10_128[extra_digits].w0;
+									CY = (Stemp.w0 < Q_low.w0) ? 1UL : 0;
+								}
+
+								//__add_carry_in_out(out Stemp.w1, out carry, Q_low.w1, bid_reciprocals10_128[extra_digits].w1, CY);
+								{
+									BID_UINT64 X1 = Q_low.w1 + CY;
+									Stemp.w1 = X1 + bid_reciprocals10_128[extra_digits].w1;
+									carry = ((Stemp.w1 < X1) || (X1 < CY)) ? 1UL : 0;
+								}
+
 								if ((remainder_h >> (64 - amount)) + carry >=
 									(((BID_UINT64)1) << amount))
 									status = BID_EXACT_STATUS;
@@ -1027,7 +1162,63 @@ namespace EPAM.Deltix.DFP
 					coeff += bid_round_const_table[rmode, extra_digits];
 
 					// get coeff*(2^M[extra_digits])/10^extra_digits
-					__mul_64x128_full(out QH, out Q_low, coeff, bid_reciprocals10_128[extra_digits]);
+					//__mul_64x128_full(out QH, out Q_low, coeff, bid_reciprocals10_128[extra_digits]);
+					{
+						BID_UINT128 ALBL, ALBH, QM2;
+						BID_UINT128 B = bid_reciprocals10_128[extra_digits];
+
+						//__mul_64x64_to_128(out ALBH, coeff, B.w1);
+						{
+							BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+							CXH = coeff >> 32;
+							CXL = (BID_UINT32)coeff;
+							CYH = B.w1 >> 32;
+							CYL = (BID_UINT32)B.w1;
+
+							PM = CXH * CYL;
+							PH = CXH * CYH;
+							PL = CXL * CYL;
+							PM2 = CXL * CYH;
+							PH += (PM >> 32);
+							PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+							ALBH.w1 = PH + (PM >> 32);
+							ALBH.w0 = (PM << 32) + (BID_UINT32)PL;
+						}
+
+						//__mul_64x64_to_128(out ALBL, coeff, B.w0);
+						{
+							BID_UINT64 CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
+							CXH = coeff >> 32;
+							CXL = (BID_UINT32)coeff;
+							CYH = B.w0 >> 32;
+							CYL = (BID_UINT32)B.w0;
+
+							PM = CXH * CYL;
+							PH = CXH * CYH;
+							PL = CXL * CYL;
+							PM2 = CXL * CYH;
+							PH += (PM >> 32);
+							PM = (BID_UINT64)((BID_UINT32)PM) + PM2 + (PL >> 32);
+
+							ALBL.w1 = PH + (PM >> 32);
+							ALBL.w0 = (PM << 32) + (BID_UINT32)PL;
+						}
+
+						Q_low.w0 = ALBL.w0;
+
+						//__add_128_64(out QM2, ALBH, ALBL.w1);
+						{
+							BID_UINT64 R64H = ALBH.w1;
+							QM2.w0 = ALBL.w1 + ALBH.w0;
+							if (QM2.w0 < ALBL.w1)
+								R64H++;
+							QM2.w1 = R64H;
+						}
+
+						Q_low.w1 = QM2.w0;
+						QH = QM2.w1;
+					}
 
 					// now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 					amount = bid_recip_scale[extra_digits];
@@ -1085,8 +1276,19 @@ namespace EPAM.Deltix.DFP
 								break;
 							default:
 								// round up
-								__add_carry_out(out Stemp.w0, out CY, Q_low.w0, bid_reciprocals10_128[extra_digits].w0);
-								__add_carry_in_out(out Stemp.w1, out carry, Q_low.w1, bid_reciprocals10_128[extra_digits].w1, CY);
+								//__add_carry_out(out Stemp.w0, out CY, Q_low.w0, bid_reciprocals10_128[extra_digits].w0);
+								{
+									Stemp.w0 = Q_low.w0 + bid_reciprocals10_128[extra_digits].w0;
+									CY = (Stemp.w0 < Q_low.w0) ? 1UL : 0;
+								}
+
+								//__add_carry_in_out(out Stemp.w1, out carry, Q_low.w1, bid_reciprocals10_128[extra_digits].w1, CY);
+								{
+									BID_UINT64 X1 = Q_low.w1 + CY;
+									Stemp.w1 = X1 + bid_reciprocals10_128[extra_digits].w1;
+									carry = ((Stemp.w1 < X1) || (X1 < CY)) ? 1UL : 0;
+								}
+
 								if ((remainder_h >> (64 - amount)) + carry >= (((BID_UINT64)1) << amount))
 									status = BID_EXACT_STATUS;
 								break;
