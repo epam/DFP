@@ -18,7 +18,7 @@ class NativeMathImplLoader {
                 unpackPath = "$(TEMP)/$(PACKAGE)/$(VERSION)/$(ARCH)";
 
             ResourceLoader
-                .from(NativeMathImplLoader.class, "resources_" + varMapper.getPackage().replace('.', '_') + '/' + varMapper.getOsName() + '/' + varMapper.getOsArch() + "/*")
+                .from(NativeMathImplLoader.class, "resources_" + varMapper.getPackage().replace('.', '_') + '/' + varMapper.getOs() + '/' + varMapper.getArch() + "/*")
                 .to(varMapper.substitute(unpackPath))
                 .alwaysOverwrite(isSnapshot)
                 .tryRandomFallbackSubDirectory(true)
