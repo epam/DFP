@@ -208,6 +208,9 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: ${{ matrix.java }}
+      - name: Show environment
+        run: |
+          ./gradlew :java:systemInfo:runSystemInfo
       - name: test
         run: |
           ./gradlew check

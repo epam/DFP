@@ -250,6 +250,9 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '8'
+      - name: Show environment
+        run: |
+          ./gradlew :java:systemInfo:runSystemInfo
       - name: test
         run: |
           ./gradlew check

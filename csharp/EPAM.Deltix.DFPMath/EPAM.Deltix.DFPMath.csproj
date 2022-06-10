@@ -40,10 +40,11 @@
 		<Compile Include="..\..\NativeUtils\csharp\NativeUtils\FileJanitor.cs" Link="NativeUtils\FileJanitor.cs" />
 		<Compile Include="..\..\NativeUtils\csharp\NativeUtils\ResourceLoader.cs" Link="NativeUtils\ResourceLoader.cs" />
 		<Compile Include="..\..\NativeUtils\csharp\NativeUtils\ResourceLoaderUtils.cs" Link="NativeUtils\ResourceLoaderUtils.cs" />
+		<Compile Include="..\..\NativeUtils\csharp\NativeUtils\VariablesMapper.cs" Link="NativeUtils\VariablesMapper.cs" />
 	</ItemGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="..\..\native\binmathCs\Release\**\*" />
-    </ItemGroup>
+	</ItemGroup>
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="!Exists('NativeMathImpl.cs')">
 		<Exec WorkingDirectory="..\.." Command="./gradlew :java:nativeWrappers:makeNativeWrappers" />
 	</Target>
