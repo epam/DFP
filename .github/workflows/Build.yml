@@ -5,7 +5,7 @@ on:
   push:
     branches-ignore: release
   pull_request:
-    types: [opened, synchronize]
+    types: synchronize
     branches-ignore: release
 
 env:
