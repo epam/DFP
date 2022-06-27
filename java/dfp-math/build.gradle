@@ -30,6 +30,7 @@ sourceSets {
     main.resources.srcDirs += "$rootDir/native/binmathJava/Release/"
 
     test.java.srcDirs += [
+        "$rootDir/java/dfp/src/test/java",
         "$rootDir/NativeUtils/java/main/src/main/java",
         "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 }
