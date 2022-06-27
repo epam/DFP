@@ -37,4 +37,6 @@ tasks.named('test') {
 task runBootJar(type: JavaExec, dependsOn: bootJar) {
     classpath = files(bootJar.getArchivePath().absolutePath)
 }
-test.dependsOn runBootJar
+if (!System.properties['os.name'].toLowerCase().contains('mac')) {
+    test.dependsOn runBootJar
+}
