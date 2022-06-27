@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.special.Gamma;
 
+import com.epam.deltix.utilities.*;
 import java.security.SecureRandom;
 import java.util.Random;
 
@@ -1052,5 +1053,18 @@ public class MathTest {
 
         assertDecimalEqual(parse("1e+5"), quantum(x));
         assertDecimalEqual(parse("1e-2"), quantum(y));
+    }
+
+    @Test
+    public void testVariablesMapper() {
+        String version = NativeMathImpl.version;
+        final boolean isSnapshot = version.endsWith("-SNAPSHOT");
+        if (isSnapshot)
+            version = version.substring(0, version.length() - "-SNAPSHOT".length());
+
+        VariablesMapper varMapper = new VariablesMapper(NativeMathImplLoader.class, version);
+        System.out.println("VariablesMapper.getPackage: " + varMapper.getPackage());
+        System.out.println("VariablesMapper.getOs: " + varMapper.getOs());
+        System.out.println("VariablesMapper.getArch: " + varMapper.getArch());
     }
 }
