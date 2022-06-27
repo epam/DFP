@@ -10,7 +10,7 @@ on:
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-  NATIVE_UTILS_LOG_LEVEL: 0
+  NATIVE_UTILS_LOG_LEVEL: "0"
 
 jobs:
 
