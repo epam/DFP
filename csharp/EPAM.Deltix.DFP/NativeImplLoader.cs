@@ -26,6 +26,7 @@ namespace EPAM.Deltix.DFP
 				var loader = ResourceLoader
 					.From("$(PACKAGE).$(OS).$(ARCH).*")
 					.To(varMapper.Substitute(unpackPath))
+					.TryRandomFallbackSubDirectory(true)
 					.Load();
 
 				isLoaded = true;
