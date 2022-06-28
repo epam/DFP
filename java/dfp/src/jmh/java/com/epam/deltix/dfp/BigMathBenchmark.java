@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-@Fork(value = 1, warmups = 1)
 @Warmup(time = 3, iterations = 1)
 @Measurement(time = 3, iterations = 3)
 public class BigMathBenchmark {
