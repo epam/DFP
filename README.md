@@ -19,7 +19,7 @@ DFP uses Java long to represent base-10 floating point numbers. DFP is based on 
 
 Add dependency (Gradle):
 ```
-implementation 'com.epam.deltix:dfp:0.12.4'
+implementation 'com.epam.deltix:dfp:0.12.5'
 ```
 Use:
 ```
