@@ -1,12 +1,5 @@
 using EPAM.Deltix.Utilities;
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
-#if NET40
-using System.Diagnostics;
-using System.Linq;
-using System.Text.RegularExpressions;
-#endif
 
 namespace EPAM.Deltix.DFP
 {
@@ -31,9 +24,8 @@ namespace EPAM.Deltix.DFP
 					unpackPath = "$(TEMP)/$(PACKAGE)/$(VERSION)/$(ARCH)";
 
 				var loader = ResourceLoader
-					.From($"EPAM.Deltix.DFP.{varMapper.Os}.{varMapper.Arch}.*")
+					.From("$(PACKAGE).$(OS).$(ARCH).*")
 					.To(varMapper.Substitute(unpackPath))
-					// .LowercasePathOnLinux(false)
 					.TryRandomFallbackSubDirectory(true)
 					.Load();
 
