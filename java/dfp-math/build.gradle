@@ -135,3 +135,7 @@ jar {
     }
     setEntryCompression ZipEntryCompression.STORED
 }
+
+sourcesJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
