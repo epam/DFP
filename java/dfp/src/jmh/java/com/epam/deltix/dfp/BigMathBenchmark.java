@@ -102,21 +102,21 @@ public class BigMathBenchmark {
 
     //region Add
     @Benchmark
-    public static void decimal64UnderlyingAdd(final Blackhole blackhole, final BenchmarkState state) {
+    public static void addDecimal64Underlying(final Blackhole blackhole, final BenchmarkState state) {
         final long[] values = state.decimal64Underlying;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(Decimal64Utils.add(values[i], values[i + 1]));
     }
 
     @Benchmark
-    public static void decimal64Add(final Blackhole blackhole, final BenchmarkState state) {
+    public static void addDecimal64(final Blackhole blackhole, final BenchmarkState state) {
         final Decimal64[] values = state.decimal64;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].add(values[i + 1]));
     }
 
     @Benchmark
-    public static void bigDecimalAdd(final Blackhole blackhole, final BenchmarkState state) {
+    public static void addBigDecimal(final Blackhole blackhole, final BenchmarkState state) {
         final BigDecimal[] values = state.bigDecimal;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].add(values[i + 1], bigDecimalMathContext));
@@ -125,21 +125,21 @@ public class BigMathBenchmark {
 
     //region Mul
     @Benchmark
-    public static void decimal64UnderlyingMul(final Blackhole blackhole, final BenchmarkState state) {
+    public static void mulDecimal64Underlying(final Blackhole blackhole, final BenchmarkState state) {
         final long[] values = state.decimal64Underlying;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(Decimal64Utils.multiply(values[i], values[i + 1]));
     }
 
     @Benchmark
-    public static void decimal64Mul(final Blackhole blackhole, final BenchmarkState state) {
+    public static void mulDecimal64(final Blackhole blackhole, final BenchmarkState state) {
         final Decimal64[] values = state.decimal64;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].multiply(values[i + 1]));
     }
 
     @Benchmark
-    public static void bigDecimalMul(final Blackhole blackhole, final BenchmarkState state) {
+    public static void mulBigDecimal(final Blackhole blackhole, final BenchmarkState state) {
         final BigDecimal[] values = state.bigDecimal;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].multiply(values[i + 1], bigDecimalMathContext));
@@ -148,21 +148,21 @@ public class BigMathBenchmark {
 
     //region Div
     @Benchmark
-    public static void decimal64UnderlyingDiv(final Blackhole blackhole, final BenchmarkState state) {
+    public static void divDecimal64Underlying(final Blackhole blackhole, final BenchmarkState state) {
         final long[] values = state.decimal64Underlying;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(Decimal64Utils.divide(values[i], values[i + 1]));
     }
 
     @Benchmark
-    public static void decimal64Div(final Blackhole blackhole, final BenchmarkState state) {
+    public static void divDecimal64(final Blackhole blackhole, final BenchmarkState state) {
         final Decimal64[] values = state.decimal64;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].divide(values[i + 1]));
     }
 
     @Benchmark
-    public static void bigDecimalDiv(final Blackhole blackhole, final BenchmarkState state) {
+    public static void divBigDecimal(final Blackhole blackhole, final BenchmarkState state) {
         final BigDecimal[] values = state.bigDecimal;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].divide(values[i + 1], bigDecimalMathContext));
@@ -171,21 +171,21 @@ public class BigMathBenchmark {
 
     //region Fma - for portfolio calculation
     @Benchmark
-    public static void decimal64UnderlyingFma(final Blackhole blackhole, final BenchmarkState state) {
+    public static void fmaDecimal64Underlying(final Blackhole blackhole, final BenchmarkState state) {
         final long[] values = state.decimal64Underlying;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(Decimal64Utils.multiplyAndAdd(values[i], values[i + 1], values[i + 2]));
     }
 
     @Benchmark
-    public static void decimal64Fma(final Blackhole blackhole, final BenchmarkState state) {
+    public static void fmaDecimal64(final Blackhole blackhole, final BenchmarkState state) {
         final Decimal64[] values = state.decimal64;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].multiplyAndAdd(values[i + 1], values[i + 2]));
     }
 
     @Benchmark
-    public static void bigDecimalFma(final Blackhole blackhole, final BenchmarkState state) {
+    public static void fmaBigDecimal(final Blackhole blackhole, final BenchmarkState state) {
         final BigDecimal[] values = state.bigDecimal;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].multiply(values[i + 1], bigDecimalMathContextTwice).add(values[i + 2], bigDecimalMathContext));
@@ -194,21 +194,21 @@ public class BigMathBenchmark {
 
     //region Compare
     @Benchmark
-    public static void decimal64UnderlyingCompare(final Blackhole blackhole, final BenchmarkState state) {
+    public static void compareDecimal64Underlying(final Blackhole blackhole, final BenchmarkState state) {
         final long[] values = state.decimal64Underlying;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(Decimal64Utils.compareTo(values[i], values[i + 1]));
     }
 
     @Benchmark
-    public static void decimal64Compare(final Blackhole blackhole, final BenchmarkState state) {
+    public static void compareDecimal64(final Blackhole blackhole, final BenchmarkState state) {
         final Decimal64[] values = state.decimal64;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].compareTo(values[i + 1]));
     }
 
     @Benchmark
-    public static void bigDecimalCompare(final Blackhole blackhole, final BenchmarkState state) {
+    public static void compareBigDecimal(final Blackhole blackhole, final BenchmarkState state) {
         final BigDecimal[] values = state.bigDecimal;
         for (int i = 0, ie = state.dataSize; i < ie; ++i)
             blackhole.consume(values[i].compareTo(values[i + 1]));
