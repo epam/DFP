@@ -10,6 +10,10 @@ if (isReleaseVersion) {
 group = 'com.epam.deltix'
 
 sourceCompatibility = 1.7
+compileTestJava {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+}
 
 repositories {
     mavenCentral()
@@ -22,8 +26,8 @@ java {
 
 sourceSets {
     main.java.srcDirs += [
-        "$projectDir/dfp-math/src/main/java",
-        "$projectDir/build/generated/sources/nativeWrappers",
+        "$rootDir/java/dfp-math/src/main/java",
+        "$rootDir/java/dfp-math/build/generated/sources/nativeWrappers",
         "$rootDir/NativeUtils/java/main/src/main/java",
         "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 
@@ -36,6 +40,7 @@ sourceSets {
 
 dependencies {
     implementation project(":java:dfp")
+    testImplementation project(":java:dfp")
     testImplementation 'junit:junit:4.+'
     testImplementation 'org.apache.commons:commons-math3:3.6.1'
 }
