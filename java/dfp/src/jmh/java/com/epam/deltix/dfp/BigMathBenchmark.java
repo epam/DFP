@@ -81,8 +81,11 @@ public class BigMathBenchmark {
 
                 mantissa[mi++] = signChar != '*' ? signChar : (random.nextInt(2) > 0 ? '+' : '-');
 
-                for (int di = 0; di < digitsNumber; ++di)
-                    mantissa[mi++] = (char) ('0' + random.nextInt(10));
+                for (int di = 0; di < digitsNumber; ++di) {
+                    mantissa[mi++] = di == 0 || di == digitsNumber - 1
+                        ? (char) ('1' + random.nextInt(9))
+                        : (char) ('0' + random.nextInt(10));
+                }
 
                 final String number = String.copyValueOf(mantissa, 0, mi) + "e" + (exponent >= 0 ? "+" : "") + exponent;
 
