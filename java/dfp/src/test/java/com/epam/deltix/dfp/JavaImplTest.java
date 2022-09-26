@@ -3,15 +3,13 @@ package com.epam.deltix.dfp;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.Random;
 
-import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
-import static com.epam.deltix.dfp.Decimal64Utils.longValueChecked;
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
 import static org.junit.Assert.*;
@@ -910,7 +908,7 @@ public class JavaImplTest {
         });
     }
 
-    private void testPartsSplitCase(final long testValue) {
+    private static void testPartsSplitCase(final long testValue) {
         final BigDecimal bd = Decimal64Utils.toBigDecimal(testValue);
 
         final long mantissa = Decimal64Utils.getUnscaledValue(testValue);
@@ -926,5 +924,11 @@ public class JavaImplTest {
         assertTrue("The decimal 0x" + Long.toHexString(testValue) + "L(=" +
                 Decimal64Utils.toScientificString(testValue) + ") reconstruction error.",
             Decimal64Utils.equals(testValue, Decimal64Utils.fromFixedPoint(mantissa, exp)));
+    }
+
+    @Test(expected = NumberFormatException.class)
+    public void testBigDecimalExact() {
+        final BigDecimal bd = Decimal64Utils.toBigDecimal(Decimal64Utils.fromBigDecimalExact(
+            new BigDecimal(new BigInteger("3201921152691614969"))));
     }
 }
