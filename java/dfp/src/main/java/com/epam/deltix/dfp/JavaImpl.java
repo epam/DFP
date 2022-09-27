@@ -217,7 +217,7 @@ class JavaImpl {
         final int unscaledBits = unscaledValue.bitLength();
         if (unscaledBits > 62) {
             if (roundingMode == BID_ROUNDING_EXCEPTION)
-                throw new IllegalArgumentException("The BigDecimal(=" + value + ") can't be converted to Decimal64 without precision loss.");
+                throw new NumberFormatException("The BigDecimal(=" + value + ") can't be converted to Decimal64 without precision loss.");
             final int baseTenShiftSize = (int) Math.ceil((unscaledBits - 62) * log10Tolog2Ratio);
             unscaledValue = unscaledValue.divide(BigInteger.TEN.pow(baseTenShiftSize));
             scale -= baseTenShiftSize;
@@ -228,15 +228,6 @@ class JavaImpl {
             signMask = MASK_SIGN;
             intCompact = -intCompact;
         }
-
-        long tenDivRem = 0;
-        while (UnsignedLong.isGreater(intCompact, 9999999999999999L)) {
-            tenDivRem = intCompact % 10;
-            intCompact /= 10;
-            scale--;
-        }
-        if (tenDivRem >= 5) // Rounding away from zero
-            intCompact++;
 
         return pack(signMask, EXPONENT_BIAS - scale, intCompact, roundingMode);
     }
@@ -1488,7 +1479,7 @@ class JavaImpl {
             } else if (numberOfDigits == 17) {
                 switch (roundingMode) {
                     case BID_ROUNDING_EXCEPTION:
-                        throw new IllegalArgumentException("Can't convert string(='" + s.subSequence(si, ei) + "') to Decimal64 without precision loss.");
+                        throw new NumberFormatException("Can't convert string(='" + s.subSequence(si, ei) + "') to Decimal64 without precision loss.");
 
                     case BID_ROUNDING_TO_NEAREST:
                         midpoint = (c == '5' && (coefficient & 1) == 0);
@@ -1660,7 +1651,7 @@ class JavaImpl {
         // Underflow
         if (exponent + MAX_FORMAT_DIGITS < 0) {
             if (roundingMode == BID_ROUNDING_EXCEPTION)
-                throw new IllegalArgumentException("The exponent(=" + exponent + ") of the value (=" + coefficient + ") with sign(=" + (isSigned ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
+                throw new NumberFormatException("The exponent(=" + exponent + ") of the value (=" + coefficient + ") with sign(=" + (isSigned ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
             if (roundingMode == BID_ROUNDING_DOWN && isSigned)
                 return 0x8000000000000001L;
             if (roundingMode == BID_ROUNDING_UP && !isSigned)
@@ -1966,6 +1957,10 @@ class JavaImpl {
     static final int BID_ROUNDING_TIES_AWAY = 0x00004;
     static final int BID_ROUNDING_EXCEPTION = 0x00005;
 
+    static void throwPackException(final long signMask, final int exponentIn, final long coefficientIn) {
+        throw new NumberFormatException("The unbiasedExponent(=" + (exponentIn - EXPONENT_BIAS) + ") of the value (=" + coefficientIn + ") with sign(=" + (signMask != 0 ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
+    }
+
     public static long pack(final long signMask, final int exponentIn, final long coefficientIn, int roundingMode) {
         final long Q_low_0;
         final long Q_low_1;
@@ -1983,7 +1978,56 @@ class JavaImpl {
         final int amount2;
 
         // TODO: optimize: (coefficient always positive! & use more efficient comparison)
+        long tenDivRem = 0;
+        boolean isAnyNonZeroRem = false;
+        while (UnsignedLong.isGreater(coefficient, 9999999999999999L)) {
+            tenDivRem = coefficient % 10;
+            if (tenDivRem != 0) {
+                if (roundingMode == BID_ROUNDING_EXCEPTION)
+                    throwPackException(signMask, exponentIn, coefficientIn);
+                isAnyNonZeroRem = true;
+            }
+            coefficient /= 10;
+            exponent++;
+        }
+
+        if (isAnyNonZeroRem) {
+            switch (roundingMode) {
+                case BID_ROUNDING_TO_NEAREST:
+                    if (tenDivRem >= 5) // Rounding away from zero
+                        coefficient++;
+                    break;
+
+                case BID_ROUNDING_DOWN:
+                    if (signMask != 0 /*&& isAnyNonZeroRem - already checked*/)
+                        coefficient++;
+                    break;
+
+                case BID_ROUNDING_UP:
+                    if (signMask == 0 /*&& isAnyNonZeroRem - already checked*/)
+                        coefficient++;
+                    break;
+
+                case BID_ROUNDING_TO_ZERO:
+                    break;
+
+                case BID_ROUNDING_TIES_AWAY:
+                    //if (isAnyNonZeroRem)  - already checked
+                    coefficient++;
+                    break;
+
+                case BID_ROUNDING_EXCEPTION:
+                    throwPackException(signMask, exponentIn, coefficientIn);
+
+                default:
+                    throw new IllegalArgumentException("Unsupported roundingMode(=" + roundingMode + ") value.");
+
+            }
+        }
+
         if (UnsignedLong.isGreater(coefficient, 9999999999999999L)) {
+            if (roundingMode == BID_ROUNDING_EXCEPTION)
+                throwPackException(signMask, exponentIn, coefficientIn);
             exponent++;
             coefficient = 1000000000000000L;
         }
@@ -1994,7 +2038,7 @@ class JavaImpl {
                 // Underflow.
                 if (exponent + MAX_FORMAT_DIGITS < 0) {
                     if (roundingMode == BID_ROUNDING_EXCEPTION)
-                        throw new IllegalArgumentException("The exponent(=" + exponentIn + ") of the value (=" + coefficientIn + ") with sign(=" + (signMask != 0 ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
+                        throwPackException(signMask, exponentIn, coefficientIn);
                     if (roundingMode == BID_ROUNDING_DOWN && signMask < 0)
                         return 0x8000000000000001L;
                     if (roundingMode == BID_ROUNDING_UP && signMask >= 0)
@@ -2111,7 +2155,7 @@ class JavaImpl {
                 r = signMask | MASK_INFINITY_AND_NAN;
                 switch (roundingMode) {
                     case BID_ROUNDING_EXCEPTION:
-                        throw new IllegalArgumentException("The exponent(=" + exponentIn + ") of the value (=" + coefficientIn + ") with sign(=" + (signMask != 0 ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
+                        throwPackException(signMask, exponentIn, coefficientIn);
 
                     case BID_ROUNDING_DOWN:
                         if (signMask >= 0)
