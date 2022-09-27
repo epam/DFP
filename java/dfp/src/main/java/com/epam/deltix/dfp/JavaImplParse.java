@@ -35,11 +35,11 @@ class JavaImplParse {
     }
 
     public static void __set_status_flags(FloatingPointStatusFlag fpsc, int status) {
-        fpsc.value |= status;
+        fpsc.status |= status;
     }
 
     public static boolean is_inexact(FloatingPointStatusFlag fpsc) {
-        return (fpsc.value & BID_INEXACT_EXCEPTION) != 0;
+        return (fpsc.status & BID_INEXACT_EXCEPTION) != 0;
     }
 
     private static boolean IsStrEqIgnoreCase(final CharSequence s, int ps, final int ei, final String str) {
@@ -54,12 +54,12 @@ class JavaImplParse {
         return true;
     }
 
-    public static class FloatingPointStatusFlag {
-        public int value = BID_EXACT_STATUS;
+    static class FloatingPointStatusFlag {
+        protected int status = BID_EXACT_STATUS;
     }
 
     //public static long parse(final CharSequence s, final int si, final int ei, final int roundingMode)
-    public static long bid64_from_string(final CharSequence s, int si, int ei, FloatingPointStatusFlag pfpsf, int rnd_mode /*= BID_ROUNDING_TO_NEAREST*/) {
+    public static long bid64_from_string(final CharSequence s, int si, int ei, final FloatingPointStatusFlag pfpsf, int rnd_mode /*= BID_ROUNDING_TO_NEAREST*/) {
 
         long coefficient_x = 0, rounded = 0;
         int expon_x = 0, sgn_expon, ndigits, add_expon = 0, midpoint = 0, rounded_up = 0;
@@ -85,7 +85,7 @@ class JavaImplParse {
 
 
         if (c == '\0') {
-            pfpsf.value = BID_INVALID_FORMAT;
+            pfpsf.status = BID_INVALID_FORMAT;
             return 0x7c00000000000000L;                    // return qNaN
         }
 
@@ -97,7 +97,7 @@ class JavaImplParse {
             ps++;
             c = ps < ei ? s.charAt(ps) : '\0';
             if (c == '\0') {
-                pfpsf.value = BID_INVALID_FORMAT;
+                pfpsf.status = BID_INVALID_FORMAT;
                 return 0x7c00000000000000L;                    // return qNaN
             }
         }
@@ -106,22 +106,22 @@ class JavaImplParse {
         if (c != '.' && (c < '0' || c > '9')) {
             if (IsStrEqIgnoreCase(s, ps, ei, "inf") || IsStrEqIgnoreCase(s, ps, ei, "infinity")) // Infinity?
             {
-                pfpsf.value = BID_EXACT_STATUS;
+                pfpsf.status = BID_EXACT_STATUS;
                 return 0x7800000000000000L | sign_x;
             }
             // return sNaN
             if (IsStrEqIgnoreCase(s, ps, ei, "snan")) // case insensitive check for snan
             {
-                pfpsf.value = BID_EXACT_STATUS;
+                pfpsf.status = BID_EXACT_STATUS;
                 return 0x7e00000000000000L | sign_x;
             }
             if (IsStrEqIgnoreCase(s, ps, ei, "nan")) // return qNaN
             {
-                pfpsf.value = BID_EXACT_STATUS;
+                pfpsf.status = BID_EXACT_STATUS;
                 return 0x7c00000000000000L | sign_x;
             } else // if c isn't a decimal point or a decimal digit, return NaN
             {
-                pfpsf.value = BID_INVALID_FORMAT;
+                pfpsf.status = BID_INVALID_FORMAT;
                 return 0x7c00000000000000L;                    // return qNaN
             }
         }
@@ -156,17 +156,17 @@ class JavaImplParse {
                         // we have a zero
                         char c1 = ps + 1 < ei ? s.charAt(ps + 1) : '\0';
                         if (c1 == '\0') {
-                            pfpsf.value = BID_EXACT_STATUS;
+                            pfpsf.status = BID_EXACT_STATUS;
                             return ZERO | sign_x; // ((BID_UINT64)(398 - right_radix_leading_zeros) << 53) | sign_x;
                         }
                         ps++;
                         c = ps < ei ? s.charAt(ps) : '\0';
                     } else {
-                        pfpsf.value = BID_INVALID_FORMAT;
+                        pfpsf.status = BID_INVALID_FORMAT;
                         return NaN; // 0x7c00000000000000L | sign_x; // if 2 radix points, return NaN
                     }
                 } else if (c == '\0') {
-                    pfpsf.value = BID_EXACT_STATUS;
+                    pfpsf.status = BID_EXACT_STATUS;
                     return ZERO | sign_x; // ((BID_UINT64)(398 - right_radix_leading_zeros) << 53) | sign_x; //pres->w[1] = 0x3040000000000000L | sign_x;
                 }
             }
@@ -178,7 +178,7 @@ class JavaImplParse {
         while ((c >= '0' && c <= '9') || c == '.') {
             if (c == '.') {
                 if (rdx_pt_enc != 0) {
-                    pfpsf.value = BID_INVALID_FORMAT;
+                    pfpsf.status = BID_INVALID_FORMAT;
                     return NaN; // 0x7c00000000000000L | sign_x; // return NaN
                 }
                 rdx_pt_enc = 1;
@@ -250,7 +250,7 @@ class JavaImplParse {
         add_expon -= (dec_expon_scale + right_radix_leading_zeros);
 
         if (c == '\0') {
-            pfpsf.value = BID_EXACT_STATUS;
+            pfpsf.status = BID_EXACT_STATUS;
             if (rounded != 0)
                 __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
             return /*fast_get_BID64_check_OF*/get_BID64(sign_x,
@@ -259,7 +259,7 @@ class JavaImplParse {
         }
 
         if (c != 'E' && c != 'e') {
-            pfpsf.value = BID_INVALID_FORMAT;
+            pfpsf.status = BID_INVALID_FORMAT;
             return NaN; // 0x7c00000000000000L | sign_x; // return NaN
         }
         ps++;
@@ -270,7 +270,7 @@ class JavaImplParse {
             c = ps < ei ? s.charAt(ps) : '\0';
         }
         if (c == '\0' || c < '0' || c > '9') {
-            pfpsf.value = BID_INVALID_FORMAT;
+            pfpsf.status = BID_INVALID_FORMAT;
             return NaN; // 0x7c00000000000000L | sign_x; // return NaN
         }
 
@@ -285,12 +285,12 @@ class JavaImplParse {
         }
 
         if (c != '\0') {
-            pfpsf.value = BID_INVALID_FORMAT;
+            pfpsf.status = BID_INVALID_FORMAT;
             return NaN; // 0x7c00000000000000L | sign_x; // return NaN
         }
 
         if (rounded != 0) {
-            pfpsf.value = BID_EXACT_STATUS;
+            pfpsf.status = BID_EXACT_STATUS;
             __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
         }
 
@@ -303,10 +303,10 @@ class JavaImplParse {
             if (rounded_up != 0)
                 coefficient_x--;
             rnd_mode = 0;
-            pfpsf.value = BID_EXACT_STATUS;
+            pfpsf.status = BID_EXACT_STATUS;
             return get_BID64_UF(sign_x, expon_x, coefficient_x, rounded, rnd_mode, pfpsf);
         }
-        pfpsf.value = BID_EXACT_STATUS;
+        pfpsf.status = BID_EXACT_STATUS;
         return get_BID64(sign_x, expon_x, coefficient_x, rnd_mode, pfpsf);
     }
 
