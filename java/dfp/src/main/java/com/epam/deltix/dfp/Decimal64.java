@@ -961,11 +961,11 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      */
     public static Decimal64 tryParse(final CharSequence text, final int startIndex, final int endIndex,
                                      final Decimal64 defaultValue) {
-        try {
-            return Decimal64.fromUnderlying(Decimal64Utils.parse(text, startIndex, endIndex));
-        } catch (final NumberFormatException ignore) {
+        JavaImplParse.FloatingPointStatusFlag fpsf = Decimal64Utils.tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             return defaultValue;
-        }
+        return Decimal64.fromUnderlying(ret);
     }
 
     /**

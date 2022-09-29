@@ -1217,7 +1217,7 @@ public class Decimal64Utils {
         return ret;
     }
 
-    private static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst =
+    static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst =
         new ThreadLocal<JavaImplParse.FloatingPointStatusFlag>() {
             @Override
             protected JavaImplParse.FloatingPointStatusFlag initialValue() {
