@@ -1,17 +1,16 @@
 package com.epam.deltix.dfp;
 
 import org.apache.commons.math3.random.MersenneTwister;
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.Random;
 
-import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
-import static com.epam.deltix.dfp.Decimal64Utils.longValueChecked;
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
 import static org.junit.Assert.*;
@@ -777,7 +776,7 @@ public class JavaImplTest {
     }
 
     private static boolean decimalParseOk(JavaImplParse.FloatingPointStatusFlag fpsf) {
-        return (fpsf.value & JavaImplParse.BID_INVALID_FORMAT) == 0;
+        return (fpsf.status & JavaImplParse.BID_INVALID_FORMAT) == 0;
     }
 
     private static class DoubleHolder {
@@ -804,7 +803,7 @@ public class JavaImplTest {
             DoubleHolder doubleHolder = new DoubleHolder();
             final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
             assertEquals(Decimal64.ZERO, value);
-            assertEquals(fpsf.value, JavaImplParse.BID_EXACT_STATUS);
+            assertEquals(fpsf.status, JavaImplParse.BID_EXACT_STATUS);
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
         {
@@ -814,7 +813,7 @@ public class JavaImplTest {
             DoubleHolder doubleHolder = new DoubleHolder();
             final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
             assertEquals(Decimal64.NaN, value);
-            assertEquals(fpsf.value, JavaImplParse.BID_INVALID_FORMAT);
+            assertEquals(fpsf.status, JavaImplParse.BID_INVALID_FORMAT);
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
         {
@@ -824,7 +823,7 @@ public class JavaImplTest {
             DoubleHolder doubleHolder = new DoubleHolder();
             final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
             assertEquals(Decimal64.fromInt(235), value);
-            assertEquals(fpsf.value, JavaImplParse.BID_EXACT_STATUS);
+            assertEquals(fpsf.status, JavaImplParse.BID_EXACT_STATUS);
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
         {
@@ -834,7 +833,7 @@ public class JavaImplTest {
             DoubleHolder doubleHolder = new DoubleHolder();
             final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
             assertEquals(Decimal64.fromFixedPoint(235, 7), value);
-            assertEquals(fpsf.value, JavaImplParse.BID_EXACT_STATUS);
+            assertEquals(fpsf.status, JavaImplParse.BID_EXACT_STATUS);
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
         {
@@ -844,7 +843,7 @@ public class JavaImplTest {
             DoubleHolder doubleHolder = new DoubleHolder();
             final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
             assertEquals(Decimal64.fromFixedPoint(1234512345123451L, -9), value);
-            assertEquals(fpsf.value, JavaImplParse.BID_INEXACT_EXCEPTION);
+            assertEquals(fpsf.status, JavaImplParse.BID_INEXACT_EXCEPTION);
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
         {
@@ -854,7 +853,7 @@ public class JavaImplTest {
             DoubleHolder doubleHolder = new DoubleHolder();
             final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
             assertEquals(Decimal64.POSITIVE_INFINITY, value);
-            assertEquals(fpsf.value, JavaImplParse.BID_INEXACT_EXCEPTION | JavaImplParse.BID_OVERFLOW_EXCEPTION);
+            assertEquals(fpsf.status, JavaImplParse.BID_INEXACT_EXCEPTION | JavaImplParse.BID_OVERFLOW_EXCEPTION);
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
         {
@@ -864,7 +863,7 @@ public class JavaImplTest {
             DoubleHolder doubleHolder = new DoubleHolder();
             final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
             assertEquals(Decimal64.NEGATIVE_INFINITY, value);
-            assertEquals(fpsf.value, JavaImplParse.BID_INEXACT_EXCEPTION | JavaImplParse.BID_OVERFLOW_EXCEPTION);
+            assertEquals(fpsf.status, JavaImplParse.BID_INEXACT_EXCEPTION | JavaImplParse.BID_OVERFLOW_EXCEPTION);
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
         {
@@ -874,7 +873,7 @@ public class JavaImplTest {
             DoubleHolder doubleHolder = new DoubleHolder();
             final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
             assertEquals(Decimal64.ZERO, value);
-            assertEquals(fpsf.value, JavaImplParse.BID_INEXACT_EXCEPTION | JavaImplParse.BID_UNDERFLOW_EXCEPTION);
+            assertEquals(fpsf.status, JavaImplParse.BID_INEXACT_EXCEPTION | JavaImplParse.BID_UNDERFLOW_EXCEPTION);
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
         {
@@ -884,7 +883,7 @@ public class JavaImplTest {
             DoubleHolder doubleHolder = new DoubleHolder();
             final boolean doubleParseOk = doubleTryParse(testStr, doubleHolder);
             assertEquals(Decimal64.NaN, value);
-            assertEquals(fpsf.value, JavaImplParse.BID_INVALID_FORMAT);
+            assertEquals(fpsf.status, JavaImplParse.BID_INVALID_FORMAT);
             assertEquals(doubleParseOk, decimalParseOk(fpsf));
         }
     }
@@ -910,7 +909,7 @@ public class JavaImplTest {
         });
     }
 
-    private void testPartsSplitCase(final long testValue) {
+    private static void testPartsSplitCase(final long testValue) {
         final BigDecimal bd = Decimal64Utils.toBigDecimal(testValue);
 
         final long mantissa = Decimal64Utils.getUnscaledValue(testValue);
@@ -927,4 +926,22 @@ public class JavaImplTest {
                 Decimal64Utils.toScientificString(testValue) + ") reconstruction error.",
             Decimal64Utils.equals(testValue, Decimal64Utils.fromFixedPoint(mantissa, exp)));
     }
+
+    @Test(expected = NumberFormatException.class)
+    public void testBigDecimalExact() {
+        final BigDecimal bd = Decimal64Utils.toBigDecimal(Decimal64Utils.fromBigDecimalExact(
+            new BigDecimal(new BigInteger("3201921152691614969"))));
+    }
+
+    @Test
+    public void testParse() {
+        final String testStr = "0.123456789123456789";
+        final Decimal64Status decimal64Status = dfpTlsStatus.get();
+        Decimal64Utils.tryParse(testStr, 0 ,testStr.length(), decimal64Status);
+        Assert.assertFalse(decimal64Status.isExact());
+        Assert.assertTrue(decimal64Status.isInexact());
+    }
+
+    static ThreadLocal<Decimal64Status> dfpTlsStatus =
+        ThreadLocal.withInitial(Decimal64Status::new);
 }

@@ -859,6 +859,31 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     }
 
     /**
+     * Try parse a dfp floating-point value from the given textual representation.
+     * <p>
+     * Besides regular floating-point values (possibly in scientific notation) the following special cases are accepted:
+     * <ul>
+     * <li>{@code +Inf}, {@code Inf}, {@code +Infinity}, {@code Infinity} in any character case result in
+     * {@code Decimal64Utils.POSITIVE_INFINITY}</li>
+     * <li>{@code -Inf}, {@code -Infinity} in any character case result in
+     * {@code Decimal64Utils.NEGATIVE_INFINITY}</li>
+     * <li>{@code +NaN}, {@code -NaN}, {@code NaN} in any character case result in
+     * {@code Decimal64Utils.NaN}</li>
+     * </ul>
+     *
+     * @param text       Textual representation of dfp floating-point value.
+     * @param startIndex Index of character to start parsing at.
+     * @param endIndex   Index of character to stop parsing at, non-inclusive.
+     * @param outStatus  The parsing output status and value.
+     * @return Return {@code true} if value was parsed exactly without rounding.
+     * @throws NumberFormatException if {@code text} does not contain valid dfp value.
+     */
+    public static boolean tryParse(final CharSequence text, final int startIndex, final int endIndex,
+                                   final Decimal64Status outStatus) {
+        return Decimal64Utils.tryParse(text, startIndex, endIndex, outStatus);
+    }
+
+    /**
      * Parses a dfp floating-point value from the given textual representation.
      * <p>
      * Besides regular floating-point values (possibly in scientific notation) the following special cases are accepted:
@@ -936,11 +961,11 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      */
     public static Decimal64 tryParse(final CharSequence text, final int startIndex, final int endIndex,
                                      final Decimal64 defaultValue) {
-        try {
-            return Decimal64.fromUnderlying(Decimal64Utils.parse(text, startIndex, endIndex));
-        } catch (final NumberFormatException ignore) {
+        JavaImplParse.FloatingPointStatusFlag fpsf = Decimal64Utils.tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             return defaultValue;
-        }
+        return Decimal64.fromUnderlying(ret);
     }
 
     /**

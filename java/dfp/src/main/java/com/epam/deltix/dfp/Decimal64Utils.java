@@ -1161,6 +1161,33 @@ public class Decimal64Utils {
     }
 
     /**
+     * Try parse a dfp floating-point value from the given textual representation.
+     * <p>
+     * Besides regular floating-point values (possibly in scientific notation) the following special cases are accepted:
+     * <ul>
+     * <li>{@code +Inf}, {@code Inf}, {@code +Infinity}, {@code Infinity} in any character case result in
+     * {@code Decimal64Utils.POSITIVE_INFINITY}</li>
+     * <li>{@code -Inf}, {@code -Infinity} in any character case result in
+     * {@code Decimal64Utils.NEGATIVE_INFINITY}</li>
+     * <li>{@code +NaN}, {@code -NaN}, {@code NaN} in any character case result in
+     * {@code Decimal64Utils.NaN}</li>
+     * </ul>
+     *
+     * @param text       Textual representation of dfp floating-point value.
+     * @param startIndex Index of character to start parsing at.
+     * @param endIndex   Index of character to stop parsing at, non-inclusive.
+     * @param outStatus  The parsing output status and value.
+     * @return Return {@code true} if value was parsed exactly without rounding.
+     * @throws NumberFormatException if {@code text} does not contain valid dfp value.
+     */
+    @Decimal
+    public static boolean tryParse(final CharSequence text, final int startIndex, final int endIndex,
+                                   final Decimal64Status outStatus) {
+        outStatus.underlying = JavaImplParse.bid64_from_string(text, startIndex, endIndex, outStatus, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        return outStatus.isExact();
+    }
+
+    /**
      * Parses a dfp floating-point value from the given textual representation.
      * <p>
      * Besides regular floating-point values (possibly in scientific notation) the following special cases are accepted:
@@ -1183,14 +1210,14 @@ public class Decimal64Utils {
     public static long parse(final CharSequence text, final int startIndex, final int endIndex) {
         JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
         final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
-        if ((fpsf.value & JavaImplParse.BID_INVALID_FORMAT) != 0)
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             throw new NumberFormatException("Input string is not in a correct format.");
 //        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
 //        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
         return ret;
     }
 
-    private static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst =
+    static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst =
         new ThreadLocal<JavaImplParse.FloatingPointStatusFlag>() {
             @Override
             protected JavaImplParse.FloatingPointStatusFlag initialValue() {
@@ -1257,7 +1284,7 @@ public class Decimal64Utils {
     public static long tryParse(final CharSequence text, final int startIndex, final int endIndex, @Decimal final long defaultValue) {
         JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
         final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
-        if ((fpsf.value & JavaImplParse.BID_INVALID_FORMAT) != 0)
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             return defaultValue;
 //        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
 //        	throw new NumberFormatException("Can't convert input string to value without precision loss.");

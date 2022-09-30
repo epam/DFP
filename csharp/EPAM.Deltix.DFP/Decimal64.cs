@@ -874,6 +874,27 @@ namespace EPAM.Deltix.DFP
 			return FromUnderlying(ret);
 		}
 
+		public enum StatusValue
+		{
+			Exact = (int)DotNetReImpl.BID_EXACT_STATUS,
+
+			Overflow = (int)DotNetReImpl.BID_OVERFLOW_EXCEPTION,
+
+			Underflow = (int)DotNetReImpl.BID_UNDERFLOW_EXCEPTION,
+
+			Inexact = (int)DotNetReImpl.BID_INEXACT_EXCEPTION,
+
+			InvalidFormat = (int)DotNetReImpl.BID_INVALID_FORMAT
+		}
+
+		public static Boolean TryParse(String text, out Decimal64 result, out StatusValue status)
+		{
+			uint fpsf;
+			result = FromUnderlying(DotNetReImpl.bid64_from_string(text, out fpsf));
+			status = (StatusValue)fpsf;
+			return status == StatusValue.Exact;
+		}
+
 		public static Boolean TryParse(String text, out Decimal64 result)
 		{
 			uint fpsf;
