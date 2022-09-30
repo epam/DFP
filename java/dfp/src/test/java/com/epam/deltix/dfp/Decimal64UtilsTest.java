@@ -5,6 +5,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.Random;
 
 import static com.epam.deltix.dfp.TestUtils.*;
@@ -650,5 +654,33 @@ public class Decimal64UtilsTest {
             "1000", "999.95",
             "-1000", "-999.95"
         );
+    }
+
+    @Test
+    public void checkValueTypesAgentSupport() { // Check for missed *Checked functions
+        final Class<Decimal64Utils> testClass = Decimal64Utils.class;
+        final String vtaSuffix = "Checked";
+
+        for (final Method method : testClass.getMethods()) {
+            if (!method.getDeclaringClass().equals(testClass))
+                continue;
+
+            if ((method.getModifiers() & Modifier.STATIC) != Modifier.STATIC)
+                throw new RuntimeException("The method " + method + " of the utility class is not a static.");
+
+            final String methodName = method.getName();
+            final String complementaryMethodName =
+                methodName.length() > vtaSuffix.length() && methodName.endsWith(vtaSuffix)
+                    ? methodName.substring(0, methodName.length() - vtaSuffix.length())
+                    : methodName + vtaSuffix;
+
+            final Class<?>[] methodParameterTypes = Arrays.stream(method.getParameters()).map(Parameter::getType).toArray(n -> new Class<?>[n]);
+
+            try {
+                final Method complementaryMethod = testClass.getMethod(complementaryMethodName, methodParameterTypes);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException("Can't find complementary for method " + method + ".");
+            }
+        }
     }
 }
