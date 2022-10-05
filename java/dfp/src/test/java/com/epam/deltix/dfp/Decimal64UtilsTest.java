@@ -658,26 +658,33 @@ public class Decimal64UtilsTest {
 
     @Test
     public void checkValueTypesAgentSupport() { // Check for missed *Checked functions
-        final Class<Decimal64Utils> testClass = Decimal64Utils.class;
+        final Class<Decimal64> objectClass = Decimal64.class;
+        final Class<Decimal64Utils> utilityClass = Decimal64Utils.class;
         final String vtaSuffix = "Checked";
 
-        for (final Method method : testClass.getMethods()) {
-            if (!method.getDeclaringClass().equals(testClass))
+        for (final Method method : objectClass.getMethods()) {
+            if (!method.getDeclaringClass().equals(objectClass))
                 continue;
 
-            if ((method.getModifiers() & Modifier.STATIC) != Modifier.STATIC)
-                throw new RuntimeException("The method " + method + " of the utility class is not a static.");
+            if ((method.getModifiers() & Modifier.STATIC) == Modifier.STATIC) // Hm... The ValueTypeAgent do not map static functions yet
+                continue;
 
-            final String methodName = method.getName();
-            final String complementaryMethodName =
-                methodName.length() > vtaSuffix.length() && methodName.endsWith(vtaSuffix)
-                    ? methodName.substring(0, methodName.length() - vtaSuffix.length())
-                    : methodName + vtaSuffix;
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            if ((method.getModifiers() & Modifier.STATIC) != Modifier.STATIC) {
+                parameterTypes = Arrays.copyOf(parameterTypes, parameterTypes.length + 1);
+                System.arraycopy(parameterTypes, 0, parameterTypes, 1, parameterTypes.length - 1);
+                parameterTypes[0] = objectClass;
+            }
 
-            final Class<?>[] methodParameterTypes = Arrays.stream(method.getParameters()).map(Parameter::getType).toArray(n -> new Class<?>[n]);
+            for (int i=0; i<parameterTypes.length; ++i) {
+                if (parameterTypes[i].equals(objectClass))
+                    parameterTypes[i] = long.class;
+            }
+
+            final String utilityMethodName = method.getName() + vtaSuffix;
 
             try {
-                final Method complementaryMethod = testClass.getMethod(complementaryMethodName, methodParameterTypes);
+                final Method utilityMethod = utilityClass.getMethod(utilityMethodName, parameterTypes);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException("Can't find complementary for method " + method + ".");
             }
