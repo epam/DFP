@@ -462,14 +462,22 @@ public class JavaImplTest {
 
     @Test
     public void testRoundToReciprocal() {
-        testRoundToReciprocalCase(Decimal64.fromUnderlying(-5746593124524751973L), 1, RoundingMode.UP);
-        testRoundToReciprocalCase(Decimal64.fromUnderlying(-5746593124524751973L), 15292403, RoundingMode.UP);
-        testRoundToReciprocalCase(Decimal64.fromUnderlying(3458764513820540971L), 63907328, RoundingMode.UP);
+        testRoundToReciprocalCase(/*-0.000000000079*/ Decimal64.fromUnderlying(-5746593124524752817L), 1850110060, RoundingMode.DOWN);
+
+        testRoundToReciprocalCase(/*-0.0001*/ Decimal64.fromUnderlying(-5674535530486824959L), 579312130, RoundingMode.DOWN);
+
+        testRoundToReciprocalCase(/*-0.000000000923*/ Decimal64.fromUnderlying(-5746593124524751973L), 1, RoundingMode.UP);
+        testRoundToReciprocalCase(/*-0.000000000923*/ Decimal64.fromUnderlying(-5746593124524751973L), 15292403, RoundingMode.UP);
+        testRoundToReciprocalCase(/*0.00000000000043*/ Decimal64.fromUnderlying(3458764513820540971L), 63907328, RoundingMode.UP);
+
+        testRoundToReciprocalCase(Decimal64.parse("0.9999999999999999"), Integer.MAX_VALUE, RoundingMode.DOWN);
+
 
         final Random random = new SecureRandom();
 
         final char[] buffer = new char[256];
         final char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        final RoundingMode[] roundingModes = {RoundingMode.UP, RoundingMode.DOWN};
         for (int i = 0; i < 1000_000; ++i) {
             int bi = 0;
             if (random.nextInt(2) > 0)
@@ -486,26 +494,19 @@ public class JavaImplTest {
             buffer[bi++] = digits[random.nextInt(digits.length)];
             buffer[bi++] = '\0';
 
-            testRoundToReciprocalCase(Decimal64.parse(new String(buffer, 0, bi)), Math.abs(random.nextInt()), RoundingMode.UP);
+            final RoundingMode roundingMode = roundingModes[random.nextInt(roundingModes.length)];
+
+            testRoundToReciprocalCase(Decimal64.parse(new String(buffer, 0, bi)), Math.abs(random.nextInt()), roundingMode);
         }
+    }
 
-//        testRoundToReciprocalCase(Decimal64.parse("0. 9999 9999 9999 9999 e+5"), 1, RoundingMode.UP);
-//        testRoundToReciprocalCase(Decimal64.parse("0.9999999999999999e+5"), Integer.MAX_VALUE, RoundingMode.UP);
-//        testRoundToReciprocalCase(Decimal64.parse("0.9999999999999999e+5"), 1067, RoundingMode.UP);
-
-//        final Decimal64 mul = Decimal64.ONE.divide(Decimal64.fromLong(1060 /*2L * Integer.MAX_VALUE*/));
-//        final Decimal64 testValue = Decimal64.parse("0.5"); /*Decimal64.ONE.subtract(mul);*/ /*Decimal64.parse();*/
-//        final Decimal64 refRv = testValue.roundToNearestTiesAwayFromZero(mul); // multiply(ceiling(divide(value, multiple)), multiple);
-//
-////        final Decimal64 smallValue = Decimal64.parse("99e-25");
-////        final Decimal64 refSr = smallValue.roundTowardsPositiveInfinity(
-////            Decimal64.ONE.divide(Decimal64.fromInt(Integer.MAX_VALUE)));
-////        final Decimal64 sr = smallValue.roundToReciprocal(Integer.MAX_VALUE, RoundingMode.UP);
-//
-//        Decimal64 rv;
-//        rv = testValue.roundToReciprocal(1, RoundingMode.UP);
-//        rv = testValue.roundToReciprocal(Integer.MAX_VALUE, RoundingMode.UP); // divide(ceiling(multiply(value, reciprocal)), reciprocal);
-//        rv = testValue.roundToReciprocal(1067 /* mean quantile to 1/1067 */, RoundingMode.UP);
+    private static Decimal64 roundTowardsZero(final Decimal64 value, final Decimal64 multiple) {
+        @Decimal  final long mul = Decimal64.toUnderlying(multiple);
+        return Decimal64.fromUnderlying(
+            Decimal64Utils.multiply(
+                Decimal64Utils.roundTowardsZero(
+                    Decimal64Utils.divide(
+                        Decimal64.toUnderlying(value), mul)), mul));
     }
 
     private static void testRoundToReciprocalCase(Decimal64 value, final int n, final RoundingMode roundingMode) {
@@ -515,6 +516,10 @@ public class JavaImplTest {
             case UP:
                 oldRv = value.roundToNearestTiesAwayFromZero(mul);
                 break;
+            case DOWN:
+                oldRv = roundTowardsZero(value, mul);
+                break;
+
             default:
                 throw new RuntimeException("Unsupported roundingMode(=" + roundingMode + ") value.");
         }
