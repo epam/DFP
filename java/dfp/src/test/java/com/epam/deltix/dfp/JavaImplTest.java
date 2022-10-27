@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.security.SecureRandom;
 import java.util.Random;
 
 import static com.epam.deltix.dfp.JavaImpl.*;
@@ -457,6 +458,84 @@ public class JavaImplTest {
         final long zeroP = Decimal64Utils.multiply(zeroU, f);
 
         assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.round(zeroP, 0, RoundingMode.CEILING));
+    }
+
+    @Test
+    public void testRoundToReciprocal() {
+        testRoundToReciprocalCase(Decimal64.fromUnderlying(-5746593124524751973L), 1, RoundingMode.UP);
+        testRoundToReciprocalCase(Decimal64.fromUnderlying(-5746593124524751973L), 15292403, RoundingMode.UP);
+        testRoundToReciprocalCase(Decimal64.fromUnderlying(3458764513820540971L), 63907328, RoundingMode.UP);
+
+        final Random random = new SecureRandom();
+
+        final char[] buffer = new char[256];
+        final char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        for (int i = 0; i < 1000_000; ++i) {
+            int bi = 0;
+            if (random.nextInt(2) > 0)
+                buffer[bi++] = '-';
+
+            final int mantissaLen = random.nextInt(Decimal64Utils.MAX_SIGNIFICAND_DIGITS) + 1;
+            for (int mi = 0; mi < mantissaLen; ++mi)
+                buffer[bi++] = digits[random.nextInt(digits.length)];
+
+            buffer[bi++] = 'e';
+            buffer[bi++] = '-';
+
+            buffer[bi++] = digits[random.nextInt(2)];
+            buffer[bi++] = digits[random.nextInt(digits.length)];
+            buffer[bi++] = '\0';
+
+            testRoundToReciprocalCase(Decimal64.parse(new String(buffer, 0, bi)), Math.abs(random.nextInt()), RoundingMode.UP);
+        }
+
+//        testRoundToReciprocalCase(Decimal64.parse("0. 9999 9999 9999 9999 e+5"), 1, RoundingMode.UP);
+//        testRoundToReciprocalCase(Decimal64.parse("0.9999999999999999e+5"), Integer.MAX_VALUE, RoundingMode.UP);
+//        testRoundToReciprocalCase(Decimal64.parse("0.9999999999999999e+5"), 1067, RoundingMode.UP);
+
+//        final Decimal64 mul = Decimal64.ONE.divide(Decimal64.fromLong(1060 /*2L * Integer.MAX_VALUE*/));
+//        final Decimal64 testValue = Decimal64.parse("0.5"); /*Decimal64.ONE.subtract(mul);*/ /*Decimal64.parse();*/
+//        final Decimal64 refRv = testValue.roundToNearestTiesAwayFromZero(mul); // multiply(ceiling(divide(value, multiple)), multiple);
+//
+////        final Decimal64 smallValue = Decimal64.parse("99e-25");
+////        final Decimal64 refSr = smallValue.roundTowardsPositiveInfinity(
+////            Decimal64.ONE.divide(Decimal64.fromInt(Integer.MAX_VALUE)));
+////        final Decimal64 sr = smallValue.roundToReciprocal(Integer.MAX_VALUE, RoundingMode.UP);
+//
+//        Decimal64 rv;
+//        rv = testValue.roundToReciprocal(1, RoundingMode.UP);
+//        rv = testValue.roundToReciprocal(Integer.MAX_VALUE, RoundingMode.UP); // divide(ceiling(multiply(value, reciprocal)), reciprocal);
+//        rv = testValue.roundToReciprocal(1067 /* mean quantile to 1/1067 */, RoundingMode.UP);
+    }
+
+    private static void testRoundToReciprocalCase(Decimal64 value, final int n, final RoundingMode roundingMode) {
+        final Decimal64 mul = Decimal64.ONE.divide(Decimal64.fromInt(n));
+        final Decimal64 oldRv;
+        switch (roundingMode) {
+            case UP:
+                oldRv = value.roundToNearestTiesAwayFromZero(mul);
+                break;
+            default:
+                throw new RuntimeException("Unsupported roundingMode(=" + roundingMode + ") value.");
+        }
+
+        final Decimal64 newRv;
+        try {
+            newRv = value.roundToReciprocal(n, roundingMode);
+        } catch (Throwable e) {
+            throw new RuntimeException("The testRoundToReciprocalCase(" + value + " = " + Decimal64.toUnderlying(value) +
+                "L, " + n + ", RoundingMode." + roundingMode + ") error: " + e.getMessage(), e);
+        }
+
+        final BigDecimal ref = value.toBigDecimal().multiply(new BigDecimal(n)).setScale(0, roundingMode)
+            .divide(new BigDecimal(n), new MathContext(128, RoundingMode.HALF_UP));
+
+        final BigDecimal oldErr = oldRv.toBigDecimal().subtract(ref).abs();
+        final BigDecimal newErr = newRv.toBigDecimal().subtract(ref).abs();
+
+        if (oldErr.compareTo(newErr) < 0)
+            throw new RuntimeException("The testRoundToReciprocalCase(" + value + " = " + Decimal64.toUnderlying(value) +
+                "L, " + n + ", RoundingMode." + roundingMode + ") error: oldErr(=" + oldErr + ") < newErr(=" + newErr + ").");
     }
 
     @Test
@@ -937,7 +1016,7 @@ public class JavaImplTest {
     public void testParse() {
         final String testStr = "0.123456789123456789";
         final Decimal64Status decimal64Status = dfpTlsStatus.get();
-        Decimal64Utils.tryParse(testStr, 0 ,testStr.length(), decimal64Status);
+        Decimal64Utils.tryParse(testStr, 0, testStr.length(), decimal64Status);
         Assert.assertFalse(decimal64Status.isExact());
         Assert.assertTrue(decimal64Status.isInexact());
     }

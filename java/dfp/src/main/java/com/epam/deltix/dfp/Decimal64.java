@@ -678,6 +678,10 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
 
     /// region Rounding
 
+    public Decimal64 roundToReciprocal(final int r, final RoundingMode roundType) {
+        return new Decimal64(Decimal64Utils.roundToReciprocal(value, r, roundType));
+    }
+
     public Decimal64 round(final int n, final RoundingMode roundType) {
         return new Decimal64(Decimal64Utils.round(value, n, roundType));
     }

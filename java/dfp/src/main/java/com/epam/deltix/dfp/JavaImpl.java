@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Arrays;
 
+import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
+
 class JavaImpl {
     private JavaImpl() {
     }
@@ -2335,6 +2337,292 @@ class JavaImpl {
             default:
                 throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
         }
+        partsExponent += addExponent;
+        if (partsCoefficient == 0)
+            return JavaImpl.ZERO;
+
+        return pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST); // JavaImpl.fromParts(parts)
+    }
+
+    public static long roundToReciprocal(final long value, final int r, final RoundingMode roundType) {
+        if (r < 1)
+            throw new IllegalArgumentException("The r(=" + r + ") argument must be positive.");
+//        if (r == 1) /* @@@ */
+//            return value;
+        if (isNonFinite(value))
+            return value;
+//        if (Math.log10(r) > JavaImpl.MAX_EXPONENT) // Never can happens
+//            return value;
+//        if (Math.log10(r) < JavaImpl.MIN_EXPONENT)
+//            return JavaImpl.ZERO;
+
+//        final Decimal64Parts parts = tlsDecimal64Parts.get();
+//        JavaImpl.toParts(value, parts);
+        long partsCoefficient;
+        long partsSignMask;
+        int partsExponent;
+        { // Copy-paste the toParts method for speedup
+            partsSignMask = value & MASK_SIGN;
+
+            if (isSpecial(value)) {
+//                if (isNonFinite(value)) {
+//                    partsExponent = 0;
+//
+//                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
+//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                        partsCoefficient = value & ~MASK_COEFFICIENT;
+//                    if (isInfinity(value))
+//                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+//                } else
+                {
+                    // Check for non-canonical values.
+                    final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
+                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+
+                    // Extract exponent.
+                    final long tmp = value >> EXPONENT_SHIFT_LARGE;
+                    partsExponent = (int) (tmp & EXPONENT_MASK);
+                }
+            } else {
+
+                // Extract exponent. Maximum biased value for "small exponent" is 0x2FF(*2=0x5FE), signed: []
+                // upper 1/4 of the mask range is "special", as checked in the code above
+                final long tmp = value >> EXPONENT_SHIFT_SMALL;
+                partsExponent = (int) (tmp & EXPONENT_MASK);
+
+                // Extract coefficient.
+                partsCoefficient = (value & SMALL_COEFFICIENT_MASK);
+            }
+        }
+
+        if (partsCoefficient == 0)
+            return Decimal64Utils.ZERO;
+
+        int unbiasedExponent = partsExponent - JavaImpl.EXPONENT_BIAS;
+
+        if (unbiasedExponent >= 0) // value is already rounded
+            return value;
+
+        // Denormalize partsCoefficient to the maximal value to get the maximal precision after final r division
+        {
+            final int dn = numberOfDigits(partsCoefficient);
+            /*if (dn < POWERS_OF_TEN.length - 2)*/
+            {
+
+                final int expShift = (POWERS_OF_TEN.length - 2) - dn;
+                partsExponent -= expShift;
+                unbiasedExponent -= expShift;
+                partsCoefficient *= POWERS_OF_TEN[expShift];
+
+                assert Decimal64Utils.equals(value,
+                    pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST));
+            }
+        }
+
+
+        //Multiply partsCoefficient with r
+        long coefficientMulR_w0, coefficientMulR_w21;
+        {
+            final long l0 = (LONG_LOW_PART & partsCoefficient) * r;
+            coefficientMulR_w0 = LONG_LOW_PART & l0;
+            coefficientMulR_w21 = (partsCoefficient >>> 32) * r + (l0 >>> 32);
+        }
+
+        /*@@@@ Debug purpose*/
+        BigInteger bIcoefficientMulR = BigInteger.valueOf(partsCoefficient).multiply(BigInteger.valueOf(r));
+        assert bIcoefficientMulR.equals(
+            BigInteger.valueOf(coefficientMulR_w21)
+                .multiply(BigInteger.valueOf(1L << 32))
+                .add(BigInteger.valueOf(coefficientMulR_w0)));
+
+        //final long divFactor;
+        final int divFactor01, divFactor02, divFactor03; // divFactor = divFactor1 * divFactor2 * divFactor3
+        final int addExponent;
+        {
+            int absPower = -unbiasedExponent;
+            final int maxPower = Math.min(absPower, numberOfDigits(coefficientMulR_w21) + 10 /* low part */);
+//            divFactor = POWERS_OF_TEN[maxPower];
+            final int factor1Power = Math.min(maxPower, 9); // Int can hold max 1_000_000_000
+            divFactor01 = (int) POWERS_OF_TEN[factor1Power];
+            final int factor2Power = Math.min(maxPower - factor1Power, 9);
+            divFactor02 = (int) POWERS_OF_TEN[factor2Power];
+            divFactor03 = (int) POWERS_OF_TEN[maxPower - factor1Power - factor2Power];
+            addExponent = absPower - maxPower;
+        }
+
+        final BigInteger bIdivFactor = BigInteger.valueOf((long) divFactor01 * divFactor02).multiply(BigInteger.valueOf(divFactor03));
+
+        // Process last digit
+        switch (roundType) {
+            case UP:
+                // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                if (addExponent != 0) {
+                    {
+                        bIcoefficientMulR = bIdivFactor;
+
+                        final long divFactor12 = (long) divFactor01 * divFactor02;
+                        coefficientMulR_w0 = LONG_LOW_PART & divFactor12;
+                        coefficientMulR_w21 = divFactor12 >>> 32;
+
+                        if (divFactor03 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor03;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+
+                        assert bIcoefficientMulR.equals(
+                            BigInteger.valueOf(coefficientMulR_w21)
+                                .multiply(BigInteger.valueOf(1L << 32))
+                                .add(BigInteger.valueOf(coefficientMulR_w0)));
+                    }
+
+                } else { // addExponent != 0
+                    { // + divFactor - 1
+                        bIcoefficientMulR = bIcoefficientMulR.add(bIdivFactor).subtract(BigInteger.ONE);
+
+                        long divFactor_w0, divFactor_w21;
+                        {
+                            final long lowPart = (long) divFactor01 * divFactor02;
+                            divFactor_w0 = lowPart & LONG_LOW_PART;
+                            divFactor_w21 = lowPart >>> 32;
+                        }
+                        if (divFactor03 > 1) {
+                            final long lowMul = divFactor_w0 * divFactor03;
+                            divFactor_w0 = lowMul & LONG_LOW_PART;
+                            divFactor_w21 = divFactor_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+
+                        { // divFactor - 1
+                            final long lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                            divFactor_w0 = lowPart & LONG_LOW_PART;
+                            divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >>> 32);
+                        }
+
+                        {
+                            final long lowPart = coefficientMulR_w0 + divFactor_w0;
+                            coefficientMulR_w0 = lowPart & LONG_LOW_PART;
+                            coefficientMulR_w21 += divFactor_w21 + (lowPart >>> 32);
+                        }
+
+                        assert bIcoefficientMulR.equals(
+                            BigInteger.valueOf(coefficientMulR_w21)
+                                .multiply(BigInteger.valueOf(1L << 32))
+                                .add(BigInteger.valueOf(coefficientMulR_w0)));
+                    }
+                    { // / divFactor
+                        bIcoefficientMulR = bIcoefficientMulR.divide(bIdivFactor);
+
+                        {
+                            final long r21 = coefficientMulR_w21 % divFactor01;
+                            coefficientMulR_w21 /= divFactor01;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor02;
+                            coefficientMulR_w21 /= divFactor02;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor03;
+                            coefficientMulR_w21 /= divFactor03;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                        }
+
+                        assert bIcoefficientMulR.equals(
+                            BigInteger.valueOf(coefficientMulR_w21)
+                                .multiply(BigInteger.valueOf(1L << 32))
+                                .add(BigInteger.valueOf(coefficientMulR_w0)));
+                    }
+                    { // * divFactor
+                        bIcoefficientMulR = bIcoefficientMulR.multiply(bIdivFactor);
+
+                        {
+                            final long lowMul = coefficientMulR_w0 * divFactor01;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor02;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor03;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+
+                        assert bIcoefficientMulR.equals(
+                            BigInteger.valueOf(coefficientMulR_w21)
+                                .multiply(BigInteger.valueOf(1L << 32))
+                                .add(BigInteger.valueOf(coefficientMulR_w0)));
+                    }
+                }
+
+//                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                break;
+
+//            case DOWN:
+//                partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+//                break;
+//
+//            case CEILING:
+//                if (partsSignMask >= 0/*!parts.isNegative()*/)
+//                    partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+//                else
+//                    partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+//                break;
+//
+//            case FLOOR:
+//                if (partsSignMask >= 0/*!parts.isNegative()*/)
+//                    partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+//                else
+//                    partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+//                break;
+//
+//            case HALF_UP:
+//                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
+//                break;
+//
+//            case HALF_DOWN:
+//                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
+//                break;
+//
+//            case HALF_EVEN:
+//                partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
+//                break;
+//
+//            case UNNECESSARY:
+//                if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/ || partsCoefficient % divFactor != 0)
+//                    throw new ArithmeticException("Rounding necessary");
+//                return value;
+//
+            default:
+                throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
+        }
+
+        { // / r
+            bIcoefficientMulR = bIcoefficientMulR.divide(BigInteger.valueOf(r));
+
+            final long r21 = coefficientMulR_w21 % r;
+            coefficientMulR_w21 /= r;
+            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / r;
+            partsCoefficient = ((LONG_LOW_PART & coefficientMulR_w21) << 32) + coefficientMulR_w0;
+//            if ((partsCoefficient & Long.MIN_VALUE) == Long.MIN_VALUE) {
+//                partsCoefficient = partsCoefficient >>> 1;
+//                partsCoefficient /= 5;
+//                partsExponent++;
+//
+//                bIcoefficientMulR = bIcoefficientMulR.divide(BigInteger.TEN);
+//            }
+
+            assert bIcoefficientMulR.equals(BigInteger.valueOf(partsCoefficient));
+        }
+
         partsExponent += addExponent;
         if (partsCoefficient == 0)
             return JavaImpl.ZERO;

@@ -680,6 +680,19 @@ public class Decimal64Utils {
     /// region Rounding
 
     /**
+     * Returns the {@code DFP} value that is rounded to the power of two according the selected rounding type.
+     *
+     * @param value     {@code DFP} argument to round
+     * @param n         the power of two to use when rounding the number
+     * @param roundType {@code RoundingMode} type of rounding
+     * @return {@code DFP} the rounded value
+     */
+    @Decimal
+    public static long roundToReciprocal(@Decimal final long value, final int r, final RoundingMode roundType) {
+        return JavaImpl.roundToReciprocal(value, r, roundType);
+    }
+
+    /**
      * Returns the {@code DFP} value that is rounded according the selected rounding type.
      *
      * @param value     {@code DFP} argument to round
