@@ -680,10 +680,10 @@ public class Decimal64Utils {
     /// region Rounding
 
     /**
-     * Returns the {@code DFP} value that is rounded to the power of two according the selected rounding type.
+     * Returns the {@code DFP} value that is rounded to the value, reciprocal to r, according the selected rounding type.
      *
      * @param value     {@code DFP} argument to round
-     * @param n         the power of two to use when rounding the number
+     * @param r         the number whose reciprocal is rounded to
      * @param roundType {@code RoundingMode} type of rounding
      * @return {@code DFP} the rounded value
      */
