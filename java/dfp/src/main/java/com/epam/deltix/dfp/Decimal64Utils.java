@@ -1901,7 +1901,21 @@ public class Decimal64Utils {
     }
 
     /**
-     * Implements {@link Decimal64#round()}, adds null check; do not use directly.
+     * Implements {@link Decimal64#roundToReciprocal(int, RoundingMode)}, adds null check; do not use directly.
+     *
+     * @param value     {@code DFP} argument to round
+     * @param r         the number whose reciprocal is rounded to
+     * @param roundType {@code RoundingMode} type of rounding
+     * @return {@code DFP} the rounded value
+     */
+    @Decimal
+    public static long roundToReciprocalChecked(@Decimal final long value, final int r, final RoundingMode roundType) {
+        checkNull(value);
+        return roundToReciprocal(value, r, roundType);
+    }
+
+    /**
+     * Implements {@link Decimal64#round(int, RoundingMode)}, adds null check; do not use directly.
      *
      * @param value     {@code DFP} argument to round
      * @param n         the number of decimals to use when rounding the number
