@@ -507,13 +507,7 @@ public class JavaImplTest {
     }
 
     private static void testRoundToReciprocalCase(@Decimal final long value, final int n, final RoundingMode roundingMode) {
-        @Decimal final long roundedValue;
-        try {
-            roundedValue = Decimal64Utils.roundToReciprocal(value, n, roundingMode);
-        } catch (Throwable e) {
-            throw new RuntimeException("The testRoundToReciprocalCase(/*" + Decimal64Utils.toString(value) + "*/ " + value +
-                "L, " + n + ", RoundingMode." + roundingMode + ") error: " + e.getMessage(), e);
-        }
+        @Decimal final long roundedValue = Decimal64Utils.roundToReciprocal(value, n, roundingMode);
 
         final BigDecimal ref = Decimal64Utils.toBigDecimal(value).multiply(new BigDecimal(n)).setScale(0, roundingMode)
             .divide(new BigDecimal(n), mcDecimal64);
