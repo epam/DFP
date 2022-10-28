@@ -482,9 +482,9 @@ public class JavaImplTest {
         final RoundingMode[] roundingModes = {
             RoundingMode.UP, RoundingMode.DOWN,
             RoundingMode.CEILING, RoundingMode.FLOOR,
-            RoundingMode.HALF_UP};
+            RoundingMode.HALF_UP, RoundingMode.HALF_DOWN};
 
-        IntStream.range(0, 10_000_000).parallel().forEach(ri -> {
+        IntStream.range(0, 1_000_000).parallel().forEach(ri -> {
             final int mantissaLen = random.nextInt(Decimal64Utils.MAX_SIGNIFICAND_DIGITS) + 1;
             final long mantissa = random.nextLong() % POWERS_OF_TEN[mantissaLen];
 
