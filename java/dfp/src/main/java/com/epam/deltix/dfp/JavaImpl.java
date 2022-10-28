@@ -3355,11 +3355,42 @@ class JavaImpl {
                 // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
                 break;
 
-//            case UNNECESSARY:
-//                if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/ || partsCoefficient % divFactor != 0)
-//                    throw new ArithmeticException("Rounding necessary");
-//                return value;
-//
+            case UNNECESSARY:
+                if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/)
+                    throw new ArithmeticException("Rounding necessary");
+            {
+                { // if (partsCoefficient % divFactor != 0) throw new ArithmeticException("Rounding necessary");
+                    {
+                        final long r21 = coefficientMulR_w21 % divFactor01;
+                        final long l = ((r21 << 32) | coefficientMulR_w0);
+                        if (l % divFactor01 != 0)
+                            throw new ArithmeticException("Rounding necessary");
+                        coefficientMulR_w0 = l / divFactor01;
+                        coefficientMulR_w21 /= divFactor01;
+                    }
+
+                    if (divFactor02 > 1) {
+                        final long r21 = coefficientMulR_w21 % divFactor02;
+                        final long l = ((r21 << 32) | coefficientMulR_w0);
+                        if (l % divFactor02 != 0)
+                            throw new ArithmeticException("Rounding necessary");
+                        coefficientMulR_w0 = l / divFactor02;
+                        coefficientMulR_w21 /= divFactor02;
+                    }
+
+                    if (divFactor03 > 1) {
+                        final long r21 = coefficientMulR_w21 % divFactor03;
+                        final long l = ((r21 << 32) | coefficientMulR_w0);
+                        if (l % divFactor03 != 0)
+                            throw new ArithmeticException("Rounding necessary");
+                        // coefficientMulR_w0 = l / divFactor03; // No need division result
+                        // coefficientMulR_w21 /= divFactor03; // No need division result
+                    }
+                }
+            }
+
+            return value;
+
             default:
                 throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
         }
