@@ -479,7 +479,10 @@ public class JavaImplTest {
 
         final char[] buffer = new char[256];
         final char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        final RoundingMode[] roundingModes = {RoundingMode.UP, RoundingMode.DOWN, RoundingMode.CEILING, RoundingMode.FLOOR};
+        final RoundingMode[] roundingModes = {
+            RoundingMode.UP, RoundingMode.DOWN,
+            RoundingMode.CEILING, RoundingMode.FLOOR,
+            RoundingMode.HALF_UP};
         for (int i = 0; i < 1000_000; ++i) {
             int bi = 0;
             if (random.nextInt(2) > 0)
@@ -502,36 +505,7 @@ public class JavaImplTest {
         }
     }
 
-    private static Decimal64 roundTowardsZero(final Decimal64 value, final Decimal64 multiple) {
-        @Decimal  final long mul = Decimal64.toUnderlying(multiple);
-        return Decimal64.fromUnderlying(
-            Decimal64Utils.multiply(
-                Decimal64Utils.roundTowardsZero(
-                    Decimal64Utils.divide(
-                        Decimal64.toUnderlying(value), mul)), mul));
-    }
-
     private static void testRoundToReciprocalCase(Decimal64 value, final int n, final RoundingMode roundingMode) {
-        final Decimal64 mul = Decimal64.ONE.divide(Decimal64.fromInt(n));
-        final Decimal64 oldRv;
-        switch (roundingMode) {
-            case UP:
-                oldRv = value.roundToNearestTiesAwayFromZero(mul);
-                break;
-            case DOWN:
-                oldRv = roundTowardsZero(value, mul);
-                break;
-            case CEILING:
-                oldRv = value.roundTowardsPositiveInfinity(mul);
-                break;
-            case FLOOR:
-                oldRv = value.roundTowardsNegativeInfinity(mul);
-                break;
-
-            default:
-                throw new RuntimeException("Unsupported roundingMode(=" + roundingMode + ") value.");
-        }
-
         final Decimal64 newRv;
         try {
             newRv = value.roundToReciprocal(n, roundingMode);
@@ -541,15 +515,14 @@ public class JavaImplTest {
         }
 
         final BigDecimal ref = value.toBigDecimal().multiply(new BigDecimal(n)).setScale(0, roundingMode)
-            .divide(new BigDecimal(n), new MathContext(128, RoundingMode.HALF_UP));
+            .divide(new BigDecimal(n), mcDecimal64);
 
-        final BigDecimal oldErr = oldRv.toBigDecimal().subtract(ref).abs();
-        final BigDecimal newErr = newRv.toBigDecimal().subtract(ref).abs();
-
-        if (oldErr.compareTo(newErr) < 0)
+        if (ref.compareTo(newRv.toBigDecimal()) != 0)
             throw new RuntimeException("The testRoundToReciprocalCase(" + value + " = " + Decimal64.toUnderlying(value) +
-                "L, " + n + ", RoundingMode." + roundingMode + ") error: oldErr(=" + oldErr + ") < newErr(=" + newErr + ").");
+                "L, " + n + ", RoundingMode." + roundingMode + ") error: newRv(=" + newRv + ") != ref(=" + ref + ").");
     }
+
+    static final MathContext mcDecimal64 = new MathContext(Decimal64Utils.MAX_SIGNIFICAND_DIGITS, RoundingMode.HALF_UP);
 
     @Test
     public void testToStringRandomly() throws Exception {
