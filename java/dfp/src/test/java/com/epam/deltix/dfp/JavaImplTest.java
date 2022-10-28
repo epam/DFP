@@ -462,6 +462,8 @@ public class JavaImplTest {
 
     @Test
     public void testRoundToReciprocal() {
+        testRoundToReciprocalCase(/*0.000000000093*/ Decimal64.fromUnderlying(3476778912330023005L), 76984627, RoundingMode.CEILING);
+
         testRoundToReciprocalCase(/*-0.000000000079*/ Decimal64.fromUnderlying(-5746593124524752817L), 1850110060, RoundingMode.DOWN);
 
         testRoundToReciprocalCase(/*-0.0001*/ Decimal64.fromUnderlying(-5674535530486824959L), 579312130, RoundingMode.DOWN);
@@ -477,7 +479,7 @@ public class JavaImplTest {
 
         final char[] buffer = new char[256];
         final char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        final RoundingMode[] roundingModes = {RoundingMode.UP, RoundingMode.DOWN};
+        final RoundingMode[] roundingModes = {RoundingMode.UP, RoundingMode.DOWN, RoundingMode.CEILING, RoundingMode.FLOOR};
         for (int i = 0; i < 1000_000; ++i) {
             int bi = 0;
             if (random.nextInt(2) > 0)
@@ -518,6 +520,12 @@ public class JavaImplTest {
                 break;
             case DOWN:
                 oldRv = roundTowardsZero(value, mul);
+                break;
+            case CEILING:
+                oldRv = value.roundTowardsPositiveInfinity(mul);
+                break;
+            case FLOOR:
+                oldRv = value.roundTowardsNegativeInfinity(mul);
                 break;
 
             default:
