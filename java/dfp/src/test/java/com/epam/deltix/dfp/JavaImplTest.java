@@ -480,29 +480,28 @@ public class JavaImplTest {
 
         testRoundToReciprocalCase(Decimal64Utils.parse("0.9999999999999999"), Integer.MAX_VALUE, RoundingMode.DOWN);
 
-
-        final Random random = new SecureRandom();
-
         final RoundingMode[] roundingModes = {
             RoundingMode.UP, RoundingMode.DOWN,
             RoundingMode.CEILING, RoundingMode.FLOOR,
             RoundingMode.HALF_UP, RoundingMode.HALF_DOWN, RoundingMode.HALF_EVEN};
 
-        IntStream.range(0, 1_000).parallel().forEach(ri -> {
-            for (int blockRi = 0; blockRi < 1_000; ++blockRi) {
-                final int mantissaLen = random.nextInt(Decimal64Utils.MAX_SIGNIFICAND_DIGITS) + 1;
-                final long mantissa = random.nextLong() % POWERS_OF_TEN[mantissaLen];
+        final ThreadLocal<Random> tlsRandom = ThreadLocal.withInitial(SecureRandom::new);
 
-                final int exp = random.nextInt(20) - Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
+        IntStream.range(0, 10_000_000).parallel().forEach(ri -> {
+            final Random random = tlsRandom.get();
 
-                @Decimal final long value = Decimal64Utils.fromFixedPoint(mantissa, -exp);
+            final int mantissaLen = random.nextInt(Decimal64Utils.MAX_SIGNIFICAND_DIGITS) + 1;
+            final long mantissa = random.nextLong() % POWERS_OF_TEN[mantissaLen];
 
-                final int n = Math.abs(random.nextInt());
+            final int exp = random.nextInt(20) - Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
 
-                final RoundingMode roundingMode = roundingModes[random.nextInt(roundingModes.length)];
+            @Decimal final long value = Decimal64Utils.fromFixedPoint(mantissa, -exp);
 
-                testRoundToReciprocalCase(value, n, roundingMode);
-            }
+            final int n = Math.abs(random.nextInt());
+
+            final RoundingMode roundingMode = roundingModes[random.nextInt(roundingModes.length)];
+
+            testRoundToReciprocalCase(value, n, roundingMode);
         });
     }
 
