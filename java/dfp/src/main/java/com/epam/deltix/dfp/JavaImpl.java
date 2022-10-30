@@ -2411,9 +2411,6 @@ class JavaImpl {
                 partsExponent -= expShift;
                 unbiasedExponent -= expShift;
                 partsCoefficient *= POWERS_OF_TEN[expShift];
-
-                assert Decimal64Utils.equals(value,
-                    pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST));
             }
         }
 

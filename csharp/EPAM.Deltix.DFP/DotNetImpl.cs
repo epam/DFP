@@ -38,6 +38,8 @@ namespace EPAM.Deltix.DFP
 		public const UInt64 OneTenth = 0x31A0000000000000UL + 1;
 		public const UInt64 OneHundredth = 0x3180000000000000UL + 1;
 
+		public const UInt64 LONG_LOW_PART = 0xFFFFFFFFUL;
+
 		public static BID_UINT64[] PowersOfTen = {
 			/*  0 */ 1L,
 			/*  1 */ 10L,
@@ -59,6 +61,20 @@ namespace EPAM.Deltix.DFP
 			/* 17 */ 100000000000000000L,
 			/* 18 */ 1000000000000000000L
 		};
+
+		/**
+		 * Computes number of dfp digits required to represent the given non-negative value.
+		 *
+		 * @param value Non-negative value.
+		 * @return Number of digits required.
+		 */
+		public static int NumberOfDigits(BID_UINT64 value)
+		{
+			for (int i = 1; i < PowersOfTen.Length; ++i)
+				if (value < PowersOfTen[i])
+					return i;
+			return 19;
+		}
 
 		#endregion
 
@@ -487,6 +503,439 @@ namespace EPAM.Deltix.DFP
 				default:
 					throw new ArgumentException("Unsupported roundType(=" + roundType + ") value.");
 			}
+			partsExponent += addExponent;
+			if (partsCoefficient == 0)
+				return Zero;
+
+			BID_UINT32 fpsf = DotNetReImpl.BID_EXACT_STATUS;
+			return DotNetReImpl.get_BID64(partsSignMask, partsExponent, partsCoefficient, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf);
+		}
+
+		public struct Pair96
+		{
+			public ulong w0;
+			public ulong w21;
+
+			public Pair96(ulong w0 = 0, ulong w21 = 0)
+			{
+				this.w0 = w0;
+				this.w21 = w21;
+			}
+
+			public void mulOne(uint d)
+			{
+				ulong lowMul = w0 * d;
+				w0 = lowMul & LONG_LOW_PART;
+				w21 = w21 * d + (lowMul >> 32);
+			}
+
+			public void mul(Factors96 f)
+			{
+				mulOne(f.d01);
+				if (f.d02 > 1)
+					mulOne(f.d02);
+				if (f.d03 > 1)
+					mulOne(f.d03);
+			}
+
+			public void divOne(uint d)
+			{
+				ulong r21 = w21 % d;
+				w21 /= d;
+				w0 = ((r21 << 32) | w0) / d;
+			}
+
+			public void div(Factors96 f)
+			{
+				divOne(f.d01);
+				if (f.d02 > 1)
+					divOne(f.d02);
+				if (f.d03 > 1)
+					divOne(f.d03);
+			}
+
+			public void shr1()
+			{
+				w0 = ((w21 & 1) << 31) | (w0 >> 1);
+				w21 = w21 >> 1;
+			}
+
+			public void set(Factors96 f)
+			{
+				ulong d12 = (ulong)f.d01 * f.d02;
+				w0 = LONG_LOW_PART & d12;
+				w21 = d12 >> 32;
+				if (f.d03 > 1)
+					mulOne(f.d03);
+			}
+
+			public void set(ulong w0, ulong w21)
+			{
+				this.w0 = w0;
+				this.w21 = w21;
+			}
+
+			public void add(Pair96 p)
+			{
+				ulong lowPart = w0 + p.w0;
+				w0 = lowPart & LONG_LOW_PART;
+				w21 += p.w21 + (lowPart >> 32);
+			}
+		}
+
+		public struct Factors96
+		{
+			public uint d01, d02, d03;
+		}
+
+		public static UInt64 RoundToReciprocal(UInt64 value, uint r, RoundingMode roundType)
+		{
+			if (r < 1)
+				throw new ArgumentException("The r(=" + r + ") argument must be positive.");
+			if (!IsFinite(value))
+				return value;
+			//if (Math.log10(r) > JavaImpl.MAX_EXPONENT) // Never can happens
+			//	return value;
+			//if (Math.log10(r) < JavaImpl.MIN_EXPONENT)
+			//	return JavaImpl.ZERO;
+
+			BID_UINT64 partsSignMask;
+			int partsExponent;
+			BID_UINT64 partsCoefficient;
+			// DotNetReImpl.unpack_BID64(out partsSignMask, out partsExponent, out partsCoefficient, value);
+			{ // Copy-paste the toParts method for speedup
+				partsSignMask = value & 0x8000000000000000UL;
+
+				if ((value & DotNetReImpl.SPECIAL_ENCODING_MASK64) == DotNetReImpl.SPECIAL_ENCODING_MASK64)
+				{
+					//if ((value & DotNetReImpl.INFINITY_MASK64) == DotNetReImpl.INFINITY_MASK64) - Non finite values are already checked
+					//{
+					//	partsExponent = 0;
+					//	partsCoefficient = value & 0xfe03ffffffffffffUL;
+					//	if ((value & 0x0003ffffffffffffUL) >= 1000000000000000UL)
+					//		partsCoefficient = value & 0xfe00000000000000UL;
+					//	if ((value & DotNetReImpl.NAN_MASK64) == DotNetReImpl.INFINITY_MASK64)
+					//		partsCoefficient = value & DotNetReImpl.SINFINITY_MASK64;
+					//	return 0;   // NaN or Infinity
+					//} else
+					{
+						// Check for non-canonical values.
+						BID_UINT64 coeff = (value & DotNetReImpl.LARGE_COEFF_MASK64) | DotNetReImpl.LARGE_COEFF_HIGH_BIT64;
+
+						// check for non-canonical values
+						if (coeff >= 10000000000000000UL)
+							coeff = 0;
+						partsCoefficient = coeff;
+						// get exponent
+						BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_LARGE64;
+						partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					}
+				}
+				else
+				{
+					// exponent
+					BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_SMALL64;
+					partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					// coefficient
+					partsCoefficient = (value & DotNetReImpl.SMALL_COEFF_MASK64);
+				}
+			}
+
+			if (partsCoefficient == 0)
+				return Zero;
+
+			int unbiasedExponent = partsExponent - DotNetReImpl.DECIMAL_EXPONENT_BIAS;
+
+			if (unbiasedExponent >= 0) // value is already rounded
+				return value;
+
+			// Denormalize partsCoefficient to the maximal value to get the maximal precision after final r division
+			{
+				int dn = NumberOfDigits(partsCoefficient);
+				/*if (dn < PowersOfTen.Length - 1)*/
+				{
+					int expShift = (PowersOfTen.Length - 1) - dn;
+					partsExponent -= expShift;
+					unbiasedExponent -= expShift;
+					partsCoefficient *= PowersOfTen[expShift];
+				}
+			}
+
+
+			//Multiply partsCoefficient with r
+			Pair96 coefficientMulR = new Pair96();
+			{
+				ulong l0 = (LONG_LOW_PART & partsCoefficient) * r;
+				coefficientMulR.set(LONG_LOW_PART & l0, (partsCoefficient >> 32) * r + (l0 >> 32));
+			}
+
+			//final long divFactor;
+			Factors96 divFactor; // divFactor = divFactor1 * divFactor2 * divFactor3
+			int addExponent;
+			{
+				int absPower = -unbiasedExponent;
+				int maxPower = Math.Min(absPower, Math.Min(3 * 9, NumberOfDigits(coefficientMulR.w21) + 10 /* low part */));
+				//divFactor = PowersOfTen[maxPower];
+				int factor1Power = Math.Min(maxPower, 9); // Int can hold max 1_000_000_000
+				divFactor.d01 = (uint)PowersOfTen[factor1Power];
+				int factor2Power = Math.Min(maxPower - factor1Power, 9);
+				divFactor.d02 = (uint)PowersOfTen[factor2Power];
+				divFactor.d03 = (uint)PowersOfTen[maxPower - factor1Power - factor2Power];
+				addExponent = absPower - maxPower;
+			}
+
+			// Process last digit
+			switch (roundType)
+			{
+				case RoundingMode.Up:
+					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+					if (addExponent != 0)
+					{
+						coefficientMulR.set(divFactor);
+
+					}
+					else
+					{ // addExponent != 0
+						{ // + divFactor - 1
+							Pair96 divFactor96 = new Pair96();
+							divFactor96.set(divFactor);
+							divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+							coefficientMulR.add(divFactor96);
+						}
+						coefficientMulR.div(divFactor);
+						coefficientMulR.mul(divFactor);
+					}
+					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+					break;
+
+				case RoundingMode.Down:
+					// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+					if (addExponent != 0)
+					{
+						coefficientMulR.set(0, 0);
+
+					}
+					else
+					{ // addExponent != 0
+						coefficientMulR.div(divFactor);
+						coefficientMulR.mul(divFactor);
+					}
+					// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+					break;
+
+				case RoundingMode.Ceiling:
+					if (partsSignMask >= 0/*!parts.isNegative()*/)
+					{
+						// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+						if (addExponent != 0)
+						{
+							coefficientMulR.set(divFactor);
+
+						}
+						else
+						{ // addExponent != 0
+							{ // + divFactor - 1
+								Pair96 divFactor96 = new Pair96();
+								divFactor96.set(divFactor);
+								divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+								coefficientMulR.add(divFactor96);
+							}
+							coefficientMulR.div(divFactor);
+							coefficientMulR.mul(divFactor);
+						}
+						// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+
+					}
+					else
+					{ // partsSignMask >= 0
+					  // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+						if (addExponent != 0)
+						{
+							coefficientMulR.set(0, 0);
+
+						}
+						else
+						{ // addExponent != 0
+							coefficientMulR.div(divFactor);
+							coefficientMulR.mul(divFactor);
+						}
+						// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+					}
+					break;
+
+				case RoundingMode.Floor:
+					if (partsSignMask >= 0/*!parts.isNegative()*/)
+					{
+						// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+						if (addExponent != 0)
+						{
+							coefficientMulR.set(0, 0);
+
+						}
+						else
+						{ // addExponent != 0
+							coefficientMulR.div(divFactor);
+							coefficientMulR.mul(divFactor);
+						}
+						// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+
+					}
+					else
+					{ // partsSignMask >= 0
+					  // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+						if (addExponent != 0)
+						{
+							coefficientMulR.set(divFactor);
+
+						}
+						else
+						{ // addExponent != 0
+							{ // + divFactor - 1
+								Pair96 divFactor96 = new Pair96();
+								divFactor96.set(divFactor);
+								divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+								coefficientMulR.add(divFactor96);
+							}
+							coefficientMulR.div(divFactor);
+							coefficientMulR.mul(divFactor);
+						}
+						// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+					}
+					break;
+
+				case RoundingMode.HalfUp:
+					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
+					if (addExponent != 0)
+					{
+						coefficientMulR.set(0, 0);
+
+					}
+					else
+					{ // addExponent != 0
+						{ // + divFactor / 2
+							Pair96 divFactor96 = new Pair96();
+							divFactor96.set(divFactor);
+							divFactor96.shr1();
+							coefficientMulR.add(divFactor96);
+						}
+						coefficientMulR.div(divFactor);
+						coefficientMulR.mul(divFactor);
+					}
+					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
+					break;
+
+				case RoundingMode.HalfDown:
+					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
+					if (addExponent != 0)
+					{
+						coefficientMulR.set(0, 0);
+
+					}
+					else
+					{ // addExponent != 0
+						{ // + divFactor / 2
+							Pair96 divFactor96 = new Pair96();
+							divFactor96.set(divFactor);
+							divFactor96.shr1();
+							divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+							coefficientMulR.add(divFactor96);
+						}
+						coefficientMulR.div(divFactor);
+						coefficientMulR.mul(divFactor);
+					}
+					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
+					break;
+
+				case RoundingMode.HalfEven:
+					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
+					if (addExponent != 0)
+					{
+						coefficientMulR.set(0, 0);
+
+					}
+					else
+					{ // addExponent != 0
+						{ // + divFactor / 2
+							Pair96 divFactor96 = new Pair96();
+							divFactor96.set(divFactor);
+							divFactor96.shr1();
+
+							bool divisionLatestBit;
+							{ // ((partsCoefficient / divFactor) & 1L)
+								Pair96 tmpCoefficientMulR = new Pair96(coefficientMulR.w0, coefficientMulR.w21);
+								tmpCoefficientMulR.div(divFactor);
+
+								divisionLatestBit = (tmpCoefficientMulR.w0 & 1) != 0;
+							}
+
+							if (!divisionLatestBit)
+								divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+
+							coefficientMulR.add(divFactor96);
+						}
+						coefficientMulR.div(divFactor);
+						coefficientMulR.mul(divFactor);
+					}
+					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
+					break;
+
+				case RoundingMode.Unnecessary:
+					if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/)
+						throw new ArithmeticException("Rounding necessary");
+
+					{ // if (partsCoefficient % divFactor != 0) throw new ArithmeticException("Rounding necessary");
+						{
+							ulong r21 = coefficientMulR.w21 % divFactor.d01;
+							ulong l = ((r21 << 32) | coefficientMulR.w0);
+							if (l % divFactor.d01 != 0)
+								throw new ArithmeticException("Rounding necessary");
+							coefficientMulR.w0 = l / divFactor.d01;
+							coefficientMulR.w21 /= divFactor.d01;
+						}
+
+						if (divFactor.d02 > 1)
+						{
+							ulong r21 = coefficientMulR.w21 % divFactor.d02;
+							ulong l = ((r21 << 32) | coefficientMulR.w0);
+							if (l % divFactor.d02 != 0)
+								throw new ArithmeticException("Rounding necessary");
+							coefficientMulR.w0 = l / divFactor.d02;
+							coefficientMulR.w21 /= divFactor.d02;
+						}
+
+						if (divFactor.d03 > 1)
+						{
+							ulong r21 = coefficientMulR.w21 % divFactor.d03;
+							ulong l = ((r21 << 32) | coefficientMulR.w0);
+							if (l % divFactor.d03 != 0)
+								throw new ArithmeticException("Rounding necessary");
+							// coefficientMulR.w0 = l / divFactor.d03; // No need division result
+							// coefficientMulR.w21 /= divFactor.d03; // No need division result
+						}
+					}
+
+					return value;
+
+				default:
+					throw new ArgumentException("Unsupported roundType(=" + roundType + ") value.");
+			}
+
+			{ // / r
+				coefficientMulR.divOne(r);
+
+				if (coefficientMulR.w21 > Int32.MaxValue)
+				{
+					int dn = NumberOfDigits(coefficientMulR.w21 / Int32.MaxValue);
+					uint f = (uint)PowersOfTen[dn];
+
+					partsExponent += dn;
+
+					coefficientMulR.divOne(f);
+				}
+
+				partsCoefficient = ((LONG_LOW_PART & coefficientMulR.w21) << 32) + coefficientMulR.w0;
+			}
+
 			partsExponent += addExponent;
 			if (partsCoefficient == 0)
 				return Zero;
