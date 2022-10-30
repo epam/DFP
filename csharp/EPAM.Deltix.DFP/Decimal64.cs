@@ -739,6 +739,11 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(DotNetImpl.Round(Bits, n, roundType));
 		}
 
+		public Decimal64 RoundToReciprocal(uint r, RoundingMode roundType)
+		{
+			return new Decimal64(DotNetImpl.RoundToReciprocal(Bits, r, roundType));
+		}
+
 		#endregion
 
 		#region Parts processing

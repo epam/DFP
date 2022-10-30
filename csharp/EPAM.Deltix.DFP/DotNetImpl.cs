@@ -522,60 +522,60 @@ namespace EPAM.Deltix.DFP
 				this.w21 = w21;
 			}
 
-			public void mulOne(uint d)
+			public void Mul(uint d)
 			{
 				ulong lowMul = w0 * d;
 				w0 = lowMul & LONG_LOW_PART;
 				w21 = w21 * d + (lowMul >> 32);
 			}
 
-			public void mul(Factors96 f)
+			public void Mul(Factors96 f)
 			{
-				mulOne(f.d01);
+				Mul(f.d01);
 				if (f.d02 > 1)
-					mulOne(f.d02);
+					Mul(f.d02);
 				if (f.d03 > 1)
-					mulOne(f.d03);
+					Mul(f.d03);
 			}
 
-			public void divOne(uint d)
+			public void Div(uint d)
 			{
 				ulong r21 = w21 % d;
 				w21 /= d;
 				w0 = ((r21 << 32) | w0) / d;
 			}
 
-			public void div(Factors96 f)
+			public void Div(Factors96 f)
 			{
-				divOne(f.d01);
+				Div(f.d01);
 				if (f.d02 > 1)
-					divOne(f.d02);
+					Div(f.d02);
 				if (f.d03 > 1)
-					divOne(f.d03);
+					Div(f.d03);
 			}
 
-			public void shr1()
+			public void Shr1()
 			{
 				w0 = ((w21 & 1) << 31) | (w0 >> 1);
 				w21 = w21 >> 1;
 			}
 
-			public void set(Factors96 f)
+			public void Set(Factors96 f)
 			{
 				ulong d12 = (ulong)f.d01 * f.d02;
 				w0 = LONG_LOW_PART & d12;
 				w21 = d12 >> 32;
 				if (f.d03 > 1)
-					mulOne(f.d03);
+					Mul(f.d03);
 			}
 
-			public void set(ulong w0, ulong w21)
+			public void Set(ulong w0, ulong w21)
 			{
 				this.w0 = w0;
 				this.w21 = w21;
 			}
 
-			public void add(Pair96 p)
+			public void Add(Pair96 p)
 			{
 				ulong lowPart = w0 + p.w0;
 				w0 = lowPart & LONG_LOW_PART;
@@ -666,7 +666,7 @@ namespace EPAM.Deltix.DFP
 			Pair96 coefficientMulR = new Pair96();
 			{
 				ulong l0 = (LONG_LOW_PART & partsCoefficient) * r;
-				coefficientMulR.set(LONG_LOW_PART & l0, (partsCoefficient >> 32) * r + (l0 >> 32));
+				coefficientMulR.Set(LONG_LOW_PART & l0, (partsCoefficient >> 32) * r + (l0 >> 32));
 			}
 
 			//final long divFactor;
@@ -691,19 +691,19 @@ namespace EPAM.Deltix.DFP
 					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
 					if (addExponent != 0)
 					{
-						coefficientMulR.set(divFactor);
+						coefficientMulR.Set(divFactor);
 
 					}
 					else
 					{ // addExponent != 0
 						{ // + divFactor - 1
 							Pair96 divFactor96 = new Pair96();
-							divFactor96.set(divFactor);
-							divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
-							coefficientMulR.add(divFactor96);
+							divFactor96.Set(divFactor);
+							divFactor96.Add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+							coefficientMulR.Add(divFactor96);
 						}
-						coefficientMulR.div(divFactor);
-						coefficientMulR.mul(divFactor);
+						coefficientMulR.Div(divFactor);
+						coefficientMulR.Mul(divFactor);
 					}
 					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
 					break;
@@ -712,13 +712,13 @@ namespace EPAM.Deltix.DFP
 					// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
 					if (addExponent != 0)
 					{
-						coefficientMulR.set(0, 0);
+						coefficientMulR.Set(0, 0);
 
 					}
 					else
 					{ // addExponent != 0
-						coefficientMulR.div(divFactor);
-						coefficientMulR.mul(divFactor);
+						coefficientMulR.Div(divFactor);
+						coefficientMulR.Mul(divFactor);
 					}
 					// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
 					break;
@@ -729,19 +729,19 @@ namespace EPAM.Deltix.DFP
 						// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
 						if (addExponent != 0)
 						{
-							coefficientMulR.set(divFactor);
+							coefficientMulR.Set(divFactor);
 
 						}
 						else
 						{ // addExponent != 0
 							{ // + divFactor - 1
 								Pair96 divFactor96 = new Pair96();
-								divFactor96.set(divFactor);
-								divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
-								coefficientMulR.add(divFactor96);
+								divFactor96.Set(divFactor);
+								divFactor96.Add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+								coefficientMulR.Add(divFactor96);
 							}
-							coefficientMulR.div(divFactor);
-							coefficientMulR.mul(divFactor);
+							coefficientMulR.Div(divFactor);
+							coefficientMulR.Mul(divFactor);
 						}
 						// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
 
@@ -751,13 +751,13 @@ namespace EPAM.Deltix.DFP
 					  // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
 						if (addExponent != 0)
 						{
-							coefficientMulR.set(0, 0);
+							coefficientMulR.Set(0, 0);
 
 						}
 						else
 						{ // addExponent != 0
-							coefficientMulR.div(divFactor);
-							coefficientMulR.mul(divFactor);
+							coefficientMulR.Div(divFactor);
+							coefficientMulR.Mul(divFactor);
 						}
 						// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
 					}
@@ -769,13 +769,13 @@ namespace EPAM.Deltix.DFP
 						// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
 						if (addExponent != 0)
 						{
-							coefficientMulR.set(0, 0);
+							coefficientMulR.Set(0, 0);
 
 						}
 						else
 						{ // addExponent != 0
-							coefficientMulR.div(divFactor);
-							coefficientMulR.mul(divFactor);
+							coefficientMulR.Div(divFactor);
+							coefficientMulR.Mul(divFactor);
 						}
 						// partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
 
@@ -785,19 +785,19 @@ namespace EPAM.Deltix.DFP
 					  // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
 						if (addExponent != 0)
 						{
-							coefficientMulR.set(divFactor);
+							coefficientMulR.Set(divFactor);
 
 						}
 						else
 						{ // addExponent != 0
 							{ // + divFactor - 1
 								Pair96 divFactor96 = new Pair96();
-								divFactor96.set(divFactor);
-								divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
-								coefficientMulR.add(divFactor96);
+								divFactor96.Set(divFactor);
+								divFactor96.Add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+								coefficientMulR.Add(divFactor96);
 							}
-							coefficientMulR.div(divFactor);
-							coefficientMulR.mul(divFactor);
+							coefficientMulR.Div(divFactor);
+							coefficientMulR.Mul(divFactor);
 						}
 						// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
 					}
@@ -807,19 +807,19 @@ namespace EPAM.Deltix.DFP
 					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
 					if (addExponent != 0)
 					{
-						coefficientMulR.set(0, 0);
+						coefficientMulR.Set(0, 0);
 
 					}
 					else
 					{ // addExponent != 0
 						{ // + divFactor / 2
 							Pair96 divFactor96 = new Pair96();
-							divFactor96.set(divFactor);
-							divFactor96.shr1();
-							coefficientMulR.add(divFactor96);
+							divFactor96.Set(divFactor);
+							divFactor96.Shr1();
+							coefficientMulR.Add(divFactor96);
 						}
-						coefficientMulR.div(divFactor);
-						coefficientMulR.mul(divFactor);
+						coefficientMulR.Div(divFactor);
+						coefficientMulR.Mul(divFactor);
 					}
 					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
 					break;
@@ -828,20 +828,20 @@ namespace EPAM.Deltix.DFP
 					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
 					if (addExponent != 0)
 					{
-						coefficientMulR.set(0, 0);
+						coefficientMulR.Set(0, 0);
 
 					}
 					else
 					{ // addExponent != 0
 						{ // + divFactor / 2
 							Pair96 divFactor96 = new Pair96();
-							divFactor96.set(divFactor);
-							divFactor96.shr1();
-							divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
-							coefficientMulR.add(divFactor96);
+							divFactor96.Set(divFactor);
+							divFactor96.Shr1();
+							divFactor96.Add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+							coefficientMulR.Add(divFactor96);
 						}
-						coefficientMulR.div(divFactor);
-						coefficientMulR.mul(divFactor);
+						coefficientMulR.Div(divFactor);
+						coefficientMulR.Mul(divFactor);
 					}
 					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
 					break;
@@ -850,31 +850,31 @@ namespace EPAM.Deltix.DFP
 					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
 					if (addExponent != 0)
 					{
-						coefficientMulR.set(0, 0);
+						coefficientMulR.Set(0, 0);
 
 					}
 					else
 					{ // addExponent != 0
 						{ // + divFactor / 2
 							Pair96 divFactor96 = new Pair96();
-							divFactor96.set(divFactor);
-							divFactor96.shr1();
+							divFactor96.Set(divFactor);
+							divFactor96.Shr1();
 
 							bool divisionLatestBit;
 							{ // ((partsCoefficient / divFactor) & 1L)
 								Pair96 tmpCoefficientMulR = new Pair96(coefficientMulR.w0, coefficientMulR.w21);
-								tmpCoefficientMulR.div(divFactor);
+								tmpCoefficientMulR.Div(divFactor);
 
 								divisionLatestBit = (tmpCoefficientMulR.w0 & 1) != 0;
 							}
 
 							if (!divisionLatestBit)
-								divFactor96.add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
+								divFactor96.Add(new Pair96(0xFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL));
 
-							coefficientMulR.add(divFactor96);
+							coefficientMulR.Add(divFactor96);
 						}
-						coefficientMulR.div(divFactor);
-						coefficientMulR.mul(divFactor);
+						coefficientMulR.Div(divFactor);
+						coefficientMulR.Mul(divFactor);
 					}
 					// partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
 					break;
@@ -921,7 +921,7 @@ namespace EPAM.Deltix.DFP
 			}
 
 			{ // / r
-				coefficientMulR.divOne(r);
+				coefficientMulR.Div(r);
 
 				if (coefficientMulR.w21 > Int32.MaxValue)
 				{
@@ -930,7 +930,7 @@ namespace EPAM.Deltix.DFP
 
 					partsExponent += dn;
 
-					coefficientMulR.divOne(f);
+					coefficientMulR.Div(f);
 				}
 
 				partsCoefficient = ((LONG_LOW_PART & coefficientMulR.w21) << 32) + coefficientMulR.w0;
