@@ -464,6 +464,8 @@ public class JavaImplTest {
 
     @Test
     public void testRoundToReciprocal() {
+        testRoundToReciprocalCase(Decimal64Utils.parse("0.9999999999999999"), Integer.MAX_VALUE, RoundingMode.DOWN);
+
         testRoundToReciprocalCase(Decimal64Utils.parse("0.125"), 8, RoundingMode.UNNECESSARY);
 
         testRoundToReciprocalCase(/*687034157780582.4*/ 3582728445709979648L, 1440395186, RoundingMode.HALF_EVEN);
@@ -477,8 +479,6 @@ public class JavaImplTest {
         testRoundToReciprocalCase(/*-0.000000000923*/ -5746593124524751973L, 1, RoundingMode.UP);
         testRoundToReciprocalCase(/*-0.000000000923*/ -5746593124524751973L, 15292403, RoundingMode.UP);
         testRoundToReciprocalCase(/*0.00000000000043*/ 3458764513820540971L, 63907328, RoundingMode.UP);
-
-        testRoundToReciprocalCase(Decimal64Utils.parse("0.9999999999999999"), Integer.MAX_VALUE, RoundingMode.DOWN);
 
         final RoundingMode[] roundingModes = {
             RoundingMode.UP, RoundingMode.DOWN,
@@ -497,7 +497,9 @@ public class JavaImplTest {
 
             @Decimal final long value = Decimal64Utils.fromFixedPoint(mantissa, -exp);
 
-            final int n = Math.abs(random.nextInt());
+            int n = Math.abs(random.nextInt());
+            if (n == 0)
+                n = 1;
 
             final RoundingMode roundingMode = roundingModes[random.nextInt(roundingModes.length)];
 
@@ -984,6 +986,15 @@ public class JavaImplTest {
         assertTrue("The decimal 0x" + Long.toHexString(testValue) + "L(=" +
                 Decimal64Utils.toScientificString(testValue) + ") reconstruction error.",
             Decimal64Utils.equals(testValue, Decimal64Utils.fromFixedPoint(mantissa, exp)));
+    }
+
+    //@@@ @Test
+    public void parseRoundingTest() {
+        final String inStr = "0.0000000012664996872106725";
+        final Decimal64 testValue = Decimal64.parse(inStr);
+        final String testStr = testValue.toString();
+        if (!testStr.endsWith("3"))
+            throw new RuntimeException("Why the values is not rounded up?");
     }
 
     @Test(expected = NumberFormatException.class)

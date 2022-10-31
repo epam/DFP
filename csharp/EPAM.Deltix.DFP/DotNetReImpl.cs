@@ -17,6 +17,7 @@ namespace EPAM.Deltix.DFP
 		public const int BID_ROUNDING_UP = 0x00002;
 		public const int BID_ROUNDING_TO_ZERO = 0x00003;
 		public const int BID_ROUNDING_TIES_AWAY = 0x00004;
+		public const int BID_ROUNDING_EXCEPTION = 0x00005;
 
 		public const uint BID_EXACT_STATUS = 0x00000000;
 
@@ -826,19 +827,81 @@ namespace EPAM.Deltix.DFP
 
 		}
 
+		static void ThrowPackException(BID_UINT64 signMask, int exponentIn, BID_UINT64 coefficientIn)
+		{
+			throw new FormatException("The unbiasedExponent(=" + (exponentIn - DECIMAL_EXPONENT_BIAS) + ") of the value (=" + coefficientIn + ") with sign(=" + (signMask != 0 ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
+		}
+
 
 		//
 		//   BID64 pack macro (general form)
 		//
-		public static BID_UINT64 get_BID64(BID_UINT64 sgn, int expon, BID_UINT64 coeff, int rmode, ref uint fpsc)
+		public static BID_UINT64 get_BID64(BID_UINT64 sgn, int exponIn, BID_UINT64 coeffIn, int rmode, ref uint fpsc)
 		{
 			BID_UINT128 Stemp, Q_low;
 			BID_UINT64 QH, r, mask, _C64, remainder_h, CY, carry;
 			int extra_digits, amount, amount2;
 			uint status;
 
+			int expon = exponIn;
+			BID_UINT64 coeff = coeffIn;
+
+			BID_UINT64 tenDivRem = 0;
+			bool isAnyNonZeroRem = false;
+			while (coeff > 9999999999999999UL)
+			{
+				tenDivRem = coeff % 10;
+				if (tenDivRem != 0)
+				{
+					if (rmode == BID_ROUNDING_EXCEPTION)
+						ThrowPackException(sgn, exponIn, coeffIn);
+					isAnyNonZeroRem = true;
+				}
+				coeff /= 10;
+				expon++;
+			}
+
+			if (isAnyNonZeroRem)
+			{
+				switch (rmode)
+				{
+					case BID_ROUNDING_TO_NEAREST:
+						if (tenDivRem >= 5) // Rounding away from zero
+							coeff++;
+						break;
+
+					case BID_ROUNDING_DOWN:
+						if (sgn != 0 /*&& isAnyNonZeroRem - already checked*/)
+							coeff++;
+						break;
+
+					case BID_ROUNDING_UP:
+						if (sgn == 0 /*&& isAnyNonZeroRem - already checked*/)
+							coeff++;
+						break;
+
+					case BID_ROUNDING_TO_ZERO:
+						break;
+
+					case BID_ROUNDING_TIES_AWAY:
+						//if (isAnyNonZeroRem)  - already checked
+						coeff++;
+						break;
+
+					case BID_ROUNDING_EXCEPTION:
+						ThrowPackException(sgn, exponIn, coeffIn);
+						break;
+
+					default:
+						throw new ArgumentException("Unsupported roundingMode(=" + rmode + ") value.");
+
+				}
+			}
+
 			if (coeff > 9999999999999999UL)
 			{
+				if (rmode == BID_ROUNDING_EXCEPTION)
+					ThrowPackException(sgn, exponIn, coeffIn);
 				expon++;
 				coeff = 1000000000000000UL;
 			}
@@ -851,6 +914,8 @@ namespace EPAM.Deltix.DFP
 					if (expon + MAX_FORMAT_DIGITS < 0)
 					{
 						__set_status_flags(ref fpsc, BID_UNDERFLOW_EXCEPTION | BID_INEXACT_EXCEPTION);
+						if (rmode == BID_ROUNDING_EXCEPTION)
+							ThrowPackException(sgn, exponIn, coeffIn);
 						if (rmode == BID_ROUNDING_DOWN && sgn != 0)
 							return 0x8000000000000001UL;
 						if (rmode == BID_ROUNDING_UP && sgn == 0)
@@ -950,6 +1015,10 @@ namespace EPAM.Deltix.DFP
 					r = sgn | INFINITY_MASK64;
 					switch (rmode)
 					{
+						case BID_ROUNDING_EXCEPTION:
+							ThrowPackException(sgn, exponIn, coeffIn);
+							break;
+
 						case BID_ROUNDING_DOWN:
 							if (sgn == 0)
 								r = LARGEST_BID64;

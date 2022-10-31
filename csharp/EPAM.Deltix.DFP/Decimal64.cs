@@ -36,6 +36,10 @@ namespace EPAM.Deltix.DFP
 		public static readonly Decimal64 OneTenth	= new Decimal64(DotNetImpl.OneTenth);
 		public static readonly Decimal64 OneHundredth = new Decimal64(DotNetImpl.OneHundredth);
 
+		public static readonly int MaxSignificandDigits = 16;
+		public static readonly int MaxExponent = 384;
+		public static readonly int MinExponent = -383;
+
 		#endregion
 
 		public UInt64 Bits { get; }
