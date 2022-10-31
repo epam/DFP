@@ -683,11 +683,15 @@ public class Decimal64UtilsTest {
 
             final String utilityMethodName = method.getName() + vtaSuffix;
 
+            final Method utilityMethod;
             try {
-                final Method utilityMethod = utilityClass.getMethod(utilityMethodName, parameterTypes);
+                utilityMethod = utilityClass.getMethod(utilityMethodName, parameterTypes);
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Can't find complementary for method " + method + ".");
+                throw new RuntimeException("Can't find complementary for method " + method);
             }
+
+            if (utilityMethod.getAnnotation(Deprecated.class) == null)
+                throw new RuntimeException("There is no @Deprecated annotation on method " + utilityMethod);
         }
     }
 }
