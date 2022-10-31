@@ -13,7 +13,7 @@ import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
  * 11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz
  * Windows 10 Pro 21H2 19044.2130 *
  * JMH version: 1.25
- * VM version: JDK 11.0.14.1, OpenJDK 64-Bit Server VM, 11.0.14.1+1
+ * VM version: JDK 11.0.14.1, Eclipse Adoptium OpenJDK 64-Bit Server VM, 11.0.14.1+1
  *
  * Benchmark                                               Mode  Cnt      Score      Error  Units
  * RoundingBenchmark.roundCeiling                          avgt   15  11290,324 ±  410,007  ns/op
@@ -34,7 +34,6 @@ import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
  * RoundingBenchmark.roundTowardsZeroNative                avgt   15  11522,545 ±  200,853  ns/op
  * RoundingBenchmark.roundUp                               avgt   15  10026,050 ±  414,826  ns/op
  */
-
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Warmup(time = 3, iterations = 1)
