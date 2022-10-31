@@ -1130,6 +1130,7 @@ public class Decimal64Utils {
      * @return ..
      * @throws IOException from {@link Appendable#append(char)}
      */
+    @Deprecated
     public static Appendable scientificAppendToChecked(@Decimal final long value, final Appendable appendable) throws IOException {
         checkNull(value);
         return scientificAppendTo(value, appendable);
@@ -1168,6 +1169,7 @@ public class Decimal64Utils {
      * @param sb    {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
      * @return ..
      */
+    @Deprecated
     public static StringBuilder scientificAppendToChecked(@Decimal final long value, final StringBuilder sb) {
         checkNull(value);
         return scientificAppendTo(value, sb);
@@ -1354,6 +1356,7 @@ public class Decimal64Utils {
      * @param numberOfDigits number of significant digits after decimal point
      * @return ..
      */
+    @Deprecated
     public static long toFixedPointChecked(@Decimal final long value, final int numberOfDigits) {
         checkNull(value);
         return toFixedPoint(value, numberOfDigits);
@@ -1365,6 +1368,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static double toDoubleChecked(@Decimal final long value) {
         checkNull(value);
         return toDouble(value);
@@ -1376,12 +1380,14 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static BigDecimal toBigDecimalChecked(@Decimal final long value) {
         checkNull(value);
         return toBigDecimal(value);
     }
 
     @Decimal
+    @Deprecated
     public static long fromLongChecked(final long value) {
         return fromLong(value);
     }
@@ -1392,12 +1398,14 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static long toLongChecked(@Decimal final long value) {
         checkNull(value);
         return toLong(value);
     }
 
     @Decimal
+    @Deprecated
     public static long fromIntChecked(final int value) {
         return fromInt(value);
     }
@@ -1408,6 +1416,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int toIntChecked(@Decimal final long value) {
         checkNull(value);
         return toInt(value);
@@ -1419,6 +1428,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNaNChecked(@Decimal final long value) {
         checkNull(value);
         return isNaN(value);
@@ -1430,6 +1440,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return isInfinity(value);
@@ -1441,6 +1452,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isPositiveInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return isPositiveInfinity(value);
@@ -1452,6 +1464,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNegativeInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return isNegativeInfinity(value);
@@ -1463,6 +1476,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isFiniteChecked(@Decimal final long value) {
         checkNull(value);
         return isFinite(value);
@@ -1474,6 +1488,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNormalChecked(@Decimal final long value) {
         checkNull(value);
         return isNormal(value);
@@ -1486,6 +1501,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isIdenticalChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return a == b;
@@ -1498,6 +1514,7 @@ public class Decimal64Utils {
      * @param obj   {@link Object} argument
      * @return ..
      */
+    @Deprecated
     public static boolean isIdenticalChecked(@Decimal final long value, final Object obj) {
         checkNull(value);
         return obj instanceof Decimal64 && value == ((Decimal64) obj).value;
@@ -1510,6 +1527,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isEqualChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isEqual(a, b);
@@ -1522,6 +1540,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNotEqualChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isNotEqual(a, b);
@@ -1534,6 +1553,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isLessChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isLess(a, b);
@@ -1546,6 +1566,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isLessOrEqualChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isLessOrEqual(a, b);
@@ -1558,6 +1579,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isGreaterChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isGreater(a, b);
@@ -1570,6 +1592,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isGreaterOrEqualChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isGreaterOrEqual(a, b);
@@ -1581,6 +1604,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isZeroChecked(@Decimal final long value) {
         checkNull(value);
         return isZero(value);
@@ -1592,6 +1616,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNonZeroChecked(@Decimal final long value) {
         checkNull(value);
         return isNonZero(value);
@@ -1603,6 +1628,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isPositiveChecked(@Decimal final long value) {
         checkNull(value);
         return isPositive(value);
@@ -1614,6 +1640,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNegativeChecked(@Decimal final long value) {
         checkNull(value);
         return isNegative(value);
@@ -1625,6 +1652,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNonPositiveChecked(@Decimal final long value) {
         checkNull(value);
         return isNonPositive(value);
@@ -1636,6 +1664,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNonNegativeChecked(@Decimal final long value) {
         checkNull(value);
         return isNonNegative(value);
@@ -1648,6 +1677,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long negateChecked(@Decimal final long value) {
         checkNull(value);
         return negate(value);
@@ -1660,6 +1690,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long absChecked(@Decimal final long value) {
         checkNull(value);
         return abs(value);
@@ -1673,6 +1704,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long addChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return add(a, b);
@@ -1687,6 +1719,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long addChecked(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
         checkNull(a, b);
         checkNull(c);
@@ -1703,6 +1736,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long addChecked(@Decimal final long a, @Decimal final long b,
                                   @Decimal final long c, @Decimal final long d) {
         checkNull(a, b);
@@ -1718,6 +1752,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long subtractChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return subtract(a, b);
@@ -1731,6 +1766,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return multiply(a, b);
@@ -1745,6 +1781,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyChecked(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
         checkNull(a, b);
         checkNull(c);
@@ -1761,6 +1798,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyChecked(@Decimal final long a, @Decimal final long b,
                                        @Decimal final long c, @Decimal final long d) {
         checkNull(a, b);
@@ -1776,6 +1814,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long divideChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return divide(a, b);
@@ -1789,6 +1828,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyByIntegerChecked(@Decimal final long a, final int b) {
         checkNull(a);
         return multiplyByInteger(a, b);
@@ -1802,6 +1842,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyByIntegerChecked(@Decimal final long a, final long b) {
         checkNull(a);
         return multiplyByInteger(a, b);
@@ -1815,6 +1856,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long divideByIntegerChecked(@Decimal final long a, final int b) {
         checkNull(a);
         return divideByInteger(a, b);
@@ -1828,6 +1870,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long divideByIntegerChecked(@Decimal final long a, final long b) {
         checkNull(a);
         return divideByInteger(a, b);
@@ -1842,6 +1885,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyAndAddChecked(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
         checkNull(a);
         checkNull(b, c);
@@ -1856,6 +1900,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long scaleByPowerOfTenChecked(@Decimal final long a, final int n) {
         checkNull(a);
         return scaleByPowerOfTen(a, n);
@@ -1869,6 +1914,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long averageChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return average(a, b);
@@ -1882,6 +1928,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long maxChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return max(a, b);
@@ -1895,6 +1942,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long minChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return min(a, b);
@@ -1909,6 +1957,7 @@ public class Decimal64Utils {
      * @return {@code DFP} the rounded value
      */
     @Decimal
+    @Deprecated
     public static long roundToReciprocalChecked(@Decimal final long value, final int r, final RoundingMode roundType) {
         checkNull(value);
         return roundToReciprocal(value, r, roundType);
@@ -1923,6 +1972,7 @@ public class Decimal64Utils {
      * @return {@code DFP} the rounded value
      */
     @Decimal
+    @Deprecated
     public static long roundChecked(@Decimal final long value, final int n, final RoundingMode roundType) {
         checkNull(value);
         return round(value, n, roundType);
@@ -1935,6 +1985,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long ceilChecked(@Decimal final long value) {
         checkNull(value);
         return ceil(value);
@@ -1947,6 +1998,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long floorChecked(@Decimal final long value) {
         checkNull(value);
         return floor(value);
@@ -1959,6 +2011,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundChecked(@Decimal final long value) {
         checkNull(value);
         return round(value);
@@ -1972,6 +2025,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundChecked(@Decimal final long value, final long multiple) {
         checkNull(value, multiple);
         return round(value, multiple);
@@ -1984,6 +2038,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long ceilingChecked(@Decimal final long value) {
         checkNull(value);
         return ceiling(value);
@@ -1996,6 +2051,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsPositiveInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return roundTowardsPositiveInfinity(value);
@@ -2008,6 +2064,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsNegativeInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return roundTowardsNegativeInfinity(value);
@@ -2020,6 +2077,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long truncateChecked(@Decimal final long value) {
         checkNull(value);
         return truncate(value);
@@ -2032,6 +2090,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsZeroChecked(@Decimal final long value) {
         checkNull(value);
         return roundTowardsZeroChecked(value);
@@ -2044,6 +2103,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesAwayFromZeroChecked(@Decimal final long value) {
         checkNull(value);
         return roundToNearestTiesAwayFromZero(value);
@@ -2056,6 +2116,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesToEvenChecked(@Decimal final long value) {
         checkNull(value);
         return roundToNearestTiesToEven(value);
@@ -2069,6 +2130,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsPositiveInfinityChecked(@Decimal final long value, @Decimal final long multiple) {
         checkNull(value, multiple);
         return roundTowardsPositiveInfinity(value, multiple);
@@ -2082,6 +2144,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsNegativeInfinityChecked(@Decimal final long value, @Decimal final long multiple) {
         checkNull(value, multiple);
         return roundTowardsNegativeInfinity(value, multiple);
@@ -2095,6 +2158,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesAwayFromZeroChecked(@Decimal final long value, @Decimal final long multiple) {
         checkNull(value, multiple);
         return roundToNearestTiesAwayFromZero(value, multiple);
@@ -2108,6 +2172,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesToEvenChecked(@Decimal final long value, @Decimal final long multiple) {
         checkNull(value, multiple);
         return roundToNearestTiesToEven(value, multiple);
@@ -2119,6 +2184,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int identityHashCodeChecked(@Decimal final long value) {
         checkNull(value);
         return identityHashCode(value);
@@ -2130,6 +2196,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int hashCodeChecked(@Decimal final long value) {
         checkNull(value);
         return hashCode(value);
@@ -2143,6 +2210,7 @@ public class Decimal64Utils {
      * @return ..
      * @throws IOException from {@link Appendable#append(char)}
      */
+    @Deprecated
     public static Appendable appendToChecked(@Decimal final long value, final Appendable appendable) throws IOException {
         checkNull(value);
         return appendTo(value, appendable);
@@ -2155,6 +2223,7 @@ public class Decimal64Utils {
      * @param stringBuilder StringBuilder argument
      * @return ..
      */
+    @Deprecated
     public static StringBuilder appendToChecked(@Decimal final long value, final StringBuilder stringBuilder) {
         checkNull(value);
         return appendTo(value, stringBuilder);
@@ -2166,6 +2235,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static String toStringChecked(@Decimal final long value) {
         checkNull(value);
         return toString(value);
@@ -2178,6 +2248,7 @@ public class Decimal64Utils {
      * @param b DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean equalsChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return equals(a, b);
@@ -2190,6 +2261,7 @@ public class Decimal64Utils {
      * @param b {@code Object}
      * @return ..
      */
+    @Deprecated
     public static boolean equalsChecked(@Decimal final long a, final Object b) {
         checkNull(a);
         return equals(a, ((Decimal64) b).value);
@@ -2201,6 +2273,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static long getUnscaledValueChecked(@Decimal final long value) {
         checkNull(value);
         return getUnscaledValue(value);
@@ -2213,6 +2286,7 @@ public class Decimal64Utils {
      * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
      * @return ..
      */
+    @Deprecated
     public static long getUnscaledValueChecked(@Decimal final long value, final long abnormalReturn) {
         checkNull(value);
         return getUnscaledValue(value, abnormalReturn);
@@ -2224,6 +2298,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int getScaleChecked(@Decimal final long value) {
         checkNull(value);
         return getScale(value);
@@ -2236,6 +2311,7 @@ public class Decimal64Utils {
      * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
      * @return ..
      */
+    @Deprecated
     public static int getScaleChecked(@Decimal final long value, final int abnormalReturn) {
         checkNull(value);
         return getScale(value, abnormalReturn);
@@ -2248,6 +2324,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long nextUpChecked(@Decimal final long value) {
         checkNull(value);
         return nextUp(value);
@@ -2260,6 +2337,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long nextDownChecked(@Decimal final long value) {
         checkNull(value);
         return nextDown(value);
@@ -2272,6 +2350,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long canonizeChecked(@Decimal final long value) {
         checkNull(value);
         return canonize(value);
@@ -2283,6 +2362,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int intValueChecked(@Decimal final long value) {
         checkNull(value);
         return toInt(value);
@@ -2294,6 +2374,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static long longValueChecked(@Decimal final long value) {
         checkNull(value);
         return toLong(value);
@@ -2305,6 +2386,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static float floatValueChecked(@Decimal final long value) {
         checkNull(value);
         return (float) toDouble(value);
@@ -2316,6 +2398,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static double doubleValueChecked(@Decimal final long value) {
         checkNull(value);
         return toDouble(value);
@@ -2328,6 +2411,7 @@ public class Decimal64Utils {
      * @param b DFP argument
      * @return ..
      */
+    @Deprecated
     public static int compareToChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return compareTo(a, b);
@@ -2346,6 +2430,7 @@ public class Decimal64Utils {
      * @see Decimal64#compareTo(Decimal64)
      * @see Decimal64Utils#compareTo(long, long)
      */
+    @Deprecated
     public static int compareToChecked(@Decimal final long a, final Object b) {
         checkNull(a);
         return compareTo(a, ((Decimal64) b).value);
