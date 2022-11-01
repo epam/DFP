@@ -9,10 +9,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.security.SecureRandom;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
+import static com.epam.deltix.dfp.TestUtils.POWERS_OF_TEN;
 import static org.junit.Assert.*;
 
 public class JavaImplTest {
@@ -458,6 +461,132 @@ public class JavaImplTest {
 
         assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.round(zeroP, 0, RoundingMode.CEILING));
     }
+
+    private static class MaxError {
+        public long ulp = 0;
+        public long val = 0;
+        public int n = 0;
+        public RoundingMode mode = null;
+    }
+
+    @Test
+    public void testRoundToReciprocal() {
+        testRoundToReciprocalCase(/*-0.00144*/ -5683542729741565808L, 55559375, RoundingMode.HALF_EVEN); // roundedValue(=-0.001440008999381293) != refValue(=-0.001439991000618707); Note: bigDecimal=-0.001439991000618707.
+
+        testRoundToReciprocalCase(/*0.01*/ 3566850904877432833L, 56740250, RoundingMode.HALF_EVEN); // roundedValue(=0.009999991187913342) != refValue(=0.01000000881208666); Note: bigDecimal=0.01000000881208666.
+
+        testRoundToReciprocalCase(/* 0.002 */ 3557843705622691842L, 98692250, RoundingMode.HALF_EVEN);
+
+        testRoundToReciprocalCase(/*-0.1*/ -5647513932722601983L, 434753515, RoundingMode.HALF_EVEN); // roundedValue(=-0.09999999884992305) != roundedValueRec(=-0.100000001150077); Note: bigDecimal=-0.099999998849923042025318645209803536608553929690482203461885753835291530.
+
+
+        testRoundToReciprocalCase(/*-0.08*/ -5656521131977342968L, 664150, RoundingMode.CEILING); // roundedValue(=-0.07999849431604307) != roundedValueRec(=-0.08); Note: bigDecimal=-0.08.
+
+        testRoundToReciprocalCase(/*-2576127.8853*/ -5674535504725546107L, 383456473, RoundingMode.UP); // roundedValue(=-2576127.885299999) != ref(=-2576127.885300001)
+        testRoundToReciprocalCase(Decimal64Utils.parse("0.9999999999999999"), Integer.MAX_VALUE, RoundingMode.DOWN);
+
+        testRoundToReciprocalCase(Decimal64Utils.parse("0.125"), 8, RoundingMode.UNNECESSARY);
+
+        testRoundToReciprocalCase(/*687034157780582.4*/ 3582728445709979648L, 1440395186, RoundingMode.HALF_EVEN);
+
+        testRoundToReciprocalCase(/*0.000000000093*/ 3476778912330023005L, 76984627, RoundingMode.CEILING);
+
+        testRoundToReciprocalCase(/*-0.000000000079*/ -5746593124524752817L, 1850110060, RoundingMode.DOWN);
+
+        testRoundToReciprocalCase(/*-0.0001*/ -5674535530486824959L, 579312130, RoundingMode.DOWN);
+
+        testRoundToReciprocalCase(/*-0.000000000923*/ -5746593124524751973L, 1, RoundingMode.UP);
+        testRoundToReciprocalCase(/*-0.000000000923*/ -5746593124524751973L, 15292403, RoundingMode.UP);
+        testRoundToReciprocalCase(/*0.00000000000043*/ 3458764513820540971L, 63907328, RoundingMode.UP);
+
+        final RoundingMode[] roundingModes = {
+            RoundingMode.UP, RoundingMode.DOWN,
+            RoundingMode.CEILING, RoundingMode.FLOOR,
+            RoundingMode.HALF_UP, RoundingMode.HALF_DOWN, RoundingMode.HALF_EVEN};
+
+        final ThreadLocal<Random> tlsRandom = ThreadLocal.withInitial(SecureRandom::new);
+
+        final MaxError maxErr = new MaxError();
+        /*for (int ri = 0; ri < 10_000_000; ++ri)*/
+        IntStream.range(0, 10_000_000).parallel().forEach(ri -> {
+            final Random random = tlsRandom.get();
+
+            final int mantissaLen = random.nextInt(Decimal64Utils.MAX_SIGNIFICAND_DIGITS) + 1;
+            final long mantissa = random.nextLong() % POWERS_OF_TEN[mantissaLen];
+
+            final int exp = random.nextInt(20) - Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
+
+            @Decimal final long value = Decimal64Utils.fromFixedPoint(mantissa, -exp);
+
+            int n = Math.abs(random.nextInt());
+            if (n == 0)
+                n = 1;
+
+            final RoundingMode roundingMode = roundingModes[random.nextInt(roundingModes.length)];
+
+            final long ulpErr = testRoundToReciprocalCase(value, n, roundingMode, false);
+            if (maxErr.ulp < ulpErr) {
+                synchronized (maxErr) {
+                    if (maxErr.ulp < ulpErr) {
+                        maxErr.ulp = ulpErr;
+                        maxErr.val = value;
+                        maxErr.n = n;
+                        maxErr.mode = roundingMode;
+                    }
+                }
+            }
+        });
+
+        if (maxErr.mode != null)
+            testRoundToReciprocalCase(maxErr.val, maxErr.n, maxErr.mode, true);
+    }
+
+    private static long testRoundToReciprocalCase(@Decimal final long value, final int n, final RoundingMode roundingMode) {
+        return testRoundToReciprocalCase(value, n, roundingMode, true);
+    }
+
+    private static long testRoundToReciprocalCase(@Decimal final long value, final int n, final RoundingMode roundingMode, final boolean throwException) {
+        // Reciprocal calculation style.
+//        final BigDecimal scaledValue = Decimal64Utils.toBigDecimal(value).multiply(new BigDecimal(n)).setScale(0, roundingMode);
+//        final BigDecimal refValueBig = scaledValue.divide(new BigDecimal(n), mcDecimalN64);
+//        final BigDecimal refValue = scaledValue.divide(new BigDecimal(n), mcDecimal);
+
+        // Old calculation style
+        final BigDecimal bigMul = BigDecimal.ONE.divide(new BigDecimal(n), mcDecimalN64);
+        final BigDecimal refValueDiv = Decimal64Utils.toBigDecimal(value).divide(bigMul, mcDecimalN64).round(mcDecimalN48);
+        final BigDecimal refValueDivScale = refValueDiv.setScale(0, roundingMode);
+        final BigDecimal refValueBig = refValueDivScale.multiply(bigMul);
+        final BigDecimal refValue = refValueBig.round(mcDecimal);
+
+        final long roundedValue = Decimal64Utils.roundToReciprocal(value, n, roundingMode);
+//        final long roundedValue = Decimal64Utils.roundToNearestTiesToEven(value, Decimal64Utils.divideByInteger(Decimal64Utils.ONE, n));
+
+
+        final BigDecimal roundedValueBd = Decimal64Utils.toBigDecimal(roundedValue);
+        if (refValue.compareTo(Decimal64Utils.toBigDecimal(roundedValue)) != 0) {
+            if (throwException) {
+                throw new RuntimeException("testRoundToReciprocalCase(/*" + Decimal64Utils.toString(value) + "*/ " +
+                    value + "L, " + n + ", RoundingMode." + roundingMode +
+                    "); // roundedValue(=" + Decimal64Utils.toString(roundedValue) + ") != refValue(=" + refValue +
+                    ") with bigDecimal(=" + refValueBig + ".");
+
+            } else {
+                if (Decimal64Utils.isZero(roundedValue))
+                    return 0;
+
+                final long ulp = Decimal64Utils.isPositive(roundedValue)
+                    ? Decimal64Utils.subtract(Decimal64Utils.nextUp(roundedValue), roundedValue)
+                    : Decimal64Utils.subtract(roundedValue, Decimal64Utils.nextDown(roundedValue));
+                return refValue.subtract(roundedValueBd).abs().divide(Decimal64Utils.toBigDecimal(ulp)).longValue();
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    static final MathContext mcDecimal = new MathContext(Decimal64Utils.MAX_SIGNIFICAND_DIGITS, RoundingMode.HALF_UP);
+    static final MathContext mcDecimalN48 = new MathContext(48, RoundingMode.HALF_UP);
+    static final MathContext mcDecimalN64 = new MathContext(64, RoundingMode.HALF_UP);
 
     @Test
     public void testToStringRandomly() throws Exception {
@@ -927,6 +1056,15 @@ public class JavaImplTest {
             Decimal64Utils.equals(testValue, Decimal64Utils.fromFixedPoint(mantissa, exp)));
     }
 
+    //@@@ @Test
+    public void parseRoundingTest() {
+        final String inStr = "0.0000000012664996872106725";
+        final Decimal64 testValue = Decimal64.parse(inStr);
+        final String testStr = testValue.toString();
+        if (!testStr.endsWith("3"))
+            throw new RuntimeException("Why the values is not rounded up?");
+    }
+
     @Test(expected = NumberFormatException.class)
     public void testBigDecimalExact() {
         final BigDecimal bd = Decimal64Utils.toBigDecimal(Decimal64Utils.fromBigDecimalExact(
@@ -937,7 +1075,7 @@ public class JavaImplTest {
     public void testParse() {
         final String testStr = "0.123456789123456789";
         final Decimal64Status decimal64Status = dfpTlsStatus.get();
-        Decimal64Utils.tryParse(testStr, 0 ,testStr.length(), decimal64Status);
+        Decimal64Utils.tryParse(testStr, 0, testStr.length(), decimal64Status);
         Assert.assertFalse(decimal64Status.isExact());
         Assert.assertTrue(decimal64Status.isInexact());
     }

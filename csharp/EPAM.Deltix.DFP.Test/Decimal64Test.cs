@@ -3,6 +3,8 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 using static EPAM.Deltix.DFP.Test.TestUtils;
@@ -1061,6 +1063,95 @@ namespace EPAM.Deltix.DFP.Test
 					$"The decimal 0x{testValue.Bits:X}UL(={testValue.ToScientificString()}) reconstruction error.");
 			}
 		}
+
+		[Test]
+		public void TestRoundToReciprocal()
+		{
+			unchecked
+			{
+				TestRoundToReciprocalCase(/*0.0000000006*/ Decimal64.FromUnderlying(3485786111584763964UL), 1353409007, RoundingMode.Up);
+
+				TestRoundToReciprocalCase(/*0.000000001*/ Decimal64.FromUnderlying(3503800510094245889UL), 789577771, RoundingMode.HalfUp);
+
+				TestRoundToReciprocalCase(/*0.00000000005*/ Decimal64.FromUnderlying(3485786111584763909UL), 1329821241, RoundingMode.Up);
+
+				TestRoundToReciprocalCase(/*8277765774399323000*/ Decimal64.FromUnderlying(3620164666925537115UL), 92111324, RoundingMode.HalfUp);
+
+				TestRoundToReciprocalCase(Decimal64.Parse("0.9999999999999999"), UInt32.MaxValue, RoundingMode.Down);
+
+				//@@@ TestRoundToReciprocalCase(Decimal64.Parse("0.125"), 8, RoundingMode.Unnecessary);
+
+				//@@@ TestRoundToReciprocalCase(/*687034157780582.4*/ Decimal64.FromUnderlying(3582728445709979648UL), 1440395186, RoundingMode.HalfEven);
+
+				TestRoundToReciprocalCase(/*0.000000000093*/ Decimal64.FromUnderlying(3476778912330023005UL), 76984627, RoundingMode.Ceiling);
+
+				TestRoundToReciprocalCase(/*-0.000000000079*/ Decimal64.FromUnderlying((ulong)-5746593124524752817L), 1850110060, RoundingMode.Down);
+
+				TestRoundToReciprocalCase(/*-0.0001*/ Decimal64.FromUnderlying((ulong)-5674535530486824959L), 579312130, RoundingMode.Down);
+
+				TestRoundToReciprocalCase(/*-0.000000000923*/ Decimal64.FromUnderlying((ulong)-5746593124524751973L), 1, RoundingMode.Up);
+				TestRoundToReciprocalCase(/*-0.000000000923*/ Decimal64.FromUnderlying((ulong)-5746593124524751973L), 15292403, RoundingMode.Up);
+				TestRoundToReciprocalCase(/*0.00000000000043*/ Decimal64.FromUnderlying(3458764513820540971UL), 63907328, RoundingMode.Up);
+
+				TestRoundToReciprocalCase(Decimal64.Parse("0.0009999999999999999"), Int32.MaxValue, RoundingMode.Down);
+
+				RoundingMode[] roundingModes = { RoundingMode.Up, RoundingMode.Down,
+					 RoundingMode.Ceiling, RoundingMode.Floor,
+					 RoundingMode.HalfUp/*@@@, RoundingMode.HalfDown, RoundingMode.HalfEven*/};
+
+				ThreadLocal<Random> tlsRandom = new ThreadLocal<Random>(() => new Random());
+
+				Parallel.For(0, 10000000, (i, state) =>
+				{
+					Random random = tlsRandom.Value;
+
+					int mantissaLen = random.Next(Decimal64.MaxSignificandDigits) + 1;
+					long mantissa = (((long)random.Next() << 32) | ((long)random.Next() & 0xFFFFFFFFL)) % (long)DotNetImpl.PowersOfTen[mantissaLen];
+
+					int exp = random.Next(20) - Decimal64.MaxSignificandDigits;
+
+					Decimal64 value = Decimal64.FromFixedPoint(mantissa, -exp);
+
+					uint n = (uint)Math.Abs((long)random.Next() + Int32.MinValue);
+					if (n == 0)
+						n = 1;
+
+					RoundingMode roundingMode = roundingModes[random.Next(roundingModes.Length)];
+
+					TestRoundToReciprocalCase(value, n, roundingMode);
+				});
+			}
+		}
+
+		private static void TestRoundToReciprocalCase(Decimal64 value, uint r, RoundingMode roundingMode)
+		{
+			var roundedValue = value.RoundToReciprocal(r, roundingMode);
+
+			var valMulR = decimal.Parse(value.ToString()) * r;
+			var valMulRRounded = Round(valMulR.ToString(), 0, roundingMode);
+			var refValue = decimal.Parse(valMulRRounded) / r;
+			var refValueStr = refValue.ToString();
+
+			if (refValue != decimal.Zero)
+			{
+				int dotIndex = refValueStr.IndexOf('.');
+				if (dotIndex >= 0)
+					refValueStr = Round(refValueStr, roundedValue.ToString().Length - dotIndex - 1, RoundingMode.HalfUp);
+			}
+
+			refValue = decimal.Parse(refValueStr);
+
+			var ulp = decimal.Parse((roundedValue.NextUp() - roundedValue).ToString());
+
+			if (refValue - decimal.Parse(roundedValue.ToString()) > ulp)
+				ThrowRoundToReciprocalCaseException(value, r, roundingMode, $"roundedValue(={roundedValue}) != refValue(={refValue})");
+		}
+
+		private static void ThrowRoundToReciprocalCaseException(Decimal64 value, uint r, RoundingMode roundingMode, string message)
+		{
+			throw new Exception($"TestRoundToReciprocalCase(/*{value}*/ Decimal64.FromUnderlying({value.ToUnderlying()}UL), {r}, RoundingMode.{roundingMode}); // {message}");
+		}
+
 
 		readonly int N = 5000000;
 
