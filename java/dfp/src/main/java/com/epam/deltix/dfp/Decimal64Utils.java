@@ -893,6 +893,26 @@ public class Decimal64Utils {
      * This function is deprecated.
      * Call {@code roundToReciprocal(value, r, RoundingMode.CEILING)} instead.
      * Where the r - is the integer reciprocal to multiple.
+     * Also, the roundToReciprocal precise is much better. For example:
+     * Decimal64Utils.roundTowardsPositiveInfinity(/ * 0.08 * / 3566850904877432840L,
+     *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 3957050))
+     *          ->   / * 0.08000025271351131 * / 3439742941327669083L
+     * whereas
+     * Decimal64Utils.roundToReciprocal(/ * 0.08 * / 3566850904877432840L, 3957050, RoundingMode.CEILING)
+     *          ->  / * 0.08 * / 3439742916056317952L
+     * The BigDecimal calculation with 34 digits precision produce
+     * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(3957050), MathContext.DECIMAL128)
+     * Decimal64Utils.toBigDecimal(/ * 0.08 * / 3566850904877432840L)
+     *      .divide(bigMultiple, MathContext.DECIMAL128)
+     *      .setScale(0, RoundingMode.CEILING)
+     *      .multiply(bigMultiple)
+     *          ->  0.0800000000000000000000000000000000127204
+     * The BigDecimal reciprocal calculation style:
+     * Decimal64Utils.toBigDecimal(/ * 0.08 * / 3566850904877432840L)
+     *      .multiply(new BigDecimal(3957050))
+     *      .setScale(0, RoundingMode.CEILING)
+     *      .divide(new BigDecimal(3957050), MathContext.DECIMAL128)
+     *          ->  0.08
      *
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
