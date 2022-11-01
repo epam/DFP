@@ -896,7 +896,7 @@ public class Decimal64Utils {
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.roundTowardsPositiveInfinity(/ * 0.08 * / 3566850904877432840L,
      *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 3957050))
-     *          ->   / * 0.08000025271351131 * / 3439742941327669083L
+     *          ->  / * 0.08000025271351131 * / 3439742941327669083L
      * whereas
      * Decimal64Utils.roundToReciprocal(/ * 0.08 * / 3566850904877432840L, 3957050, RoundingMode.CEILING)
      *          ->  / * 0.08 * / 3439742916056317952L
@@ -952,6 +952,26 @@ public class Decimal64Utils {
      * This function is deprecated.
      * Call {@code roundToReciprocal(value, r, RoundingMode.FLOOR)} instead.
      * Where the r - is the integer reciprocal to multiple.
+     * Also, the roundToReciprocal precise is much better. For example:
+     * Decimal64Utils.roundTowardsNegativeInfinity(/ * 0.5 * / 3575858104132173829L,
+     *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 506012))
+     *          ->  / * 0.4999980237622824 * / 3445750095548681768
+     * whereas
+     * Decimal64Utils.roundToReciprocal(/ * 0.5 * / 3575858104132173829L, 506012, RoundingMode.FLOOR)
+     *          ->  / * 0.5 * / 3445750115311058944
+     * The BigDecimal calculation with 34 digits precision produce
+     * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(506012), MathContext.DECIMAL128)
+     * Decimal64Utils.toBigDecimal(/ * 0.5 * / 3575858104132173829L)
+     *      .divide(bigMultiple, MathContext.DECIMAL128)
+     *      .setScale(0, RoundingMode.FLOOR)
+     *      .multiply(bigMultiple)
+     *          ->  0.499999999999999999999999999999999960058
+     * The BigDecimal reciprocal calculation style:
+     * Decimal64Utils.toBigDecimal(/ * 0.5 * / 3575858104132173829L)
+     *      .multiply(new BigDecimal(506012))
+     *      .setScale(0, RoundingMode.FLOOR)
+     *      .divide(new BigDecimal(506012), MathContext.DECIMAL128)
+     *          ->  0.5
      *
      * Returns the largest (closest to positive infinity) {@code DFP} value that is less than or equal to the
      * argument and is equal to a mathematical integer.
