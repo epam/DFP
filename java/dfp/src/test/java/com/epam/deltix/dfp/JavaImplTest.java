@@ -462,8 +462,27 @@ public class JavaImplTest {
         assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.round(zeroP, 0, RoundingMode.CEILING));
     }
 
+    private static class MaxError {
+        public long ulp = 0;
+        public long val = 0;
+        public int n = 0;
+        public RoundingMode mode = null;
+    }
+
     @Test
     public void testRoundToReciprocal() {
+        testRoundToReciprocalCase(/*-0.00144*/ -5683542729741565808L, 55559375, RoundingMode.HALF_EVEN); // roundedValue(=-0.001440008999381293) != refValue(=-0.001439991000618707); Note: bigDecimal=-0.001439991000618707.
+
+        testRoundToReciprocalCase(/*0.01*/ 3566850904877432833L, 56740250, RoundingMode.HALF_EVEN); // roundedValue(=0.009999991187913342) != refValue(=0.01000000881208666); Note: bigDecimal=0.01000000881208666.
+
+        testRoundToReciprocalCase(/* 0.002 */ 3557843705622691842L, 98692250, RoundingMode.HALF_EVEN);
+
+        testRoundToReciprocalCase(/*-0.1*/ -5647513932722601983L, 434753515, RoundingMode.HALF_EVEN); // roundedValue(=-0.09999999884992305) != roundedValueRec(=-0.100000001150077); Note: bigDecimal=-0.099999998849923042025318645209803536608553929690482203461885753835291530.
+
+
+        testRoundToReciprocalCase(/*-0.08*/ -5656521131977342968L, 664150, RoundingMode.CEILING); // roundedValue(=-0.07999849431604307) != roundedValueRec(=-0.08); Note: bigDecimal=-0.08.
+
+        testRoundToReciprocalCase(/*-2576127.8853*/ -5674535504725546107L, 383456473, RoundingMode.UP); // roundedValue(=-2576127.885299999) != ref(=-2576127.885300001)
         testRoundToReciprocalCase(Decimal64Utils.parse("0.9999999999999999"), Integer.MAX_VALUE, RoundingMode.DOWN);
 
         testRoundToReciprocalCase(Decimal64Utils.parse("0.125"), 8, RoundingMode.UNNECESSARY);
@@ -487,6 +506,8 @@ public class JavaImplTest {
 
         final ThreadLocal<Random> tlsRandom = ThreadLocal.withInitial(SecureRandom::new);
 
+        final MaxError maxErr = new MaxError();
+        /*for (int ri = 0; ri < 10_000_000; ++ri)*/
         IntStream.range(0, 10_000_000).parallel().forEach(ri -> {
             final Random random = tlsRandom.get();
 
@@ -503,22 +524,69 @@ public class JavaImplTest {
 
             final RoundingMode roundingMode = roundingModes[random.nextInt(roundingModes.length)];
 
-            testRoundToReciprocalCase(value, n, roundingMode);
+            final long ulpErr = testRoundToReciprocalCase(value, n, roundingMode, false);
+            if (maxErr.ulp < ulpErr) {
+                synchronized (maxErr) {
+                    if (maxErr.ulp < ulpErr) {
+                        maxErr.ulp = ulpErr;
+                        maxErr.val = value;
+                        maxErr.n = n;
+                        maxErr.mode = roundingMode;
+                    }
+                }
+            }
         });
+
+        if (maxErr.mode != null)
+            testRoundToReciprocalCase(maxErr.val, maxErr.n, maxErr.mode, true);
     }
 
-    private static void testRoundToReciprocalCase(@Decimal final long value, final int n, final RoundingMode roundingMode) {
-        @Decimal final long roundedValue = Decimal64Utils.roundToReciprocal(value, n, roundingMode);
-
-        final BigDecimal ref = Decimal64Utils.toBigDecimal(value).multiply(new BigDecimal(n)).setScale(0, roundingMode)
-            .divide(new BigDecimal(n), mcDecimal64);
-
-        if (ref.compareTo(Decimal64Utils.toBigDecimal(roundedValue)) != 0)
-            throw new RuntimeException("The testRoundToReciprocalCase(/*" + Decimal64Utils.toString(value) + "*/ " + value +
-                "L, " + n + ", RoundingMode." + roundingMode + ") error: roundedValue(=" + Decimal64Utils.toString(roundedValue) + ") != ref(=" + ref + ").");
+    private static long testRoundToReciprocalCase(@Decimal final long value, final int n, final RoundingMode roundingMode) {
+        return testRoundToReciprocalCase(value, n, roundingMode, true);
     }
 
-    static final MathContext mcDecimal64 = new MathContext(Decimal64Utils.MAX_SIGNIFICAND_DIGITS, RoundingMode.HALF_UP);
+    private static long testRoundToReciprocalCase(@Decimal final long value, final int n, final RoundingMode roundingMode, final boolean throwException) {
+        // Reciprocal calculation style.
+//        final BigDecimal scaledValue = Decimal64Utils.toBigDecimal(value).multiply(new BigDecimal(n)).setScale(0, roundingMode);
+//        final BigDecimal refValueBig = scaledValue.divide(new BigDecimal(n), mcDecimalN64);
+//        final BigDecimal refValue = scaledValue.divide(new BigDecimal(n), mcDecimal);
+
+        // Old calculation style
+        final BigDecimal bigMul = BigDecimal.ONE.divide(new BigDecimal(n), mcDecimalN64);
+        final BigDecimal refValueDiv = Decimal64Utils.toBigDecimal(value).divide(bigMul, mcDecimalN64).round(mcDecimalN48);
+        final BigDecimal refValueDivScale = refValueDiv.setScale(0, roundingMode);
+        final BigDecimal refValueBig = refValueDivScale.multiply(bigMul);
+        final BigDecimal refValue = refValueBig.round(mcDecimal);
+
+        final long roundedValue = Decimal64Utils.roundToReciprocal(value, n, roundingMode);
+//        final long roundedValue = Decimal64Utils.roundToNearestTiesToEven(value, Decimal64Utils.divideByInteger(Decimal64Utils.ONE, n));
+
+
+        final BigDecimal roundedValueBd = Decimal64Utils.toBigDecimal(roundedValue);
+        if (refValue.compareTo(Decimal64Utils.toBigDecimal(roundedValue)) != 0) {
+            if (throwException) {
+                throw new RuntimeException("testRoundToReciprocalCase(/*" + Decimal64Utils.toString(value) + "*/ " +
+                    value + "L, " + n + ", RoundingMode." + roundingMode +
+                    "); // roundedValue(=" + Decimal64Utils.toString(roundedValue) + ") != refValue(=" + refValue +
+                    ") with bigDecimal(=" + refValueBig + ".");
+
+            } else {
+                if (Decimal64Utils.isZero(roundedValue))
+                    return 0;
+
+                final long ulp = Decimal64Utils.isPositive(roundedValue)
+                    ? Decimal64Utils.subtract(Decimal64Utils.nextUp(roundedValue), roundedValue)
+                    : Decimal64Utils.subtract(roundedValue, Decimal64Utils.nextDown(roundedValue));
+                return refValue.subtract(roundedValueBd).abs().divide(Decimal64Utils.toBigDecimal(ulp)).longValue();
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    static final MathContext mcDecimal = new MathContext(Decimal64Utils.MAX_SIGNIFICAND_DIGITS, RoundingMode.HALF_UP);
+    static final MathContext mcDecimalN48 = new MathContext(48, RoundingMode.HALF_UP);
+    static final MathContext mcDecimalN64 = new MathContext(64, RoundingMode.HALF_UP);
 
     @Test
     public void testToStringRandomly() throws Exception {
