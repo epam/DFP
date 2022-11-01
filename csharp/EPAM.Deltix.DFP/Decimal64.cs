@@ -658,6 +658,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.roundTowardsPositiveInfinity(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.Ceiling) instead.")]
 		public Decimal64 RoundTowardsPositiveInfinity()
 		{
 			return new Decimal64(NativeImpl.roundTowardsPositiveInfinity(Bits));
@@ -668,11 +669,13 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.roundTowardsNegativeInfinity(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.Floor) instead.")]
 		public Decimal64 RoundTowardsNegativeInfinity()
 		{
 			return new Decimal64(NativeImpl.roundTowardsNegativeInfinity(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.Down) instead.")]
 		public Decimal64 RoundTowardsZero()
 		{
 			return new Decimal64(NativeImpl.roundTowardsZero(Bits));
@@ -684,16 +687,19 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.roundToNearestTiesAwayFromZero(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.HalfUp) instead.")]
 		public Decimal64 RoundToNearestTiesAwayFromZero()
 		{
 			return new Decimal64(NativeImpl.roundToNearestTiesAwayFromZero(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.HalfEven) instead.")]
 		public Decimal64 RoundToNearestTiesToEven()
 		{
 			return new Decimal64(NativeImpl.roundToNearestTiesToEven(Bits));
 		}
 
+		[Obsolete("Call RoundToReciprocal(r, RoundingMode.Ceiling) instead.")]
 		public Decimal64 RoundTowardsPositiveInfinity(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
@@ -705,6 +711,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
+		[Obsolete("Call RoundToReciprocal(r, RoundingMode.Floor) instead.")]
 		public Decimal64 RoundTowardsNegativeInfinity(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
@@ -716,6 +723,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
+		[Obsolete("Call RoundToReciprocal(r, RoundingMode.HalfUp) instead.")]
 		public Decimal64 RoundToNearestTiesAwayFromZero(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
@@ -727,6 +735,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
+		[Obsolete("Call RoundToReciprocal(r, RoundingMode.HalfEven) instead.")]
 		public Decimal64 RoundToNearestTiesToEven(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
