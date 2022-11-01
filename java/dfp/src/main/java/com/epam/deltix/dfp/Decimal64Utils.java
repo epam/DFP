@@ -1078,6 +1078,26 @@ public class Decimal64Utils {
      * This function is deprecated.
      * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_EVEN)} instead.
      * Where the r - is the integer reciprocal to multiple.
+     * Also, the roundToReciprocal precise is much better. For example:
+     * Decimal64Utils.roundToNearestTiesToEven(/ * 0.0008 * / 3548836506367950856L,
+     *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 620936875))
+     *          ->  / * 0.0007999991947651685 * / 3421728509494487653
+     * whereas
+     * Decimal64Utils.roundToReciprocal(/ * 0.0008 * / 3548836506367950856L, 620936875, RoundingMode.HALF_EVEN)
+     *          ->  / * 0.0008000008052348316 * / 3421728525599184284
+     * The BigDecimal calculation with 34 digits precision produce
+     * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(620936875), new MathContext(64, RoundingMode.HALF_UP))
+     * Decimal64Utils.toBigDecimal(/ * 0.0008 * / 3548836506367950856L)
+     *      .divide(bigMultiple, new MathContext(64, RoundingMode.HALF_UP)).round(new MathContext(48, RoundingMode.HALF_UP))
+     *      .setScale(0, RoundingMode.HALF_EVEN)
+     *      .multiply(bigMultiple)
+     *          ->  0.000800000805234831640494857065784666114409777966560610529049349823421250
+     * The BigDecimal reciprocal calculation style:
+     * Decimal64Utils.toBigDecimal(/ * 0.0008 * / 3548836506367950856L)
+     *      .multiply(new BigDecimal(620936875))
+     *      .setScale(0, RoundingMode.HALF_EVEN)
+     *      .divide(new BigDecimal(620936875), MathContext.DECIMAL128)
+     *          ->  0.0008000008052348316404948570657846661
      *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding to even.
