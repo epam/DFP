@@ -738,6 +738,9 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.CEILING)} instead.
+     *
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
      * If the argument is not finite, its value is not changed
@@ -747,6 +750,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsPositiveInfinity(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_positive(value, BID_ROUNDING_TO_NEAREST);
     }
@@ -766,6 +770,9 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.FLOOR)} instead.
+     *
      * Returns the largest (closest to positive infinity) {@code DFP} value that is less than or equal to the
      * argument and is equal to a mathematical integer.
      *
@@ -774,11 +781,15 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsNegativeInfinity(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_negative(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.DOWN)} instead.
+     *
      * Returns nearest {@code DFP} value whose absolute value is the same or smaller than the value of the
      * argument and is equal to a mathematical integer. Same as {@link Decimal64Utils#roundTowardsZero(long)}
      *
@@ -788,12 +799,16 @@ public class Decimal64Utils {
      * @see Decimal64Utils#roundTowardsZero(long)
      */
     @Decimal
+    @Deprecated
     public static long truncate(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_zero(value, BID_ROUNDING_TO_NEAREST);
     }
 
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.DOWN)} instead.
+     *
      * Returns nearest {@code DFP} value whose absolute value is the same or smaller than the value of the
      * argument and is equal to a mathematical integer.
      *
@@ -802,11 +817,16 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsZero(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_zero(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_UP)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding away from zero. Same as {@link Decimal64Utils#roundToNearestTiesAwayFromZero(long, long)}
      * <p>
@@ -819,6 +839,7 @@ public class Decimal64Utils {
      * @see Decimal64Utils#roundToNearestTiesAwayFromZero(long, long)
      */
     @Decimal
+    @Deprecated
     public static long round(@Decimal final long value, @Decimal final long multiple) {
         return roundToNearestTiesAwayFromZero(value, multiple);
     }
@@ -837,6 +858,9 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.HALF_UP)} instead.
+     *
      * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
      * with ties rounding away from zero
      *
@@ -844,11 +868,15 @@ public class Decimal64Utils {
      * @return the value of the argument rounded to the nearest mathematical integer
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesAwayFromZero(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_nearest_away(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.HALF_EVEN)} instead.
+     *
      * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
      * with ties rounding to even
      *
@@ -856,11 +884,16 @@ public class Decimal64Utils {
      * @return the value of the argument rounded to the nearest mathematical integer
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesToEven(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_nearest_even(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.CEILING)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     *
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
      * <p>
@@ -884,6 +917,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsPositiveInfinity(@Decimal final long value, @Decimal final long multiple) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
@@ -895,6 +929,10 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.FLOOR)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     *
      * Returns the largest (closest to positive infinity) {@code DFP} value that is less than or equal to the
      * argument and is equal to a mathematical integer.
      * <p>
@@ -918,6 +956,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsNegativeInfinity(@Decimal final long value, @Decimal final long multiple) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
@@ -929,6 +968,10 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_UP)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding away from zero.
      * <p>
@@ -940,6 +983,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesAwayFromZero(@Decimal final long value, @Decimal final long multiple) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
@@ -951,6 +995,10 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_EVEN)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding to even.
      *
@@ -960,6 +1008,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesToEven(@Decimal final long value, @Decimal final long multiple) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
