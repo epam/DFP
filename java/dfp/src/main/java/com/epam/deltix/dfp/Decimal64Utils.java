@@ -829,23 +829,23 @@ public class Decimal64Utils {
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.round(/ * 0.00004 * / 3539829307113209860L,
      *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 891087500))
-     *          ->  / * 0.00003999943888787578 * / 3408721262180882554
+     *          ==  / * 0.00003999943888787578 * / 3408721262180882554L
      * whereas
      * Decimal64Utils.roundToReciprocal(/ * 0.00004 * / 3539829307113209860L, 891087500, RoundingMode.HALF_UP)
-     *          ->  / * 0.00004000056111212423 * / 3408721374403307399
+     *          ==  / * 0.00004000056111212423 * / 3408721374403307399L
      * The BigDecimal calculation with 34 digits precision produce
      * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(891087500), MathContext.DECIMAL128)
      * Decimal64Utils.toBigDecimal(/ * 0.00004 * / 3539829307113209860L)
      *      .divide(bigMultiple, MathContext.DECIMAL128)
      *      .setScale(0, RoundingMode.HALF_UP)
      *      .multiply(bigMultiple)
-     *          ->  0.000040000561112124230224304571661032164220
+     *          ==  0.000040000561112124230224304571661032164220
      * The BigDecimal reciprocal calculation style:
      * Decimal64Utils.toBigDecimal(/ * 0.00004 * / 3539829307113209860L)
      *      .multiply(new BigDecimal(891087500))
      *      .setScale(0, RoundingMode.HALF_UP)
      *      .divide(new BigDecimal(891087500), MathContext.DECIMAL128)
-     *          ->  0.00004000056111212423022430457166103217
+     *          ==  0.00004000056111212423022430457166103217
      *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding away from zero. Same as {@link Decimal64Utils#roundToNearestTiesAwayFromZero(long, long)}
@@ -916,23 +916,23 @@ public class Decimal64Utils {
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.roundTowardsPositiveInfinity(/ * 0.08 * / 3566850904877432840L,
      *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 3957050))
-     *          ->  / * 0.08000025271351131 * / 3439742941327669083L
+     *          ==  / * 0.08000025271351131 * / 3439742941327669083L
      * whereas
      * Decimal64Utils.roundToReciprocal(/ * 0.08 * / 3566850904877432840L, 3957050, RoundingMode.CEILING)
-     *          ->  / * 0.08 * / 3439742916056317952L
+     *          ==  / * 0.08 * / 3439742916056317952L
      * The BigDecimal calculation with 34 digits precision produce
      * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(3957050), MathContext.DECIMAL128)
      * Decimal64Utils.toBigDecimal(/ * 0.08 * / 3566850904877432840L)
      *      .divide(bigMultiple, MathContext.DECIMAL128)
      *      .setScale(0, RoundingMode.CEILING)
      *      .multiply(bigMultiple)
-     *          ->  0.0800000000000000000000000000000000127204
+     *          ==  0.0800000000000000000000000000000000127204
      * The BigDecimal reciprocal calculation style:
      * Decimal64Utils.toBigDecimal(/ * 0.08 * / 3566850904877432840L)
      *      .multiply(new BigDecimal(3957050))
      *      .setScale(0, RoundingMode.CEILING)
      *      .divide(new BigDecimal(3957050), MathContext.DECIMAL128)
-     *          ->  0.08
+     *          ==  0.08
      *
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
@@ -975,23 +975,23 @@ public class Decimal64Utils {
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.roundTowardsNegativeInfinity(/ * 0.5 * / 3575858104132173829L,
      *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 506012))
-     *          ->  / * 0.4999980237622824 * / 3445750095548681768
+     *          ==  / * 0.4999980237622824 * / 3445750095548681768L
      * whereas
      * Decimal64Utils.roundToReciprocal(/ * 0.5 * / 3575858104132173829L, 506012, RoundingMode.FLOOR)
-     *          ->  / * 0.5 * / 3445750115311058944
+     *          ==  / * 0.5 * / 3445750115311058944L
      * The BigDecimal calculation with 34 digits precision produce
      * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(506012), MathContext.DECIMAL128)
      * Decimal64Utils.toBigDecimal(/ * 0.5 * / 3575858104132173829L)
      *      .divide(bigMultiple, MathContext.DECIMAL128)
      *      .setScale(0, RoundingMode.FLOOR)
      *      .multiply(bigMultiple)
-     *          ->  0.499999999999999999999999999999999960058
+     *          ==  0.499999999999999999999999999999999960058
      * The BigDecimal reciprocal calculation style:
      * Decimal64Utils.toBigDecimal(/ * 0.5 * / 3575858104132173829L)
      *      .multiply(new BigDecimal(506012))
      *      .setScale(0, RoundingMode.FLOOR)
      *      .divide(new BigDecimal(506012), MathContext.DECIMAL128)
-     *          ->  0.5
+     *          ==  0.5
      *
      * Returns the largest (closest to positive infinity) {@code DFP} value that is less than or equal to the
      * argument and is equal to a mathematical integer.
@@ -1034,23 +1034,23 @@ public class Decimal64Utils {
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.roundToNearestTiesAwayFromZero(/ * 0.00004 * / 3539829307113209860L,
      *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 891087500))
-     *          ->  / * 0.00003999943888787578 * / 3408721262180882554
+     *          ==  / * 0.00003999943888787578 * / 3408721262180882554L
      * whereas
      * Decimal64Utils.roundToReciprocal(/ * 0.00004 * / 3539829307113209860L, 891087500, RoundingMode.HALF_UP)
-     *          ->  / * 0.00004000056111212423 * / 3408721374403307399
+     *          ==  / * 0.00004000056111212423 * / 3408721374403307399L
      * The BigDecimal calculation with 34 digits precision produce
      * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(891087500), MathContext.DECIMAL128)
      * Decimal64Utils.toBigDecimal(/ * 0.00004 * / 3539829307113209860L)
      *      .divide(bigMultiple, MathContext.DECIMAL128)
      *      .setScale(0, RoundingMode.HALF_UP)
      *      .multiply(bigMultiple)
-     *          ->  0.000040000561112124230224304571661032164220
+     *          ==  0.000040000561112124230224304571661032164220
      * The BigDecimal reciprocal calculation style:
      * Decimal64Utils.toBigDecimal(/ * 0.00004 * / 3539829307113209860L)
      *      .multiply(new BigDecimal(891087500))
      *      .setScale(0, RoundingMode.HALF_UP)
      *      .divide(new BigDecimal(891087500), MathContext.DECIMAL128)
-     *          ->  0.00004000056111212423022430457166103217
+     *          ==  0.00004000056111212423022430457166103217
      *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding away from zero.
@@ -1081,23 +1081,23 @@ public class Decimal64Utils {
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.roundToNearestTiesToEven(/ * 0.0008 * / 3548836506367950856L,
      *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 620936875))
-     *          ->  / * 0.0007999991947651685 * / 3421728509494487653
+     *          ==  / * 0.0007999991947651685 * / 3421728509494487653L
      * whereas
      * Decimal64Utils.roundToReciprocal(/ * 0.0008 * / 3548836506367950856L, 620936875, RoundingMode.HALF_EVEN)
-     *          ->  / * 0.0008000008052348316 * / 3421728525599184284
+     *          ==  / * 0.0008000008052348316 * / 3421728525599184284L
      * The BigDecimal calculation with 34 digits precision produce
      * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(620936875), new MathContext(64, RoundingMode.HALF_UP))
      * Decimal64Utils.toBigDecimal(/ * 0.0008 * / 3548836506367950856L)
      *      .divide(bigMultiple, new MathContext(64, RoundingMode.HALF_UP)).round(new MathContext(48, RoundingMode.HALF_UP))
      *      .setScale(0, RoundingMode.HALF_EVEN)
      *      .multiply(bigMultiple)
-     *          ->  0.000800000805234831640494857065784666114409777966560610529049349823421250
+     *          ==  0.000800000805234831640494857065784666114409777966560610529049349823421250
      * The BigDecimal reciprocal calculation style:
      * Decimal64Utils.toBigDecimal(/ * 0.0008 * / 3548836506367950856L)
      *      .multiply(new BigDecimal(620936875))
      *      .setScale(0, RoundingMode.HALF_EVEN)
      *      .divide(new BigDecimal(620936875), MathContext.DECIMAL128)
-     *          ->  0.0008000008052348316404948570657846661
+     *          ==  0.0008000008052348316404948570657846661
      *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding to even.
