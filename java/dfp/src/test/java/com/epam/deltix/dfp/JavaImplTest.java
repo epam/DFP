@@ -516,24 +516,30 @@ public class JavaImplTest {
 
             final int exp = random.nextInt(20) - Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
 
-            @Decimal final long value = Decimal64Utils.fromFixedPoint(mantissa, -exp);
-
             int n = Math.abs(random.nextInt());
             if (n == 0)
                 n = 1;
 
             final RoundingMode roundingMode = roundingModes[random.nextInt(roundingModes.length)];
 
-            final long ulpErr = testRoundToReciprocalCase(value, n, roundingMode, false);
-            if (maxErr.ulp < ulpErr) {
-                synchronized (maxErr) {
-                    if (maxErr.ulp < ulpErr) {
-                        maxErr.ulp = ulpErr;
-                        maxErr.val = value;
-                        maxErr.n = n;
-                        maxErr.mode = roundingMode;
+            try {
+                @Decimal final long value = Decimal64Utils.fromFixedPoint(mantissa, -exp);
+
+                final long ulpErr = testRoundToReciprocalCase(value, n, roundingMode, false);
+                if (maxErr.ulp < ulpErr) {
+                    synchronized (maxErr) {
+                        if (maxErr.ulp < ulpErr) {
+                            maxErr.ulp = ulpErr;
+                            maxErr.val = value;
+                            maxErr.n = n;
+                            maxErr.mode = roundingMode;
+                        }
                     }
                 }
+            }
+            catch (final Throwable e) {
+                throw new RuntimeException("Error on processing case mantissa(=" + mantissa + "), exp(=" + exp +
+                    "), n(=" + n + "), mode(=" + roundingMode + ")", e);
             }
         });
 
