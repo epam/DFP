@@ -693,6 +693,18 @@ public class Decimal64Utils {
     }
 
     /**
+     * Returns the sign of the value is rounded to the value, reciprocal to r.
+     *
+     * @param value {@code DFP} argument to round check
+     * @param r     the number whose reciprocal is rounded to
+     * @return {@code true} if value is rounded to the value, reciprocal to r.
+     */
+    @Decimal
+    public static boolean isRoundedToReciprocal(@Decimal final long value, final int r) {
+        return JavaImpl.isRoundedToReciprocal(value, r);
+    }
+
+    /**
      * Returns the {@code DFP} value that is rounded according the selected rounding type.
      *
      * @param value     {@code DFP} argument to round
@@ -703,6 +715,18 @@ public class Decimal64Utils {
     @Decimal
     public static long round(@Decimal final long value, final int n, final RoundingMode roundType) {
         return JavaImpl.round(value, n, roundType);
+    }
+
+    /**
+     * Returns the sign of the value is rounded to the 10^-n.
+     *
+     * @param value {@code DFP} argument to round check
+     * @param n     the number of decimals to use when rounding the number
+     * @return {@code true} is value is rounded to 10^-n
+     */
+    @Decimal
+    public static boolean isRounded(@Decimal final long value, final int n) {
+        return JavaImpl.isRounded(value, n);
     }
 
     /**
@@ -739,8 +763,8 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code round(value, 0, RoundingMode.CEILING)} instead.
-     *
+     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode CEILING)} instead.
+     * <p>
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
      * If the argument is not finite, its value is not changed
@@ -771,8 +795,8 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code round(value, 0, RoundingMode.FLOOR)} instead.
-     *
+     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode FLOOR)} instead.
+     * <p>
      * Returns the largest (closest to positive infinity) {@code DFP} value that is less than or equal to the
      * argument and is equal to a mathematical integer.
      *
@@ -788,8 +812,8 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code round(value, 0, RoundingMode.DOWN)} instead.
-     *
+     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode DOWN)} instead.
+     * <p>
      * Returns nearest {@code DFP} value whose absolute value is the same or smaller than the value of the
      * argument and is equal to a mathematical integer. Same as {@link Decimal64Utils#roundTowardsZero(long)}
      *
@@ -807,8 +831,8 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code round(value, 0, RoundingMode.DOWN)} instead.
-     *
+     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode DOWN)} instead.
+     * <p>
      * Returns nearest {@code DFP} value whose absolute value is the same or smaller than the value of the
      * argument and is equal to a mathematical integer.
      *
@@ -824,7 +848,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_UP)} instead.
+     * Call {@link Decimal64Utils#roundToReciprocal(long value, int r, RoundingMode HALF_UP)} instead.
      * Where the r - is the integer reciprocal to multiple.
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.round(/ * 0.00004 * / 3539829307113209860L,
@@ -846,7 +870,7 @@ public class Decimal64Utils {
      *      .setScale(0, RoundingMode.HALF_UP)
      *      .divide(new BigDecimal(891087500), MathContext.DECIMAL128)
      *          ==  0.00004000056111212423022430457166103217
-     *
+     * <p>
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding away from zero. Same as {@link Decimal64Utils#roundToNearestTiesAwayFromZero(long, long)}
      * <p>
@@ -879,8 +903,8 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code round(value, 0, RoundingMode.HALF_UP)} instead.
-     *
+     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode HALF_UP)} instead.
+     * <p>
      * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
      * with ties rounding away from zero
      *
@@ -895,8 +919,8 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code round(value, 0, RoundingMode.HALF_EVEN)} instead.
-     *
+     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode HALF_EVEN)} instead.
+     * <p>
      * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
      * with ties rounding to even
      *
@@ -911,7 +935,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code roundToReciprocal(value, r, RoundingMode.CEILING)} instead.
+     * Call {@link Decimal64Utils#roundToReciprocal(long value, int r, RoundingMode CEILING)} instead.
      * Where the r - is the integer reciprocal to multiple.
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.roundTowardsPositiveInfinity(/ * 0.08 * / 3566850904877432840L,
@@ -933,7 +957,7 @@ public class Decimal64Utils {
      *      .setScale(0, RoundingMode.CEILING)
      *      .divide(new BigDecimal(3957050), MathContext.DECIMAL128)
      *          ==  0.08
-     *
+     * <p>
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
      * <p>
@@ -970,7 +994,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code roundToReciprocal(value, r, RoundingMode.FLOOR)} instead.
+     * Call {@link Decimal64Utils#roundToReciprocal(long value, int r, RoundingMode FLOOR)} instead.
      * Where the r - is the integer reciprocal to multiple.
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.roundTowardsNegativeInfinity(/ * 0.5 * / 3575858104132173829L,
@@ -992,7 +1016,7 @@ public class Decimal64Utils {
      *      .setScale(0, RoundingMode.FLOOR)
      *      .divide(new BigDecimal(506012), MathContext.DECIMAL128)
      *          ==  0.5
-     *
+     * <p>
      * Returns the largest (closest to positive infinity) {@code DFP} value that is less than or equal to the
      * argument and is equal to a mathematical integer.
      * <p>
@@ -1029,7 +1053,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_UP)} instead.
+     * Call {@link Decimal64Utils#roundToReciprocal(long value, int r, RoundingMode HALF_UP)} instead.
      * Where the r - is the integer reciprocal to multiple.
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.roundToNearestTiesAwayFromZero(/ * 0.00004 * / 3539829307113209860L,
@@ -1051,7 +1075,7 @@ public class Decimal64Utils {
      *      .setScale(0, RoundingMode.HALF_UP)
      *      .divide(new BigDecimal(891087500), MathContext.DECIMAL128)
      *          ==  0.00004000056111212423022430457166103217
-     *
+     * <p>
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding away from zero.
      * <p>
@@ -1076,7 +1100,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_EVEN)} instead.
+     * Call {@link Decimal64Utils#roundToReciprocal(long value, int r, RoundingMode HALF_EVEN)} instead.
      * Where the r - is the integer reciprocal to multiple.
      * Also, the roundToReciprocal precise is much better. For example:
      * Decimal64Utils.roundToNearestTiesToEven(/ * 0.0008 * / 3548836506367950856L,
