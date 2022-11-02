@@ -1088,4 +1088,29 @@ public class JavaImplTest {
 
     static ThreadLocal<Decimal64Status> dfpTlsStatus =
         ThreadLocal.withInitial(Decimal64Status::new);
+
+    @Test
+    public void testRoundDiv() {
+        assertFalse(Decimal64.parse("1").isRounded(-1));
+        assertTrue(Decimal64.parse("1").isRounded( 0));
+        assertTrue(Decimal64.parse("1").isRounded( 1));
+        assertFalse(Decimal64.parse("1.23").isRounded( 1));
+        assertFalse(Decimal64.parse("1.23").isRounded( -10));
+        assertTrue(Decimal64.parse("1.23").isRounded( 2));
+        assertTrue(Decimal64.parse("1.23").isRounded( 3));
+        assertFalse(Decimal64.parse("1.23456789").isRounded( -0));
+        assertFalse(Decimal64.parse("1.23456789").isRounded( 7));
+        assertTrue(Decimal64.parse("1.23456789").isRounded( 8));
+        assertTrue(Decimal64.parse("1.23456789").isRounded( 9));
+        assertTrue(Decimal64.parse("123E10").isRounded( -9));
+        assertTrue(Decimal64.parse("123E10").isRounded( -10));
+        assertFalse(Decimal64.parse("123E10").isRounded( -11));
+        assertFalse(Decimal64.parse("-10E-10").isRounded( 8));
+        assertTrue(Decimal64.parse("-10E-10").isRounded( 9));
+        assertTrue(Decimal64.parse("-10E-10").isRounded( 10));
+        assertTrue(Decimal64.parse("0").isRounded( -11));
+        assertFalse(Decimal64.parse("Inf").isRounded( 0));
+        assertFalse(Decimal64.parse("NaN").isRounded( -11));
+        assertFalse(Decimal64.parse("-Inf").isRounded( 10));
+    }
 }

@@ -1152,6 +1152,31 @@ namespace EPAM.Deltix.DFP.Test
 			throw new Exception($"TestRoundToReciprocalCase(/*{value}*/ Decimal64.FromUnderlying({value.ToUnderlying()}UL), {r}, RoundingMode.{roundingMode}); // {message}");
 		}
 
+		[Test]
+		public void TestRoundDiv()
+		{
+			Assert.False(Decimal64.Parse("1").IsRounded(-1));
+			Assert.True(Decimal64.Parse("1").IsRounded(0));
+			Assert.True(Decimal64.Parse("1").IsRounded(1));
+			Assert.False(Decimal64.Parse("1.23").IsRounded(1));
+			Assert.False(Decimal64.Parse("1.23").IsRounded(-10));
+			Assert.True(Decimal64.Parse("1.23").IsRounded(2));
+			Assert.True(Decimal64.Parse("1.23").IsRounded(3));
+			Assert.False(Decimal64.Parse("1.23456789").IsRounded(-0));
+			Assert.False(Decimal64.Parse("1.23456789").IsRounded(7));
+			Assert.True(Decimal64.Parse("1.23456789").IsRounded(8));
+			Assert.True(Decimal64.Parse("1.23456789").IsRounded(9));
+			Assert.True(Decimal64.Parse("123E10").IsRounded(-9));
+			Assert.True(Decimal64.Parse("123E10").IsRounded(-10));
+			Assert.False(Decimal64.Parse("123E10").IsRounded(-11));
+			Assert.False(Decimal64.Parse("-10E-10").IsRounded(8));
+			Assert.True(Decimal64.Parse("-10E-10").IsRounded(9));
+			Assert.True(Decimal64.Parse("-10E-10").IsRounded(10));
+			Assert.True(Decimal64.Parse("0").IsRounded(-11));
+			Assert.False(Decimal64.Parse("Inf").IsRounded(0));
+			Assert.False(Decimal64.Parse("NaN").IsRounded(-11));
+			Assert.False(Decimal64.Parse("-Inf").IsRounded(10));
+		}
 
 		readonly int N = 5000000;
 

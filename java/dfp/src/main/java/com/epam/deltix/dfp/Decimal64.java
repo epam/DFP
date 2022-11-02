@@ -682,8 +682,16 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return new Decimal64(Decimal64Utils.roundToReciprocal(value, r, roundType));
     }
 
+    public boolean isRoundedToReciprocal(final int r) {
+        return Decimal64Utils.isRoundedToReciprocal(value, r);
+    }
+
     public Decimal64 round(final int n, final RoundingMode roundType) {
         return new Decimal64(Decimal64Utils.round(value, n, roundType));
+    }
+
+    public boolean isRounded(final int n) {
+        return Decimal64Utils.isRounded(value, n);
     }
 
     public Decimal64 round() {
