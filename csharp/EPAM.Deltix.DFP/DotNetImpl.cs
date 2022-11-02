@@ -511,6 +511,81 @@ namespace EPAM.Deltix.DFP
 			return DotNetReImpl.get_BID64(partsSignMask, partsExponent, partsCoefficient, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf);
 		}
 
+		public static bool IsRounded(UInt64 value, int n)
+		{
+			if (!IsFinite(value))
+				return false;
+			if (n > MaxExponent)
+				return true;
+			//if (n < MinExponent)
+			//	return Zero;
+
+			BID_UINT64 partsSignMask;
+			int partsExponent;
+			BID_UINT64 partsCoefficient;
+			// DotNetReImpl.unpack_BID64(out partsSignMask, out partsExponent, out partsCoefficient, value);
+			{ // Copy-paste the toParts method for speedup
+				partsSignMask = value & 0x8000000000000000UL;
+
+				if ((value & DotNetReImpl.SPECIAL_ENCODING_MASK64) == DotNetReImpl.SPECIAL_ENCODING_MASK64)
+				{
+					//if ((value & DotNetReImpl.INFINITY_MASK64) == DotNetReImpl.INFINITY_MASK64) - Non finite values are already checked
+					//{
+					//	partsExponent = 0;
+					//	partsCoefficient = value & 0xfe03ffffffffffffUL;
+					//	if ((value & 0x0003ffffffffffffUL) >= 1000000000000000UL)
+					//		partsCoefficient = value & 0xfe00000000000000UL;
+					//	if ((value & DotNetReImpl.NAN_MASK64) == DotNetReImpl.INFINITY_MASK64)
+					//		partsCoefficient = value & DotNetReImpl.SINFINITY_MASK64;
+					//	return 0;   // NaN or Infinity
+					//} else
+					{
+						// Check for non-canonical values.
+						BID_UINT64 coeff = (value & DotNetReImpl.LARGE_COEFF_MASK64) | DotNetReImpl.LARGE_COEFF_HIGH_BIT64;
+
+						// check for non-canonical values
+						if (coeff >= 10000000000000000UL)
+							coeff = 0;
+						partsCoefficient = coeff;
+						// get exponent
+						BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_LARGE64;
+						partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					}
+				}
+				else
+				{
+					// exponent
+					BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_SMALL64;
+					partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					// coefficient
+					partsCoefficient = (value & DotNetReImpl.SMALL_COEFF_MASK64);
+				}
+			}
+
+			if (partsCoefficient == 0)
+				return true;
+
+			int exponent = partsExponent - DotNetReImpl.DECIMAL_EXPONENT_BIAS + n;
+
+			if (exponent >= 0) // value is already rounded
+				return true;
+			// All next - negative exponent case
+
+			{ // Truncate all digits except last one
+				int absPower = -exponent;
+				if (absPower > MaxFormatDigits)
+				{
+					return false;
+
+				}
+				else
+				{
+					BID_UINT64 divFactor = PowersOfTen[absPower];
+					return partsCoefficient % divFactor == 0;
+				}
+			}
+		}
+
 		public struct Pair96
 		{
 			public ulong w0;
@@ -880,39 +955,8 @@ namespace EPAM.Deltix.DFP
 					break;
 
 				case RoundingMode.Unnecessary:
-					if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/)
+					if (!IsRoundedToReciprocalImpl(addExponent, coefficientMulR, divFactor))
 						throw new ArithmeticException("Rounding necessary");
-
-					{ // if (partsCoefficient % divFactor != 0) throw new ArithmeticException("Rounding necessary");
-						{
-							ulong r21 = coefficientMulR.w21 % divFactor.d01;
-							ulong l = ((r21 << 32) | coefficientMulR.w0);
-							if (l % divFactor.d01 != 0)
-								throw new ArithmeticException("Rounding necessary");
-							coefficientMulR.w0 = l / divFactor.d01;
-							coefficientMulR.w21 /= divFactor.d01;
-						}
-
-						if (divFactor.d02 > 1)
-						{
-							ulong r21 = coefficientMulR.w21 % divFactor.d02;
-							ulong l = ((r21 << 32) | coefficientMulR.w0);
-							if (l % divFactor.d02 != 0)
-								throw new ArithmeticException("Rounding necessary");
-							coefficientMulR.w0 = l / divFactor.d02;
-							coefficientMulR.w21 /= divFactor.d02;
-						}
-
-						if (divFactor.d03 > 1)
-						{
-							ulong r21 = coefficientMulR.w21 % divFactor.d03;
-							ulong l = ((r21 << 32) | coefficientMulR.w0);
-							if (l % divFactor.d03 != 0)
-								throw new ArithmeticException("Rounding necessary");
-							// coefficientMulR.w0 = l / divFactor.d03; // No need division result
-							// coefficientMulR.w21 /= divFactor.d03; // No need division result
-						}
-					}
 
 					return value;
 
@@ -942,6 +986,144 @@ namespace EPAM.Deltix.DFP
 
 			BID_UINT32 fpsf = DotNetReImpl.BID_EXACT_STATUS;
 			return DotNetReImpl.get_BID64(partsSignMask, partsExponent, partsCoefficient, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf);
+		}
+
+		public static bool IsRoundedToReciprocal(UInt64 value, uint r)
+		{
+			if (r < 1)
+				throw new ArgumentException("The r(=" + r + ") argument must be positive.");
+			if (!IsFinite(value))
+				return false;
+			//if (Math.log10(r) > JavaImpl.MAX_EXPONENT) // Never can happens
+			//	return value;
+			//if (Math.log10(r) < JavaImpl.MIN_EXPONENT)
+			//	return JavaImpl.ZERO;
+
+			BID_UINT64 partsSignMask;
+			int partsExponent;
+			BID_UINT64 partsCoefficient;
+			// DotNetReImpl.unpack_BID64(out partsSignMask, out partsExponent, out partsCoefficient, value);
+			{ // Copy-paste the toParts method for speedup
+				partsSignMask = value & 0x8000000000000000UL;
+
+				if ((value & DotNetReImpl.SPECIAL_ENCODING_MASK64) == DotNetReImpl.SPECIAL_ENCODING_MASK64)
+				{
+					//if ((value & DotNetReImpl.INFINITY_MASK64) == DotNetReImpl.INFINITY_MASK64) - Non finite values are already checked
+					//{
+					//	partsExponent = 0;
+					//	partsCoefficient = value & 0xfe03ffffffffffffUL;
+					//	if ((value & 0x0003ffffffffffffUL) >= 1000000000000000UL)
+					//		partsCoefficient = value & 0xfe00000000000000UL;
+					//	if ((value & DotNetReImpl.NAN_MASK64) == DotNetReImpl.INFINITY_MASK64)
+					//		partsCoefficient = value & DotNetReImpl.SINFINITY_MASK64;
+					//	return 0;   // NaN or Infinity
+					//} else
+					{
+						// Check for non-canonical values.
+						BID_UINT64 coeff = (value & DotNetReImpl.LARGE_COEFF_MASK64) | DotNetReImpl.LARGE_COEFF_HIGH_BIT64;
+
+						// check for non-canonical values
+						if (coeff >= 10000000000000000UL)
+							coeff = 0;
+						partsCoefficient = coeff;
+						// get exponent
+						BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_LARGE64;
+						partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					}
+				}
+				else
+				{
+					// exponent
+					BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_SMALL64;
+					partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					// coefficient
+					partsCoefficient = (value & DotNetReImpl.SMALL_COEFF_MASK64);
+				}
+			}
+
+			if (partsCoefficient == 0)
+				return true;
+
+			int unbiasedExponent = partsExponent - DotNetReImpl.DECIMAL_EXPONENT_BIAS;
+
+			if (unbiasedExponent >= 0) // value is already rounded
+				return true;
+
+			// Denormalize partsCoefficient to the maximal value to get the maximal precision after final r division
+			{
+				int dn = NumberOfDigits(partsCoefficient);
+				/*if (dn < PowersOfTen.Length - 1)*/
+				{
+					int expShift = (PowersOfTen.Length - 1) - dn;
+					partsExponent -= expShift;
+					unbiasedExponent -= expShift;
+					partsCoefficient *= PowersOfTen[expShift];
+				}
+			}
+
+
+			//Multiply partsCoefficient with r
+			Pair96 coefficientMulR = new Pair96();
+			{
+				ulong l0 = (LONG_LOW_PART & partsCoefficient) * r;
+				coefficientMulR.Set(LONG_LOW_PART & l0, (partsCoefficient >> 32) * r + (l0 >> 32));
+			}
+
+			//final long divFactor;
+			Factors96 divFactor; // divFactor = divFactor1 * divFactor2 * divFactor3
+			int addExponent;
+			{
+				int absPower = -unbiasedExponent;
+				int maxPower = Math.Min(absPower, Math.Min(3 * 9, NumberOfDigits(coefficientMulR.w21) + 10 /* low part */));
+				//divFactor = PowersOfTen[maxPower];
+				int factor1Power = Math.Min(maxPower, 9); // Int can hold max 1_000_000_000
+				divFactor.d01 = (uint)PowersOfTen[factor1Power];
+				int factor2Power = Math.Min(maxPower - factor1Power, 9);
+				divFactor.d02 = (uint)PowersOfTen[factor2Power];
+				divFactor.d03 = (uint)PowersOfTen[maxPower - factor1Power - factor2Power];
+				addExponent = absPower - maxPower;
+			}
+
+			return IsRoundedToReciprocalImpl(addExponent, coefficientMulR, divFactor);
+		}
+
+		static bool IsRoundedToReciprocalImpl(int addExponent, Pair96 coefficientMulR, Factors96 divFactor) {
+			//case RoundingMode.Unnecessary:
+			if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/)
+				return false;
+
+			{ // if (partsCoefficient % divFactor != 0) throw new ArithmeticException("Rounding necessary");
+				{
+					ulong r21 = coefficientMulR.w21 % divFactor.d01;
+					ulong l = ((r21 << 32) | coefficientMulR.w0);
+					if (l % divFactor.d01 != 0)
+						return false;
+					coefficientMulR.w0 = l / divFactor.d01;
+					coefficientMulR.w21 /= divFactor.d01;
+				}
+
+				if (divFactor.d02 > 1)
+				{
+					ulong r21 = coefficientMulR.w21 % divFactor.d02;
+					ulong l = ((r21 << 32) | coefficientMulR.w0);
+					if (l % divFactor.d02 != 0)
+						return false;
+					coefficientMulR.w0 = l / divFactor.d02;
+					coefficientMulR.w21 /= divFactor.d02;
+				}
+
+				if (divFactor.d03 > 1)
+				{
+					ulong r21 = coefficientMulR.w21 % divFactor.d03;
+					ulong l = ((r21 << 32) | coefficientMulR.w0);
+					if (l % divFactor.d03 != 0)
+						return false;
+					// coefficientMulR.w0 = l / divFactor.d03; // No need division result
+					// coefficientMulR.w21 /= divFactor.d03; // No need division result
+				}
+			}
+
+			return true;
 		}
 
 		#endregion
