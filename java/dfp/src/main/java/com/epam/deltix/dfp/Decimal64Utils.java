@@ -763,7 +763,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode CEILING)} instead.
+     * Call {@link Decimal64Utils#round(long, int, RoundingMode)} with n=0 and roundType=CEILING instead.
      * <p>
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
@@ -795,7 +795,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode FLOOR)} instead.
+     * Call {@link Decimal64Utils#round(long value, int, RoundingMode)} with n=0 and roundType=FLOOR instead.
      * <p>
      * Returns the largest (closest to positive infinity) {@code DFP} value that is less than or equal to the
      * argument and is equal to a mathematical integer.
@@ -812,7 +812,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode DOWN)} instead.
+     * Call {@link Decimal64Utils#round(long value, int, RoundingMode)} with n=0 and roundType=DOWN instead.
      * <p>
      * Returns nearest {@code DFP} value whose absolute value is the same or smaller than the value of the
      * argument and is equal to a mathematical integer. Same as {@link Decimal64Utils#roundTowardsZero(long)}
@@ -831,7 +831,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode DOWN)} instead.
+     * Call {@link Decimal64Utils#round(long value, int, RoundingMode)} with n=0 and roundType=DOWN instead.
      * <p>
      * Returns nearest {@code DFP} value whose absolute value is the same or smaller than the value of the
      * argument and is equal to a mathematical integer.
@@ -903,7 +903,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode HALF_UP)} instead.
+     * Call {@link Decimal64Utils#round(long value, int, RoundingMode)} with n=0 and roundType=HALF_UP instead.
      * <p>
      * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
      * with ties rounding away from zero
@@ -919,7 +919,7 @@ public class Decimal64Utils {
 
     /**
      * This function is deprecated.
-     * Call {@link Decimal64Utils#round(long value, int 0, RoundingMode HALF_EVEN)} instead.
+     * Call {@link Decimal64Utils#round(long value, int, RoundingMode)} with n=0 and roundType=HALF_EVEN instead.
      * <p>
      * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
      * with ties rounding to even
