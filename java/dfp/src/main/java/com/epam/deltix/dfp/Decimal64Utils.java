@@ -680,6 +680,19 @@ public class Decimal64Utils {
     /// region Rounding
 
     /**
+     * Returns the {@code DFP} value that is rounded to the value, reciprocal to r, according the selected rounding type.
+     *
+     * @param value     {@code DFP} argument to round
+     * @param r         the number whose reciprocal is rounded to
+     * @param roundType {@code RoundingMode} type of rounding
+     * @return {@code DFP} the rounded value
+     */
+    @Decimal
+    public static long roundToReciprocal(@Decimal final long value, final int r, final RoundingMode roundType) {
+        return JavaImpl.roundToReciprocal(value, r, roundType);
+    }
+
+    /**
      * Returns the {@code DFP} value that is rounded according the selected rounding type.
      *
      * @param value     {@code DFP} argument to round
@@ -725,6 +738,9 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.CEILING)} instead.
+     *
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
      * If the argument is not finite, its value is not changed
@@ -734,6 +750,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsPositiveInfinity(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_positive(value, BID_ROUNDING_TO_NEAREST);
     }
@@ -753,6 +770,9 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.FLOOR)} instead.
+     *
      * Returns the largest (closest to positive infinity) {@code DFP} value that is less than or equal to the
      * argument and is equal to a mathematical integer.
      *
@@ -761,11 +781,15 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsNegativeInfinity(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_negative(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.DOWN)} instead.
+     *
      * Returns nearest {@code DFP} value whose absolute value is the same or smaller than the value of the
      * argument and is equal to a mathematical integer. Same as {@link Decimal64Utils#roundTowardsZero(long)}
      *
@@ -775,12 +799,16 @@ public class Decimal64Utils {
      * @see Decimal64Utils#roundTowardsZero(long)
      */
     @Decimal
+    @Deprecated
     public static long truncate(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_zero(value, BID_ROUNDING_TO_NEAREST);
     }
 
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.DOWN)} instead.
+     *
      * Returns nearest {@code DFP} value whose absolute value is the same or smaller than the value of the
      * argument and is equal to a mathematical integer.
      *
@@ -789,11 +817,36 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsZero(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_zero(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_UP)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     * Also, the roundToReciprocal precise is much better. For example:
+     * Decimal64Utils.round(/ * 0.00004 * / 3539829307113209860L,
+     *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 891087500))
+     *          ==  / * 0.00003999943888787578 * / 3408721262180882554L
+     * whereas
+     * Decimal64Utils.roundToReciprocal(/ * 0.00004 * / 3539829307113209860L, 891087500, RoundingMode.HALF_UP)
+     *          ==  / * 0.00004000056111212423 * / 3408721374403307399L
+     * The BigDecimal calculation with 34 digits precision produce
+     * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(891087500), MathContext.DECIMAL128)
+     * Decimal64Utils.toBigDecimal(/ * 0.00004 * / 3539829307113209860L)
+     *      .divide(bigMultiple, MathContext.DECIMAL128)
+     *      .setScale(0, RoundingMode.HALF_UP)
+     *      .multiply(bigMultiple)
+     *          ==  0.000040000561112124230224304571661032164220
+     * The BigDecimal reciprocal calculation style:
+     * Decimal64Utils.toBigDecimal(/ * 0.00004 * / 3539829307113209860L)
+     *      .multiply(new BigDecimal(891087500))
+     *      .setScale(0, RoundingMode.HALF_UP)
+     *      .divide(new BigDecimal(891087500), MathContext.DECIMAL128)
+     *          ==  0.00004000056111212423022430457166103217
+     *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding away from zero. Same as {@link Decimal64Utils#roundToNearestTiesAwayFromZero(long, long)}
      * <p>
@@ -806,6 +859,7 @@ public class Decimal64Utils {
      * @see Decimal64Utils#roundToNearestTiesAwayFromZero(long, long)
      */
     @Decimal
+    @Deprecated
     public static long round(@Decimal final long value, @Decimal final long multiple) {
         return roundToNearestTiesAwayFromZero(value, multiple);
     }
@@ -824,6 +878,9 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.HALF_UP)} instead.
+     *
      * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
      * with ties rounding away from zero
      *
@@ -831,11 +888,15 @@ public class Decimal64Utils {
      * @return the value of the argument rounded to the nearest mathematical integer
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesAwayFromZero(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_nearest_away(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code round(value, 0, RoundingMode.HALF_EVEN)} instead.
+     *
      * Returns the nearest {@code DFP} value that is equal to a mathematical integer,
      * with ties rounding to even
      *
@@ -843,11 +904,36 @@ public class Decimal64Utils {
      * @return the value of the argument rounded to the nearest mathematical integer
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesToEven(@Decimal final long value) {
         return JavaImplRound.bid64_round_integral_nearest_even(value, BID_ROUNDING_TO_NEAREST);
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.CEILING)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     * Also, the roundToReciprocal precise is much better. For example:
+     * Decimal64Utils.roundTowardsPositiveInfinity(/ * 0.08 * / 3566850904877432840L,
+     *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 3957050))
+     *          ==  / * 0.08000025271351131 * / 3439742941327669083L
+     * whereas
+     * Decimal64Utils.roundToReciprocal(/ * 0.08 * / 3566850904877432840L, 3957050, RoundingMode.CEILING)
+     *          ==  / * 0.08 * / 3439742916056317952L
+     * The BigDecimal calculation with 34 digits precision produce
+     * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(3957050), MathContext.DECIMAL128)
+     * Decimal64Utils.toBigDecimal(/ * 0.08 * / 3566850904877432840L)
+     *      .divide(bigMultiple, MathContext.DECIMAL128)
+     *      .setScale(0, RoundingMode.CEILING)
+     *      .multiply(bigMultiple)
+     *          ==  0.0800000000000000000000000000000000127204
+     * The BigDecimal reciprocal calculation style:
+     * Decimal64Utils.toBigDecimal(/ * 0.08 * / 3566850904877432840L)
+     *      .multiply(new BigDecimal(3957050))
+     *      .setScale(0, RoundingMode.CEILING)
+     *      .divide(new BigDecimal(3957050), MathContext.DECIMAL128)
+     *          ==  0.08
+     *
      * Returns the smallest (closest to negative infinity) {@code DFP} value that is greater than or equal to the
      * argument and is equal to a mathematical integer.
      * <p>
@@ -871,6 +957,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsPositiveInfinity(@Decimal final long value, @Decimal final long multiple) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
@@ -882,6 +969,30 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.FLOOR)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     * Also, the roundToReciprocal precise is much better. For example:
+     * Decimal64Utils.roundTowardsNegativeInfinity(/ * 0.5 * / 3575858104132173829L,
+     *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 506012))
+     *          ==  / * 0.4999980237622824 * / 3445750095548681768L
+     * whereas
+     * Decimal64Utils.roundToReciprocal(/ * 0.5 * / 3575858104132173829L, 506012, RoundingMode.FLOOR)
+     *          ==  / * 0.5 * / 3445750115311058944L
+     * The BigDecimal calculation with 34 digits precision produce
+     * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(506012), MathContext.DECIMAL128)
+     * Decimal64Utils.toBigDecimal(/ * 0.5 * / 3575858104132173829L)
+     *      .divide(bigMultiple, MathContext.DECIMAL128)
+     *      .setScale(0, RoundingMode.FLOOR)
+     *      .multiply(bigMultiple)
+     *          ==  0.499999999999999999999999999999999960058
+     * The BigDecimal reciprocal calculation style:
+     * Decimal64Utils.toBigDecimal(/ * 0.5 * / 3575858104132173829L)
+     *      .multiply(new BigDecimal(506012))
+     *      .setScale(0, RoundingMode.FLOOR)
+     *      .divide(new BigDecimal(506012), MathContext.DECIMAL128)
+     *          ==  0.5
+     *
      * Returns the largest (closest to positive infinity) {@code DFP} value that is less than or equal to the
      * argument and is equal to a mathematical integer.
      * <p>
@@ -905,6 +1016,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsNegativeInfinity(@Decimal final long value, @Decimal final long multiple) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
@@ -916,6 +1028,30 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_UP)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     * Also, the roundToReciprocal precise is much better. For example:
+     * Decimal64Utils.roundToNearestTiesAwayFromZero(/ * 0.00004 * / 3539829307113209860L,
+     *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 891087500))
+     *          ==  / * 0.00003999943888787578 * / 3408721262180882554L
+     * whereas
+     * Decimal64Utils.roundToReciprocal(/ * 0.00004 * / 3539829307113209860L, 891087500, RoundingMode.HALF_UP)
+     *          ==  / * 0.00004000056111212423 * / 3408721374403307399L
+     * The BigDecimal calculation with 34 digits precision produce
+     * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(891087500), MathContext.DECIMAL128)
+     * Decimal64Utils.toBigDecimal(/ * 0.00004 * / 3539829307113209860L)
+     *      .divide(bigMultiple, MathContext.DECIMAL128)
+     *      .setScale(0, RoundingMode.HALF_UP)
+     *      .multiply(bigMultiple)
+     *          ==  0.000040000561112124230224304571661032164220
+     * The BigDecimal reciprocal calculation style:
+     * Decimal64Utils.toBigDecimal(/ * 0.00004 * / 3539829307113209860L)
+     *      .multiply(new BigDecimal(891087500))
+     *      .setScale(0, RoundingMode.HALF_UP)
+     *      .divide(new BigDecimal(891087500), MathContext.DECIMAL128)
+     *          ==  0.00004000056111212423022430457166103217
+     *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding away from zero.
      * <p>
@@ -927,6 +1063,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesAwayFromZero(@Decimal final long value, @Decimal final long multiple) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
@@ -938,6 +1075,30 @@ public class Decimal64Utils {
     }
 
     /**
+     * This function is deprecated.
+     * Call {@code roundToReciprocal(value, r, RoundingMode.HALF_EVEN)} instead.
+     * Where the r - is the integer reciprocal to multiple.
+     * Also, the roundToReciprocal precise is much better. For example:
+     * Decimal64Utils.roundToNearestTiesToEven(/ * 0.0008 * / 3548836506367950856L,
+     *      Decimal64Utils.divideByInteger(Decimal64Utils.ONE, 620936875))
+     *          ==  / * 0.0007999991947651685 * / 3421728509494487653L
+     * whereas
+     * Decimal64Utils.roundToReciprocal(/ * 0.0008 * / 3548836506367950856L, 620936875, RoundingMode.HALF_EVEN)
+     *          ==  / * 0.0008000008052348316 * / 3421728525599184284L
+     * The BigDecimal calculation with 34 digits precision produce
+     * bigMultiple = BigDecimal.ONE.divide(new BigDecimal(620936875), new MathContext(64, RoundingMode.HALF_UP))
+     * Decimal64Utils.toBigDecimal(/ * 0.0008 * / 3548836506367950856L)
+     *      .divide(bigMultiple, new MathContext(64, RoundingMode.HALF_UP)).round(new MathContext(48, RoundingMode.HALF_UP))
+     *      .setScale(0, RoundingMode.HALF_EVEN)
+     *      .multiply(bigMultiple)
+     *          ==  0.000800000805234831640494857065784666114409777966560610529049349823421250
+     * The BigDecimal reciprocal calculation style:
+     * Decimal64Utils.toBigDecimal(/ * 0.0008 * / 3548836506367950856L)
+     *      .multiply(new BigDecimal(620936875))
+     *      .setScale(0, RoundingMode.HALF_EVEN)
+     *      .divide(new BigDecimal(620936875), MathContext.DECIMAL128)
+     *          ==  0.0008000008052348316404948570657846661
+     *
      * Returns {@code DFP} value that is nearest to the first argument and a multiple of the second {@code DFP} argument,
      * with ties rounding to even.
      *
@@ -947,6 +1108,7 @@ public class Decimal64Utils {
      * otherwise {@code value} is returned unchanged.
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesToEven(@Decimal final long value, @Decimal final long multiple) {
         if (!isFinite(multiple) || isNonPositive(multiple))
             throw new IllegalArgumentException("Multiple must be a positive finite number.");
@@ -1117,6 +1279,7 @@ public class Decimal64Utils {
      * @return ..
      * @throws IOException from {@link Appendable#append(char)}
      */
+    @Deprecated
     public static Appendable scientificAppendToChecked(@Decimal final long value, final Appendable appendable) throws IOException {
         checkNull(value);
         return scientificAppendTo(value, appendable);
@@ -1155,9 +1318,37 @@ public class Decimal64Utils {
      * @param sb    {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
      * @return ..
      */
+    @Deprecated
     public static StringBuilder scientificAppendToChecked(@Decimal final long value, final StringBuilder sb) {
         checkNull(value);
         return scientificAppendTo(value, sb);
+    }
+
+    /**
+     * Try parse a dfp floating-point value from the given textual representation.
+     * <p>
+     * Besides regular floating-point values (possibly in scientific notation) the following special cases are accepted:
+     * <ul>
+     * <li>{@code +Inf}, {@code Inf}, {@code +Infinity}, {@code Infinity} in any character case result in
+     * {@code Decimal64Utils.POSITIVE_INFINITY}</li>
+     * <li>{@code -Inf}, {@code -Infinity} in any character case result in
+     * {@code Decimal64Utils.NEGATIVE_INFINITY}</li>
+     * <li>{@code +NaN}, {@code -NaN}, {@code NaN} in any character case result in
+     * {@code Decimal64Utils.NaN}</li>
+     * </ul>
+     *
+     * @param text       Textual representation of dfp floating-point value.
+     * @param startIndex Index of character to start parsing at.
+     * @param endIndex   Index of character to stop parsing at, non-inclusive.
+     * @param outStatus  The parsing output status and value.
+     * @return Return {@code true} if value was parsed exactly without rounding.
+     * @throws NumberFormatException if {@code text} does not contain valid dfp value.
+     */
+    @Decimal
+    public static boolean tryParse(final CharSequence text, final int startIndex, final int endIndex,
+                                   final Decimal64Status outStatus) {
+        outStatus.underlying = JavaImplParse.bid64_from_string(text, startIndex, endIndex, outStatus, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        return outStatus.isExact();
     }
 
     /**
@@ -1183,14 +1374,14 @@ public class Decimal64Utils {
     public static long parse(final CharSequence text, final int startIndex, final int endIndex) {
         JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
         final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
-        if ((fpsf.value & JavaImplParse.BID_INVALID_FORMAT) != 0)
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             throw new NumberFormatException("Input string is not in a correct format.");
 //        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
 //        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
         return ret;
     }
 
-    private static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst =
+    static final ThreadLocal<JavaImplParse.FloatingPointStatusFlag> tlsFpst =
         new ThreadLocal<JavaImplParse.FloatingPointStatusFlag>() {
             @Override
             protected JavaImplParse.FloatingPointStatusFlag initialValue() {
@@ -1257,7 +1448,7 @@ public class Decimal64Utils {
     public static long tryParse(final CharSequence text, final int startIndex, final int endIndex, @Decimal final long defaultValue) {
         JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
         final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
-        if ((fpsf.value & JavaImplParse.BID_INVALID_FORMAT) != 0)
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             return defaultValue;
 //        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
 //        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
@@ -1314,6 +1505,7 @@ public class Decimal64Utils {
      * @param numberOfDigits number of significant digits after decimal point
      * @return ..
      */
+    @Deprecated
     public static long toFixedPointChecked(@Decimal final long value, final int numberOfDigits) {
         checkNull(value);
         return toFixedPoint(value, numberOfDigits);
@@ -1325,6 +1517,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static double toDoubleChecked(@Decimal final long value) {
         checkNull(value);
         return toDouble(value);
@@ -1336,12 +1529,14 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static BigDecimal toBigDecimalChecked(@Decimal final long value) {
         checkNull(value);
         return toBigDecimal(value);
     }
 
     @Decimal
+    @Deprecated
     public static long fromLongChecked(final long value) {
         return fromLong(value);
     }
@@ -1352,12 +1547,14 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static long toLongChecked(@Decimal final long value) {
         checkNull(value);
         return toLong(value);
     }
 
     @Decimal
+    @Deprecated
     public static long fromIntChecked(final int value) {
         return fromInt(value);
     }
@@ -1368,6 +1565,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int toIntChecked(@Decimal final long value) {
         checkNull(value);
         return toInt(value);
@@ -1379,6 +1577,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNaNChecked(@Decimal final long value) {
         checkNull(value);
         return isNaN(value);
@@ -1390,6 +1589,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return isInfinity(value);
@@ -1401,6 +1601,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isPositiveInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return isPositiveInfinity(value);
@@ -1412,6 +1613,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNegativeInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return isNegativeInfinity(value);
@@ -1423,6 +1625,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isFiniteChecked(@Decimal final long value) {
         checkNull(value);
         return isFinite(value);
@@ -1434,6 +1637,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNormalChecked(@Decimal final long value) {
         checkNull(value);
         return isNormal(value);
@@ -1446,6 +1650,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isIdenticalChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return a == b;
@@ -1458,6 +1663,7 @@ public class Decimal64Utils {
      * @param obj   {@link Object} argument
      * @return ..
      */
+    @Deprecated
     public static boolean isIdenticalChecked(@Decimal final long value, final Object obj) {
         checkNull(value);
         return obj instanceof Decimal64 && value == ((Decimal64) obj).value;
@@ -1470,6 +1676,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isEqualChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isEqual(a, b);
@@ -1482,6 +1689,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNotEqualChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isNotEqual(a, b);
@@ -1494,6 +1702,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isLessChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isLess(a, b);
@@ -1506,6 +1715,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isLessOrEqualChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isLessOrEqual(a, b);
@@ -1518,6 +1728,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isGreaterChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isGreater(a, b);
@@ -1530,6 +1741,7 @@ public class Decimal64Utils {
      * @param b 2nd DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isGreaterOrEqualChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return isGreaterOrEqual(a, b);
@@ -1541,6 +1753,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isZeroChecked(@Decimal final long value) {
         checkNull(value);
         return isZero(value);
@@ -1552,6 +1765,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNonZeroChecked(@Decimal final long value) {
         checkNull(value);
         return isNonZero(value);
@@ -1563,6 +1777,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isPositiveChecked(@Decimal final long value) {
         checkNull(value);
         return isPositive(value);
@@ -1574,6 +1789,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNegativeChecked(@Decimal final long value) {
         checkNull(value);
         return isNegative(value);
@@ -1585,6 +1801,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNonPositiveChecked(@Decimal final long value) {
         checkNull(value);
         return isNonPositive(value);
@@ -1596,6 +1813,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean isNonNegativeChecked(@Decimal final long value) {
         checkNull(value);
         return isNonNegative(value);
@@ -1608,6 +1826,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long negateChecked(@Decimal final long value) {
         checkNull(value);
         return negate(value);
@@ -1620,6 +1839,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long absChecked(@Decimal final long value) {
         checkNull(value);
         return abs(value);
@@ -1633,6 +1853,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long addChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return add(a, b);
@@ -1647,6 +1868,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long addChecked(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
         checkNull(a, b);
         checkNull(c);
@@ -1663,6 +1885,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long addChecked(@Decimal final long a, @Decimal final long b,
                                   @Decimal final long c, @Decimal final long d) {
         checkNull(a, b);
@@ -1678,6 +1901,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long subtractChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return subtract(a, b);
@@ -1691,6 +1915,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return multiply(a, b);
@@ -1705,6 +1930,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyChecked(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
         checkNull(a, b);
         checkNull(c);
@@ -1721,6 +1947,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyChecked(@Decimal final long a, @Decimal final long b,
                                        @Decimal final long c, @Decimal final long d) {
         checkNull(a, b);
@@ -1736,6 +1963,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long divideChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return divide(a, b);
@@ -1749,6 +1977,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyByIntegerChecked(@Decimal final long a, final int b) {
         checkNull(a);
         return multiplyByInteger(a, b);
@@ -1762,6 +1991,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyByIntegerChecked(@Decimal final long a, final long b) {
         checkNull(a);
         return multiplyByInteger(a, b);
@@ -1775,6 +2005,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long divideByIntegerChecked(@Decimal final long a, final int b) {
         checkNull(a);
         return divideByInteger(a, b);
@@ -1788,6 +2019,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long divideByIntegerChecked(@Decimal final long a, final long b) {
         checkNull(a);
         return divideByInteger(a, b);
@@ -1802,6 +2034,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long multiplyAndAddChecked(@Decimal final long a, @Decimal final long b, @Decimal final long c) {
         checkNull(a);
         checkNull(b, c);
@@ -1816,6 +2049,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long scaleByPowerOfTenChecked(@Decimal final long a, final int n) {
         checkNull(a);
         return scaleByPowerOfTen(a, n);
@@ -1829,6 +2063,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long averageChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return average(a, b);
@@ -1842,6 +2077,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long maxChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return max(a, b);
@@ -1855,13 +2091,29 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long minChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return min(a, b);
     }
 
     /**
-     * Implements {@link Decimal64#round()}, adds null check; do not use directly.
+     * Implements {@link Decimal64#roundToReciprocal(int, RoundingMode)}, adds null check; do not use directly.
+     *
+     * @param value     {@code DFP} argument to round
+     * @param r         the number whose reciprocal is rounded to
+     * @param roundType {@code RoundingMode} type of rounding
+     * @return {@code DFP} the rounded value
+     */
+    @Decimal
+    @Deprecated
+    public static long roundToReciprocalChecked(@Decimal final long value, final int r, final RoundingMode roundType) {
+        checkNull(value);
+        return roundToReciprocal(value, r, roundType);
+    }
+
+    /**
+     * Implements {@link Decimal64#round(int, RoundingMode)}, adds null check; do not use directly.
      *
      * @param value     {@code DFP} argument to round
      * @param n         the number of decimals to use when rounding the number
@@ -1869,6 +2121,7 @@ public class Decimal64Utils {
      * @return {@code DFP} the rounded value
      */
     @Decimal
+    @Deprecated
     public static long roundChecked(@Decimal final long value, final int n, final RoundingMode roundType) {
         checkNull(value);
         return round(value, n, roundType);
@@ -1881,6 +2134,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long ceilChecked(@Decimal final long value) {
         checkNull(value);
         return ceil(value);
@@ -1893,6 +2147,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long floorChecked(@Decimal final long value) {
         checkNull(value);
         return floor(value);
@@ -1905,6 +2160,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundChecked(@Decimal final long value) {
         checkNull(value);
         return round(value);
@@ -1918,6 +2174,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundChecked(@Decimal final long value, final long multiple) {
         checkNull(value, multiple);
         return round(value, multiple);
@@ -1930,6 +2187,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long ceilingChecked(@Decimal final long value) {
         checkNull(value);
         return ceiling(value);
@@ -1942,6 +2200,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsPositiveInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return roundTowardsPositiveInfinity(value);
@@ -1954,6 +2213,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsNegativeInfinityChecked(@Decimal final long value) {
         checkNull(value);
         return roundTowardsNegativeInfinity(value);
@@ -1966,6 +2226,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long truncateChecked(@Decimal final long value) {
         checkNull(value);
         return truncate(value);
@@ -1978,6 +2239,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsZeroChecked(@Decimal final long value) {
         checkNull(value);
         return roundTowardsZeroChecked(value);
@@ -1990,6 +2252,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesAwayFromZeroChecked(@Decimal final long value) {
         checkNull(value);
         return roundToNearestTiesAwayFromZero(value);
@@ -2002,6 +2265,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesToEvenChecked(@Decimal final long value) {
         checkNull(value);
         return roundToNearestTiesToEven(value);
@@ -2015,6 +2279,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsPositiveInfinityChecked(@Decimal final long value, @Decimal final long multiple) {
         checkNull(value, multiple);
         return roundTowardsPositiveInfinity(value, multiple);
@@ -2028,6 +2293,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundTowardsNegativeInfinityChecked(@Decimal final long value, @Decimal final long multiple) {
         checkNull(value, multiple);
         return roundTowardsNegativeInfinity(value, multiple);
@@ -2041,6 +2307,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesAwayFromZeroChecked(@Decimal final long value, @Decimal final long multiple) {
         checkNull(value, multiple);
         return roundToNearestTiesAwayFromZero(value, multiple);
@@ -2054,6 +2321,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long roundToNearestTiesToEvenChecked(@Decimal final long value, @Decimal final long multiple) {
         checkNull(value, multiple);
         return roundToNearestTiesToEven(value, multiple);
@@ -2065,6 +2333,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int identityHashCodeChecked(@Decimal final long value) {
         checkNull(value);
         return identityHashCode(value);
@@ -2076,6 +2345,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int hashCodeChecked(@Decimal final long value) {
         checkNull(value);
         return hashCode(value);
@@ -2089,6 +2359,7 @@ public class Decimal64Utils {
      * @return ..
      * @throws IOException from {@link Appendable#append(char)}
      */
+    @Deprecated
     public static Appendable appendToChecked(@Decimal final long value, final Appendable appendable) throws IOException {
         checkNull(value);
         return appendTo(value, appendable);
@@ -2101,6 +2372,7 @@ public class Decimal64Utils {
      * @param stringBuilder StringBuilder argument
      * @return ..
      */
+    @Deprecated
     public static StringBuilder appendToChecked(@Decimal final long value, final StringBuilder stringBuilder) {
         checkNull(value);
         return appendTo(value, stringBuilder);
@@ -2112,6 +2384,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static String toStringChecked(@Decimal final long value) {
         checkNull(value);
         return toString(value);
@@ -2124,6 +2397,7 @@ public class Decimal64Utils {
      * @param b DFP argument
      * @return ..
      */
+    @Deprecated
     public static boolean equalsChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return equals(a, b);
@@ -2136,6 +2410,7 @@ public class Decimal64Utils {
      * @param b {@code Object}
      * @return ..
      */
+    @Deprecated
     public static boolean equalsChecked(@Decimal final long a, final Object b) {
         checkNull(a);
         return equals(a, ((Decimal64) b).value);
@@ -2147,6 +2422,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static long getUnscaledValueChecked(@Decimal final long value) {
         checkNull(value);
         return getUnscaledValue(value);
@@ -2159,6 +2435,7 @@ public class Decimal64Utils {
      * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
      * @return ..
      */
+    @Deprecated
     public static long getUnscaledValueChecked(@Decimal final long value, final long abnormalReturn) {
         checkNull(value);
         return getUnscaledValue(value, abnormalReturn);
@@ -2170,6 +2447,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int getScaleChecked(@Decimal final long value) {
         checkNull(value);
         return getScale(value);
@@ -2182,6 +2460,7 @@ public class Decimal64Utils {
      * @param abnormalReturn The value returned for abnormal input values (NaN, +Inf, -Inf).
      * @return ..
      */
+    @Deprecated
     public static int getScaleChecked(@Decimal final long value, final int abnormalReturn) {
         checkNull(value);
         return getScale(value, abnormalReturn);
@@ -2194,6 +2473,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long nextUpChecked(@Decimal final long value) {
         checkNull(value);
         return nextUp(value);
@@ -2206,6 +2486,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long nextDownChecked(@Decimal final long value) {
         checkNull(value);
         return nextDown(value);
@@ -2218,6 +2499,7 @@ public class Decimal64Utils {
      * @return ..
      */
     @Decimal
+    @Deprecated
     public static long canonizeChecked(@Decimal final long value) {
         checkNull(value);
         return canonize(value);
@@ -2229,6 +2511,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static int intValueChecked(@Decimal final long value) {
         checkNull(value);
         return toInt(value);
@@ -2240,6 +2523,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static long longValueChecked(@Decimal final long value) {
         checkNull(value);
         return toLong(value);
@@ -2251,6 +2535,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static float floatValueChecked(@Decimal final long value) {
         checkNull(value);
         return (float) toDouble(value);
@@ -2262,6 +2547,7 @@ public class Decimal64Utils {
      * @param value DFP argument
      * @return ..
      */
+    @Deprecated
     public static double doubleValueChecked(@Decimal final long value) {
         checkNull(value);
         return toDouble(value);
@@ -2274,6 +2560,7 @@ public class Decimal64Utils {
      * @param b DFP argument
      * @return ..
      */
+    @Deprecated
     public static int compareToChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return compareTo(a, b);
@@ -2292,6 +2579,7 @@ public class Decimal64Utils {
      * @see Decimal64#compareTo(Decimal64)
      * @see Decimal64Utils#compareTo(long, long)
      */
+    @Deprecated
     public static int compareToChecked(@Decimal final long a, final Object b) {
         checkNull(a);
         return compareTo(a, ((Decimal64) b).value);

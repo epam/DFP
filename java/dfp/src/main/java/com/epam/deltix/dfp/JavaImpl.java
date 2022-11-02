@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Arrays;
 
+import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
+
 class JavaImpl {
     private JavaImpl() {
     }
@@ -217,7 +219,7 @@ class JavaImpl {
         final int unscaledBits = unscaledValue.bitLength();
         if (unscaledBits > 62) {
             if (roundingMode == BID_ROUNDING_EXCEPTION)
-                throw new IllegalArgumentException("The BigDecimal(=" + value + ") can't be converted to Decimal64 without precision loss.");
+                throw new NumberFormatException("The BigDecimal(=" + value + ") can't be converted to Decimal64 without precision loss.");
             final int baseTenShiftSize = (int) Math.ceil((unscaledBits - 62) * log10Tolog2Ratio);
             unscaledValue = unscaledValue.divide(BigInteger.TEN.pow(baseTenShiftSize));
             scale -= baseTenShiftSize;
@@ -228,15 +230,6 @@ class JavaImpl {
             signMask = MASK_SIGN;
             intCompact = -intCompact;
         }
-
-        long tenDivRem = 0;
-        while (UnsignedLong.isGreater(intCompact, 9999999999999999L)) {
-            tenDivRem = intCompact % 10;
-            intCompact /= 10;
-            scale--;
-        }
-        if (tenDivRem >= 5) // Rounding away from zero
-            intCompact++;
 
         return pack(signMask, EXPONENT_BIAS - scale, intCompact, roundingMode);
     }
@@ -1488,7 +1481,7 @@ class JavaImpl {
             } else if (numberOfDigits == 17) {
                 switch (roundingMode) {
                     case BID_ROUNDING_EXCEPTION:
-                        throw new IllegalArgumentException("Can't convert string(='" + s.subSequence(si, ei) + "') to Decimal64 without precision loss.");
+                        throw new NumberFormatException("Can't convert string(='" + s.subSequence(si, ei) + "') to Decimal64 without precision loss.");
 
                     case BID_ROUNDING_TO_NEAREST:
                         midpoint = (c == '5' && (coefficient & 1) == 0);
@@ -1660,7 +1653,7 @@ class JavaImpl {
         // Underflow
         if (exponent + MAX_FORMAT_DIGITS < 0) {
             if (roundingMode == BID_ROUNDING_EXCEPTION)
-                throw new IllegalArgumentException("The exponent(=" + exponent + ") of the value (=" + coefficient + ") with sign(=" + (isSigned ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
+                throw new NumberFormatException("The exponent(=" + exponent + ") of the value (=" + coefficient + ") with sign(=" + (isSigned ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
             if (roundingMode == BID_ROUNDING_DOWN && isSigned)
                 return 0x8000000000000001L;
             if (roundingMode == BID_ROUNDING_UP && !isSigned)
@@ -1966,6 +1959,10 @@ class JavaImpl {
     static final int BID_ROUNDING_TIES_AWAY = 0x00004;
     static final int BID_ROUNDING_EXCEPTION = 0x00005;
 
+    static void throwPackException(final long signMask, final int exponentIn, final long coefficientIn) {
+        throw new NumberFormatException("The unbiasedExponent(=" + (exponentIn - EXPONENT_BIAS) + ") of the value (=" + coefficientIn + ") with sign(=" + (signMask != 0 ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
+    }
+
     public static long pack(final long signMask, final int exponentIn, final long coefficientIn, int roundingMode) {
         final long Q_low_0;
         final long Q_low_1;
@@ -1983,7 +1980,56 @@ class JavaImpl {
         final int amount2;
 
         // TODO: optimize: (coefficient always positive! & use more efficient comparison)
+        long tenDivRem = 0;
+        boolean isAnyNonZeroRem = false;
+        while (UnsignedLong.isGreater(coefficient, 9999999999999999L)) {
+            tenDivRem = coefficient % 10;
+            if (tenDivRem != 0) {
+                if (roundingMode == BID_ROUNDING_EXCEPTION)
+                    throwPackException(signMask, exponentIn, coefficientIn);
+                isAnyNonZeroRem = true;
+            }
+            coefficient /= 10;
+            exponent++;
+        }
+
+        if (isAnyNonZeroRem) {
+            switch (roundingMode) {
+                case BID_ROUNDING_TO_NEAREST:
+                    if (tenDivRem >= 5) // Rounding away from zero
+                        coefficient++;
+                    break;
+
+                case BID_ROUNDING_DOWN:
+                    if (signMask != 0 /*&& isAnyNonZeroRem - already checked*/)
+                        coefficient++;
+                    break;
+
+                case BID_ROUNDING_UP:
+                    if (signMask == 0 /*&& isAnyNonZeroRem - already checked*/)
+                        coefficient++;
+                    break;
+
+                case BID_ROUNDING_TO_ZERO:
+                    break;
+
+                case BID_ROUNDING_TIES_AWAY:
+                    //if (isAnyNonZeroRem)  - already checked
+                    coefficient++;
+                    break;
+
+                case BID_ROUNDING_EXCEPTION:
+                    throwPackException(signMask, exponentIn, coefficientIn);
+
+                default:
+                    throw new IllegalArgumentException("Unsupported roundingMode(=" + roundingMode + ") value.");
+
+            }
+        }
+
         if (UnsignedLong.isGreater(coefficient, 9999999999999999L)) {
+            if (roundingMode == BID_ROUNDING_EXCEPTION)
+                throwPackException(signMask, exponentIn, coefficientIn);
             exponent++;
             coefficient = 1000000000000000L;
         }
@@ -1994,7 +2040,7 @@ class JavaImpl {
                 // Underflow.
                 if (exponent + MAX_FORMAT_DIGITS < 0) {
                     if (roundingMode == BID_ROUNDING_EXCEPTION)
-                        throw new IllegalArgumentException("The exponent(=" + exponentIn + ") of the value (=" + coefficientIn + ") with sign(=" + (signMask != 0 ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
+                        throwPackException(signMask, exponentIn, coefficientIn);
                     if (roundingMode == BID_ROUNDING_DOWN && signMask < 0)
                         return 0x8000000000000001L;
                     if (roundingMode == BID_ROUNDING_UP && signMask >= 0)
@@ -2111,7 +2157,7 @@ class JavaImpl {
                 r = signMask | MASK_INFINITY_AND_NAN;
                 switch (roundingMode) {
                     case BID_ROUNDING_EXCEPTION:
-                        throw new IllegalArgumentException("The exponent(=" + exponentIn + ") of the value (=" + coefficientIn + ") with sign(=" + (signMask != 0 ? '-' : '+') + ") can't be saved to Decimal64 without precision loss.");
+                        throwPackException(signMask, exponentIn, coefficientIn);
 
                     case BID_ROUNDING_DOWN:
                         if (signMask >= 0)
@@ -2291,6 +2337,838 @@ class JavaImpl {
             default:
                 throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
         }
+        partsExponent += addExponent;
+        if (partsCoefficient == 0)
+            return JavaImpl.ZERO;
+
+        return pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST); // JavaImpl.fromParts(parts)
+    }
+
+    public static long roundToReciprocal(final long value, final int r, final RoundingMode roundType) {
+        if (r < 1)
+            throw new IllegalArgumentException("The r(=" + r + ") argument must be positive.");
+        if (isNonFinite(value))
+            return value;
+//        if (Math.log10(r) > JavaImpl.MAX_EXPONENT) // Never can happens
+//            return value;
+//        if (Math.log10(r) < JavaImpl.MIN_EXPONENT)
+//            return JavaImpl.ZERO;
+
+//        final Decimal64Parts parts = tlsDecimal64Parts.get();
+//        JavaImpl.toParts(value, parts);
+        long partsCoefficient;
+        long partsSignMask;
+        int partsExponent;
+        { // Copy-paste the toParts method for speedup
+            partsSignMask = value & MASK_SIGN;
+
+            if (isSpecial(value)) {
+//                if (isNonFinite(value)) {
+//                    partsExponent = 0;
+//
+//                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
+//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                        partsCoefficient = value & ~MASK_COEFFICIENT;
+//                    if (isInfinity(value))
+//                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+//                } else
+                {
+                    // Check for non-canonical values.
+                    final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
+                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+
+                    // Extract exponent.
+                    final long tmp = value >> EXPONENT_SHIFT_LARGE;
+                    partsExponent = (int) (tmp & EXPONENT_MASK);
+                }
+            } else {
+
+                // Extract exponent. Maximum biased value for "small exponent" is 0x2FF(*2=0x5FE), signed: []
+                // upper 1/4 of the mask range is "special", as checked in the code above
+                final long tmp = value >> EXPONENT_SHIFT_SMALL;
+                partsExponent = (int) (tmp & EXPONENT_MASK);
+
+                // Extract coefficient.
+                partsCoefficient = (value & SMALL_COEFFICIENT_MASK);
+            }
+        }
+
+        if (partsCoefficient == 0)
+            return Decimal64Utils.ZERO;
+
+        int unbiasedExponent = partsExponent - JavaImpl.EXPONENT_BIAS;
+
+        if (unbiasedExponent >= 0) // value is already rounded
+            return value;
+
+        // Denormalize partsCoefficient to the maximal value to get the maximal precision after final r division
+        {
+            final int dn = numberOfDigits(partsCoefficient);
+            /*if (dn < POWERS_OF_TEN.length - 1)*/
+            {
+
+                final int expShift = (POWERS_OF_TEN.length - 1) - dn;
+                partsExponent -= expShift;
+                unbiasedExponent -= expShift;
+                partsCoefficient *= POWERS_OF_TEN[expShift];
+            }
+        }
+
+
+        //Multiply partsCoefficient with r
+        long coefficientMulR_w0, coefficientMulR_w21;
+        {
+            final long l0 = (LONG_LOW_PART & partsCoefficient) * r;
+            coefficientMulR_w0 = LONG_LOW_PART & l0;
+            coefficientMulR_w21 = (partsCoefficient >>> 32) * r + (l0 >>> 32);
+        }
+
+        //final long divFactor;
+        final int divFactor01, divFactor02, divFactor03; // divFactor = divFactor1 * divFactor2 * divFactor3
+        final int addExponent;
+        {
+            int absPower = -unbiasedExponent;
+            final int maxPower = Math.min(absPower, Math.min(3 * 9, numberOfDigits(coefficientMulR_w21) + 10 /* low part */));
+//            divFactor = POWERS_OF_TEN[maxPower];
+            final int factor1Power = Math.min(maxPower, 9); // Int can hold max 1_000_000_000
+            divFactor01 = (int) POWERS_OF_TEN[factor1Power];
+            final int factor2Power = Math.min(maxPower - factor1Power, 9);
+            divFactor02 = (int) POWERS_OF_TEN[factor2Power];
+            divFactor03 = (int) POWERS_OF_TEN[maxPower - factor1Power - factor2Power];
+            addExponent = absPower - maxPower;
+        }
+
+        // Process last digit
+        switch (roundType) {
+            case UP:
+                // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                if (addExponent != 0) {
+                    {
+                        final long divFactor12 = (long) divFactor01 * divFactor02;
+                        coefficientMulR_w0 = LONG_LOW_PART & divFactor12;
+                        coefficientMulR_w21 = divFactor12 >>> 32;
+
+                        if (divFactor03 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor03;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+                    }
+
+                } else { // addExponent != 0
+                    { // + divFactor - 1
+                        long divFactor_w0, divFactor_w21;
+                        {
+                            final long lowPart = (long) divFactor01 * divFactor02;
+                            divFactor_w0 = lowPart & LONG_LOW_PART;
+                            divFactor_w21 = lowPart >>> 32;
+                        }
+                        if (divFactor03 > 1) {
+                            final long lowMul = divFactor_w0 * divFactor03;
+                            divFactor_w0 = lowMul & LONG_LOW_PART;
+                            divFactor_w21 = divFactor_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+
+                        { // divFactor - 1
+                            final long lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                            divFactor_w0 = lowPart & LONG_LOW_PART;
+                            divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >>> 32);
+                        }
+
+                        {
+                            final long lowPart = coefficientMulR_w0 + divFactor_w0;
+                            coefficientMulR_w0 = lowPart & LONG_LOW_PART;
+                            coefficientMulR_w21 += divFactor_w21 + (lowPart >>> 32);
+                        }
+                    }
+                    { // / divFactor
+                        {
+                            final long r21 = coefficientMulR_w21 % divFactor01;
+                            coefficientMulR_w21 /= divFactor01;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor02;
+                            coefficientMulR_w21 /= divFactor02;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor03;
+                            coefficientMulR_w21 /= divFactor03;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                        }
+                    }
+                    { // * divFactor
+                        {
+                            final long lowMul = coefficientMulR_w0 * divFactor01;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor02;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor03;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+                    }
+                }
+                // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                break;
+
+            case DOWN:
+                // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+                if (addExponent != 0) {
+                    {
+                        coefficientMulR_w0 = 0;
+                        coefficientMulR_w21 = 0;
+                    }
+
+                } else { // addExponent != 0
+                    { // / divFactor
+                        {
+                            final long r21 = coefficientMulR_w21 % divFactor01;
+                            coefficientMulR_w21 /= divFactor01;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor02;
+                            coefficientMulR_w21 /= divFactor02;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor03;
+                            coefficientMulR_w21 /= divFactor03;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                        }
+                    }
+                    { // * divFactor
+                        {
+                            final long lowMul = coefficientMulR_w0 * divFactor01;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor02;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor03;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+                    }
+                }
+                // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+                break;
+
+            case CEILING:
+                if (partsSignMask >= 0/*!parts.isNegative()*/) {
+                    // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                    if (addExponent != 0) {
+                        {
+                            final long divFactor12 = (long) divFactor01 * divFactor02;
+                            coefficientMulR_w0 = LONG_LOW_PART & divFactor12;
+                            coefficientMulR_w21 = divFactor12 >>> 32;
+
+                            if (divFactor03 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor03;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                            }
+                        }
+
+                    } else { // addExponent != 0
+                        { // + divFactor - 1
+                            long divFactor_w0, divFactor_w21;
+                            {
+                                final long lowPart = (long) divFactor01 * divFactor02;
+                                divFactor_w0 = lowPart & LONG_LOW_PART;
+                                divFactor_w21 = lowPart >>> 32;
+                            }
+                            if (divFactor03 > 1) {
+                                final long lowMul = divFactor_w0 * divFactor03;
+                                divFactor_w0 = lowMul & LONG_LOW_PART;
+                                divFactor_w21 = divFactor_w21 * divFactor03 + (lowMul >>> 32);
+                            }
+
+                            { // divFactor - 1
+                                final long lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                                divFactor_w0 = lowPart & LONG_LOW_PART;
+                                divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >>> 32);
+                            }
+
+                            {
+                                final long lowPart = coefficientMulR_w0 + divFactor_w0;
+                                coefficientMulR_w0 = lowPart & LONG_LOW_PART;
+                                coefficientMulR_w21 += divFactor_w21 + (lowPart >>> 32);
+                            }
+                        }
+                        { // / divFactor
+                            {
+                                final long r21 = coefficientMulR_w21 % divFactor01;
+                                coefficientMulR_w21 /= divFactor01;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                            }
+
+                            if (divFactor02 > 1) {
+                                final long r21 = coefficientMulR_w21 % divFactor02;
+                                coefficientMulR_w21 /= divFactor02;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                            }
+
+                            if (divFactor03 > 1) {
+                                final long r21 = coefficientMulR_w21 % divFactor03;
+                                coefficientMulR_w21 /= divFactor03;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                            }
+                        }
+                        { // * divFactor
+                            {
+                                final long lowMul = coefficientMulR_w0 * divFactor01;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                            }
+
+                            if (divFactor02 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor02;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                            }
+
+                            if (divFactor03 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor03;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                            }
+                        }
+                    }
+                    // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+
+                } else { // partsSignMask >= 0
+                    // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+                    if (addExponent != 0) {
+                        {
+                            coefficientMulR_w0 = 0;
+                            coefficientMulR_w21 = 0;
+                        }
+
+                    } else { // addExponent != 0
+                        { // / divFactor
+                            {
+                                final long r21 = coefficientMulR_w21 % divFactor01;
+                                coefficientMulR_w21 /= divFactor01;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                            }
+
+                            if (divFactor02 > 1) {
+                                final long r21 = coefficientMulR_w21 % divFactor02;
+                                coefficientMulR_w21 /= divFactor02;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                            }
+
+                            if (divFactor03 > 1) {
+                                final long r21 = coefficientMulR_w21 % divFactor03;
+                                coefficientMulR_w21 /= divFactor03;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                            }
+                        }
+                        { // * divFactor
+                            {
+                                final long lowMul = coefficientMulR_w0 * divFactor01;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                            }
+
+                            if (divFactor02 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor02;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                            }
+
+                            if (divFactor03 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor03;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                            }
+                        }
+                    }
+                    // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+                }
+                break;
+
+            case FLOOR:
+                if (partsSignMask >= 0/*!parts.isNegative()*/) {
+                    // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+                    if (addExponent != 0) {
+                        {
+                            coefficientMulR_w0 = 0;
+                            coefficientMulR_w21 = 0;
+                        }
+
+                    } else { // addExponent != 0
+                        { // / divFactor
+                            {
+                                final long r21 = coefficientMulR_w21 % divFactor01;
+                                coefficientMulR_w21 /= divFactor01;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                            }
+
+                            if (divFactor02 > 1) {
+                                final long r21 = coefficientMulR_w21 % divFactor02;
+                                coefficientMulR_w21 /= divFactor02;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                            }
+
+                            if (divFactor03 > 1) {
+                                final long r21 = coefficientMulR_w21 % divFactor03;
+                                coefficientMulR_w21 /= divFactor03;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                            }
+                        }
+                        { // * divFactor
+                            {
+                                final long lowMul = coefficientMulR_w0 * divFactor01;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                            }
+
+                            if (divFactor02 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor02;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                            }
+
+                            if (divFactor03 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor03;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                            }
+                        }
+                    }
+                    // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
+
+                } else { // partsSignMask >= 0
+                    // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                    if (addExponent != 0) {
+                        {
+                            final long divFactor12 = (long) divFactor01 * divFactor02;
+                            coefficientMulR_w0 = LONG_LOW_PART & divFactor12;
+                            coefficientMulR_w21 = divFactor12 >>> 32;
+
+                            if (divFactor03 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor03;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                            }
+                        }
+
+                    } else { // addExponent != 0
+                        { // + divFactor - 1
+                            long divFactor_w0, divFactor_w21;
+                            {
+                                final long lowPart = (long) divFactor01 * divFactor02;
+                                divFactor_w0 = lowPart & LONG_LOW_PART;
+                                divFactor_w21 = lowPart >>> 32;
+                            }
+                            if (divFactor03 > 1) {
+                                final long lowMul = divFactor_w0 * divFactor03;
+                                divFactor_w0 = lowMul & LONG_LOW_PART;
+                                divFactor_w21 = divFactor_w21 * divFactor03 + (lowMul >>> 32);
+                            }
+
+                            { // divFactor - 1
+                                final long lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                                divFactor_w0 = lowPart & LONG_LOW_PART;
+                                divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >>> 32);
+                            }
+
+                            {
+                                final long lowPart = coefficientMulR_w0 + divFactor_w0;
+                                coefficientMulR_w0 = lowPart & LONG_LOW_PART;
+                                coefficientMulR_w21 += divFactor_w21 + (lowPart >>> 32);
+                            }
+                        }
+                        { // / divFactor
+                            {
+                                final long r21 = coefficientMulR_w21 % divFactor01;
+                                coefficientMulR_w21 /= divFactor01;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                            }
+
+                            if (divFactor02 > 1) {
+                                final long r21 = coefficientMulR_w21 % divFactor02;
+                                coefficientMulR_w21 /= divFactor02;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                            }
+
+                            if (divFactor03 > 1) {
+                                final long r21 = coefficientMulR_w21 % divFactor03;
+                                coefficientMulR_w21 /= divFactor03;
+                                coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                            }
+                        }
+                        { // * divFactor
+                            {
+                                final long lowMul = coefficientMulR_w0 * divFactor01;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                            }
+
+                            if (divFactor02 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor02;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                            }
+
+                            if (divFactor03 > 1) {
+                                final long lowMul = coefficientMulR_w0 * divFactor03;
+                                coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                                coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                            }
+                        }
+                    }
+                    // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
+                }
+                break;
+
+            case HALF_UP:
+                // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
+                if (addExponent != 0) {
+                    {
+                        coefficientMulR_w0 = 0;
+                        coefficientMulR_w21 = 0;
+                    }
+
+                } else { // addExponent != 0
+                    { // + divFactor / 2
+                        long divFactor_w0, divFactor_w21;
+                        {
+                            final long lowPart = (long) divFactor01 * divFactor02;
+                            divFactor_w0 = lowPart & LONG_LOW_PART;
+                            divFactor_w21 = lowPart >>> 32;
+                        }
+                        if (divFactor03 > 1) {
+                            final long lowMul = divFactor_w0 * divFactor03;
+                            divFactor_w0 = lowMul & LONG_LOW_PART;
+                            divFactor_w21 = divFactor_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+
+                        { // divFactor / 2
+                            divFactor_w0 = ((divFactor_w21 & 1) << 31) | (divFactor_w0 >>> 1);
+                            divFactor_w21 = divFactor_w21 >>> 1;
+                        }
+
+                        {
+                            final long lowPart = coefficientMulR_w0 + divFactor_w0;
+                            coefficientMulR_w0 = lowPart & LONG_LOW_PART;
+                            coefficientMulR_w21 += divFactor_w21 + (lowPart >>> 32);
+                        }
+                    }
+                    { // / divFactor
+                        {
+                            final long r21 = coefficientMulR_w21 % divFactor01;
+                            coefficientMulR_w21 /= divFactor01;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor02;
+                            coefficientMulR_w21 /= divFactor02;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor03;
+                            coefficientMulR_w21 /= divFactor03;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                        }
+                    }
+                    { // * divFactor
+                        {
+                            final long lowMul = coefficientMulR_w0 * divFactor01;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor02;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor03;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+                    }
+                }
+                // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
+                break;
+
+            case HALF_DOWN:
+                // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
+                if (addExponent != 0) {
+                    {
+                        coefficientMulR_w0 = 0;
+                        coefficientMulR_w21 = 0;
+                    }
+
+                } else { // addExponent != 0
+                    { // + divFactor / 2
+                        long divFactor_w0, divFactor_w21;
+                        {
+                            final long lowPart = (long) divFactor01 * divFactor02;
+                            divFactor_w0 = lowPart & LONG_LOW_PART;
+                            divFactor_w21 = lowPart >>> 32;
+                        }
+                        if (divFactor03 > 1) {
+                            final long lowMul = divFactor_w0 * divFactor03;
+                            divFactor_w0 = lowMul & LONG_LOW_PART;
+                            divFactor_w21 = divFactor_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+
+                        { // divFactor / 2
+                            divFactor_w0 = ((divFactor_w21 & 1) << 31) | (divFactor_w0 >>> 1);
+                            divFactor_w21 = divFactor_w21 >>> 1;
+                        }
+
+                        { // divFactor - 1
+                            final long lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                            divFactor_w0 = lowPart & LONG_LOW_PART;
+                            divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >>> 32);
+                        }
+
+                        {
+                            final long lowPart = coefficientMulR_w0 + divFactor_w0;
+                            coefficientMulR_w0 = lowPart & LONG_LOW_PART;
+                            coefficientMulR_w21 += divFactor_w21 + (lowPart >>> 32);
+                        }
+                    }
+                    { // / divFactor
+                        {
+                            final long r21 = coefficientMulR_w21 % divFactor01;
+                            coefficientMulR_w21 /= divFactor01;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor02;
+                            coefficientMulR_w21 /= divFactor02;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor03;
+                            coefficientMulR_w21 /= divFactor03;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                        }
+                    }
+                    { // * divFactor
+                        {
+                            final long lowMul = coefficientMulR_w0 * divFactor01;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor02;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor03;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+                    }
+                }
+                // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
+                break;
+
+            case HALF_EVEN:
+                // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
+                if (addExponent != 0) {
+                    {
+                        coefficientMulR_w0 = 0;
+                        coefficientMulR_w21 = 0;
+                    }
+
+                } else { // addExponent != 0
+                    { // + divFactor / 2
+                        long divFactor_w0, divFactor_w21;
+                        {
+                            final long lowPart = (long) divFactor01 * divFactor02;
+                            divFactor_w0 = lowPart & LONG_LOW_PART;
+                            divFactor_w21 = lowPart >>> 32;
+                        }
+                        if (divFactor03 > 1) {
+                            final long lowMul = divFactor_w0 * divFactor03;
+                            divFactor_w0 = lowMul & LONG_LOW_PART;
+                            divFactor_w21 = divFactor_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+
+                        { // divFactor / 2
+                            divFactor_w0 = ((divFactor_w21 & 1) << 31) | (divFactor_w0 >>> 1);
+                            divFactor_w21 = divFactor_w21 >>> 1;
+                        }
+
+                        final boolean divisionLatestBit;
+                        { // ((partsCoefficient / divFactor) & 1L)
+                            long tmpCoefficientMulR_w0 = coefficientMulR_w0;
+                            long tmpCoefficientMulR_w21 = coefficientMulR_w21;
+                            { // / divFactor
+                                {
+                                    final long r21 = tmpCoefficientMulR_w21 % divFactor01;
+                                    tmpCoefficientMulR_w21 /= divFactor01;
+                                    tmpCoefficientMulR_w0 = ((r21 << 32) | tmpCoefficientMulR_w0) / divFactor01;
+                                }
+
+                                if (divFactor02 > 1) {
+                                    final long r21 = tmpCoefficientMulR_w21 % divFactor02;
+                                    tmpCoefficientMulR_w21 /= divFactor02;
+                                    tmpCoefficientMulR_w0 = ((r21 << 32) | tmpCoefficientMulR_w0) / divFactor02;
+                                }
+
+                                if (divFactor03 > 1) {
+                                    final long r21 = tmpCoefficientMulR_w21 % divFactor03;
+                                    // tmpCoefficientMulR_w21 /= divFactor03; // No need high words
+                                    tmpCoefficientMulR_w0 = ((r21 << 32) | tmpCoefficientMulR_w0) / divFactor03;
+                                }
+                            }
+
+                            divisionLatestBit = (tmpCoefficientMulR_w0 & 1) != 0;
+                        }
+
+                        if (!divisionLatestBit) { // divFactor - 1
+                            final long lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                            divFactor_w0 = lowPart & LONG_LOW_PART;
+                            divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >>> 32);
+                        }
+
+                        {
+                            final long lowPart = coefficientMulR_w0 + divFactor_w0;
+                            coefficientMulR_w0 = lowPart & LONG_LOW_PART;
+                            coefficientMulR_w21 += divFactor_w21 + (lowPart >>> 32);
+                        }
+                    }
+                    { // / divFactor
+                        {
+                            final long r21 = coefficientMulR_w21 % divFactor01;
+                            coefficientMulR_w21 /= divFactor01;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor02;
+                            coefficientMulR_w21 /= divFactor02;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long r21 = coefficientMulR_w21 % divFactor03;
+                            coefficientMulR_w21 /= divFactor03;
+                            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
+                        }
+                    }
+                    { // * divFactor
+                        {
+                            final long lowMul = coefficientMulR_w0 * divFactor01;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor02 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor02;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >>> 32);
+                        }
+
+                        if (divFactor03 > 1) {
+                            final long lowMul = coefficientMulR_w0 * divFactor03;
+                            coefficientMulR_w0 = lowMul & LONG_LOW_PART;
+                            coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >>> 32);
+                        }
+                    }
+                }
+                // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
+                break;
+
+            case UNNECESSARY:
+                if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/)
+                    throw new ArithmeticException("Rounding necessary");
+            {
+                { // if (partsCoefficient % divFactor != 0) throw new ArithmeticException("Rounding necessary");
+                    {
+                        final long r21 = coefficientMulR_w21 % divFactor01;
+                        final long l = ((r21 << 32) | coefficientMulR_w0);
+                        if (l % divFactor01 != 0)
+                            throw new ArithmeticException("Rounding necessary");
+                        coefficientMulR_w0 = l / divFactor01;
+                        coefficientMulR_w21 /= divFactor01;
+                    }
+
+                    if (divFactor02 > 1) {
+                        final long r21 = coefficientMulR_w21 % divFactor02;
+                        final long l = ((r21 << 32) | coefficientMulR_w0);
+                        if (l % divFactor02 != 0)
+                            throw new ArithmeticException("Rounding necessary");
+                        coefficientMulR_w0 = l / divFactor02;
+                        coefficientMulR_w21 /= divFactor02;
+                    }
+
+                    if (divFactor03 > 1) {
+                        final long r21 = coefficientMulR_w21 % divFactor03;
+                        final long l = ((r21 << 32) | coefficientMulR_w0);
+                        if (l % divFactor03 != 0)
+                            throw new ArithmeticException("Rounding necessary");
+                        // coefficientMulR_w0 = l / divFactor03; // No need division result
+                        // coefficientMulR_w21 /= divFactor03; // No need division result
+                    }
+                }
+            }
+
+            return value;
+
+            default:
+                throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
+        }
+
+        { // / r
+            final long r21 = coefficientMulR_w21 % r;
+            coefficientMulR_w21 /= r;
+            coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / r;
+
+            if (coefficientMulR_w21 > Integer.MAX_VALUE) {
+                final int dn = numberOfDigits(coefficientMulR_w21 / Integer.MAX_VALUE);
+                final int f = (int) POWERS_OF_TEN[dn];
+
+                partsExponent += dn;
+
+                {
+                    final long f21 = coefficientMulR_w21 % f;
+                    coefficientMulR_w21 /= f;
+                    coefficientMulR_w0 = ((f21 << 32) | coefficientMulR_w0) / f;
+                }
+            }
+
+            partsCoefficient = ((LONG_LOW_PART & coefficientMulR_w21) << 32) + coefficientMulR_w0;
+        }
+
         partsExponent += addExponent;
         if (partsCoefficient == 0)
             return JavaImpl.ZERO;

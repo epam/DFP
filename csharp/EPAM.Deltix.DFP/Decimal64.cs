@@ -36,6 +36,10 @@ namespace EPAM.Deltix.DFP
 		public static readonly Decimal64 OneTenth	= new Decimal64(DotNetImpl.OneTenth);
 		public static readonly Decimal64 OneHundredth = new Decimal64(DotNetImpl.OneHundredth);
 
+		public static readonly int MaxSignificandDigits = 16;
+		public static readonly int MaxExponent = 384;
+		public static readonly int MinExponent = -383;
+
 		#endregion
 
 		public UInt64 Bits { get; }
@@ -654,6 +658,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.roundTowardsPositiveInfinity(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.Ceiling) instead.")]
 		public Decimal64 RoundTowardsPositiveInfinity()
 		{
 			return new Decimal64(NativeImpl.roundTowardsPositiveInfinity(Bits));
@@ -664,11 +669,13 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.roundTowardsNegativeInfinity(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.Floor) instead.")]
 		public Decimal64 RoundTowardsNegativeInfinity()
 		{
 			return new Decimal64(NativeImpl.roundTowardsNegativeInfinity(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.Down) instead.")]
 		public Decimal64 RoundTowardsZero()
 		{
 			return new Decimal64(NativeImpl.roundTowardsZero(Bits));
@@ -680,16 +687,19 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.roundToNearestTiesAwayFromZero(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.HalfUp) instead.")]
 		public Decimal64 RoundToNearestTiesAwayFromZero()
 		{
 			return new Decimal64(NativeImpl.roundToNearestTiesAwayFromZero(Bits));
 		}
 
+		[Obsolete("Call Round(0, RoundingMode.HalfEven) instead.")]
 		public Decimal64 RoundToNearestTiesToEven()
 		{
 			return new Decimal64(NativeImpl.roundToNearestTiesToEven(Bits));
 		}
 
+		[Obsolete("Call RoundToReciprocal(r, RoundingMode.Ceiling) instead.")]
 		public Decimal64 RoundTowardsPositiveInfinity(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
@@ -701,6 +711,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
+		[Obsolete("Call RoundToReciprocal(r, RoundingMode.Floor) instead.")]
 		public Decimal64 RoundTowardsNegativeInfinity(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
@@ -712,6 +723,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
+		[Obsolete("Call RoundToReciprocal(r, RoundingMode.HalfUp) instead.")]
 		public Decimal64 RoundToNearestTiesAwayFromZero(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
@@ -723,6 +735,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
+		[Obsolete("Call RoundToReciprocal(r, RoundingMode.HalfEven) instead.")]
 		public Decimal64 RoundToNearestTiesToEven(Decimal64 multiple)
 		{
 			if (!multiple.IsFinite() || multiple.IsNonPositive())
@@ -737,6 +750,11 @@ namespace EPAM.Deltix.DFP
 		public Decimal64 Round(int n, RoundingMode roundType)
 		{
 			return new Decimal64(DotNetImpl.Round(Bits, n, roundType));
+		}
+
+		public Decimal64 RoundToReciprocal(uint r, RoundingMode roundType)
+		{
+			return new Decimal64(DotNetImpl.RoundToReciprocal(Bits, r, roundType));
 		}
 
 		#endregion
@@ -872,6 +890,27 @@ namespace EPAM.Deltix.DFP
 			//else if ((fpsf & DotNetReImpl.BID_INEXACT_EXCEPTION) != 0)
 			//	throw new FormatException("Can't convert input string to value without precision loss.");
 			return FromUnderlying(ret);
+		}
+
+		public enum StatusValue
+		{
+			Exact = (int)DotNetReImpl.BID_EXACT_STATUS,
+
+			Overflow = (int)DotNetReImpl.BID_OVERFLOW_EXCEPTION,
+
+			Underflow = (int)DotNetReImpl.BID_UNDERFLOW_EXCEPTION,
+
+			Inexact = (int)DotNetReImpl.BID_INEXACT_EXCEPTION,
+
+			InvalidFormat = (int)DotNetReImpl.BID_INVALID_FORMAT
+		}
+
+		public static Boolean TryParse(String text, out Decimal64 result, out StatusValue status)
+		{
+			uint fpsf;
+			result = FromUnderlying(DotNetReImpl.bid64_from_string(text, out fpsf));
+			status = (StatusValue)fpsf;
+			return status == StatusValue.Exact;
 		}
 
 		public static Boolean TryParse(String text, out Decimal64 result)
