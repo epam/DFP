@@ -2137,6 +2137,20 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#isRoundedToReciprocal(int)}, adds null check; do not use directly.
+     *
+     * @param value     {@code DFP} argument to round
+     * @param r         the number whose reciprocal is rounded to
+     * @return {@code DFP} the rounded value
+     */
+    @Decimal
+    @Deprecated
+    public static boolean isRoundedToReciprocalChecked(@Decimal final long value, final int r) {
+        checkNull(value);
+        return isRoundedToReciprocal(value, r);
+    }
+
+    /**
      * Implements {@link Decimal64#round(int, RoundingMode)}, adds null check; do not use directly.
      *
      * @param value     {@code DFP} argument to round
@@ -2149,6 +2163,20 @@ public class Decimal64Utils {
     public static long roundChecked(@Decimal final long value, final int n, final RoundingMode roundType) {
         checkNull(value);
         return round(value, n, roundType);
+    }
+
+    /**
+     * Implements {@link Decimal64#isRounded(int)}, adds null check; do not use directly.
+     *
+     * @param value     {@code DFP} argument to round
+     * @param n         the number of decimals to use when rounding the number
+     * @return {@code DFP} the rounded value
+     */
+    @Decimal
+    @Deprecated
+    public static boolean isRoundedChecked(@Decimal final long value, final int n) {
+        checkNull(value);
+        return isRounded(value, n);
     }
 
     /**
