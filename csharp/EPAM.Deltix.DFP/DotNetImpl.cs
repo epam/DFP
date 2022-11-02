@@ -520,12 +520,12 @@ namespace EPAM.Deltix.DFP
 			//if (n < MinExponent)
 			//	return Zero;
 
-			BID_UINT64 partsSignMask;
+			//BID_UINT64 partsSignMask; // No need sign check
 			int partsExponent;
 			BID_UINT64 partsCoefficient;
 			// DotNetReImpl.unpack_BID64(out partsSignMask, out partsExponent, out partsCoefficient, value);
 			{ // Copy-paste the toParts method for speedup
-				partsSignMask = value & 0x8000000000000000UL;
+				// partsSignMask = value & 0x8000000000000000UL;
 
 				if ((value & DotNetReImpl.SPECIAL_ENCODING_MASK64) == DotNetReImpl.SPECIAL_ENCODING_MASK64)
 				{
@@ -544,8 +544,8 @@ namespace EPAM.Deltix.DFP
 						BID_UINT64 coeff = (value & DotNetReImpl.LARGE_COEFF_MASK64) | DotNetReImpl.LARGE_COEFF_HIGH_BIT64;
 
 						// check for non-canonical values
-						if (coeff >= 10000000000000000UL)
-							coeff = 0;
+						if (coeff >= 10000000000000000UL) // So, partsCoefficient=0, so Zero is rounded
+							return true;
 						partsCoefficient = coeff;
 						// get exponent
 						BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_LARGE64;

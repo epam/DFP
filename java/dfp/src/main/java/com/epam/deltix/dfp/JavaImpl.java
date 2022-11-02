@@ -2355,10 +2355,10 @@ class JavaImpl {
 //        final Decimal64Parts parts = tlsDecimal64Parts.get();
 //        JavaImpl.toParts(value, parts);
         long partsCoefficient;
-        long partsSignMask;
+//        long partsSignMask; // No need sing check
         int partsExponent;
         { // Copy-paste the toParts method for speedup
-            partsSignMask = value & MASK_SIGN;
+//            partsSignMask = value & MASK_SIGN;
 
             if (isSpecial(value)) {
 //                if (isNonFinite(value)) {
@@ -2373,7 +2373,9 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
+                    if (coefficient > MAX_COEFFICIENT) // So, partsCoefficient=0, so Zero is rounded
+                        return true;
+                    partsCoefficient = coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
