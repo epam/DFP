@@ -2330,7 +2330,7 @@ class JavaImpl {
                 break;
 
             case UNNECESSARY:
-                if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/ || partsCoefficient % divFactor != 0)
+                if (!isRoundedImpl(addExponent, partsCoefficient, divFactor))
                     throw new ArithmeticException("Rounding necessary");
                 return value;
 
@@ -2342,6 +2342,80 @@ class JavaImpl {
             return JavaImpl.ZERO;
 
         return pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST); // JavaImpl.fromParts(parts)
+    }
+
+    public static boolean isRounded(final long value, final int n) {
+        if (isNonFinite(value))
+            return false;
+        if (n > JavaImpl.MAX_EXPONENT)
+            return true;
+//        if (n < JavaImpl.MIN_EXPONENT)
+//            return JavaImpl.ZERO;
+
+//        final Decimal64Parts parts = tlsDecimal64Parts.get();
+//        JavaImpl.toParts(value, parts);
+        long partsCoefficient;
+//        long partsSignMask; // No need sing check
+        int partsExponent;
+        { // Copy-paste the toParts method for speedup
+//            partsSignMask = value & MASK_SIGN;
+
+            if (isSpecial(value)) {
+//                if (isNonFinite(value)) {
+//                    partsExponent = 0;
+//
+//                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
+//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                        partsCoefficient = value & ~MASK_COEFFICIENT;
+//                    if (isInfinity(value))
+//                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+//                } else
+                {
+                    // Check for non-canonical values.
+                    final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
+                    if (coefficient > MAX_COEFFICIENT) // So, partsCoefficient=0, so Zero is rounded
+                        return true;
+                    partsCoefficient = coefficient;
+
+                    // Extract exponent.
+                    final long tmp = value >> EXPONENT_SHIFT_LARGE;
+                    partsExponent = (int) (tmp & EXPONENT_MASK);
+                }
+            } else {
+
+                // Extract exponent. Maximum biased value for "small exponent" is 0x2FF(*2=0x5FE), signed: []
+                // upper 1/4 of the mask range is "special", as checked in the code above
+                final long tmp = value >> EXPONENT_SHIFT_SMALL;
+                partsExponent = (int) (tmp & EXPONENT_MASK);
+
+                // Extract coefficient.
+                partsCoefficient = (value & SMALL_COEFFICIENT_MASK);
+            }
+        }
+
+        if (partsCoefficient == 0)
+            return true;
+
+        final int exponent = partsExponent - JavaImpl.EXPONENT_BIAS + n;
+
+        if (exponent >= 0) // value is already rounded
+            return true;
+        // All next - negative exponent case
+
+        { // Truncate all digits except last one
+            int absPower = -exponent;
+            if (absPower > MAX_FORMAT_DIGITS) {
+                return false;
+
+            } else {
+                final long divFactor = POWERS_OF_TEN[absPower];
+                return partsCoefficient % divFactor == 0;
+            }
+        }
+    }
+
+    public static boolean isRoundedImpl(final int addExponent, final long partsCoefficient, final long divFactor) {
+        return addExponent == 0 && partsCoefficient % divFactor == 0;
     }
 
     public static long roundToReciprocal(final long value, final int r, final RoundingMode roundType) {
@@ -3109,40 +3183,12 @@ class JavaImpl {
                 break;
 
             case UNNECESSARY:
-                if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/)
+                if (!isRoundedToReciprocalImpl(
+                    addExponent, coefficientMulR_w21, coefficientMulR_w0,
+                    divFactor01, divFactor02, divFactor03))
                     throw new ArithmeticException("Rounding necessary");
-            {
-                { // if (partsCoefficient % divFactor != 0) throw new ArithmeticException("Rounding necessary");
-                    {
-                        final long r21 = coefficientMulR_w21 % divFactor01;
-                        final long l = ((r21 << 32) | coefficientMulR_w0);
-                        if (l % divFactor01 != 0)
-                            throw new ArithmeticException("Rounding necessary");
-                        coefficientMulR_w0 = l / divFactor01;
-                        coefficientMulR_w21 /= divFactor01;
-                    }
 
-                    if (divFactor02 > 1) {
-                        final long r21 = coefficientMulR_w21 % divFactor02;
-                        final long l = ((r21 << 32) | coefficientMulR_w0);
-                        if (l % divFactor02 != 0)
-                            throw new ArithmeticException("Rounding necessary");
-                        coefficientMulR_w0 = l / divFactor02;
-                        coefficientMulR_w21 /= divFactor02;
-                    }
-
-                    if (divFactor03 > 1) {
-                        final long r21 = coefficientMulR_w21 % divFactor03;
-                        final long l = ((r21 << 32) | coefficientMulR_w0);
-                        if (l % divFactor03 != 0)
-                            throw new ArithmeticException("Rounding necessary");
-                        // coefficientMulR_w0 = l / divFactor03; // No need division result
-                        // coefficientMulR_w21 /= divFactor03; // No need division result
-                    }
-                }
-            }
-
-            return value;
+                return value;
 
             default:
                 throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
@@ -3174,5 +3220,144 @@ class JavaImpl {
             return JavaImpl.ZERO;
 
         return pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST); // JavaImpl.fromParts(parts)
+    }
+
+    public static boolean isRoundedToReciprocal(final long value, final int r) {
+        if (r < 1)
+            throw new IllegalArgumentException("The r(=" + r + ") argument must be positive.");
+        if (isNonFinite(value))
+            return false;
+//        if (Math.log10(r) > JavaImpl.MAX_EXPONENT) // Never can happens
+//            return value;
+//        if (Math.log10(r) < JavaImpl.MIN_EXPONENT)
+//            return JavaImpl.ZERO;
+
+//        final Decimal64Parts parts = tlsDecimal64Parts.get();
+//        JavaImpl.toParts(value, parts);
+        long partsCoefficient;
+        long partsSignMask;
+        int partsExponent;
+        { // Copy-paste the toParts method for speedup
+            partsSignMask = value & MASK_SIGN;
+
+            if (isSpecial(value)) {
+//                if (isNonFinite(value)) {
+//                    partsExponent = 0;
+//
+//                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
+//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                        partsCoefficient = value & ~MASK_COEFFICIENT;
+//                    if (isInfinity(value))
+//                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+//                } else
+                {
+                    // Check for non-canonical values.
+                    final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
+                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+
+                    // Extract exponent.
+                    final long tmp = value >> EXPONENT_SHIFT_LARGE;
+                    partsExponent = (int) (tmp & EXPONENT_MASK);
+                }
+            } else {
+
+                // Extract exponent. Maximum biased value for "small exponent" is 0x2FF(*2=0x5FE), signed: []
+                // upper 1/4 of the mask range is "special", as checked in the code above
+                final long tmp = value >> EXPONENT_SHIFT_SMALL;
+                partsExponent = (int) (tmp & EXPONENT_MASK);
+
+                // Extract coefficient.
+                partsCoefficient = (value & SMALL_COEFFICIENT_MASK);
+            }
+        }
+
+        if (partsCoefficient == 0)
+            return true;
+
+        int unbiasedExponent = partsExponent - JavaImpl.EXPONENT_BIAS;
+
+        if (unbiasedExponent >= 0) // value is already rounded
+            return true;
+
+        // Denormalize partsCoefficient to the maximal value to get the maximal precision after final r division
+        {
+            final int dn = numberOfDigits(partsCoefficient);
+            /*if (dn < POWERS_OF_TEN.length - 1)*/
+            {
+
+                final int expShift = (POWERS_OF_TEN.length - 1) - dn;
+                partsExponent -= expShift;
+                unbiasedExponent -= expShift;
+                partsCoefficient *= POWERS_OF_TEN[expShift];
+            }
+        }
+
+
+        //Multiply partsCoefficient with r
+        long coefficientMulR_w0, coefficientMulR_w21;
+        {
+            final long l0 = (LONG_LOW_PART & partsCoefficient) * r;
+            coefficientMulR_w0 = LONG_LOW_PART & l0;
+            coefficientMulR_w21 = (partsCoefficient >>> 32) * r + (l0 >>> 32);
+        }
+
+        //final long divFactor;
+        final int divFactor01, divFactor02, divFactor03; // divFactor = divFactor1 * divFactor2 * divFactor3
+        final int addExponent;
+        {
+            int absPower = -unbiasedExponent;
+            final int maxPower = Math.min(absPower, Math.min(3 * 9, numberOfDigits(coefficientMulR_w21) + 10 /* low part */));
+//            divFactor = POWERS_OF_TEN[maxPower];
+            final int factor1Power = Math.min(maxPower, 9); // Int can hold max 1_000_000_000
+            divFactor01 = (int) POWERS_OF_TEN[factor1Power];
+            final int factor2Power = Math.min(maxPower - factor1Power, 9);
+            divFactor02 = (int) POWERS_OF_TEN[factor2Power];
+            divFactor03 = (int) POWERS_OF_TEN[maxPower - factor1Power - factor2Power];
+            addExponent = absPower - maxPower;
+        }
+
+        return isRoundedToReciprocalImpl(addExponent, coefficientMulR_w21, coefficientMulR_w0,
+            divFactor01, divFactor02, divFactor03);
+    }
+
+    static boolean isRoundedToReciprocalImpl(final int addExponent,
+                                             long coefficientMulR_w21,
+                                             long coefficientMulR_w0,
+                                             final int divFactor01,
+                                             final int divFactor02,
+                                             final int divFactor03) {
+        if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/)
+            return false;
+
+        { // if (partsCoefficient % divFactor != 0) throw new ArithmeticException("Rounding necessary");
+            {
+                final long r21 = coefficientMulR_w21 % divFactor01;
+                final long l = ((r21 << 32) | coefficientMulR_w0);
+                if (l % divFactor01 != 0)
+                    return false;
+                coefficientMulR_w0 = l / divFactor01;
+                coefficientMulR_w21 /= divFactor01;
+            }
+
+            if (divFactor02 > 1) {
+                final long r21 = coefficientMulR_w21 % divFactor02;
+                final long l = ((r21 << 32) | coefficientMulR_w0);
+                if (l % divFactor02 != 0)
+                    return false;
+                coefficientMulR_w0 = l / divFactor02;
+                coefficientMulR_w21 /= divFactor02;
+            }
+
+            if (divFactor03 > 1) {
+                final long r21 = coefficientMulR_w21 % divFactor03;
+                final long l = ((r21 << 32) | coefficientMulR_w0);
+                if (l % divFactor03 != 0)
+                    return false;
+                // coefficientMulR_w0 = l / divFactor03; // No need division result
+                // coefficientMulR_w21 /= divFactor03; // No need division result
+            }
+        }
+
+        return true;
     }
 }
