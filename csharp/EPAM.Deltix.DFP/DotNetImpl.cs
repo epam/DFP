@@ -202,23 +202,55 @@ namespace EPAM.Deltix.DFP
 		}
 
 
-		public static UInt64 FromDecimalFallback(Decimal dec)
+		// The internals from the https://referencesource.microsoft.com/#mscorlib/system/decimal.cs
+		[StructLayout(LayoutKind.Sequential)]
+		private struct DecimalNet
 		{
-			return NativeImpl.fromFloat64((double)dec);
+			// The lo, mid, hi, and flags fields contain the representation of the
+			// Decimal value. The lo, mid, and hi fields contain the 96-bit integer
+			// part of the Decimal. Bits 0-15 (the lower word) of the flags field are
+			// unused and must be zero; bits 16-23 contain must contain a value between
+			// 0 and 28, indicating the power of 10 to divide the 96-bit integer part
+			// by to produce the Decimal value; bits 24-30 are unused and must be zero;
+			// and finally bit 31 indicates the sign of the Decimal value, 0 meaning
+			// positive and 1 meaning negative.
+			//
+			// NOTE: Do not change the order in which these fields are declared. The
+			// native methods in this class rely on this particular order.
+			public uint flags;
+			public uint hi;
+			public uint lo;
+			public uint mid;
 		}
 
 		public static UInt64 FromDecimal(Decimal dec)
 		{
 			unsafe
 			{
-				UInt64 mantissa64 = ((UInt64*)&dec)[1];
-				Int32 signAndExp = ((Int16*)&dec)[1];
-				if (0 == ((UInt32*)&dec)[1] && mantissa64 <= 0x20000000000000)
-					return ((UInt64)signAndExp & SignMask) + mantissa64 +
-						   ((UInt64)(UInt32)(BaseExponent - signAndExp) << 53);
-			}
+				DecimalNet* decPtr = (DecimalNet*)&dec;
+				ulong sign = ((ulong)decPtr->flags & 0x80000000UL) << 32;
+				int exp = -((int)(decPtr ->flags >> 16) & 0xFF);
+				ulong mantissa;
+				if (decPtr->hi == 0)
+				{
+					mantissa = (((ulong)decPtr->mid) << 32) | ((ulong)decPtr->lo);
+				}
+				else
+				{
+					Pair96 pair96 = new Pair96(decPtr->lo, ((ulong)decPtr->mid) | (((ulong)decPtr->hi) << 32));
 
-			return FromDecimalFallback(dec);
+					while (pair96.w21 > int.MaxValue)
+					{
+						pair96.Div(10);
+						exp++;
+					}
+
+					mantissa = (pair96.w21 << 32) | pair96.w0;
+				}
+
+				BID_UINT32 fpsf = DotNetReImpl.BID_EXACT_STATUS;
+				return DotNetReImpl.get_BID64(sign, exp + DotNetReImpl.DECIMAL_EXPONENT_BIAS, mantissa, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf);
+			}
 		}
 
 		public static Decimal ToDecimalFallback(UInt64 value)
@@ -525,7 +557,7 @@ namespace EPAM.Deltix.DFP
 			BID_UINT64 partsCoefficient;
 			// DotNetReImpl.unpack_BID64(out partsSignMask, out partsExponent, out partsCoefficient, value);
 			{ // Copy-paste the toParts method for speedup
-				// partsSignMask = value & 0x8000000000000000UL;
+			  // partsSignMask = value & 0x8000000000000000UL;
 
 				if ((value & DotNetReImpl.SPECIAL_ENCODING_MASK64) == DotNetReImpl.SPECIAL_ENCODING_MASK64)
 				{
@@ -1087,7 +1119,8 @@ namespace EPAM.Deltix.DFP
 			return IsRoundedToReciprocalImpl(addExponent, coefficientMulR, divFactor);
 		}
 
-		static bool IsRoundedToReciprocalImpl(int addExponent, Pair96 coefficientMulR, Factors96 divFactor) {
+		static bool IsRoundedToReciprocalImpl(int addExponent, Pair96 coefficientMulR, Factors96 divFactor)
+		{
 			//case RoundingMode.Unnecessary:
 			if (addExponent != 0 /*&& partsCoefficient != 0 - always true: checked earlier*/)
 				return false;
