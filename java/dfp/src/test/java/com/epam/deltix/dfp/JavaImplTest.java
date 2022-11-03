@@ -507,8 +507,7 @@ public class JavaImplTest {
         final ThreadLocal<Random> tlsRandom = ThreadLocal.withInitial(SecureRandom::new);
 
         final MaxError maxErr = new MaxError();
-        /*for (int ri = 0; ri < 10_000_000; ++ri)*/
-        IntStream.range(0, 10_000_000).parallel().forEach(ri -> {
+        for (int ri = 0; ri < 1_000_000; ++ri) /*IntStream.range(0, 10_000_000).parallel().forEach(ri ->*/ {
             final Random random = tlsRandom.get();
 
             final int mantissaLen = random.nextInt(Decimal64Utils.MAX_SIGNIFICAND_DIGITS) + 1;
@@ -536,12 +535,11 @@ public class JavaImplTest {
                         }
                     }
                 }
-            }
-            catch (final Throwable e) {
+            } catch (final Throwable e) {
                 throw new RuntimeException("Error on processing case mantissa(=" + mantissa + "), exp(=" + exp +
                     "), n(=" + n + "), mode(=" + roundingMode + ")", e);
             }
-        });
+        }
 
         if (maxErr.mode != null)
             testRoundToReciprocalCase(maxErr.val, maxErr.n, maxErr.mode, true);
@@ -1092,25 +1090,25 @@ public class JavaImplTest {
     @Test
     public void testRoundDiv() {
         assertFalse(Decimal64.parse("1").isRounded(-1));
-        assertTrue(Decimal64.parse("1").isRounded( 0));
-        assertTrue(Decimal64.parse("1").isRounded( 1));
-        assertFalse(Decimal64.parse("1.23").isRounded( 1));
-        assertFalse(Decimal64.parse("1.23").isRounded( -10));
-        assertTrue(Decimal64.parse("1.23").isRounded( 2));
-        assertTrue(Decimal64.parse("1.23").isRounded( 3));
-        assertFalse(Decimal64.parse("1.23456789").isRounded( -0));
-        assertFalse(Decimal64.parse("1.23456789").isRounded( 7));
-        assertTrue(Decimal64.parse("1.23456789").isRounded( 8));
-        assertTrue(Decimal64.parse("1.23456789").isRounded( 9));
-        assertTrue(Decimal64.parse("123E10").isRounded( -9));
-        assertTrue(Decimal64.parse("123E10").isRounded( -10));
-        assertFalse(Decimal64.parse("123E10").isRounded( -11));
-        assertFalse(Decimal64.parse("-10E-10").isRounded( 8));
-        assertTrue(Decimal64.parse("-10E-10").isRounded( 9));
-        assertTrue(Decimal64.parse("-10E-10").isRounded( 10));
-        assertTrue(Decimal64.parse("0").isRounded( -11));
-        assertFalse(Decimal64.parse("Inf").isRounded( 0));
-        assertFalse(Decimal64.parse("NaN").isRounded( -11));
-        assertFalse(Decimal64.parse("-Inf").isRounded( 10));
+        assertTrue(Decimal64.parse("1").isRounded(0));
+        assertTrue(Decimal64.parse("1").isRounded(1));
+        assertFalse(Decimal64.parse("1.23").isRounded(1));
+        assertFalse(Decimal64.parse("1.23").isRounded(-10));
+        assertTrue(Decimal64.parse("1.23").isRounded(2));
+        assertTrue(Decimal64.parse("1.23").isRounded(3));
+        assertFalse(Decimal64.parse("1.23456789").isRounded(-0));
+        assertFalse(Decimal64.parse("1.23456789").isRounded(7));
+        assertTrue(Decimal64.parse("1.23456789").isRounded(8));
+        assertTrue(Decimal64.parse("1.23456789").isRounded(9));
+        assertTrue(Decimal64.parse("123E10").isRounded(-9));
+        assertTrue(Decimal64.parse("123E10").isRounded(-10));
+        assertFalse(Decimal64.parse("123E10").isRounded(-11));
+        assertFalse(Decimal64.parse("-10E-10").isRounded(8));
+        assertTrue(Decimal64.parse("-10E-10").isRounded(9));
+        assertTrue(Decimal64.parse("-10E-10").isRounded(10));
+        assertTrue(Decimal64.parse("0").isRounded(-11));
+        assertFalse(Decimal64.parse("Inf").isRounded(0));
+        assertFalse(Decimal64.parse("NaN").isRounded(-11));
+        assertFalse(Decimal64.parse("-Inf").isRounded(10));
     }
 }
