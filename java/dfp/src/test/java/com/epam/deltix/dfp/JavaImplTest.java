@@ -1158,4 +1158,25 @@ public class JavaImplTest {
         System.out.println("| `bigDecimalMultiplierWay`      | " + bigDecimalMultiplierWay + " |");
         System.out.println("| `bigDecimalReciprocalWay`      | " + bigDecimalReciprocalWay + " |");
     }
+
+    @Test
+    public void testReciprocalCalculation() {
+        assertEquals(25600, getExactReciprocal(Decimal64.parse("0.0000390625")));
+        //assertEquals(6, getExactReciprocal(Decimal64.ONE.divideByInteger(6))); // Fail, because Decimal64 can't calculate 1/(1/6) without precision loss
+    }
+
+    /**
+     * Converts positive multiple to the exact reciprocal, or return -1 if there is no exact integer representation.
+     *
+     * @param multiple Positive multiplier value.
+     * @return Integer value, reciprocal to multiple, or -1.
+     */
+    public static int getExactReciprocal(final Decimal64 multiple) {
+        if (!multiple.isPositive())
+            throw new IllegalArgumentException("The multiple(=" + multiple + ") must be positive.");
+
+        final int r = Decimal64.ONE.divide(multiple).toInt();
+
+        return Decimal64.ONE.divideByInteger(r).equals(multiple) ? r : -1;
+    }
 }

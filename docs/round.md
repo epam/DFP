@@ -189,4 +189,37 @@ The reference value is calculated in two ways:
 
 ## How to replace `roundXXX(multiple)` with `roundToReciprocal`<a name="HowToReplaceRoundXXXMultipleWithRoundToReciprocal"></a>
 
+Obviously, not all the cases of the `roundXXX(multiple)` can be replaced with `roundToReciprocal`.
+Only the cases where `multiple` can be represented as `1/r` are subjects for replacement.
+Therefore, only the cases when `multiple < 0` are subject for replacement.
+
+You can easily test is the multiple can be exactly represented by `1 / r` with next part of code:
+
+```java
+/**
+ * Converts positive multiple to the exact reciprocal, or return -1 if there is no exact integer representation.
+ *
+ * @param multiple Positive multiplier value.
+ * @return Integer value, reciprocal to multiple, or -1.
+ */
+public static int getExactReciprocal(final Decimal64 multiple) {
+    if (!multiple.isPositive())
+        throw new IllegalArgumentException("The multiple(=" + multiple + ") must be positive.");
+
+    final int r = Decimal64.ONE.divide(multiple).toInt();
+
+    return Decimal64.ONE.divideByInteger(r).equals(multiple) ? r : -1;
+}
+```
+
+The cases when the `multiple` can't exactly represent `1 / r`, (e.g. `r = 6`, so `multiple = 0.1666666666666667`)
+must be processed with careful according to the business requirements.
+
+Obviously, the `roundToReciprocal` method can be enhanced to the case of rounding to the ratio `n / d`,
+where the `n` and `d` are positive integer values. But for now there are no business requirement for such function.
+
 ## Benchmarks
+
+All the benchmarks where performed on the next platform:
+
+
