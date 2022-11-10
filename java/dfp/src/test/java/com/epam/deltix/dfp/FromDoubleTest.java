@@ -64,8 +64,10 @@ public class FromDoubleTest {
 
     private static void checkDecimalDoubleConversion(Decimal64 x, String s) {
         Decimal64 x2 = Decimal64.fromDecimalDouble(x.toDouble());
-        assertDecimalEqual(x, x2, "fromDecimalDouble(x.toDouble()) failed:");
-        assertDecimalIdentical(x.canonize(), x2, "fromDecimalDouble(x.toDouble()) failed:");
+
+        Assert.assertEquals(x.toDouble(), x2.toDouble(), 0);
+        if (!x2.equals(Decimal64.fromDouble(x.toDouble())))
+            assertDecimalIdentical(x2.canonize(), x2, "fromDecimalDouble(x) failed to canonize() the result");
 
         if (null != s) {
             Assert.assertEquals(x.toDouble(), Double.parseDouble(s), 0);
@@ -99,15 +101,25 @@ public class FromDoubleTest {
             "1E0", "1000000000000000E0",
             "0.000000009412631", "0.95285752",
             "9.2", "25107188000000000000000000000000000000000000000000000000",
+            "9.888888888888888",
             // Exponent limits
             "-1E-308", "-1000000000000000E-322"
         );
     }
 
+
     @Test
     public void testFromDecimalDoubleConversion() {
         for (int i = 0; i < N; i++) {
-            Decimal64 x = getRandomDecimal();
+            Decimal64 x = getRandomDecimal(1000_0000_0000_0000L);
+            checkDecimalDoubleConversion(x);
+        }
+    }
+
+    @Test
+    public void testFromDecimalDoubleConversionLongMantissa() {
+        for (int i = 0; i < N; i++) {
+            Decimal64 x = getRandomDecimal(9000_0000_0000_0000L, 1000_0000_0000_0000L);
             checkDecimalDoubleConversion(x);
         }
     }

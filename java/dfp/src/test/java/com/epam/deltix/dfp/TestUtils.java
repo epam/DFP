@@ -178,14 +178,14 @@ public class TestUtils {
         return randomNum;
     }
 
-    public static Decimal64 getRandomDecimal(long maxMantissa) {
-        long mantissa = rng.nextLong() % maxMantissa;
+    public static Decimal64 getRandomDecimal(long baseMantissa, long maxMantissa) {
+        long mantissa = baseMantissa + (rng.nextLong() % maxMantissa);
         int exp = (rng.nextInt() & 127) - 64;
         return Decimal64.fromFixedPoint(mantissa, exp);
     }
 
-    public static Decimal64 getRandomDecimal() {
-        return getRandomDecimal(1000000000000000L);
+    public static Decimal64 getRandomDecimal(long maxMantissa) {
+        return getRandomDecimal(0, maxMantissa);
     }
 
     public static void mantissaZerosCombinations(BiConsumer<Long, Integer> func, int n) {
