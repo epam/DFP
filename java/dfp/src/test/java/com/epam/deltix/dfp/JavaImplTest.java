@@ -16,6 +16,7 @@ import java.util.Random;
 
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
+import static com.epam.deltix.dfp.TestUtils.POWERS_OF_TEN;
 import static org.junit.Assert.*;
 
 public class JavaImplTest {
