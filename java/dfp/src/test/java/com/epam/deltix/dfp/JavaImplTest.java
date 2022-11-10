@@ -1146,7 +1146,7 @@ public class JavaImplTest {
 
         System.out.println("| Argument  | Value |");
         System.out.println("|-----------|-------|");
-        System.out.println("| value     | " + valueStr + " or `" + Decimal64.toUnderlying(value) + "L` |");
+        System.out.println("| value     | " + valueStr + " or underlying `" + Decimal64.toUnderlying(value) + "L` |");
         System.out.println("| r         | " + r + "|");
         System.out.println("| multiple  | " + multiple + " or `" + Decimal64.toUnderlying(value) + "L` |");
         System.out.println("| roundType | RoundingMode." + roundType + " |");

@@ -127,7 +127,7 @@ The reference value is calculated in two ways:
 
 | Argument  | Value                                              |
 |-----------|----------------------------------------------------|
-| value     | 0.08 or `3566850904877432840L`                     |
+| value     | 0.08 or underlying `3566850904877432840L`          |
 | r         | 3957050                                            |
 | multiple  | 0.0000002527135113278831 or `3566850904877432840L` |
 | roundType | RoundingMode.CEILING                               |
@@ -143,7 +143,7 @@ The reference value is calculated in two ways:
 
 | Argument  | Value                                             |
 |-----------|---------------------------------------------------|
-| value     | 0.5 or `3575858104132173829L`                     |
+| value     | 0.5 or underlying `3575858104132173829L`          |
 | r         | 506012                                            |
 | multiple  | 0.000001976237717682585 or `3575858104132173829L` |
 | roundType | RoundingMode.FLOOR                                |
@@ -159,7 +159,7 @@ The reference value is calculated in two ways:
 
 | Argument  | Value                                                |
 |-----------|------------------------------------------------------|
-| value     | 0.00004 or `3539829307113209860L`                    |
+| value     | 0.00004 or underlying `3539829307113209860L`         |
 | r         | 891087500                                            |
 | multiple  | 0.000000001122224248460449 or `3539829307113209860L` |
 | roundType | RoundingMode.HALF_UP                                 |
@@ -175,7 +175,7 @@ The reference value is calculated in two ways:
 
 | Argument  | Value                                               |
 |-----------|-----------------------------------------------------|
-| value     | 0.00144 or `3539829307113210000L`                   |
+| value     | 0.00144 or underlying `3539829307113210000L`        |
 | r         | 55559375                                            |
 | multiple  | 0.00000001799876258507228 or `3539829307113210000L` |
 | roundType | RoundingMode.HALF_EVEN                              |
