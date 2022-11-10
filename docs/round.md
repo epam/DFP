@@ -2,11 +2,11 @@
 
 # Table of Contents
 
-* [All rounding methods overview](#All rounding methods overview)
-    - [RoundXXX methods](#RoundXXX methods)
-    - [Commonly used roundings](#Commonly used roundings)
-    - [New optimized rounding methods](#New optimized rounding methods)
-* [Preferable methods](#Preferable methods)
+* [All rounding methods overview](#AllRoundingMethodsOverview)
+    - [RoundXXX methods](#RoundXXXMethods)
+    - [Commonly used roundings](#CommonlyUsedRoundings)
+    - [New optimized rounding methods](#NewOptimizedRoundingMethods)
+* [Preferable methods](#PreferableMethods)
 * [Why to replace `roundXXX(multiple)` with `roundToReciprocal`](#WhyToReplaceRoundXXXMultipleWithRoundToReciprocal)
     - [Precision loss on `roundTowardsPositiveInfinity(multiple)`](#PrecisionLossOnRoundTowardsPositiveInfinityMultiple)
     - [Precision loss on `roundTowardsNegativeInfinity(multiple)`](#PrecisionLossOnRoundTowardsNegativeInfinityMultiple)
@@ -15,7 +15,7 @@
 * [How to replace `roundXXX(multiple)` with `roundToReciprocal`](#HowToReplaceRoundXXXMultipleWithRoundToReciprocal)
 * [Benchmarks](#Benchmarks)
 
-## All rounding methods overview
+## All rounding methods overview<a name="AllRoundingMethodsOverview"></a>
 
 There are many rounding methods in DFP.
 
@@ -23,11 +23,11 @@ There are many rounding methods in DFP.
 
 All rounding methods can be separated to several groups:
 
-* [RoundXXX methods](#RoundXXX methods)
-* [Commonly used roundings](#Commonly used roundings)
-* [New optimized rounding methods](#New optimized rounding methods)
+* [RoundXXX methods](#RoundXXXMethods)
+* [Commonly used roundings](#CommonlyUsedRoundings)
+* [New optimized rounding methods](#NewOptimizedRoundingMethods)
 
-### RoundXXX methods
+### RoundXXX methods<a name="RoundXXXMethods"></a>
 
 | Rounding method                                                                       | Description                                                                                                                                                                                                                                                                |
 |---------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -41,7 +41,7 @@ All rounding methods can be separated to several groups:
 | `roundToNearestTiesAwayFromZero(Decimal64 multiple)`[Deprecated](#Deprecated methods) | Alias to `round(Decimal64 multiple)`.                                                                                                                                                                                                                                      |
 | `roundToNearestTiesToEven(Decimal64 multiple)`[Deprecated](#Deprecated methods)       | Syntactic sugar to `multiply(roundToNearestTiesToEven(divide(value, multiple)), multiple);`. <br> Was marked as deprecated because `roundToReciprocal(int r, RoundingMode.HALF_EVEN)` provides better performance and precision.                                           |
 
-### Commonly used roundings
+### Commonly used roundings<a name="CommonlyUsedRoundings"></a>
 
 | Rounding method                                              | Description                                                                                                                                                                                                                                                 |
 |--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -52,7 +52,7 @@ All rounding methods can be separated to several groups:
 | `round()`                                                    | Call original `bid64_round_integral_nearest_away()`. <br> Returns the value that is nearest to original value, with halfway cases rounded away from zero.                                                                                                   |
 | `round(Decimal64 multiple)`[Deprecated](#Deprecated methods) | Syntactic sugar to `multiply(round(divide(value, multiple)), multiple)`. <br> Was marked as deprecated because `roundToReciprocal(int r, RoundingMode.HALF_UP)` provides better performance and precision.                                                  |
 
-### New optimized rounding methods
+### New optimized rounding methods<a name="NewOptimizedRoundingMethods"></a>
 
 | Rounding method                                    | Description                                                                                                                                                                                                                                                                                                         |
 |----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -66,7 +66,7 @@ Test is the value properly rounded according to specific precision can be perfor
 | `isRounded(int n)`             | Returns the sign of the value is rounded to the 10<sup>-n</sup>. This method provides better performance than the `round(n, RoundingMode.ROUND_UNNECESSARY)` call.                      |
 | `isRoundedToReciprocal(int r)` | Returns the sign of the value is rounded to the value, reciprocal to r. This method provides better performance than the `roundedToReciprocal(r, RoundingMode.ROUND_UNNECESSARY)` call. |
 
-## Preferable methods
+## Preferable methods<a name="PreferableMethods"></a>
 
 The preferable rounding method are listed in the next table.
 
