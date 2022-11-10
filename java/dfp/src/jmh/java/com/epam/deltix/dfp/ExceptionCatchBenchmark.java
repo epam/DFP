@@ -13,13 +13,15 @@ import java.util.concurrent.TimeUnit;
 @Measurement(time = 3, iterations = 3)
 @State(Scope.Thread)
 public class ExceptionCatchBenchmark {
+    @Param({"0.99", "0.9999999999999999"})
+    private String valueStr;
     private long value;
     private int n;
     private int r;
 
     @Setup
     public void setUp() {
-        value = Decimal64Utils.parse("0.9999999999999999");
+        value = Decimal64Utils.parse(valueStr);
         n = 3;
         r = 1000;
     }
