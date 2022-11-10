@@ -194,7 +194,7 @@ The reference value is calculated in two ways:
 
 Obviously, not all the cases of the `roundXXX(multiple)` can be replaced with `roundToReciprocal`.
 Only the cases where `multiple` can be represented as `1/r` are subjects for replacement.
-Therefore, only the cases when `multiple < 0` are subject for replacement.
+Therefore, only the cases when `0 < multiple < 1` are subject for replacement.
 
 You can easily test is the multiple can be exactly represented by `1 / r` with next part of code:
 
