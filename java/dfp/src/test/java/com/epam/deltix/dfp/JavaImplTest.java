@@ -5,17 +5,17 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
-import static com.epam.deltix.dfp.TestUtils.POWERS_OF_TEN;
 import static org.junit.Assert.*;
 
 public class JavaImplTest {
@@ -1110,5 +1110,51 @@ public class JavaImplTest {
         assertFalse(Decimal64.parse("Inf").isRounded(0));
         assertFalse(Decimal64.parse("NaN").isRounded(-11));
         assertFalse(Decimal64.parse("-Inf").isRounded(10));
+    }
+
+    // @Test
+    public void precisionLossDocGen() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        final String roundXXXName = "roundToNearestTiesToEven";
+        final String valueStr = "0.00144";
+        final int r = 55559375;
+        final RoundingMode roundType = RoundingMode.HALF_EVEN;
+
+        final Decimal64 value = Decimal64.parse(valueStr);
+        final Decimal64 multiple = Decimal64.ONE.divideByInteger(r);
+
+
+        final Method roundXXXMethod = Decimal64.class.getMethod(roundXXXName, Decimal64.class);
+        final Decimal64 roundXXXValue = (Decimal64) roundXXXMethod.invoke(value, multiple);
+
+        final Decimal64 roundToReciprocalValue = value.roundToReciprocal(r, roundType);
+
+        final BigDecimal bigMultiple = BigDecimal.ONE.divide(new BigDecimal(r), MathContext.DECIMAL128);
+
+        final BigDecimal bigDecimalMultiplierWay =
+            value.toBigDecimal()
+                .divide(bigMultiple, MathContext.DECIMAL128)
+                .setScale(0, roundType)
+                .multiply(bigMultiple);
+
+        final BigDecimal bigDecimalReciprocalWay =
+            value.toBigDecimal()
+                .multiply(new BigDecimal(r))
+                .setScale(0, roundType)
+                .divide(new BigDecimal(r), MathContext.DECIMAL128);
+
+
+        System.out.println("| Argument  | Value |");
+        System.out.println("|-----------|-------|");
+        System.out.println("| value     | " + valueStr + " or `" + Decimal64.toUnderlying(value) + "L` |");
+        System.out.println("| r         | " + r + "|");
+        System.out.println("| multiple  | " + multiple + " or `" + Decimal64.toUnderlying(value) + "L` |");
+        System.out.println("| roundType | RoundingMode." + roundType + " |");
+        System.out.println("");
+        System.out.println("| Equation                       | Result                  |");
+        System.out.println("|--------------------------------|-------------------------|");
+        System.out.println("| `" + roundXXXName + "` | " + roundXXXValue + " |");
+        System.out.println("| `roundToReciprocal`            | " + roundToReciprocalValue + " |");
+        System.out.println("| `bigDecimalMultiplierWay`      | " + bigDecimalMultiplierWay + " |");
+        System.out.println("| `bigDecimalReciprocalWay`      | " + bigDecimalReciprocalWay + " |");
     }
 }
