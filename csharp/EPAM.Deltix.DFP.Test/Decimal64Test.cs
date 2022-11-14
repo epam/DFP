@@ -468,6 +468,7 @@ namespace EPAM.Deltix.DFP.Test
 			Assert.AreEqual("9.2", Decimal64.FromDecimalDouble(9.2).ToString());
 			Assert.AreEqual("-0.065013624", Decimal64.FromDecimalDouble(-0.065013624).ToString());
 			Assert.AreEqual("0", Decimal64.FromDecimalDouble(0).ToString());
+			Assert.AreEqual("9.888888888888888", Decimal64.FromDecimalDouble(9.888888888888888).ToString());
 		}
 
 		void CheckDoubleConversion(Decimal64 x, Decimal64 x2)
@@ -480,7 +481,7 @@ namespace EPAM.Deltix.DFP.Test
 		{
 			for (int i = 0; i < N; i++)
 			{
-				Decimal64 x = GetRandomDecimal();
+				Decimal64 x = GetRandomDecimal(9999999999999999L);
 				CheckDoubleConversion(x, Decimal64.FromDouble(x.ToDouble()));
 			}
 		}
@@ -488,9 +489,12 @@ namespace EPAM.Deltix.DFP.Test
 
 		private void CheckDecimalDoubleConversion(Decimal64 x, String s)
 		{
-			Decimal64 x2;
-			CheckDoubleConversion(x, x2 = Decimal64.FromDecimalDouble(x.ToDouble()));
-			AssertDecimalEqual(x, x2);
+			Decimal64 x2 = Decimal64.FromDecimalDouble(x.ToDouble());
+			Assert.AreEqual(x.ToDouble(), x2.ToDouble());
+			if (!x2.Equals(Decimal64.FromDouble(x.ToDouble())))
+			{
+				AssertDecimalIdentical(x.Canonize(), x2, "FromDecimalDouble(x) failed to Canonize() the result");
+			}
 
 			if (null != s)
 			{
@@ -514,7 +518,17 @@ namespace EPAM.Deltix.DFP.Test
 		{
 			for (int i = 0; i < N; i++)
 			{
-				Decimal64 x = GetRandomDecimal();
+				Decimal64 x = GetRandomDecimal(999999999999999L);
+				CheckDecimalDoubleConversion(x);
+			}
+		}
+
+		[Test]
+		public void TestFromDecimalDoubleConversionsLongMantissa()
+		{
+			for (int i = 0; i < N; i++)
+			{
+				Decimal64 x = GetRandomDecimal(1000000000000000L, 9999999999999999L);
 				CheckDecimalDoubleConversion(x);
 			}
 		}
