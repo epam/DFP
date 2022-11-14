@@ -2,11 +2,11 @@
 
 # Table of Contents
 
+* [Preferable methods](#PreferableMethods)
 * [Overview of all rounding methods](#AllRoundingMethodsOverview)
     - [RoundXXX methods](#RoundXXXMethods)
     - [Commonly used roundings](#CommonlyUsedRoundings)
     - [New optimized rounding methods](#NewOptimizedRoundingMethods)
-* [Preferable methods](#PreferableMethods)
 * [Why to replace `roundXXX(multiple)` with `roundToReciprocal`](#WhyToReplaceRoundXXXMultipleWithRoundToReciprocal)
     - [Precision loss on `roundTowardsPositiveInfinity(multiple)`](#PrecisionLossOnRoundTowardsPositiveInfinityMultiple)
     - [Precision loss on `roundTowardsNegativeInfinity(multiple)`](#PrecisionLossOnRoundTowardsNegativeInfinityMultiple)
@@ -17,6 +17,20 @@
     - [RoundXXX benchmark](#RoundXXXBenchmark)
     - [`roundToReciprocal` vs `roundXXX(multiple)` benchmark](#RoundToReciprocalBenchmark)
     - [`isRounded` and `isRoundedToReciprocal` benchmark](#IsRoundedBenchmark)
+
+## Preferred methods<a name="PreferableMethods"></a>
+
+Preferred rounding methods are listed in the following table.
+
+| Rounding method                                    | Description                                                                                                                                                                             |
+|----------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ceiling()`                                        | Call original `bid64_round_integral_positive()`. <br> Rounds the value upwards, returning the smallest integral value that is not less than the original value.                                  |
+| `floor()`                                          | Call original `bid64_round_integral_negative()`. <br> Rounds the value downwards, returning the largest integral value that is not greater than the original value.                              |
+| `round()`                                          | Call original `bid64_round_integral_nearest_away()`. <br> Returns the nearest to the original value, with halfway cases rounded away from zero.                               |
+| `round(int n, RoundingMode roundType)`             | Returns the `DFP` value that is rounded according to the selected rounding type.                                                                                                           |
+| `roundToReciprocal(int r, RoundingMode roundType)` | Returns the `DFP` value that is rounded to the value, reciprocal to `r`, according to the selected rounding type.                                                                            |
+| `isRounded(int n)`                                 | Returns the sign of the value that is rounded to the 10<sup>-n</sup>. This method provides a better performance than `round(n, RoundingMode.ROUND_UNNECESSARY)`.                      |
+| `isRoundedToReciprocal(int r)`                     | Returns the sign of the value that is rounded to the value, reciprocal to `r`. This method provides a better performance than `roundedToReciprocal(r, RoundingMode.ROUND_UNNECESSARY)`. |
 
 ## Overview of all rounding methods<a name="AllRoundingMethodsOverview"></a>
 
@@ -70,28 +84,14 @@ You can use the following methods to test whether the value is properly rounded 
 | `isRounded(int n)`             | Returns the sign of the value that is rounded to the 10<sup>-n</sup>. This method provides a better performance than `round(n, RoundingMode.ROUND_UNNECESSARY)`.                      |
 | `isRoundedToReciprocal(int r)` | Returns the sign of the value that is rounded to the value, reciprocal to `r`. This method provides a better performance than `roundedToReciprocal(r, RoundingMode.ROUND_UNNECESSARY)`. |
 
-## Preferred methods<a name="PreferableMethods"></a>
-
-Preferred rounding methods are listed in the following table.
-
-| Rounding method                                    | Description                                                                                                                                                                             |
-|----------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ceiling()`                                        | Call original `bid64_round_integral_positive()`. <br> Rounds the value upwards, returning the smallest integral value that is not less than the original value.                                  |
-| `floor()`                                          | Call original `bid64_round_integral_negative()`. <br> Rounds the value downwards, returning the largest integral value that is not greater than the original value.                              |
-| `round()`                                          | Call original `bid64_round_integral_nearest_away()`. <br> Returns the nearest to the original value, with halfway cases rounded away from zero.                               |
-| `round(int n, RoundingMode roundType)`             | Returns the `DFP` value that is rounded according to the selected rounding type.                                                                                                           |
-| `roundToReciprocal(int r, RoundingMode roundType)` | Returns the `DFP` value that is rounded to the value, reciprocal to `r`, according to the selected rounding type.                                                                            |
-| `isRounded(int n)`                                 | Returns the sign of the value that is rounded to the 10<sup>-n</sup>. This method provides a better performance than `round(n, RoundingMode.ROUND_UNNECESSARY)`.                      |
-| `isRoundedToReciprocal(int r)`                     | Returns the sign of the value that is rounded to the value, reciprocal to `r`. This method provides a better performance than `roundedToReciprocal(r, RoundingMode.ROUND_UNNECESSARY)`. |
-
 ## Why to replace `roundXXX(multiple)` with `roundToReciprocal`<a name="WhyToReplaceRoundXXXMultipleWithRoundToReciprocal"></a>
 
-Methods 
+Methods
 
 * `roundTowardsPositiveInfinity(Decimal64 multiple)`
 * `roundTowardsNegativeInfinity(Decimal64 multiple)`
 * `roundToNearestTiesAwayFromZero(Decimal64 multiple)`
-* `roundToNearestTiesToEven(Decimal64 multiple)` 
+* `roundToNearestTiesToEven(Decimal64 multiple)`
 
 are deprecated because the new `roundToReciprocal(int r, RoundingMode roundType)` method was added.
 
