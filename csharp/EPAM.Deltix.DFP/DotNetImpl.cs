@@ -303,8 +303,6 @@ namespace EPAM.Deltix.DFP
 					m = (Int64)((y & LargeCoefficientMask) + LargeCoefficientHighBits);
 					//signAndExp = ((y << 2) & SmallCoefficientExponentMask) + (y & SignMask);
 					signAndExp = (y & LargeCoefficientExponentMask) * 4 + (y & SignMask);
-					if ((y & 1) != 0)
-						goto NeedAdjustment;
 				}
 				else
 				{
@@ -312,25 +310,13 @@ namespace EPAM.Deltix.DFP
 					m = (Int64)(y & SmallCoefficientMask);
 					// 16 digits + odd
 					signAndExp = y & (UInt64.MaxValue << ExponentShiftSmall);
-					if ((y & 1) != 0 && (UInt64)m > MaxCoefficient / 10 + 1)
-						goto NeedAdjustment;
-
-					if (0 == m)
-						return Zero;
+					if ((UInt64)m < MaxCoefficient / 10 + 1)
+						return y;
 				}
 
-			NeedCanonize:
-				for (Int64 n = m; ;)
-				{
-					Int64 mNext = n / 10;
-					if (mNext * 10 != n)
-						return signAndExp + (UInt64)n;
+				if ((y & 1) == 0)
+					return y;
 
-					n = mNext;
-					signAndExp += 1L << ExponentShiftSmall;
-				}
-
-			NeedAdjustment:
 				// Check the last digit
 
 				Int64 m1 = m + 1;
@@ -342,7 +328,15 @@ namespace EPAM.Deltix.DFP
 				if (NativeImpl.toFloat64(signAndExp + (UInt64)m) != x)
 					return y;
 
-				goto NeedCanonize;
+				for (Int64 n = m; ;)
+				{
+					Int64 mNext = n / 10;
+					if (mNext * 10 != n)
+						return signAndExp + (UInt64)n;
+
+					n = mNext;
+					signAndExp += 1L << ExponentShiftSmall;
+				}
 			}
 		}
 
