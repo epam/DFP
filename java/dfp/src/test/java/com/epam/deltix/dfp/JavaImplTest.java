@@ -5,13 +5,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 import static com.epam.deltix.dfp.JavaImpl.*;
 import static com.epam.deltix.dfp.TestUtils.*;
@@ -507,8 +508,7 @@ public class JavaImplTest {
         final ThreadLocal<Random> tlsRandom = ThreadLocal.withInitial(SecureRandom::new);
 
         final MaxError maxErr = new MaxError();
-        /*for (int ri = 0; ri < 10_000_000; ++ri)*/
-        IntStream.range(0, 10_000_000).parallel().forEach(ri -> {
+        for (int ri = 0; ri < 1_000_000; ++ri) /*IntStream.range(0, 10_000_000).parallel().forEach(ri ->*/ {
             final Random random = tlsRandom.get();
 
             final int mantissaLen = random.nextInt(Decimal64Utils.MAX_SIGNIFICAND_DIGITS) + 1;
@@ -536,12 +536,11 @@ public class JavaImplTest {
                         }
                     }
                 }
-            }
-            catch (final Throwable e) {
+            } catch (final Throwable e) {
                 throw new RuntimeException("Error on processing case mantissa(=" + mantissa + "), exp(=" + exp +
                     "), n(=" + n + "), mode(=" + roundingMode + ")", e);
             }
-        });
+        }
 
         if (maxErr.mode != null)
             testRoundToReciprocalCase(maxErr.val, maxErr.n, maxErr.mode, true);
@@ -1092,25 +1091,92 @@ public class JavaImplTest {
     @Test
     public void testRoundDiv() {
         assertFalse(Decimal64.parse("1").isRounded(-1));
-        assertTrue(Decimal64.parse("1").isRounded( 0));
-        assertTrue(Decimal64.parse("1").isRounded( 1));
-        assertFalse(Decimal64.parse("1.23").isRounded( 1));
-        assertFalse(Decimal64.parse("1.23").isRounded( -10));
-        assertTrue(Decimal64.parse("1.23").isRounded( 2));
-        assertTrue(Decimal64.parse("1.23").isRounded( 3));
-        assertFalse(Decimal64.parse("1.23456789").isRounded( -0));
-        assertFalse(Decimal64.parse("1.23456789").isRounded( 7));
-        assertTrue(Decimal64.parse("1.23456789").isRounded( 8));
-        assertTrue(Decimal64.parse("1.23456789").isRounded( 9));
-        assertTrue(Decimal64.parse("123E10").isRounded( -9));
-        assertTrue(Decimal64.parse("123E10").isRounded( -10));
-        assertFalse(Decimal64.parse("123E10").isRounded( -11));
-        assertFalse(Decimal64.parse("-10E-10").isRounded( 8));
-        assertTrue(Decimal64.parse("-10E-10").isRounded( 9));
-        assertTrue(Decimal64.parse("-10E-10").isRounded( 10));
-        assertTrue(Decimal64.parse("0").isRounded( -11));
-        assertFalse(Decimal64.parse("Inf").isRounded( 0));
-        assertFalse(Decimal64.parse("NaN").isRounded( -11));
-        assertFalse(Decimal64.parse("-Inf").isRounded( 10));
+        assertTrue(Decimal64.parse("1").isRounded(0));
+        assertTrue(Decimal64.parse("1").isRounded(1));
+        assertFalse(Decimal64.parse("1.23").isRounded(1));
+        assertFalse(Decimal64.parse("1.23").isRounded(-10));
+        assertTrue(Decimal64.parse("1.23").isRounded(2));
+        assertTrue(Decimal64.parse("1.23").isRounded(3));
+        assertFalse(Decimal64.parse("1.23456789").isRounded(-0));
+        assertFalse(Decimal64.parse("1.23456789").isRounded(7));
+        assertTrue(Decimal64.parse("1.23456789").isRounded(8));
+        assertTrue(Decimal64.parse("1.23456789").isRounded(9));
+        assertTrue(Decimal64.parse("123E10").isRounded(-9));
+        assertTrue(Decimal64.parse("123E10").isRounded(-10));
+        assertFalse(Decimal64.parse("123E10").isRounded(-11));
+        assertFalse(Decimal64.parse("-10E-10").isRounded(8));
+        assertTrue(Decimal64.parse("-10E-10").isRounded(9));
+        assertTrue(Decimal64.parse("-10E-10").isRounded(10));
+        assertTrue(Decimal64.parse("0").isRounded(-11));
+        assertFalse(Decimal64.parse("Inf").isRounded(0));
+        assertFalse(Decimal64.parse("NaN").isRounded(-11));
+        assertFalse(Decimal64.parse("-Inf").isRounded(10));
+    }
+
+    // @Test
+    public void precisionLossDocGen() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        final String roundXXXName = "roundToNearestTiesToEven";
+        final String valueStr = "0.00144";
+        final int r = 55559375;
+        final RoundingMode roundType = RoundingMode.HALF_EVEN;
+
+        final Decimal64 value = Decimal64.parse(valueStr);
+        final Decimal64 multiple = Decimal64.ONE.divideByInteger(r);
+
+
+        final Method roundXXXMethod = Decimal64.class.getMethod(roundXXXName, Decimal64.class);
+        final Decimal64 roundXXXValue = (Decimal64) roundXXXMethod.invoke(value, multiple);
+
+        final Decimal64 roundToReciprocalValue = value.roundToReciprocal(r, roundType);
+
+        final BigDecimal bigMultiple = BigDecimal.ONE.divide(new BigDecimal(r), MathContext.DECIMAL128);
+
+        final BigDecimal bigDecimalMultiplierWay =
+            value.toBigDecimal()
+                .divide(bigMultiple, MathContext.DECIMAL128)
+                .setScale(0, roundType)
+                .multiply(bigMultiple);
+
+        final BigDecimal bigDecimalReciprocalWay =
+            value.toBigDecimal()
+                .multiply(new BigDecimal(r))
+                .setScale(0, roundType)
+                .divide(new BigDecimal(r), MathContext.DECIMAL128);
+
+
+        System.out.println("| Argument  | Value |");
+        System.out.println("|-----------|-------|");
+        System.out.println("| value     | " + valueStr + " or underlying `" + Decimal64.toUnderlying(value) + "L` |");
+        System.out.println("| r         | " + r + "|");
+        System.out.println("| multiple  | " + multiple + " or `" + Decimal64.toUnderlying(value) + "L` |");
+        System.out.println("| roundType | RoundingMode." + roundType + " |");
+        System.out.println("");
+        System.out.println("| Equation                       | Result                  |");
+        System.out.println("|--------------------------------|-------------------------|");
+        System.out.println("| `" + roundXXXName + "` | " + roundXXXValue + " |");
+        System.out.println("| `roundToReciprocal`            | " + roundToReciprocalValue + " |");
+        System.out.println("| `bigDecimalMultiplierWay`      | " + bigDecimalMultiplierWay + " |");
+        System.out.println("| `bigDecimalReciprocalWay`      | " + bigDecimalReciprocalWay + " |");
+    }
+
+    @Test
+    public void testReciprocalCalculation() {
+        assertEquals(25600, getExactReciprocal(Decimal64.parse("0.0000390625")));
+        //assertEquals(6, getExactReciprocal(Decimal64.ONE.divideByInteger(6))); // Fail, because Decimal64 can't calculate 1/(1/6) without precision loss
+    }
+
+    /**
+     * Converts positive multiple to the exact reciprocal, or return -1 if there is no exact integer representation.
+     *
+     * @param multiple Positive multiplier value.
+     * @return Integer value, reciprocal to multiple, or -1.
+     */
+    public static int getExactReciprocal(final Decimal64 multiple) {
+        if (!multiple.isPositive())
+            throw new IllegalArgumentException("The multiple(=" + multiple + ") must be positive.");
+
+        final int r = Decimal64.ONE.divide(multiple).toInt();
+
+        return Decimal64.ONE.divideByInteger(r).equals(multiple) ? r : -1;
     }
 }

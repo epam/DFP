@@ -1178,6 +1178,41 @@ namespace EPAM.Deltix.DFP.Test
 			Assert.False(Decimal64.Parse("-Inf").IsRounded(10));
 		}
 
+		[Test]
+		public void TestToDecimalAndBack()
+		{
+			{
+				var refStr = "-0.00009147639003404085";
+				var dn = decimal.Parse(refStr + "00000001");
+				var d64 = Decimal64.FromDecimal(dn);
+				Assert.AreEqual(refStr, d64.ToString());
+			}
+
+			TestToDecimalAndBackCase(9937272758032147L, -24); // d1(=0.000000009937272758032147) != d2(=0.000000009937272758032149)
+			TestToDecimalAndBackCase(957877248391343793L, -23); // d1(=0.000009578772483913438) != d2(=0.000009578772483913439)
+			TestToDecimalAndBackCase(-9147639003404085469L, -23); // d1(=0.00009147639003404085) != d2(=0.00009147639003404083)
+
+			var random = new Random();
+			for (int ri = 0; ri < 1000000; ++ri)
+			{
+				long mantissa = ((long)random.Next(int.MinValue, int.MaxValue) << 32) | ((long)random.Next(int.MinValue, int.MaxValue) & 0xFFFFFFFFL);
+
+				int exp = random.Next(24) - 12 - Decimal64.MaxSignificandDigits;
+
+				TestToDecimalAndBackCase(mantissa, exp);
+			}
+		}
+
+		private static void TestToDecimalAndBackCase(long mantissa, int exp)
+		{
+			var d0 = Decimal64.FromFixedPoint(mantissa, -exp);
+			var d1 = d0.ToDecimal();
+			var d2 = Decimal64.FromDecimal(d1);
+
+			if (d0 != d2)
+				throw new Exception($"TestToDecimalAndBackCase({mantissa}L, {exp}); // d1(={d0}) != d2(={d2})");
+		}
+
 		readonly int N = 5000000;
 
 		static void Main()

@@ -39,7 +39,7 @@ import com.epam.deltix.dfp.Decimal64Utils;
 
 ## What is under the hood?
 
-DFP relies on [Intel Decimal Floating-Point Math Library](https://software.intel.com/content/www/us/en/develop/articles/intel-decimal-floating-point-math-library.html) that is written in C and provides implementation for IEEE 754-2008. Some operations are re-written in Java to avoid JNI calls.
+DFP was inspired on [Intel Decimal Floating-Point Math Library](https://software.intel.com/content/www/us/en/develop/articles/intel-decimal-floating-point-math-library.html) that is written in C and provides implementation for IEEE 754-2008. Early DFP versions used JNI wrappers for this Intel library. Starting from the release 0.12 DFP is 100% Java.
 
 ## Supported platforms
 
