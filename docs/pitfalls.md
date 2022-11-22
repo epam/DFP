@@ -14,7 +14,7 @@ private boolean isFlat() {
 	return (actualPositionSize == 0); // BUG
 }
 ```
-We recommend using Decimal64Util.fromLong(123) or predefined constants like DEcimal64Util.ZERO.
+We recommend using Decimal64Util.fromLong(123) or predefined constants like Decimal64Util.ZERO.
 
 
 ### Infix operators and similar
