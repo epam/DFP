@@ -1,12 +1,7 @@
-plugins {
-    id "me.champeau.gradle.jmh" version "0.5.3" apply false
-}
-
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
-apply plugin: 'me.champeau.gradle.jmh'
 
 if (isReleaseVersion) {
     apply plugin: 'signing'
@@ -16,10 +11,6 @@ group = 'com.epam.deltix'
 
 sourceCompatibility = 1.7
 compileTestJava {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-}
-compileJmhJava {
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
 }
@@ -123,9 +114,5 @@ jar {
     from("$rootDir") {
         include 'intel-eula.txt'
     }
-}
-
-jmh {
-    include = '.*Benchmark.*'
 }
 
