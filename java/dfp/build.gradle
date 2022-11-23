@@ -35,10 +35,7 @@ java {
 
 sourceSets {
     test.java.srcDirs += [
-        "$rootDir/java/dfp/src/test/java",
-        "$rootDir/java/dfp/build/generated/sources/nativeWrappers",
-        "$rootDir/NativeUtils/java/main/src/main/java",
-        "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
+        "$rootDir/java/dfp/src/testUtils/java"]
 
     test.resources.srcDirs += "$rootDir/native/binJava/Release/"
 }
@@ -48,17 +45,6 @@ dependencies {
     testImplementation 'org.apache.commons:commons-math3:3.6.1'
 //    testImplementation 'com.google.guava:guava:31.1-jre'
 }
-
-compileTestJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfp"
-
-task copyNativeDfpResources(type: Copy) {
-    from("$rootDir/native/bin/Release")
-    destinationDir(file("$rootDir/native/binJava/Release/resources_com_epam_deltix_dfp"))
-    onlyIf {
-        !file("$rootDir/native/binJava/Release/resources_com_epam_deltix_dfp").exists()
-    }
-}
-compileTestJava.dependsOn(copyNativeDfpResources)
 
 def rUser = findProperty('SONATYPE_NEXUS_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: "FakeUser"
 def rPass = findProperty('SONATYPE_NEXUS_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: "FakePass"
