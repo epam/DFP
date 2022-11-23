@@ -7,15 +7,7 @@ apply plugin: 'me.champeau.gradle.jmh'
 
 group = 'com.epam.deltix'
 
-sourceCompatibility = 1.7
-compileTestJava {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-}
-compileJmhJava {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-}
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
