@@ -49,7 +49,7 @@ dependencies {
 //    testImplementation 'com.google.guava:guava:31.1-jre'
 }
 
-compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfp"
+compileTestJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfp"
 
 task copyNativeDfpResources(type: Copy) {
     from("$rootDir/native/bin/Release")
@@ -58,7 +58,7 @@ task copyNativeDfpResources(type: Copy) {
         !file("$rootDir/native/binJava/Release/resources_com_epam_deltix_dfp").exists()
     }
 }
-compileJava.dependsOn(copyNativeDfpResources)
+compileTestJava.dependsOn(copyNativeDfpResources)
 
 def rUser = findProperty('SONATYPE_NEXUS_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: "FakeUser"
 def rPass = findProperty('SONATYPE_NEXUS_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: "FakePass"
