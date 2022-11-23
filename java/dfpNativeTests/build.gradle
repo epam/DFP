@@ -22,12 +22,12 @@ repositories {
 }
 
 sourceSets {
-    main.java.srcDirs += [
+    test.java.srcDirs += [
         "$rootDir/java/dfp/build/generated/sources/nativeWrappers",
         "$rootDir/NativeUtils/java/main/src/main/java",
         "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 
-    main.resources.srcDirs += "$rootDir/native/binJava/Release/"
+    test.resources.srcDirs += "$rootDir/native/binJava/Release/"
 }
 
 dependencies {

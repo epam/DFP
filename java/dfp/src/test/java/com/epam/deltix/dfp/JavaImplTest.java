@@ -886,9 +886,4 @@ public class JavaImplTest {
 
         return Decimal64.ONE.divideByInteger(r).equals(multiple) ? r : -1;
     }
-
-    @Test
-    public void someFailTest() {
-        throw new RuntimeException("Test exception");
-    }
 }
