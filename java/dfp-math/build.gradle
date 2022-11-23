@@ -31,15 +31,11 @@ sourceSets {
         "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 
     main.resources.srcDirs += "$rootDir/native/binmathJava/Release/"
-
-    test.java.srcDirs += [
-        "$rootDir/java/dfp/src/testUtils/java",
-        "$rootDir/NativeUtils/java/main/src/main/java",
-        "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 }
 
 dependencies {
     implementation project(':java:dfp')
+    testImplementation project(':java:testUtils')
     testImplementation 'junit:junit:4.+'
     testImplementation 'org.apache.commons:commons-math3:3.6.1'
 }

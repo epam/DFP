@@ -24,14 +24,8 @@ java {
     withSourcesJar()
 }
 
-sourceSets {
-    test.java.srcDirs += [
-        "$rootDir/java/dfp/src/testUtils/java"]
-
-    test.resources.srcDirs += "$rootDir/native/binJava/Release/"
-}
-
 dependencies {
+    testImplementation project(':java:testUtils')
     testImplementation 'junit:junit:4.+'
     testImplementation 'org.apache.commons:commons-math3:3.6.1'
 //    testImplementation 'com.google.guava:guava:31.1-jre'
