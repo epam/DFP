@@ -1,6 +1,8 @@
 include(':java:systemInfo')
 include(':java:nativeWrappers')
 include(':native')
+include(':java:testUtils')
 include(':java:dfp')
+include(':java:dfpNativeTests')
 include(':java:dfp-math')
 include(':java:springTest')
