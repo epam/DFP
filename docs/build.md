@@ -17,7 +17,7 @@
 
 ## Sources clone<a name="SourcesClone"></a>
 
-The whole project includes some modules. So, you need to clone repository with modules for example with next command:
+The project includes several modules. Run this command to clone the repository with modules:
 
 ```git
 git clone --recursive https://github.com/epam/DFP.git DFP
@@ -25,48 +25,45 @@ git clone --recursive https://github.com/epam/DFP.git DFP
 
 ## Building from source<a name="BuildingFromSource"></a>
 
-All build steps are require `Java8` or newer for execution.\
-The `Ubuntu 20.04` and `Windows 10` are assumed as the build systems.\
-The `amd64` is assumed as the build platform.
+> All build steps require `Java8` or newer for execution. The build was tested on `Ubuntu 20.04` and `Windows 10` operating systems and `amd64` platform.
 
-The whole DFP project consist of multiple targets:
+The DFP project has four targets:
 
 * DFP for Java
 * DFP-Math for Java
 * DFP for .NET
 * DFP-Math for .NET
+ 
+All targets, with the exception of DFP for Java, depend on native libraries. Compile and compress native libraries for all the
+supported platforms before Java and/or .NET compilation.
 
-All of these targets, except DFP for Java, are dependent on the native libraries. The native libraries for all the
-supported platforms must be compiled and compressed before Java/.NET compilation.
+> In case of **DFP for Java**, the necessary code was ported from C. To build **only** DFP for Java and run unit tests, all you need is sources in this repository and JDK. 
 
-The only exclusion is the DFP for Java. The whole code, required for DFP for Java was ported from C. So if you
-wish only to build DFP for Java and run some units tests, you do not need any except this repository sources and JDK.
-
-Let's deeply investigate these two build options:
+Let's investigate thoroughly these two build options:
 
 * [Java-only DFP-only build](#JavaOnlyDfpOnlyBuild)
 * [Complete build](#CompleteBuild)
 
 ## Java-only DFP-only build and test<a name="JavaOnlyDfpOnlyBuild"></a>
 
-The `JDK8` or newer is required for this compilation step.
+> `JDK8` or newer is required for this compilation step.
 
-The Java-only DFP and unit tests are placed to the `:java:dfp` project.\
-So, you can execute all the targets in this project. For example
+**Java-only DFP** and unit tests are located in the `:java:dfp` project.\
+You can execute all targets in this project. For example:
 
 ```shell
 ./gradlew :java:dfp:build
 ```
 
-All the dependencies will be compiled automatically, so you do not need a separate software except JDK.
+All dependencies are compiled automatically. You do not need anything other than JDK.
 
-Unfortunately, not all the DFP test are native-free. Some unit tests are require native libraries. The native-dependent
-tests and JMH benchmarks are separated to the `:java:dfpNativeTests` project. So, if you plan to run all the DFP tests
-or benchmarks, see the [Complete build](#CompleteBuild) section.
+Some DFP tests require native libraries. All native-dependent tests and JMH benchmarks are separated to the `:java:dfpNativeTests` project. 
+
+> Refer to [Complete build](#CompleteBuild), if you want to run all DFP tests or benchmarks.
 
 ## Complete build and test<a name="CompleteBuild"></a>
 
-The complete build includes next steps:
+To run the **complete build**, follow these steps:
 
 * [Native libraries compilation and source wrappers generation](#NativeLibrariesCompilationAndSourceWrappersGeneration)
     - [Build Linux native libraries](#BuildLinuxNativeLibraries)
@@ -81,199 +78,187 @@ The complete build includes next steps:
 
 #### Build Linux native libraries<a name="BuildLinuxNativeLibraries"></a>
 
-This step assumed is executed on `Ubuntu 20.04` or newer on the `amd64` platform.
+> It is assumed, that this step is executed on `Ubuntu 20.04` or newer on the `amd64` platform.
 
-This steps includes compilation linux native libraries for the `armv7a`, `aarch64`, `i686`, `amd64` platforms,
-so the cross-compilation is used.
+This steps includes the cross-compilation compilation of Linux native libraries for the `armv7a`, `aarch64`, `i686`, `amd64` platforms.
 
-Next packages are required for compilation
+1. These packages are **required** for the compilation:
 
-```shell
-sudo apt install curl tar build-essential cmake g++-9-arm-linux-gnueabihf g++-9-aarch64-linux-gnu g++-9-i686-linux-gnu musl-tools
-```
+    ```shell
+    sudo apt install curl tar build-essential cmake g++-9-arm-linux-gnueabihf g++-9-aarch64-linux-gnu g++-9-i686-linux-gnu musl-tools
+    ```
 
-Also, the `clang` cross-compilers are required
+2. `clang` cross-compilers are also **required**:
 
-```shell
-mkdir ../llvm
-cd ../llvm
+    ```shell
+    mkdir ../llvm
+    cd ../llvm
 
-curl -OL https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang+llvm-12.0.0-armv7a-linux-gnueabihf.tar.xz
-curl -OL https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang+llvm-12.0.0-aarch64-linux-gnu.tar.xz
-curl -OL https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang+llvm-12.0.0-i386-unknown-freebsd12.tar.xz
+    curl -OL https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang+llvm-12.0.0-armv7a-linux-gnueabihf.tar.xz
+    curl -OL https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang+llvm-12.0.0-aarch64-linux-gnu.tar.xz
+    curl -OL https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang+llvm-12.0.0-i386-unknown-freebsd12.tar.xz
 
-tar -xf clang+llvm-12.0.0-armv7a-linux-gnueabihf.tar.xz
-tar -xf clang+llvm-12.0.0-aarch64-linux-gnu.tar.xz
-tar -xf clang+llvm-12.0.0-i386-unknown-freebsd12.tar.xz
+    tar -xf clang+llvm-12.0.0-armv7a-linux-gnueabihf.tar.xz
+    tar -xf clang+llvm-12.0.0-aarch64-linux-gnu.tar.xz
+    tar -xf clang+llvm-12.0.0-i386-unknown-freebsd12.tar.xz
 
-cd ../DFP/
-```
+    cd ../DFP/
+    ```
 
-Final step perform actual compilation
+3. Perform the compilation:
 
-```shell
-./gradlew makeNativeLinux
-```
+    ```shell
+    ./gradlew makeNativeLinux
+    ```
 
-The compiled files will be places in the next folders:
+All the compiled files are placed in these folders:
 
-* `native/bin/Release/linux` contain Linux native libraries for DFP
-* `native/binmath/Release/linux` contain Linux native libraries for DFP-Math
-* `native/binDemo/Release/linux` contain Linux executable console programs to test how the built programs work in
-  different environments
+* `native/bin/Release/linux` — contains Linux native libraries for DFP.
+* `native/binmath/Release/linux` — contains Linux native libraries for DFP-Math.
+* `native/binDemo/Release/linux` — contains Linux executable console programs to test the built programs on different environments.
 
 #### Build Windows native libraries<a name="BuildWindowsNativeLibraries"></a>
 
-This step assumed is executed on `Windows 10` or newer on the `amd64` platform.
+> It is assumed, that this step is executed on `Windows 10` or newer on the `amd64` platform.
 
-This steps includes compilation windows native libraries for the `i686` and `amd64` platforms.
+This steps includes the compilation of Windows native libraries for the `i686` and `amd64` platforms.
 
-Next software are required for compilation
+1. This software is required for the compilation:
+    * Microsoft Visual C++ 2019 Build Tools (as a separate package or as a part of Visual Studio 2019) with `ClangCL` platform toolkit.
+    * CMake 3.20 or newer.
 
-- Microsoft Visual C++ 2019 Build Tools (as a separate package or as a part of Visual Studio 2019) with `ClangCL`
-  platform toolset
-- CMake 3.20 or newer
+2. Run the compilation from the **Developer Command Prompt** when all dependencies are met:
 
-So the all dependencies are meet, the compilation step (from the Developer Command Prompt) can be performed with the
-command
+    ```shell
+    gradlew makeNativeWindows
+    ```
 
-```shell
-gradlew makeNativeWindows
-```
+All the compiled files are placed in these folders:
 
-The compiled files will be places in the next folders:
-
-* `native/bin/Release/windows` contain Windows native libraries for DFP
-* `native/binmath/Release/windows` contain Windows native libraries for DFP-Math
-* `native/binDemo/Release/windows` contain Windows executable console programs to test how the built programs work in
-  different environments
+* `native/bin/Release/windows` — contains Windows native libraries for DFP.
+* `native/binmath/Release/windows` — contains Windows native libraries for DFP-Math.
+* `native/binDemo/Release/windows` — contains Windows executable console programs to test the built programs on different environments.
 
 #### Build macOS native libraries<a name="BuildMacOSNativeLibraries"></a>
 
-For now the `macOS` native libraries build via cross-compilation on the `Ubuntu 20.04` or newer on the `amd64` platform.
+> It is assumed, that the `macOS` native libraries are built via cross-compilation on `Ubuntu 20.04` or newer on the `amd64` platform.
 
-Next packages are required for compilation
+1. These packages are required for the compilation:
 
-```shell
-sudo apt install clang make libssl-dev liblzma-dev libz-dev libxml2-dev fuse wget cmake
-```
+    ```shell
+    sudo apt install clang make libssl-dev liblzma-dev libz-dev libxml2-dev fuse wget cmake
+    ```
 
-The `macOS SDK` can be installed with next script
+2. Run this script to install `macOS SDK`:
 
-```shell
-cd ./osxcross/tarballs/
-wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
-cd ..
-```
+    ```shell
+    cd ./osxcross/tarballs/
+    wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
+    cd ..
+    ```
 
-The cross-compiler can be built with next commands
+3. Run this command to build the cross-compiler:
 
-```shell
-UNATTENDED=yes OSX_VERSION_MIN=10.7 JOBS=4 ./build.sh
-cd ..
-```
+    ```shell
+    UNATTENDED=yes OSX_VERSION_MIN=10.7 JOBS=4 ./build.sh
+    cd ..
+    ```
 
-The final libraries compilation can be performed with command
+4. Run this command to compile libraries:
 
-```shell
-./gradlew makeNativeDarwin
-```
+    ```shell
+    ./gradlew makeNativeDarwin
+    ```
 
-The compiled files will be places in the next folders:
+All the compiled files are placed in these folders:
 
-* `native/bin/Release/darwin` contain macOS native libraries for DFP
-* `native/binmath/Release/darwin` contain macOS native libraries for DFP-Math
-* `native/binDemo/Release/darwin` contain macOS executable console programs to test how the built programs work in
-  different environments
+* `native/bin/Release/darwin` — contains macOS native libraries for DFP.
+* `native/binmath/Release/darwin` — contains macOS native libraries for DFP-Math.
+* `native/binDemo/Release/darwin` — contains macOS executable console programs to test the built programs on different environments.
 
-> Note: The native libraries for the `aarch64` platform are not signed, so will not work on ARM-based platforms from
-> Apple. If you know how to fix this issue with the CI integration please notify us. The native libraries for the
-> `amd64` platform works fine.
+> Note: The native libraries for the `aarch64` platform are not signed and do not work on ARM-based platforms from
+> Apple. If you know how to fix this issue with the CI integration, please notify us. The native libraries for the
+> `amd64` platform work well.
 
 #### Generate source wrappers<a name="GenerateSourceWrappers"></a>
 
-The `clang 10` or newer compiler is required for this step.
-This step execution was tested on `Ubuntu 20.04`.
+> This step requires the compiler `clang 10` or newer.
 
-To install `clang` compiler execute next command:
+> The execution of this step was tested on `Ubuntu 20.04`.
 
-```shell
-sudo apt install clang
-```
+1. To install `clang` compiler, run this command:
 
-The native wrappers are generated with the command
+    ```shell
+    sudo apt install clang
+    ```
 
-```shell
-./gradlew makeNativeWrappers
-```
+2. Run this command to generate native wrappers:
+
+    ```shell
+    ./gradlew makeNativeWrappers
+    ```
 
 ### Native libraries compression<a name="NativeLibrariesCompression"></a>
 
-All the native libraries compiled on the previous step for the `Linux`, `Windows` and `macOS` operating systems must be
-copied to the one build host and compressed with Zstandard compressor.
+All native libraries compiled in previous steps for `Linux`, `Windows`, and `macOS` operating systems must be
+copied to one build host and compressed with the **Zstandard** compressor.
 
-So, the `zstd` with version 1.34 or newer must be installed with next or similar command
+1. Install version 1.34 or newer of the `zstd`: 
 
-```shell
-sudo apt install zstd
-```
+    ```shell
+    sudo apt install zstd
+    ```
 
-The actual compression can be performed with the next commands
+2. Run this command to perform the compression:
 
-```shell
-zstd -19 --rm -r ./native/bin
-zstd -19 --rm -r ./native/binmath
-```
+    ```shell
+    zstd -19 --rm -r ./native/bin
+    zstd -19 --rm -r ./native/binmath
+    ```
 
 ### Java compilation<a name="JavaCompilation"></a>
 
-As the all previous steps are done, the Java libraries creation can be performed with next command
+1. Run this command to create Java libraries when all previous steps are completed:
 
-```shell
-./gradlew :java:dfp:jar :java:dfp-math:jar
-```
+    ```shell
+    ./gradlew :java:dfp:jar :java:dfp-math:jar
+    ```
 
-Unit tests can be run as usual with `check`
+2. Execute `check` to run unit tests:
 
-```shell
-./gradlew check
-```
+    ```shell
+    ./gradlew check
+    ```
 
-The JMH tests can be run with `jmh` command
+3. Execute `jmh` to run JMH tests:
 
-```shell
-./gradlew jmh
-```
+    ```shell
+    ./gradlew jmh
+    ```
 
-> Note: There are too many JMH tests there. So, it will take a long time to run them all. Consider selecting just tests
-> what you need and locally delete the rest.
+> Note: Due to the large quantity of JMH tests, it takes a significant amount of time to run them all. We suggest to choose just the ones you need and locally remove the rest.
 
 ### .NET compilation<a name="NetCompilation"></a>
 
-The [Cake](https://cakebuild.net/) build system is used for .NET libraries' compilation, but `Java8` or newer can be
-need for some compilation steps.
+> We use [Cake](https://cakebuild.net/) build system to compile .NET libraries, but `Java8` or newer can be required for some compilation steps.
 
-Next software are required for compilation:
+1. This software is required for the compilation:
+    * Build Tools for MS Visual Studio 2019 (as a separate package or as a part of Visual Studio 2019). Note, that MS Visual Studio 2022 does not support the .NET Framework 4.0. We recommend using MS Visual Studio 2019 or tweaking your version of MS Visual Studio by hand.
+    * .NET SDK with the support of `.NET Framework 4.0`, `.NET Standard 2.0` and `.NET Core 3.1`.
+2. Run the compilation of .NET libraries:
 
-- Build Tools for Visual Studio 2019 (as a separate package or as a part of Visual Studio 2019).
-  Note Microsoft Visual 2022 have drop the .NET Framework 4.0 support, so you need or Visual Studio 2019 or tweak your
-  Visual Studio by hand
-- .NET SDK with `.NET Framework 4.0`, `.NET Standard 2.0` and `.NET Core 3.1` support
+    ```shell
+    ./csharp/build --target=Build
+    ```
 
-The .NET libraries compilation can be performed with the command
+3. Execute this command to run unit tests:
 
-```shell
-./csharp/build --target=Build
-```
+    ```shell
+    ./csharp/build --target=Run-Unit-Tests
+    ```
 
-The unit tests can be run with command
+4. Run this command to invoke the compiled Benchmarks by `Build` target:
 
-```shell
-./csharp/build --target=Run-Unit-Tests
-```
-
-The benchmarks are also compiled by `Build` target can be invoked by command
-
-```shell
-dotnet ./csharp/EPAM.Deltix.DFP.Benchmark/bin/Release/netcoreapp3.1/EPAM.Deltix.DFP.Benchmark.dll
-```
+    ```shell
+    dotnet ./csharp/EPAM.Deltix.DFP.Benchmark/bin/Release/netcoreapp3.1/EPAM.Deltix.DFP.Benchmark.dll
+    ```
