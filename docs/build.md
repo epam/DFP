@@ -111,7 +111,7 @@ This steps includes the cross-compilation compilation of Linux native libraries 
     ./gradlew makeNativeLinux
     ```
 
-All the compiled files are placed in these folders:
+All the compiled this step libraries are placed in these folders:
 
 * `native/bin/Release/linux` — contains Linux native libraries for DFP.
 * `native/binmath/Release/linux` — contains Linux native libraries for DFP-Math.
@@ -133,7 +133,7 @@ This steps includes the compilation of Windows native libraries for the `i686` a
     gradlew makeNativeWindows
     ```
 
-All the compiled files are placed in these folders:
+All the compiled this step libraries are placed in these folders:
 
 * `native/bin/Release/windows` — contains Windows native libraries for DFP.
 * `native/binmath/Release/windows` — contains Windows native libraries for DFP-Math.
@@ -170,7 +170,7 @@ All the compiled files are placed in these folders:
     ./gradlew makeNativeDarwin
     ```
 
-All the compiled files are placed in these folders:
+All the compiled this step libraries are placed in these folders:
 
 * `native/bin/Release/darwin` — contains macOS native libraries for DFP.
 * `native/binmath/Release/darwin` — contains macOS native libraries for DFP-Math.
