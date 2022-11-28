@@ -4,6 +4,24 @@ using BenchmarkDotNet.Running;
 
 namespace EPAM.Deltix.DFP.Benchmark
 {
+	public static class Decimal64Managed
+	{
+		public static Decimal64 Add(Decimal64 a, Decimal64 b)
+		{
+			return Decimal64.FromUnderlying(Bid64Add.bid64_add(a.Bits, b.Bits));
+		}
+
+		public static Decimal64 Mul(Decimal64 a, Decimal64 b)
+		{
+			return Decimal64.FromUnderlying(Bid64Mul.bid64_mul(a.Bits, b.Bits));
+		}
+
+		public static Decimal64 Div(Decimal64 a, Decimal64 b)
+		{
+			return Decimal64.FromUnderlying(Bid64Div.bid64_div(a.Bits, b.Bits));
+		}
+	}
+
 	public class Benchmark
 	{
         [Params(509104287)]
@@ -25,7 +43,7 @@ namespace EPAM.Deltix.DFP.Benchmark
 		}
 
 		[Benchmark]
-		public void AddDecimal64()
+		public void AddNative()
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -34,7 +52,7 @@ namespace EPAM.Deltix.DFP.Benchmark
 		}
 
 		[Benchmark]
-		public void MultiplyDecimal64()
+		public void MultiplyNative()
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -43,13 +61,41 @@ namespace EPAM.Deltix.DFP.Benchmark
 		}
 
 		[Benchmark]
-		public void DivisionDecimal64()
+		public void DivisionNative()
 		{
 			for (int i = 0; i < N; ++i)
 			{
 				var c = values[i] / values[i + 1];
 			}
 		}
+
+		[Benchmark]
+		public void AddManaged()
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				var c = Decimal64Managed.Add(values[i], values[i + 1]);
+			}
+		}
+
+		[Benchmark]
+		public void MultiplyManaged()
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				var c = Decimal64Managed.Mul(values[i], values[i + 1]);
+			}
+		}
+
+		[Benchmark]
+		public void DivisionManaged()
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				var c = Decimal64Managed.Div(values[i], values[i + 1]);
+			}
+		}
+
 
 		public static void Main(String[] args)
 		{
