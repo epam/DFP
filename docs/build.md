@@ -48,8 +48,8 @@ Let's investigate thoroughly these two build options:
 
 > `JDK8` or newer is required for this compilation step.
 
-You can find **Java-only DFP** and unit tests in the `:java:dfp` project.\
-To execute all targets in this project, run this command:
+**Java-only DFP** and unit tests are located in the `:java:dfp` project.\
+You can execute all targets in this project. For example:
 
 ```shell
 ./gradlew :java:dfp:build
