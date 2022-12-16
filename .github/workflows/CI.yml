@@ -72,8 +72,8 @@ jobs:
           name: build-native-linux
           path: |
             ./*native/bin*
-            ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
-            ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
+            ./*java/dfp/build/generated/sources/nativeWrappers*
+            ./*java/dfp-math/build/generated/sources/nativeWrappers*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
             ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
