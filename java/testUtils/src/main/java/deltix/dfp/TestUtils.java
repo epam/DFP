@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -7,15 +7,15 @@ import org.junit.Assert;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
-import static com.epam.deltix.dfp.Decimal64Utils.toDebugString;
+import static deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
+import static deltix.dfp.Decimal64Utils.toDebugString;
 import static org.junit.Assert.assertEquals;
 
 public class TestUtils {
-    static final int NTests = 10_000_000;
+    public static final int NTests = 10_000_000;
 
     @Decimal
-    static final long[] specialValues = {
+    public static final long[] specialValues = {
         0x2FEB29430A256D21L /*NativeImpl.fromFloat64(Math.PI)*/,
         0xAFE9A8434EC8E225L /*NativeImpl.fromFloat64(-Math.E)*/,
         Decimal64Utils.NaN,
@@ -330,7 +330,7 @@ public class TestUtils {
     }
 
     public static class RandomDecimalsGenerator {
-        final RandomGenerator generator;
+        public final RandomGenerator generator;
         long x = Decimal64Utils.NaN;
         int xExp = 0;
         long y = Decimal64Utils.NaN;
