@@ -1,8 +1,8 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import org.junit.Test;
 
-import static com.epam.deltix.dfp.TestUtils.*;
+import static deltix.dfp.TestUtils.*;
 
 public class CompareTest {
     interface IDecimalCompare {

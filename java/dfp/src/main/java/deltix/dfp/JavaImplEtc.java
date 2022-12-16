@@ -1,10 +1,10 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplAdd.*;
-import static com.epam.deltix.dfp.JavaImplCast.bid_nr_digits_flat;
-import static com.epam.deltix.dfp.JavaImplCast.bid_ten2k64;
-import static com.epam.deltix.dfp.JavaImplCmp.*;
-import static com.epam.deltix.dfp.JavaImplParse.*;
+import static deltix.dfp.JavaImplAdd.*;
+import static deltix.dfp.JavaImplCast.bid_nr_digits_flat;
+import static deltix.dfp.JavaImplCast.bid_ten2k64;
+import static deltix.dfp.JavaImplCmp.*;
+import static deltix.dfp.JavaImplParse.*;
 
 class JavaImplEtc {
     private JavaImplEtc() {

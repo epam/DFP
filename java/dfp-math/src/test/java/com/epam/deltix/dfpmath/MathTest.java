@@ -1,7 +1,7 @@
 package com.epam.deltix.dfpmath;
 
-import com.epam.deltix.dfp.Decimal64Utils;
-import com.epam.deltix.dfp.TestUtils;
+import deltix.dfp.Decimal64Utils;
+import deltix.dfp.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.apache.commons.math3.special.Erf;
@@ -11,9 +11,9 @@ import com.epam.deltix.utilities.*;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import static com.epam.deltix.dfp.TestUtils.*;
+import static deltix.dfp.TestUtils.*;
 import static com.epam.deltix.dfpmath.Decimal64MathUtils.*;
-import static com.epam.deltix.dfp.Decimal64Utils.*;
+import static deltix.dfp.Decimal64Utils.*;
 
 public class MathTest {
     private static final int N = 10_000;

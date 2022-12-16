@@ -1,8 +1,8 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import java.util.Random;
 
-import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
+import static deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
 
 class Demo {
     interface DecimalOperation {

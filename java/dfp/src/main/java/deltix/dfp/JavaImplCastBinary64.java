@@ -1,9 +1,9 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import java.io.InputStream;
 import java.util.Arrays;
 
-import static com.epam.deltix.dfp.JavaImplAdd.*;
+import static deltix.dfp.JavaImplAdd.*;
 
 class JavaImplCastBinary64 {
     private JavaImplCastBinary64() {

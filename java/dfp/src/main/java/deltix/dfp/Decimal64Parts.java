@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 /**
  * The class that represents the internals of 64-bit Decimal Floating Point value.

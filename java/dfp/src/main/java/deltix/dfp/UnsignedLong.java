@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 class UnsignedLong {
     private UnsignedLong() {

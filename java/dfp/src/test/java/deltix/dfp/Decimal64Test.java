@@ -1,9 +1,9 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.epam.deltix.dfp.TestUtils.*;
+import static deltix.dfp.TestUtils.*;
 
 public class Decimal64Test {
     @Test

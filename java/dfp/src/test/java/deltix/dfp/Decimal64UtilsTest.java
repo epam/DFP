@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -11,7 +11,7 @@ import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.Random;
 
-import static com.epam.deltix.dfp.TestUtils.*;
+import static deltix.dfp.TestUtils.*;
 import static org.junit.Assert.*;
 
 public class Decimal64UtilsTest {

@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 class UnsignedInteger {
     private UnsignedInteger() {

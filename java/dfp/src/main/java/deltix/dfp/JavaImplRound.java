@@ -1,8 +1,8 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplAdd.*;
-import static com.epam.deltix.dfp.JavaImplCast.*;
-import static com.epam.deltix.dfp.JavaImplCmp.*;
+import static deltix.dfp.JavaImplAdd.*;
+import static deltix.dfp.JavaImplCast.*;
+import static deltix.dfp.JavaImplCmp.*;
 
 class JavaImplRound {
     private JavaImplRound() {

@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Arrays;
 
-import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
+import static deltix.dfp.JavaImplAdd.LONG_LOW_PART;
 
 class JavaImpl {
     private JavaImpl() {

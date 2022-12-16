@@ -1,6 +1,6 @@
 package com.epam.deltix.dfpmath;
 
-import com.epam.deltix.dfp.Decimal;
+import deltix.dfp.Decimal;
 
 public class Decimal64MathUtils {
     private Decimal64MathUtils() {

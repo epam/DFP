@@ -1,7 +1,7 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
-import static com.epam.deltix.dfp.JavaImplCmp.*;
+import static deltix.dfp.JavaImplAdd.LONG_LOW_PART;
+import static deltix.dfp.JavaImplCmp.*;
 
 class JavaImplMinMax {
     private JavaImplMinMax() {

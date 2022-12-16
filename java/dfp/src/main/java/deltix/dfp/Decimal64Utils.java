@@ -1,12 +1,12 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import static com.epam.deltix.dfp.JavaImpl.isSpecial;
-import static com.epam.deltix.dfp.JavaImplAdd.*;
-import static com.epam.deltix.dfp.JavaImpl.BID_ROUNDING_TO_NEAREST;
+import static deltix.dfp.JavaImpl.isSpecial;
+import static deltix.dfp.JavaImplAdd.*;
+import static deltix.dfp.JavaImpl.BID_ROUNDING_TO_NEAREST;
 
 /**
  * Contains common arithmetical routines for 64-bit Decimal Floating Point numbers as defined by IEEE-754 2008.

@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 abstract class TextUtils {
     public static boolean equalsIgnoringCase(final CharSequence s1, final int s1si, final int s1ei,

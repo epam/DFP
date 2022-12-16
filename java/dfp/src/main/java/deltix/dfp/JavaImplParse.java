@@ -1,8 +1,8 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImpl.NaN;
-import static com.epam.deltix.dfp.JavaImpl.ZERO;
-import static com.epam.deltix.dfp.JavaImplAdd.*;
+import static deltix.dfp.JavaImpl.NaN;
+import static deltix.dfp.JavaImpl.ZERO;
+import static deltix.dfp.JavaImplAdd.*;
 
 class JavaImplParse {
     private JavaImplParse() {

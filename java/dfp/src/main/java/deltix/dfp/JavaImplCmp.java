@@ -1,6 +1,6 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplAdd.*;
+import static deltix.dfp.JavaImplAdd.*;
 
 class JavaImplCmp {
     private JavaImplCmp() {

@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.stat.inference.TestUtils;
@@ -15,9 +15,9 @@ import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import static com.epam.deltix.dfp.JavaImpl.*;
-import static com.epam.deltix.dfp.TestUtils.*;
-import static com.epam.deltix.dfp.TestUtils.POWERS_OF_TEN;
+import static deltix.dfp.JavaImpl.*;
+import static deltix.dfp.TestUtils.*;
+import static deltix.dfp.TestUtils.POWERS_OF_TEN;
 import static org.junit.Assert.*;
 
 public class NativeImplTest {

@@ -1,19 +1,19 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplAdd.*;
-import static com.epam.deltix.dfp.JavaImplAdd.DECIMAL_EXPONENT_BIAS;
-import static com.epam.deltix.dfp.JavaImplAdd.DECIMAL_MAX_EXPON_64;
-import static com.epam.deltix.dfp.JavaImplAdd.EXPONENT_MASK64;
-import static com.epam.deltix.dfp.JavaImplAdd.EXPONENT_SHIFT_LARGE64;
-import static com.epam.deltix.dfp.JavaImplAdd.EXPONENT_SHIFT_SMALL64;
-import static com.epam.deltix.dfp.JavaImplAdd.INFINITY_MASK64;
-import static com.epam.deltix.dfp.JavaImplAdd.LARGE_COEFF_HIGH_BIT64;
-import static com.epam.deltix.dfp.JavaImplAdd.LARGE_COEFF_MASK64;
-import static com.epam.deltix.dfp.JavaImplAdd.NAN_MASK64;
-import static com.epam.deltix.dfp.JavaImplAdd.SINFINITY_MASK64;
-import static com.epam.deltix.dfp.JavaImplAdd.SMALL_COEFF_MASK64;
-import static com.epam.deltix.dfp.JavaImplAdd.SPECIAL_ENCODING_MASK64;
-import static com.epam.deltix.dfp.JavaImplParse.*;
+import static deltix.dfp.JavaImplAdd.*;
+import static deltix.dfp.JavaImplAdd.DECIMAL_EXPONENT_BIAS;
+import static deltix.dfp.JavaImplAdd.DECIMAL_MAX_EXPON_64;
+import static deltix.dfp.JavaImplAdd.EXPONENT_MASK64;
+import static deltix.dfp.JavaImplAdd.EXPONENT_SHIFT_LARGE64;
+import static deltix.dfp.JavaImplAdd.EXPONENT_SHIFT_SMALL64;
+import static deltix.dfp.JavaImplAdd.INFINITY_MASK64;
+import static deltix.dfp.JavaImplAdd.LARGE_COEFF_HIGH_BIT64;
+import static deltix.dfp.JavaImplAdd.LARGE_COEFF_MASK64;
+import static deltix.dfp.JavaImplAdd.NAN_MASK64;
+import static deltix.dfp.JavaImplAdd.SINFINITY_MASK64;
+import static deltix.dfp.JavaImplAdd.SMALL_COEFF_MASK64;
+import static deltix.dfp.JavaImplAdd.SPECIAL_ENCODING_MASK64;
+import static deltix.dfp.JavaImplParse.*;
 
 class JavaImplMul {
     private JavaImplMul() {

@@ -1,6 +1,6 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplParse.*;
+import static deltix.dfp.JavaImplParse.*;
 
 public class Decimal64Status extends JavaImplParse.FloatingPointStatusFlag {
     public enum StatusValue {

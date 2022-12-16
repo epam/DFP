@@ -1,9 +1,9 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplAdd.*;
-import static com.epam.deltix.dfp.JavaImplCmp.*;
-import static com.epam.deltix.dfp.JavaImplMul.*;
-import static com.epam.deltix.dfp.JavaImplParse.*;
+import static deltix.dfp.JavaImplAdd.*;
+import static deltix.dfp.JavaImplCmp.*;
+import static deltix.dfp.JavaImplMul.*;
+import static deltix.dfp.JavaImplParse.*;
 
 class JavaImplFma {
     private JavaImplFma() {

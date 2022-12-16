@@ -1,9 +1,9 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
-import static com.epam.deltix.dfp.JavaImplAdd.*;
-import static com.epam.deltix.dfp.JavaImplMul.get_BID64;
-import static com.epam.deltix.dfp.JavaImplParse.bid_recip_scale;
-import static com.epam.deltix.dfp.JavaImplParse.bid_reciprocals10_128_BID_UINT128;
+import static deltix.dfp.JavaImplAdd.*;
+import static deltix.dfp.JavaImplMul.get_BID64;
+import static deltix.dfp.JavaImplParse.bid_recip_scale;
+import static deltix.dfp.JavaImplParse.bid_reciprocals10_128_BID_UINT128;
 
 class JavaImplDiv {
     private JavaImplDiv() {

@@ -1,14 +1,14 @@
 package com.epam.deltix.dfpmath;
 
-import com.epam.deltix.dfp.Decimal;
-import com.epam.deltix.dfp.Decimal64Utils;
+import deltix.dfp.Decimal;
+import deltix.dfp.Decimal64Utils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-import static com.epam.deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
+import static deltix.dfp.Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
 
 class Demo {
     static final Method[] operations = initOperations(Decimal64MathUtils.class);
