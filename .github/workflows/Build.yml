@@ -72,32 +72,9 @@ jobs:
             ./*native/bin*
           retention-days: 7
 
-  build-native-macos:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-      - name: build
-        run: |
-          sudo apt update
-          sudo apt install clang make libssl-dev liblzma-dev libxml2-dev fuse
-          cd ./osxcross/tarballs/
-          wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
-          cd ..
-          UNATTENDED=yes OSX_VERSION_MIN=10.7 JOBS=4 ./build.sh
-          cd ..
-          ./gradlew makeNativeDarwin
-      - uses: actions/upload-artifact@v2
-        with:
-          name: build-native-macos
-          path: |
-            ./*native/bin*
-          retention-days: 7
-
   compress-native:
     runs-on: ubuntu-latest
-    needs: [build-native-linux, build-native-windows, build-native-macos]
+    needs: [build-native-linux, build-native-windows]
     steps:
       - uses: actions/checkout@v2
       - name: Download native-linux artifacts
@@ -160,41 +137,13 @@ jobs:
             ./*java/decimalDemo/build/libs/*
           retention-days: 7
 
-  build-dotnet:
-    runs-on: windows-2019
-    needs: [compress-native]
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-      - name: Download compress-native artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: compress-native
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1.8.1
-        with:
-          dotnet-version: '3.1.x'
-      - name: build
-        run: |
-          cd csharp
-          ./build -Target Build
-      - uses: actions/upload-artifact@v2
-        with:
-          name: dotnet-build
-          path: |
-            ./*csharp/EPAM.Deltix.DFP/bin/Release/*
-            ./*csharp/EPAM.Deltix.DFPMath/bin/Release/*
-            ./*csharp/EPAM.Deltix.DFP.Demo/bin/Release/*
-          retention-days: 7
-
   test-java:
     runs-on: ${{ matrix.os }}
     needs: [compress-native]
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
+        os: [ 'ubuntu-latest', 'windows-2019']
         java: [ '8', '11', '15']
     steps:
       - uses: actions/checkout@v2
@@ -223,43 +172,3 @@ jobs:
             java/dfp/build/reports/*
             java/dfp-math/build/reports/*
           name: Java-{{ matrix.java }}-${{ matrix.os }}-TestReports
-
-  test-dotnet:
-    runs-on: ${{ matrix.os }}
-    needs: [compress-native]
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-      - name: Download compress-native artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: compress-native
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1.8.1
-        with:
-          dotnet-version: '3.1.x'
-      - name: test windows
-        if: ${{ matrix.os == 'windows-2019' }}
-        run: |
-          cd csharp
-          ./build --target=Run-Unit-Tests
-      - name: test nix
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
-        run: |
-          cd csharp
-          ./build.sh --target=Run-Unit-Tests
-      - name: Upload test results on failure
-        uses: actions/upload-artifact@v2
-        if: ${{ failure() }}
-        with:
-          path: |
-            csharp/EPAM.Deltix.DFP/bin/*
-            csharp/EPAM.Deltix.DFPMath/bin/*
-            csharp/*.txt
-            csharp/*.xml
-          name: Dotnet-3.1-${{ matrix.os }}-TestReports
