@@ -52,7 +52,7 @@ add_subdirectory (../thirdparty/IntelRDFPMathLib20U2/LIBRARY LIBRARY)
 add_subdirectory (../thirdparty/IntelRDFPMathLib20U2/EXAMPLES EXAMPLES)
 
 add_library(dfp SHARED NativeImpl.c)
-target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ JAVA_PREFIX=com_epam_deltix_dfp_NativeImpl_)
+target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ JAVA_PREFIX=deltix_dfp_NativeImpl_)
 target_link_libraries (dfp LINK_PUBLIC bid)
 set_target_properties(dfp PROPERTIES OUTPUT_NAME "ddfp${VERSION_SUFFIX}")
 install(TARGETS dfp DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})

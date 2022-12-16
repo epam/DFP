@@ -33,13 +33,13 @@ task makeNativeWrappersDfpMath(dependsOn: compileJava, type: JavaExec) {
     def ver = versioning()
     args = [ver["three"], ver["suffix"], ver["sha"],
             "ddfpmath" + ver["suffix"] + "_",
-            "deltix_dfpmath_NativeMathImpl_",
+            "com_epam_deltix_dfpmath_NativeMathImpl_",
             "$rootDir/native/NativeMathImpl.c",
-            "$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/deltix/dfpmath/NativeMathImpl.java",
+            "$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath/NativeMathImpl.java",
             "$rootDir/csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs"
     ]
     onlyIf {
-        !file("$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/deltix/dfpmath/NativeMathImpl.java").exists() ||
+        !file("$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath/NativeMathImpl.java").exists() ||
             !file("$rootDir/csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs").exists()
     }
 }

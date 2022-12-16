@@ -19,7 +19,7 @@ class NativeImplLoader {
                 unpackPath = "$(TEMP)/$(PACKAGE)/$(VERSION)/$(ARCH)";
 
             ResourceLoader
-                .from(NativeImplLoader.class, "resources_" + varMapper.getPackage().replace('.', '_') + '/' + varMapper.getOs() + '/' + varMapper.getArch() + "/*")
+                .from(NativeImplLoader.class, "resources_com_epam_" + varMapper.getPackage().replace('.', '_') + '/' + varMapper.getOs() + '/' + varMapper.getArch() + "/*")
                 .to(varMapper.substitute(unpackPath))
                 .alwaysOverwrite(isSnapshot)
                 .tryRandomFallbackSubDirectory(true)
