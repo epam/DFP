@@ -1,7 +1,7 @@
 package com.example.demo;
 
-import com.epam.deltix.dfp.Decimal64Utils;
-import com.epam.deltix.dfpmath.Decimal64MathUtils;
+import deltix.dfp.Decimal64Utils;
+//import com.epam.deltix.dfpmath.Decimal64MathUtils;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -41,12 +41,12 @@ public class DemoApplication implements CommandLineRunner {
             Decimal64Utils.toScientificString(sDecimal) + "(=0x" + Long.toHexString(sDecimal) + "L) is a double " +
             s + "(=0x" + Long.toHexString(Double.doubleToRawLongBits(s)) + "L)");
 
-        long qDecimal = Decimal64MathUtils.sqrt(sDecimal);
-        double q = Decimal64Utils.toDouble(qDecimal);
-
-        System.out.println("Decimal: sqrt( " +
-            Decimal64Utils.toScientificString(sDecimal) + "(=0x" + Long.toHexString(sDecimal) + "L) ) = " +
-            Decimal64Utils.toScientificString(qDecimal) + "(=0x" + Long.toHexString(qDecimal) + "L) ) is a double " +
-            q + "(=0x" + Long.toHexString(Double.doubleToRawLongBits(q)) + "L)");
+//        long qDecimal = Decimal64MathUtils.sqrt(sDecimal);
+//        double q = Decimal64Utils.toDouble(qDecimal);
+//
+//        System.out.println("Decimal: sqrt( " +
+//            Decimal64Utils.toScientificString(sDecimal) + "(=0x" + Long.toHexString(sDecimal) + "L) ) = " +
+//            Decimal64Utils.toScientificString(qDecimal) + "(=0x" + Long.toHexString(qDecimal) + "L) ) is a double " +
+//            q + "(=0x" + Long.toHexString(Double.doubleToRawLongBits(q)) + "L)");
     }
 }
