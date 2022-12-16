@@ -1,6 +1,6 @@
 package deltix.dfp;
 
-import com.epam.deltix.dfp.NativeImpl;
+import deltix.dfp.NativeImpl;
 import com.epam.deltix.utilities.*;
 
 class NativeImplLoader {
