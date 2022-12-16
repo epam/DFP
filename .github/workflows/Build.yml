@@ -85,10 +85,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: build-native-windows
-      - name: Download native-macos artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: build-native-macos
       - name: compress
         run: |
           zstd --version
