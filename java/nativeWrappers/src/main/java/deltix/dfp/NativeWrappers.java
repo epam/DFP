@@ -1,4 +1,4 @@
-package com.epam.deltix.dfp;
+package deltix.dfp;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
