@@ -20,10 +20,10 @@ task makeNativeWrappersDfp(dependsOn: compileJava, type: JavaExec) {
             "$rootDir/java/dfp/build/generated/sources/nativeWrappers/deltix/dfp/NativeImpl.java",
             "$rootDir/csharp/EPAM.Deltix.DFP/NativeImpl.cs"
     ]
-//    onlyIf {
-//        !file("$rootDir/java/dfp/build/generated/sources/nativeWrappers/deltix/dfp/NativeImpl.java").exists() ||
-//            !file("$rootDir/csharp/EPAM.Deltix.DFP/NativeImpl.cs").exists()
-//    }
+    onlyIf {
+        !file("$rootDir/java/dfp/build/generated/sources/nativeWrappers/deltix/dfp/NativeImpl.java").exists() ||
+            !file("$rootDir/csharp/EPAM.Deltix.DFP/NativeImpl.cs").exists()
+    }
 }
 
 task makeNativeWrappersDfpMath(dependsOn: compileJava, type: JavaExec) {
@@ -38,10 +38,10 @@ task makeNativeWrappersDfpMath(dependsOn: compileJava, type: JavaExec) {
             "$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath/NativeMathImpl.java",
             "$rootDir/csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs"
     ]
-//    onlyIf {
-//        !file("$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath/NativeMathImpl.java").exists() ||
-//            !file("$rootDir/csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs").exists()
-//    }
+    onlyIf {
+        !file("$rootDir/java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath/NativeMathImpl.java").exists() ||
+            !file("$rootDir/csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs").exists()
+    }
 }
 
 task makeNativeWrappers(dependsOn: [makeNativeWrappersDfp/*, makeNativeWrappersDfpMath*/]) {
