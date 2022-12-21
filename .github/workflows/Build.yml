@@ -73,7 +73,7 @@ jobs:
           retention-days: 7
 
   build-native-macos:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
