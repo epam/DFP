@@ -80,7 +80,6 @@ jobs:
           submodules: 'recursive'
       - name: build
         run: |
-          sudo apt update
           sudo apt install clang make libssl-dev liblzma-dev libxml2-dev fuse
           cd ./osxcross/tarballs/
           wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
