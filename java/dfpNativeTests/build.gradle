@@ -23,7 +23,7 @@ sourceSets {
 }
 
 dependencies {
-    implementation project(":java:dfp")
+    implementation project(':java:deltix-dfp')
     testImplementation project(':java:testUtils')
     testImplementation 'junit:junit:4.+'
     testImplementation 'org.apache.commons:commons-math3:3.6.1'

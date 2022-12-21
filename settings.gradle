@@ -3,5 +3,6 @@ include(':java:nativeWrappers')
 include(':native')
 include(':java:testUtils')
 include(':java:dfp')
+project(':java:dfp').name = 'deltix-dfp'
 include(':java:dfpNativeTests')
 include(':java:springTest')

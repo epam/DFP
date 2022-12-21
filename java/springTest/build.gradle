@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':java:dfp')
+    implementation project(':java:deltix-dfp')
 //    implementation project(':java:dfp-math')
     implementation 'org.springframework.boot:spring-boot-starter-parent:2.4.0'
     implementation 'org.springframework.boot:spring-boot-starter'

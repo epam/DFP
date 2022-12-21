@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':java:dfp')
+    implementation project(':java:deltix-dfp')
     implementation 'junit:junit:4.+'
     implementation 'org.apache.commons:commons-math3:3.6.1'
 //    testImplementation 'com.google.guava:guava:31.1-jre'
