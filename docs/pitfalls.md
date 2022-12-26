@@ -14,7 +14,7 @@ private boolean isFlat() {
 	return (actualPositionSize == 0); // BUG
 }
 ```
-We recommend using Decimal64Util.fromLong(123) or predefined constants like DEcimal64Util.ZERO.
+We recommend using Decimal64Util.fromLong(123) or predefined constants like Decimal64Utils.ZERO.
 
 
 ### Infix operators and similar
@@ -40,7 +40,7 @@ Many Java APIs use `double` for market data prices and sizes. Problem is - when 
  For example, to convert price of some instrument use tick size:
 
 ```java 
-  @Decimal rawPrice = Decimal64Util.fromDouble(99.085); // 99.08499999999999
+  @Decimal rawPrice = Decimal64Utils.fromDouble(99.085); // 99.08499999999999
   @Decimal long tickSize = instrument.getTickSize(); // e.g. 0.005 
   Decimal64Utils.round(rawPrice, tickSize); // produces 99.085
  ```

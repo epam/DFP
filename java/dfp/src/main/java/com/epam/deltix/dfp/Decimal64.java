@@ -698,7 +698,6 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return new Decimal64(Decimal64Utils.round(value));
     }
 
-    @Deprecated
     public Decimal64 round(final Decimal64 multiple) {
         return new Decimal64(Decimal64Utils.round(value, multiple.value));
     }
@@ -712,7 +711,6 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return new Decimal64(Decimal64Utils.ceiling(value));
     }
 
-    @Deprecated
     public Decimal64 roundTowardsPositiveInfinity() {
         return new Decimal64(Decimal64Utils.roundTowardsPositiveInfinity(value));
     }
@@ -721,47 +719,38 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return new Decimal64(Decimal64Utils.floor(value));
     }
 
-    @Deprecated
     public Decimal64 roundTowardsNegativeInfinity() {
         return new Decimal64(Decimal64Utils.roundTowardsNegativeInfinity(value));
     }
 
-    @Deprecated
     public Decimal64 truncate() {
         return new Decimal64(Decimal64Utils.truncate(value));
     }
 
-    @Deprecated
     public Decimal64 roundTowardsZero() {
         return new Decimal64(Decimal64Utils.roundTowardsZero(value));
     }
 
-    @Deprecated
     public Decimal64 roundToNearestTiesAwayFromZero() {
         return new Decimal64(Decimal64Utils.roundToNearestTiesAwayFromZero(value));
     }
 
-    @Deprecated
     public Decimal64 roundToNearestTiesToEven() {
         return new Decimal64(Decimal64Utils.roundToNearestTiesToEven(value));
     }
 
-    @Deprecated
     public Decimal64 roundTowardsPositiveInfinity(final Decimal64 multiple) {
         return new Decimal64(Decimal64Utils.roundTowardsPositiveInfinity(value, multiple.value));
     }
 
-    @Deprecated
     public Decimal64 roundTowardsNegativeInfinity(final Decimal64 multiple) {
         return new Decimal64(Decimal64Utils.roundTowardsNegativeInfinity(value, multiple.value));
     }
 
-    @Deprecated
     public Decimal64 roundToNearestTiesAwayFromZero(final Decimal64 multiple) {
         return new Decimal64(Decimal64Utils.roundToNearestTiesAwayFromZero(value, multiple.value));
     }
 
-    @Deprecated
     public Decimal64 roundToNearestTiesToEven(final Decimal64 multiple) {
         return new Decimal64(Decimal64Utils.roundToNearestTiesToEven(value, multiple.value));
     }

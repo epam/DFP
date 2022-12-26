@@ -5,6 +5,8 @@
     <AssemblyName>EPAM.Deltix.DFP.Benchmark</AssemblyName>
     <RootNamespace>EPAM.Deltix.DFP.Benchmark</RootNamespace>
     <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>$(DefineConstants)TRACE;IEEE_ROUND_NEAREST</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.10.13" />

@@ -8,6 +8,7 @@ using BID_UINT32 = System.UInt32;
 using _IDEC_flags = System.UInt32;
 
 [assembly: InternalsVisibleToAttribute("EPAM.Deltix.DFP.Test")]
+[assembly: InternalsVisibleToAttribute("EPAM.Deltix.DFP.Benchmark")]
 namespace EPAM.Deltix.DFP
 {
 	internal static class DotNetReImpl
