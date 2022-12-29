@@ -493,7 +493,7 @@ namespace EPAM.Deltix.DFP.Test
 			Assert.AreEqual(x.ToDouble(), x2.ToDouble());
 			if (!x2.Equals(Decimal64.FromDouble(x.ToDouble())))
 			{
-				AssertDecimalIdentical(x.Canonize(), x2, "FromDecimalDouble(x) failed to Canonize() the result");
+				AssertDecimalIdentical(x2.Canonize(), x2, "FromDecimalDouble(x) failed to Canonize() the result");
 			}
 
 			if (null != s)

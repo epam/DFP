@@ -1523,7 +1523,7 @@ namespace EPAM.Deltix.DFP
 			Int32 exponent;
 			UInt64 coefficient = Unpack(value, out exponent);
 			StringBuilder sb = new StringBuilder(64)
-				.Append("0x").Append(BitConverter.ToString(BitConverter.GetBytes(value)))
+				.Append("0x").Append($"{value:X16}UL")
 				.Append("[").Append(signBit ? '-' : '+').Append(',')
 				.Append(exponent).Append(',').Append(coefficient).Append(']');
 
