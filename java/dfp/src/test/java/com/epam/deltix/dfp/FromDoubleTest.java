@@ -179,10 +179,6 @@ public class FromDoubleTest {
     public void testFromDecimalDoublePrecisionLoss() {
         final Random random = new Random();
 
-        double maxErrUlp = 0;
-        long maxErrBits = 0;
-        double maxBin64 = 0;
-        Decimal64 maxDec64 = Decimal64.NaN;
         for (int i = 0; i < N / 10; ++i) {
             final long bin64Bits = random.nextLong();
             final double bin64 = Double.longBitsToDouble(bin64Bits);
@@ -194,15 +190,9 @@ public class FromDoubleTest {
             final double err = dec64.toBigDecimal().subtract(new BigDecimal(bin64)).abs().doubleValue();
             final double errUlp = err / Math.ulp(bin64);
 
-            if (maxErrUlp < errUlp) {
-                maxErrUlp = errUlp;
-                maxErrBits = bin64Bits;
-                maxBin64 = bin64;
-                maxDec64 = dec64;
-            }
+            if (errUlp > 5)
+                throw new RuntimeException("The ulpError=" + errUlp + " for bin64Bits=" + bin64Bits + "L: bin64(=" + bin64 + ") converted to dec64(=" + dec64.toScientificString() + ").");
         }
-
-        System.out.println("Max ulpError=" + maxErrUlp + " for bin64Bits=" + maxErrBits + "L: bin64(=" + maxBin64 + ") converted to dec64(=" + maxDec64.toScientificString() + ").");
     }
 
     static final int N = 5000000;
