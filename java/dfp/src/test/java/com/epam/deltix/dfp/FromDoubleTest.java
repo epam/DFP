@@ -165,5 +165,15 @@ public class FromDoubleTest {
         checkDecimalDoubleConversion(x);
     }
 
+	@Test
+    public void testFromDecimalDoubleConversionsLongMantissa()
+    {
+        for (int i = 0; i < N; i++)
+        {
+            Decimal64 x = getRandomDecimal(1000000000000000L, 9999999999999999L);
+            checkDecimalDoubleConversion(x);
+        }
+    }
+
     static final int N = 5000000;
 }
