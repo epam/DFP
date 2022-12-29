@@ -4,6 +4,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
+import java.util.Random;
 
 import static com.epam.deltix.dfp.TestUtils.*;
 
@@ -165,14 +167,42 @@ public class FromDoubleTest {
         checkDecimalDoubleConversion(x);
     }
 
-	@Test
-    public void testFromDecimalDoubleConversionsLongMantissa()
-    {
-        for (int i = 0; i < N; i++)
-        {
+    @Test
+    public void testFromDecimalDoubleConversionsLongMantissa() {
+        for (int i = 0; i < N; i++) {
             Decimal64 x = getRandomDecimal(1000000000000000L, 9999999999999999L);
             checkDecimalDoubleConversion(x);
         }
+    }
+
+    @Test
+    public void testFromDecimalDoublePrecisionLoss() {
+        final Random random = new Random();
+
+        double maxErrUlp = 0;
+        long maxErrBits = 0;
+        double maxBin64 = 0;
+        Decimal64 maxDec64 = Decimal64.NaN;
+        for (int i = 0; i < N / 10; ++i) {
+            final long bin64Bits = random.nextLong();
+            final double bin64 = Double.longBitsToDouble(bin64Bits);
+            if (!Double.isFinite(bin64))
+                continue;
+
+            final Decimal64 dec64 = Decimal64.fromDecimalDouble(bin64);
+
+            final double err = dec64.toBigDecimal().subtract(new BigDecimal(bin64)).abs().doubleValue();
+            final double errUlp = err / Math.ulp(bin64);
+
+            if (maxErrUlp < errUlp) {
+                maxErrUlp = errUlp;
+                maxErrBits = bin64Bits;
+                maxBin64 = bin64;
+                maxDec64 = dec64;
+            }
+        }
+
+        System.out.println("Max ulpError=" + maxErrUlp + " for bin64Bits=" + maxErrBits + "L: bin64(=" + maxBin64 + ") converted to dec64(=" + maxDec64.toScientificString() + ").");
     }
 
     static final int N = 5000000;
