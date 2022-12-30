@@ -2318,6 +2318,18 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#toScientificString()}, adds null checks; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    @Deprecated
+    public static String toScientificStringChecked(@Decimal final long value) {
+        checkNull(value);
+        return toScientificString(value);
+    }
+
+    /**
      * Implements {@link Decimal64#equals(Decimal64)}, adds null checks; do not use directly.
      *
      * @param a DFP argument
