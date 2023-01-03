@@ -195,5 +195,19 @@ public class FromDoubleTest {
         }
     }
 
+    @Test
+    public void testFromDecimalDoublesCases() {
+        final Random random = new Random();
+        for (int i = 0; i < N; ++i) {
+            final double doubleValue = random.nextDouble();
+
+            final Decimal64 b = Decimal64.fromDecimalDouble(doubleValue);
+            final Decimal64 a = Decimal64.fromDouble(doubleValue);
+
+            if (!a.equals(b) && String.format("%f", doubleValue).equals(b.toString()))
+                throw new RuntimeException("doubleValue(=" + doubleValue + "): fromDecimalDouble(=" + b + ") - fromDouble(=" + a + ") = " + b.subtract(a));
+        }
+    }
+
     static final int N = 5000000;
 }
