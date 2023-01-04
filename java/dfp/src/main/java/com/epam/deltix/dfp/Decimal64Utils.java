@@ -356,7 +356,17 @@ public class Decimal64Utils {
         return JavaImpl.fromFixedPoint32(mantissa, numberOfDigits);
     }
 
-
+    /**
+     * Create {@code DFP} value from 64-bit binary floating point ({@code double}) value
+     * that was supposed to represent/approximate a decimal value instead of
+     * an arbitrary real number.
+     * The only difference from {@link #fromDouble(double)} is that it fudges the last digit of
+     * mantissa towards decimal 0 as long as the result produces shorter mantissa and
+     * is still within rounding error range.
+     *
+     * @param value source 64-bit binary floating point value
+     * @return New {@code DFP} value.
+     */
     @Decimal
     public static long fromDecimalDouble(final double value) {
         return JavaImpl.fromDecimalDouble(value);
@@ -2305,6 +2315,18 @@ public class Decimal64Utils {
     public static String toStringChecked(@Decimal final long value) {
         checkNull(value);
         return toString(value);
+    }
+
+    /**
+     * Implements {@link Decimal64#toScientificString()}, adds null checks; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    @Deprecated
+    public static String toScientificStringChecked(@Decimal final long value) {
+        checkNull(value);
+        return toScientificString(value);
     }
 
     /**

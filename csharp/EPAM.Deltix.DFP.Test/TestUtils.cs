@@ -135,16 +135,21 @@ namespace EPAM.Deltix.DFP.Test
 		public static int GetRandomInt() => rng.Next() * rng.Next(-1, 2);
 
 
-		public static Decimal64 GetRandomDecimal(long maxMantissa)
+		public static Decimal64 GetRandomDecimal(long minMantissa, long maxMantissa)
 		{
-			long mantissa = GetRandomLong() % maxMantissa;
+			long mantissa = minMantissa + GetRandomLong() % (maxMantissa - minMantissa + 1);
 			int exp = (GetRandomInt() & 127) - 64;
 			return Decimal64.FromFixedPoint(mantissa, exp);
 		}
 
+		public static Decimal64 GetRandomDecimal(long maxMantissa)
+		{
+			return GetRandomDecimal(0, maxMantissa);
+		}
+
 		public static Decimal64 GetRandomDecimal()
 		{
-			return GetRandomDecimal(1000000000000000L);
+			return GetRandomDecimal(9999999999999999L);
 		}
 
 		public static long[] PowersOfTen = {
