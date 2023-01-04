@@ -17,7 +17,7 @@ jobs:
   build-native-linux:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: build
@@ -41,7 +41,7 @@ jobs:
           ls -al
           ./gradlew makeNativeLinux
           ./gradlew makeNativeWrappers
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: build-native-linux
           path: |
@@ -57,7 +57,7 @@ jobs:
   build-native-windows:
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: Use MSBuild
@@ -65,7 +65,7 @@ jobs:
       - name: build
         run: |
           ./gradlew makeNativeWindows
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: build-native-windows
           path: |
@@ -75,7 +75,7 @@ jobs:
   build-native-macos:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: build
@@ -88,7 +88,7 @@ jobs:
           UNATTENDED=yes OSX_VERSION_MIN=10.7 JOBS=4 ./build.sh
           cd ..
           ./gradlew makeNativeDarwin
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: build-native-macos
           path: |
@@ -99,17 +99,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-native-linux, build-native-windows, build-native-macos]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Download native-linux artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: build-native-linux
       - name: Download native-windows artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: build-native-windows
       - name: Download native-macos artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: build-native-macos
       - name: compress
@@ -117,7 +117,7 @@ jobs:
           zstd --version
           zstd -19 --rm -r ./native/bin
           zstd -19 --rm -r ./native/binmath
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: compress-native
           path: |
@@ -135,11 +135,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [compress-native]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: Download compress-native artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: compress-native
       - name: Setup java
@@ -151,7 +151,7 @@ jobs:
         run: |
           ./gradlew jar
           ./gradlew javadocJar
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: java-jars
           path: |
@@ -164,11 +164,11 @@ jobs:
     runs-on: windows-2019
     needs: [compress-native]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: Download compress-native artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: compress-native
       - name: Setup dotnet
@@ -179,7 +179,7 @@ jobs:
         run: |
           cd csharp
           ./build -Target Build
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: dotnet-build
           path: |
@@ -197,11 +197,11 @@ jobs:
         os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
         java: [ '8', '11', '15']
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: Download compress-native artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: compress-native
       - name: Setup java
@@ -216,7 +216,7 @@ jobs:
         run: |
           ./gradlew check
       - name: Upload test results on failure
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: ${{ failure() }}
         with:
           path: |
@@ -232,11 +232,11 @@ jobs:
       matrix:
         os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: Download compress-native artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: compress-native
       - name: Setup dotnet
@@ -254,7 +254,7 @@ jobs:
           cd csharp
           ./build.sh --target=Run-Unit-Tests
       - name: Upload test results on failure
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: ${{ failure() }}
         with:
           path: |
