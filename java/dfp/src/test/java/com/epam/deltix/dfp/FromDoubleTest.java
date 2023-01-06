@@ -4,6 +4,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
+import java.util.Random;
 
 import static com.epam.deltix.dfp.TestUtils.*;
 
@@ -64,8 +66,10 @@ public class FromDoubleTest {
 
     private static void checkDecimalDoubleConversion(Decimal64 x, String s) {
         Decimal64 x2 = Decimal64.fromDecimalDouble(x.toDouble());
-        assertDecimalEqual(x, x2, "fromDecimalDouble(x.toDouble()) failed:");
-        assertDecimalIdentical(x.canonize(), x2, "fromDecimalDouble(x.toDouble()) failed:");
+
+        Assert.assertEquals(x.toDouble(), x2.toDouble(), 0);
+        if (!x2.equals(Decimal64.fromDouble(x.toDouble())))
+            assertDecimalIdentical(x2.canonize(), x2, "fromDecimalDouble(x) failed to canonize() the result");
 
         if (null != s) {
             Assert.assertEquals(x.toDouble(), Double.parseDouble(s), 0);
@@ -99,15 +103,25 @@ public class FromDoubleTest {
             "1E0", "1000000000000000E0",
             "0.000000009412631", "0.95285752",
             "9.2", "25107188000000000000000000000000000000000000000000000000",
+            "9.888888888888888",
             // Exponent limits
             "-1E-308", "-1000000000000000E-322"
         );
     }
 
+
     @Test
     public void testFromDecimalDoubleConversion() {
         for (int i = 0; i < N; i++) {
-            Decimal64 x = getRandomDecimal();
+            Decimal64 x = getRandomDecimal(1000_0000_0000_0000L);
+            checkDecimalDoubleConversion(x);
+        }
+    }
+
+    @Test
+    public void testFromDecimalDoubleConversionLongMantissa() {
+        for (int i = 0; i < N; i++) {
+            Decimal64 x = getRandomDecimal(9000_0000_0000_0000L, 1000_0000_0000_0000L);
             checkDecimalDoubleConversion(x);
         }
     }
@@ -151,6 +165,48 @@ public class FromDoubleTest {
         checkDecimalDoubleConversion(x);
         x = Decimal64.fromFixedPoint(1000000000000000L, 0);
         checkDecimalDoubleConversion(x);
+    }
+
+    @Test
+    public void testFromDecimalDoubleConversionsLongMantissa() {
+        for (int i = 0; i < N; i++) {
+            Decimal64 x = getRandomDecimal(1000000000000000L, 9999999999999999L);
+            checkDecimalDoubleConversion(x);
+        }
+    }
+
+    @Test
+    public void testFromDecimalDoublePrecisionLoss() {
+        final Random random = new Random();
+
+        for (int i = 0; i < N / 10; ++i) {
+            final long bin64Bits = random.nextLong();
+            final double bin64 = Double.longBitsToDouble(bin64Bits);
+            if (!Double.isFinite(bin64))
+                continue;
+
+            final Decimal64 dec64 = Decimal64.fromDecimalDouble(bin64);
+
+            final double err = dec64.toBigDecimal().subtract(new BigDecimal(bin64)).abs().doubleValue();
+            final double errUlp = err / Math.ulp(bin64);
+
+            if (errUlp > 5)
+                throw new RuntimeException("The ulpError=" + errUlp + " for bin64Bits=" + bin64Bits + "L: bin64(=" + bin64 + ") converted to dec64(=" + dec64.toScientificString() + ").");
+        }
+    }
+
+    @Test
+    public void testFromDecimalDoublesCases() {
+        final Random random = new Random();
+        for (int i = 0; i < N; ++i) {
+            final double doubleValue = random.nextDouble();
+
+            final Decimal64 b = Decimal64.fromDecimalDouble(doubleValue);
+            final Decimal64 a = Decimal64.fromDouble(doubleValue);
+
+            if (!a.equals(b) && String.format("%f", doubleValue).equals(b.toString()))
+                throw new RuntimeException("doubleValue(=" + doubleValue + "): fromDecimalDouble(=" + b + ") - fromDouble(=" + a + ") = " + b.subtract(a));
+        }
     }
 
     static final int N = 5000000;

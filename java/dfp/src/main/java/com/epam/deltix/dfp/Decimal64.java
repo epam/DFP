@@ -1054,6 +1054,10 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return Decimal64Utils.toString(value);
     }
 
+    public String toScientificString() {
+        return Decimal64Utils.toScientificString(value);
+    }
+
     /// endregion
 
     /// region Number Interface Implementation

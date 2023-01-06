@@ -16,8 +16,8 @@ public class TestUtils {
 
     @Decimal
     static final long[] specialValues = {
-        NativeImpl.fromFloat64(Math.PI),
-        NativeImpl.fromFloat64(-Math.E),
+        0x2FEB29430A256D21L /*NativeImpl.fromFloat64(Math.PI)*/,
+        0xAFE9A8434EC8E225L /*NativeImpl.fromFloat64(-Math.E)*/,
         Decimal64Utils.NaN,
         Decimal64Utils.NaN | 1000000000000000L,
         Decimal64Utils.negate(Decimal64Utils.NaN),
@@ -28,18 +28,18 @@ public class TestUtils {
         Decimal64Utils.NEGATIVE_INFINITY | 1000000000000000L,
         Decimal64Utils.ZERO,
         JavaImplAdd.SPECIAL_ENCODING_MASK64 | 1000000000000000L,
-        NativeImpl.fromFixedPoint64(0L, -300),
-        NativeImpl.fromFixedPoint64(0L, 300),
-        NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MIN_EXPONENT),
-        NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MAX_EXPONENT),
+        0x5740000000000000L /*NativeImpl.fromFixedPoint64(0L, -300)*/,
+        0x0C40000000000000L /* NativeImpl.fromFixedPoint64(0L, 300)*/,
+        0x5FE05AF3107A4000L /*NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MIN_EXPONENT)*/,
+        0x01C0000000000001L /*NativeImpl.fromFixedPoint64(1L, Decimal64Utils.MAX_EXPONENT)*/,
         Decimal64Utils.MIN_VALUE,
         Decimal64Utils.MAX_VALUE,
         Decimal64Utils.MIN_POSITIVE_VALUE,
         Decimal64Utils.MAX_NEGATIVE_VALUE,
-        NativeImpl.fromFixedPoint64(1L, 398),
+        0x1L /*NativeImpl.fromFixedPoint64(1L, 398)*/,
         Decimal64Utils.ONE,
-        NativeImpl.fromFixedPoint64(10000000000000000L, 16),
-        NativeImpl.fromInt64(10000000000000000L),
+        0x2FE38D7EA4C68000L /*NativeImpl.fromFixedPoint64(10000000000000000L, 16)*/,
+        0x31E38D7EA4C68000L /*NativeImpl.fromInt64(10000000000000000L)*/,
         Decimal64Utils.ONE | 0x7000000000000000L,
         Decimal64Utils.negate(Decimal64Utils.ONE | 0x7000000000000000L),
     };
@@ -178,14 +178,14 @@ public class TestUtils {
         return randomNum;
     }
 
-    public static Decimal64 getRandomDecimal(long maxMantissa) {
-        long mantissa = rng.nextLong() % maxMantissa;
+    public static Decimal64 getRandomDecimal(long baseMantissa, long maxMantissa) {
+        long mantissa = baseMantissa + (rng.nextLong() % maxMantissa);
         int exp = (rng.nextInt() & 127) - 64;
         return Decimal64.fromFixedPoint(mantissa, exp);
     }
 
-    public static Decimal64 getRandomDecimal() {
-        return getRandomDecimal(1000000000000000L);
+    public static Decimal64 getRandomDecimal(long maxMantissa) {
+        return getRandomDecimal(0, maxMantissa);
     }
 
     public static void mantissaZerosCombinations(BiConsumer<Long, Integer> func, int n) {
@@ -499,5 +499,9 @@ public class TestUtils {
     public static void checkCases(final TwoArgFn refFn, final TwoArgFn testFn, final long... xy) {
         for (int i = 0; i < xy.length; i += 2)
             checkCase(xy[i], xy[i + 1], refFn, testFn);
+    }
+
+    public static int getUnbiasedExponent(final long value) {
+        return JavaImpl.toParts(value).getUnbiasedExponent();
     }
 }

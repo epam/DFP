@@ -285,50 +285,40 @@ class JavaImpl {
         final long y = Decimal64Utils.fromDouble(x);
         long m, signAndExp;
 
-        NeedCanonize:
-        do {
-            NeedAdjustment:
-            do {
-                // Odd + special encoding(16 digits)
-                final long notY = ~y;
-                if ((MASK_SPECIAL & notY) == 0) {
-                    if ((MASK_INFINITY_AND_NAN & notY) == 0)
-                        return y;
-
-                    m = (y & LARGE_COEFFICIENT_MASK) + LARGE_COEFFICIENT_HIGH_BIT;
-                    signAndExp = ((y << 2) & EXPONENT_MASK_SMALL) + (y & MASK_SIGN);
-                    if ((y & 1) != 0)
-                        break NeedAdjustment;
-                } else {
-
-                    m = y & SMALL_COEFFICIENT_MASK;
-                    // 16 digits + odd
-                    signAndExp = y & (-1L << EXPONENT_SHIFT_SMALL);
-                    if ((y & 1) != 0 && m > MAX_COEFFICIENT / 10 + 1)
-                        break NeedAdjustment;
-                    if (0 == m)
-                        return ZERO;
-                }
-
-                break NeedCanonize;
-            } while (false);
-            // NeedAdjustment
-            // Check the last digit
-            final long m1 = m + 1;
-            m = m1 / 10;
-            if (m1 - m * 10 > 2)
+        // Odd + special encoding(16 digits)
+        final long notY = ~y;
+        if ((MASK_SPECIAL & notY) == 0) {
+            if ((MASK_INFINITY_AND_NAN & notY) == 0)
                 return y;
 
-            signAndExp += 1L << EXPONENT_SHIFT_SMALL;
-            if (Decimal64Utils.toDouble(signAndExp + m) != x)
+            m = (y & LARGE_COEFFICIENT_MASK) + LARGE_COEFFICIENT_HIGH_BIT;
+            signAndExp = ((y << 2) & EXPONENT_MASK_SMALL) + (y & MASK_SIGN);
+        } else {
+            m = y & SMALL_COEFFICIENT_MASK;
+            // 16 digits + odd
+            signAndExp = y & (-1L << EXPONENT_SHIFT_SMALL);
+            if (m <= MAX_COEFFICIENT / 10 + 1)
                 return y;
-        } while (false);
-        // NeedCanonize
+        }
+
+        if ((y & 1) == 0)
+            return y;
+        // NeedAdjustment
+        // Check the last digit
+        final long m1 = m + 1;
+        m = m1 / 10;
+        if (m1 - m * 10 > 2)
+            return y;
+
+        signAndExp += 1L << EXPONENT_SHIFT_SMALL;
+        if (Decimal64Utils.toDouble(signAndExp + m) != x)
+            return y;
+
         for (long n = m; ; ) {
-            final long m1 = n / 10;
-            if (m1 * 10 != n)
+            final long m10 = n / 10;
+            if (m10 * 10 != n)
                 return signAndExp + n;
-            n = m1;
+            n = m10;
             signAndExp += 1L << EXPONENT_SHIFT_SMALL;
         }
     }
