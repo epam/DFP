@@ -43,8 +43,8 @@ jobs:
           name: prepare-version
       - name: build
         run: |
-          sudo apt-get update
-          sudo apt-get install -yqq g++-9-arm-linux-gnueabihf \
+          sudo apt update
+          sudo apt install -yqq g++-9-arm-linux-gnueabihf \
                                 g++-9-aarch64-linux-gnu \
                                 g++-9-i686-linux-gnu \
                                 musl-tools
@@ -118,8 +118,8 @@ jobs:
           name: prepare-version
       - name: build
         run: |
-          sudo apt-get update
-          sudo apt-get install clang make libssl-dev liblzma-dev libxml2-dev fuse
+          sudo apt update
+          sudo apt install clang make libssl-dev liblzma-dev libxml2-dev fuse
           cd ./osxcross/tarballs/
           wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
           cd ..
