@@ -1241,7 +1241,6 @@ public class Decimal64Utils {
      * @param endIndex   Index of character to stop parsing at, non-inclusive.
      * @param outStatus  The parsing output status and value.
      * @return Return {@code true} if value was parsed exactly without rounding.
-     * @throws NumberFormatException if {@code text} does not contain valid dfp value.
      */
     @Decimal
     public static boolean tryParse(final CharSequence text, final int startIndex, final int endIndex,
@@ -2522,6 +2521,21 @@ public class Decimal64Utils {
     public static int compareToChecked(@Decimal final long a, final Object b) {
         checkNull(a);
         return compareTo(a, ((Decimal64) b).value);
+    }
+
+    /**
+     * Implements {@link Decimal64#tryParse(CharSequence, int, int, Decimal64Status)} do not use directly.
+     *
+     * @param text       Textual representation of dfp floating-point value.
+     * @param startIndex Index of character to start parsing at.
+     * @param endIndex   Index of character to stop parsing at, non-inclusive.
+     * @param outStatus  The parsing output status and value.
+     * @return Return {@code true} if value was parsed exactly without rounding.
+     */
+    @Deprecated
+    public static boolean tryParseChecked(final CharSequence text, final int startIndex, final int endIndex,
+                                          final Decimal64Status outStatus) {
+        return tryParse(text, startIndex, endIndex, outStatus);
     }
 
     /// endregion
