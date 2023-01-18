@@ -36,7 +36,7 @@ task testVta(dependsOn: compileJava, type: JavaExec) {
     String vta_path = findDependency(".*value-types.*jar")
     print "VTA path: " + vta_path + "\n"
 
-    String vta_config = "$projectDir/value-types-ihar.json"
+    String vta_config = "$projectDir/value-types.json"
     print "VTA config: " + vta_config + "\n"
 
     jvmArgs += '-javaagent:' + vta_path + '=' + vta_config
