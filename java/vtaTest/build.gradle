@@ -1,0 +1,43 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+
+dependencies {
+    implementation project(':java:dfp')
+    implementation project(':java:dfp-math')
+    implementation 'com.epam.deltix:value-types:0.9.3' // runtimeOnly
+    implementation 'org.ow2.asm:asm:7.2'
+    implementation 'org.ow2.asm:asm-tree:7.2'
+    implementation 'org.ow2.asm:asm-util:7.2'
+    implementation 'org.json:json:20171018'
+}
+
+def findDependency(String name) {
+    String rv = null;
+    sourceSets.main.runtimeClasspath.each {
+        String path = it.getAbsolutePath();
+        if (path.matches(name)) rv = path;
+        //print it.getName() + " " + it.getCanonicalPath() + "\n"
+    }
+
+    return rv
+}
+
+task testVta(dependsOn: compileJava, type: JavaExec) {
+    mainClass = "com.example.demo.DemoApplication"
+    classpath = sourceSets.main.runtimeClasspath
+//    classpath = sourceSets.main.compileClasspath + sourceSets.main.runtimeClasspath
+    workingDir = "$projectDir"
+
+    String vta_path = findDependency(".*value-types.*jar")
+    print "VTA path: " + vta_path + "\n"
+
+    String vta_config = "$projectDir/value-types-ihar.json"
+    print "VTA config: " + vta_config + "\n"
+
+    jvmArgs += '-javaagent:' + vta_path + '=' + vta_config
+}

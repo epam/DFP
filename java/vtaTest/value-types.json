@@ -1,0 +1,33 @@
+{
+    "logEveryClass"         : false,
+    "ignoreByDefault"       : false,
+    "logAllMethods"         : false,
+    "logSuccesses"          : false,
+    "ignoreWarnings"        : [ "newArray" ],
+
+    "autoMethods" : [
+        "Ljava/lang/String; java.lang.Object.toString(LValueType;)",
+        "[LValueType; java/util/Arrays.copyOf([LValueType;I)",
+        "[LValueType; java/util/Arrays.copyOf([LValueType;ILjava/lang/Class;)",
+        "[LValueType; java/util/Arrays.copyOfRange([LValueType;II)",
+        "Z java/util/Arrays.equals([LValueType;[LValueType;)",
+        "V deltix/util/collections/SafeArrays.safeArrayCopy([LValueType;I[LValueType;II)",
+        "J deltix/util/memory/EstimatorUtils.getSizeInMemory([LValueType;)"
+    ],
+
+    "mappings" :
+    [
+        {
+            "name"          : "com/epam/deltix/dfp/Decimal64",
+            "implementation": "com/epam/deltix/dfp/Decimal64Utils",
+            "box"           : "com/epam/deltix/dfp/Decimal64 com/epam/deltix/dfp/Decimal64.fromUnderlying(J)",
+            "unbox"         : "J com/epam/deltix/dfp/Decimal64.toUnderlying(Lcom/epam/deltix/dfp/Decimal64;)",
+
+            "boxArray"      : "[Lcom/epam/deltix/dfp/Decimal64; com/epam/deltix/dfp/Decimal64Utils.fromUnderlyingLongArray([J)",
+            "unboxArray"    : "[J com/epam/deltix/dfp/Decimal64Utils.toUnderlyingLongArray([Lcom/epam/deltix/dfp/Decimal64;)",
+
+            "methodSuffix"  : "Checked",
+            "staticMethodSuffix"  : ""
+        }
+    ]
+}
