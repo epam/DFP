@@ -314,26 +314,51 @@ namespace EPAM.Deltix.DFP
 
 		#region Classification
 
+		/// <summary>
+		/// Returns <code>true</code> if the supplied <code>DFP</code> value equals dedicated <code>NULL</code> constant
+		/// (in the range of the NaN values) that imply null reference of type <see cref="Decimal64"/>.
+		/// </summary>
+		/// <returns><code>true</code> for dedicated <code>NULL</code> constant</returns>
 		public Boolean IsNull()
 		{
 			return DotNetImpl.IsNull(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is Not-a-Number.
+		/// If you need check for all abnormal values use negation of the <see cref="IsFinite"/> function.
+		/// </summary>
+		/// <returns><code>true</code> for Not-a-Number values.</returns>
 		public Boolean IsNaN()
 		{
 			return DotNetImpl.IsNaN(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is positive or negative infinity.
+		/// If you need check for all abnormal values use negation of the <see cref="IsFinite"/> function.
+		/// </summary>
+		/// <returns><code>true</code> for positive or negative infinity.</returns>
 		public Boolean IsInfinity()
 		{
 			return DotNetImpl.IsInfinity(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is positive infinity.
+		/// If you need check for all abnormal values use negation of the <see cref="IsFinite"/> function.
+		/// </summary>
+		/// <returns><code>true</code> for positive infinity.</returns>
 		public Boolean IsPositiveInfinity()
 		{
 			return DotNetImpl.IsPositiveInfinity(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is negative infinity.
+		/// If you need check for all abnormal values use negation of the <see cref="IsFinite"/> function.
+		/// </summary>
+		/// <returns><code>true</code> for negative infinity.</returns>
 		public Boolean IsNegativeInfinity()
 		{
 			return DotNetImpl.IsNegativeInfinity(Bits);
@@ -345,6 +370,10 @@ namespace EPAM.Deltix.DFP
 			return DotNetImpl.SignBit(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is a finite value: not a NaN, not a positive infinity, not a negative infinity.
+		/// </summary>
+		/// <returns><code>true</code> for finite values.</returns>
 		public Boolean IsFinite()
 		{
 			return DotNetImpl.IsFinite(Bits);
@@ -426,31 +455,59 @@ namespace EPAM.Deltix.DFP
 			return NativeImpl.isLessOrEqual(a.Bits, b.Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is zero.
+		/// </summary>
+		/// <returns><code>true</code> for zero.</returns>
 		public Boolean IsZero()
 		{
 			return DotNetImpl.IsZero(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is not a zero or abnormal: NaN or positive infinity or negative infinity.
+		/// </summary>
+		/// <returns><code>true</code> for not a zero or abnormal.</returns>
 		public Boolean IsNonZero()
 		{
 			return !DotNetImpl.IsZero(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is greater than zero.
+		/// If you need check for values greater or equal to zero use <see cref="IsNonNegative"/> function.
+		/// </summary>
+		/// <returns><code>true</code> for values greater than zero.</returns>
 		public Boolean IsPositive()
 		{
 			return DotNetImpl.IsPositive(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is less than zero.
+		/// If you need check for values less or equal to zero use <see cref="IsNonPositive"/> function.
+		/// </summary>
+		/// <returns><code>true</code> for values less than zero.</returns>
 		public Boolean IsNegative()
 		{
 			return DotNetImpl.IsNegative(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is less or equal to zero.
+		/// If you need check for values strictly less than zero use <see cref="IsNegative"/> function.
+		/// </summary>
+		/// <returns><code>true</code> for values less or equal to zero.</returns>
 		public Boolean IsNonPositive()
 		{
 			return DotNetImpl.IsNonPositive(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is greater or equal to zero.
+		/// If you need check for values strictly greater than zero use <see cref="IsPositive"/> function.
+		/// </summary>
+		/// <returns><code>true</code> for values greater or equal to zero.</returns>
 		public Boolean IsNonNegative()
 		{
 			return DotNetImpl.IsNonNegative(Bits);

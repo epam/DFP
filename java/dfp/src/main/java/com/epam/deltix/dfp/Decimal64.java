@@ -282,45 +282,49 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     /// region Classification
 
     /**
-     * Check, if this {@code Decimal64} instance holds a Not-a-Number value.
+     * Checks is the {@code DFP} value is Not-a-Number.
+     * If you need check for all abnormal values use negation of the {@link #isFinite()} function.
      *
-     * @return {@code true}, if the value is NaN
+     * @return {@code true} for Not-a-Number values.
      */
     public boolean isNaN() {
         return Decimal64Utils.isNaN(value);
     }
 
     /**
-     * Check, if this {@code Decimal64} instance holds is a positive or negative infinity.
+     * Checks is the {@code DFP} value is positive or negative infinity.
+     * If you need check for all abnormal values use negation of the {@link #isFinite()} function.
      *
-     * @return {@code true}, if the value is an infinity
+     * @return {@code true} for positive or negative infinity.
      */
     public boolean isInfinity() {
         return Decimal64Utils.isInfinity(value);
     }
 
     /**
-     * Check, if this {@code Decimal64} instance holds a Positive Infinity value.
+     * Checks is the {@code DFP} value is positive infinity.
+     * If you need check for all abnormal values use negation of the {@link #isFinite()} function.
      *
-     * @return {@code true}, if Positive Infinity
+     * @return {@code true} for positive infinity.
      */
     public boolean isPositiveInfinity() {
         return Decimal64Utils.isPositiveInfinity(value);
     }
 
     /**
-     * Check, if this {@code Decimal64} instance holds a Negative Infinity value.
+     * Checks is the {@code DFP} value is negative infinity.
+     * If you need check for all abnormal values use negation of the {@link #isFinite()} function.
      *
-     * @return {@code true}, if Negative Infinity
+     * @return {@code true} for negative infinity.
      */
     public boolean isNegativeInfinity() {
         return Decimal64Utils.isNegativeInfinity(value);
     }
 
     /**
-     * Check, if this {@code Decimal64} instance holds a finite value(Not infinity or NaN).
+     * Checks is the {@code DFP} value is a finite value: not a NaN, not a positive infinity, not a negative infinity.
      *
-     * @return {@code true}, if finite. {@code false} if Infinity or NaN.
+     * @return {@code true} for finite values.
      */
     public boolean isFinite() {
         return Decimal64Utils.isFinite(value);
@@ -359,12 +363,11 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     }
 
     /**
-     * Returns {@code true} if the value equals to null reference of type {@link Decimal64}
-     * or corresponds special {@code NULL} constant.
+     * Returns {@code true} if the value equals to null reference of type {@link Decimal64} or equals
+     * dedicated {@code NULL} constant (in the range of the NaN values) that imply null reference of type {@link Decimal64}.
      *
      * @param value the DFP value being checked
-     * @return {@code true}, if {@code NULL}
-     * {@code false} otherwise
+     * @return {@code true} for null reference or dedicated {@code NULL} constant
      */
     public static boolean isNull(final Decimal64 value) {
         return value == NULL || Decimal64Utils.isNull(value.value);
@@ -511,26 +514,60 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return Decimal64Utils.isGreaterOrEqual(value, other.value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is zero.
+     *
+     * @return {@code true} for zero.
+     */
     public boolean isZero() {
         return Decimal64Utils.isZero(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is not a zero or abnormal: NaN or positive infinity or negative infinity.
+     *
+     * @return {@code true} for not a zero or abnormal.
+     */
     public boolean isNonZero() {
         return Decimal64Utils.isNonZero(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is greater than zero.
+     * If you need check for values greater or equal to zero use {@link #isNonNegative()} function.
+     *
+     * @return {@code true} for values greater than zero.
+     */
     public boolean isPositive() {
         return Decimal64Utils.isPositive(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is less than zero.
+     * If you need check for values less or equal to zero use {@link #isNonPositive()} function.
+     *
+     * @return {@code true} for values less than zero.
+     */
     public boolean isNegative() {
         return Decimal64Utils.isNegative(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is less or equal to zero.
+     * If you need check for values strictly less than zero use {@link #isNegative()} function.
+     *
+     * @return {@code true} for values less or equal to zero.
+     */
     public boolean isNonPositive() {
         return Decimal64Utils.isNonPositive(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is greater or equal to zero.
+     * If you need check for values strictly greater than zero use {@link #isPositive()} function.
+     *
+     * @return {@code true} for values greater or equal to zero.
+     */
     public boolean isNonNegative() {
         return Decimal64Utils.isNonNegative(value);
     }

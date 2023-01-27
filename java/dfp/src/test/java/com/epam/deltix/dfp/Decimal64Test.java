@@ -286,5 +286,4 @@ public class Decimal64Test {
         Assert.assertEquals("1000000", Decimal64.toString(Decimal64.MILLION));
         Assert.assertEquals("0.01", Decimal64.toString(Decimal64.ONE_HUNDREDTH));
     }
-
 }

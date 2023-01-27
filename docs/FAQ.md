@@ -25,4 +25,22 @@ So, key points:
 The *Checked functions in Java are not intended to be used directly.
 These special functions are required just for ValueTypeAgent support.
 
+## How to quickly check a sign?
+There are many `is*` functions in the DFP library for the fast sign check.
+The output values of these functions are presented in the next table.
+
+| Function | -Infinity | -1 | 0 | 1 | Infinity | NaN |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| isPositive | false | false | false | **TRUE** | **TRUE** | false |
+| isNonNegative | false | false | **TRUE** | **TRUE** | **TRUE** | false |
+| isNegative | **TRUE** | **TRUE** | false | false | false | false |
+| isNonPositive | **TRUE** | **TRUE** | **TRUE** | false | false | false |
+| isInfinity | **TRUE** | false | false | false | **TRUE** | false |
+| isPositiveInfinity | false | false | false | false | **TRUE** | false |
+| isNegativeInfinity | **TRUE** | false | false | false | false | false |
+| isNaN | false | false | false | false | false | **TRUE** |
+| isFinite | false | **TRUE** | **TRUE** | **TRUE** | false | false |
+| isNonFinite | **TRUE** | false | false | false | **TRUE** | **TRUE** |
+| isZero | false | false | **TRUE** | false | false | false |
+| isNonZero | **TRUE** | **TRUE** | false | **TRUE** | **TRUE** | **TRUE** |
 
