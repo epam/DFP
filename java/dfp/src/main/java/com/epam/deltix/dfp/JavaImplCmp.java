@@ -376,10 +376,10 @@ class JavaImplCmp {
         // it is clear what needs to be done
         final long sig_x_unsigned = sig_x + Long.MIN_VALUE;
         final long sig_y_unsigned = sig_y + Long.MIN_VALUE;
-        if (sig_x_unsigned > sig_y_unsigned && exp_x > exp_y) {
+        if (sig_x_unsigned > sig_y_unsigned && exp_x >= exp_y) {
             return (!x_mask_sign);
         }
-        if (sig_x_unsigned < sig_y_unsigned && exp_x < exp_y) {
+        if (sig_x_unsigned < sig_y_unsigned && exp_x <= exp_y) {
             return (x_mask_sign);
         }
         // if exp_x is 15 greater than exp_y, no need for compensation
