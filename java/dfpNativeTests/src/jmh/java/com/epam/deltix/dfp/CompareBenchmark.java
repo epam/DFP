@@ -19,8 +19,21 @@ public class CompareBenchmark {
     public void setUp() {
         TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator(fixedSeed);
         decimalValues = new long[1001];
-        for (int i = 0; i < decimalValues.length; ++i)
-            decimalValues[i] = generator.nextX();
+
+        long lastValue = generator.nextX();
+        int lastCmp = 1;
+        for (int i = 0; i < decimalValues.length; ++i) {
+            long nextValue;
+            int lastVsNext;
+            do {
+                nextValue = generator.nextX();
+                lastVsNext = Decimal64Utils.compareTo(lastValue, nextValue);
+            } while (lastVsNext == 0 || lastCmp == lastVsNext);
+
+            decimalValues[i] = nextValue;
+            lastValue = nextValue;
+            lastCmp = lastVsNext;
+        }
     }
 
     @Benchmark
