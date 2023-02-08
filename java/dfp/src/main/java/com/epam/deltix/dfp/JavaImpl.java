@@ -250,7 +250,7 @@ class JavaImpl {
                 parts.exponent = 0;
 
                 parts.coefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-                if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+                if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
                     parts.coefficient = value & ~MASK_COEFFICIENT;
                 if (isInfinity(value))
                     parts.coefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -353,7 +353,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -479,7 +479,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -627,7 +627,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -719,7 +719,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -868,7 +868,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -1016,7 +1016,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -1166,7 +1166,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -2234,7 +2234,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -2355,7 +2355,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -2431,7 +2431,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -3235,7 +3235,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
