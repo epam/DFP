@@ -80,7 +80,7 @@ class JavaImplAdd {
                 // coefficient
                 long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                 // check for non-canonical values
-                if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                if (coeff >= 10000000000000000L)
                     coeff = 0;
                 p.coefficient = coeff;
                 // get exponent
@@ -177,7 +177,7 @@ class JavaImplAdd {
                     valid_x = 0;    // NaN or Infinity
                 } else {
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -215,7 +215,7 @@ class JavaImplAdd {
                     valid_y = 0;    // NaN or Infinity
                 } else {
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_y = coeff;
                     // get exponent
