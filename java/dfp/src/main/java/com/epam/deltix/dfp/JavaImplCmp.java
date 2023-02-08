@@ -1063,7 +1063,7 @@ class JavaImplCmp {
             // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1]
             // => sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
             // if(sig_x > 9999999999999999ull) {return 1;}
-            return UnsignedLong.isGreater(((x & MASK_BINARY_SIG2) | MASK_BINARY_OR2), 9999999999999999L);
+            return ((x & MASK_BINARY_SIG2) | MASK_BINARY_OR2) > 9999999999999999L;
         } else {
             return (x & MASK_BINARY_SIG1) == 0;
         }

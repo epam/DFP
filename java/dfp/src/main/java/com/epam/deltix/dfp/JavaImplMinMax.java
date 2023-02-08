@@ -31,7 +31,7 @@ class JavaImplMinMax {
             // check for non-canonical values - treated as zero
             if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
                 // if the steering bits are 11, then the exponent is G[0:w+1]
-                if (UnsignedLong.isGreater(((x & MASK_BINARY_SIG2) | MASK_BINARY_OR2), 9999999999999999L)) {
+                if (((x & MASK_BINARY_SIG2) | MASK_BINARY_OR2) > 9999999999999999L) {
                     // non-canonical
                     x = (x & MASK_SIGN) | ((x & MASK_BINARY_EXPONENT2) << 2);
                 }    // else canonical
@@ -45,7 +45,7 @@ class JavaImplMinMax {
             // check for non-canonical values - treated as zero
             if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
                 // if the steering bits are 11, then the exponent is G[0:w+1]
-                if (UnsignedLong.isGreater(((y & MASK_BINARY_SIG2) | MASK_BINARY_OR2), 9999999999999999L)) {
+                if (((y & MASK_BINARY_SIG2) | MASK_BINARY_OR2) > 9999999999999999L) {
                     // non-canonical
                     y = (y & MASK_SIGN) | ((y & MASK_BINARY_EXPONENT2) << 2);
                 }    // else canonical
@@ -226,7 +226,7 @@ class JavaImplMinMax {
             // check for non-canonical values - treated as zero
             if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
                 // if the steering bits are 11, then the exponent is G[0:w+1]
-                if (UnsignedLong.isGreater(((x & MASK_BINARY_SIG2) | MASK_BINARY_OR2), 9999999999999999L)) {
+                if (((x & MASK_BINARY_SIG2) | MASK_BINARY_OR2) > 9999999999999999L) {
                     // non-canonical
                     x = (x & MASK_SIGN) | ((x & MASK_BINARY_EXPONENT2) << 2);
                 }    // else canonical
@@ -240,7 +240,7 @@ class JavaImplMinMax {
             // check for non-canonical values - treated as zero
             if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
                 // if the steering bits are 11, then the exponent is G[0:w+1]
-                if (UnsignedLong.isGreater(((y & MASK_BINARY_SIG2) | MASK_BINARY_OR2), 9999999999999999L)) {
+                if (((y & MASK_BINARY_SIG2) | MASK_BINARY_OR2) > 9999999999999999L) {
                     // non-canonical
                     y = (y & MASK_SIGN) | ((y & MASK_BINARY_EXPONENT2) << 2);
                 }    // else canonical
