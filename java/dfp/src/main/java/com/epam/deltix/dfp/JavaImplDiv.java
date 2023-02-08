@@ -669,7 +669,7 @@ class JavaImplDiv {
                     // coefficient
                     long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((coeff >= 10000000000000000L))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent

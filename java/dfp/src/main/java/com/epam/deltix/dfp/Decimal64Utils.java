@@ -1131,7 +1131,7 @@ public class Decimal64Utils {
                 return abnormalReturn;    // NaN or Infinity
             } else {
                 long coeff = (value & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
-                if (UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L))
+                if (coeff >= 10000000000000000L)
                     coeff = 0;
                 return sign ? -coeff : coeff;
             }
