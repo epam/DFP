@@ -47,7 +47,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -550,7 +550,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -696,7 +696,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -845,7 +845,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -993,7 +993,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -1129,7 +1129,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
