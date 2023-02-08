@@ -25,7 +25,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -528,7 +528,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -674,7 +674,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -823,7 +823,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -971,7 +971,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -1107,7 +1107,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12

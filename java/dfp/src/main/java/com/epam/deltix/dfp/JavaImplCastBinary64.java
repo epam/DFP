@@ -448,7 +448,7 @@ class JavaImplCastBinary64 {
                         return return_binary64_inf(s);
 //                    if ((x & (1L << 57)) != 0)
 //                        __set_status_flags(pfpsf, BID_INVALID_EXCEPTION);
-                    return return_binary64_nan(s, (UnsignedLong.isGreater(x & 0x3FFFFFFFFFFFFL, 999999999999999L) ? 0 : (x << 14)), 0L);
+                    return return_binary64_nan(s, (x & 0x0003ffffffffffffL) >= 1000000000000000L ? 0 : (x << 14), 0L);
                 }
                 e = (int) (((x >>> 51) & ((1L << 10) - 1)) - 398);
                 c_w1 = (1L << 53) + (x & ((1L << 51) - 1));

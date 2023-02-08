@@ -35,7 +35,7 @@ class JavaImplEtc {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
@@ -114,7 +114,7 @@ class JavaImplEtc {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -241,7 +241,7 @@ class JavaImplEtc {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
