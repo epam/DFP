@@ -36,7 +36,7 @@ class JavaImplCast {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             x_exp = (x & MASK_BINARY_EXPONENT2) >>> 51;    // biased
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 x_exp = 0;
                 C1 = 0;
             }

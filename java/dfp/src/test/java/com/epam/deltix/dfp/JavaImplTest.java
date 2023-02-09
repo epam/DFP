@@ -15,6 +15,8 @@ import java.security.SecureRandom;
 import java.util.Random;
 
 import static com.epam.deltix.dfp.JavaImpl.*;
+import static com.epam.deltix.dfp.JavaImplCmp.MASK_BINARY_SIG2;
+import static com.epam.deltix.dfp.JavaImplCmp.MASK_BINARY_OR2;
 import static com.epam.deltix.dfp.TestUtils.*;
 import static com.epam.deltix.dfp.TestUtils.POWERS_OF_TEN;
 import static org.junit.Assert.*;
@@ -885,5 +887,15 @@ public class JavaImplTest {
         final int r = Decimal64.ONE.divide(multiple).toInt();
 
         return Decimal64.ONE.divideByInteger(r).equals(multiple) ? r : -1;
+    }
+
+    @Test
+    public void unsignedReplacementTest() {
+        assertEquals(0x0003ffffffffffffL >= 1000000000000000L, UnsignedLong.isGreaterOrEqual(0x0003ffffffffffffL, 1000000000000000L));
+        assertEquals(0x0003ffffffffffffL < Long.MAX_VALUE, UnsignedLong.isLess(0x0003ffffffffffffL, Long.MAX_VALUE));
+
+        final long sig_x = (-1 & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
+        assertEquals(sig_x > 9999999999999999L, UnsignedLong.isGreater(sig_x, 9999999999999999L));
+        assertEquals(sig_x < Long.MAX_VALUE, UnsignedLong.isLess(sig_x, Long.MAX_VALUE));
     }
 }

@@ -66,7 +66,7 @@ class JavaImplCmp {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);
             sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_x = UnsignedLong.isGreater(sig_x, 9999999999999999L);
+            non_canon_x = sig_x > 9999999999999999L;
         } else {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT1) >>> 53);
             sig_x = (x & MASK_BINARY_SIG1);
@@ -76,7 +76,7 @@ class JavaImplCmp {
         if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT2) >>> 51);
             sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_y = UnsignedLong.isGreater(sig_y, 9999999999999999L);
+            non_canon_y = sig_y > 9999999999999999L;
         } else {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT1) >>> 53);
             sig_y = (y & MASK_BINARY_SIG1);
@@ -222,7 +222,7 @@ class JavaImplCmp {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);
             sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_x = UnsignedLong.isGreater(sig_x, 9999999999999999L);
+            non_canon_x = sig_x > 9999999999999999L;
         } else {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT1) >>> 53);
             sig_x = (x & MASK_BINARY_SIG1);
@@ -232,7 +232,7 @@ class JavaImplCmp {
         if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT2) >>> 51);
             sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_y = UnsignedLong.isGreater(sig_y, 9999999999999999L);
+            non_canon_y = sig_y > 9999999999999999L;
         } else {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT1) >>> 53);
             sig_y = (y & MASK_BINARY_SIG1);
@@ -328,7 +328,7 @@ class JavaImplCmp {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);
             sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_x = UnsignedLong.isGreater(sig_x, 9999999999999999L);
+            non_canon_x = sig_x > 9999999999999999L;
         } else {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT1) >>> 53);
             sig_x = (x & MASK_BINARY_SIG1);
@@ -338,7 +338,7 @@ class JavaImplCmp {
         if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT2) >>> 51);
             sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_y = UnsignedLong.isGreater(sig_y, 9999999999999999L);
+            non_canon_y = sig_y > 9999999999999999L;
         } else {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT1) >>> 53);
             sig_y = (y & MASK_BINARY_SIG1);
@@ -491,7 +491,7 @@ class JavaImplCmp {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);
             sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_x = UnsignedLong.isGreater(sig_x, 9999999999999999L);
+            non_canon_x = sig_x > 9999999999999999L;
         } else {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT1) >>> 53);
             sig_x = (x & MASK_BINARY_SIG1);
@@ -501,7 +501,7 @@ class JavaImplCmp {
         if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT2) >>> 51);
             sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_y = UnsignedLong.isGreater(sig_y, 9999999999999999L);
+            non_canon_y = sig_y > 9999999999999999L;
         } else {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT1) >>> 53);
             sig_y = (y & MASK_BINARY_SIG1);
@@ -658,7 +658,7 @@ class JavaImplCmp {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);
             sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_x = UnsignedLong.isGreater(sig_x, 9999999999999999L);
+            non_canon_x = sig_x > 9999999999999999L;
         } else {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT1) >>> 53);
             sig_x = (x & MASK_BINARY_SIG1);
@@ -668,7 +668,7 @@ class JavaImplCmp {
         if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT2) >>> 51);
             sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_y = UnsignedLong.isGreater(sig_y, 9999999999999999L);
+            non_canon_y = sig_y > 9999999999999999L;
         } else {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT1) >>> 53);
             sig_y = (y & MASK_BINARY_SIG1);
@@ -826,7 +826,7 @@ class JavaImplCmp {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);
             sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_x = UnsignedLong.isGreater(sig_x, 9999999999999999L);
+            non_canon_x = sig_x > 9999999999999999L;
         } else {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT1) >>> 53);
             sig_x = (x & MASK_BINARY_SIG1);
@@ -836,7 +836,7 @@ class JavaImplCmp {
         if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT2) >>> 51);
             sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_y = UnsignedLong.isGreater(sig_y, 9999999999999999L);
+            non_canon_y = sig_y > 9999999999999999L;
         } else {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT1) >>> 53);
             sig_y = (y & MASK_BINARY_SIG1);
@@ -981,7 +981,7 @@ class JavaImplCmp {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);
             sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_x = UnsignedLong.isGreater(sig_x, 9999999999999999L);
+            non_canon_x = sig_x > 9999999999999999L;
         } else {
             exp_x = (int) ((x & MASK_BINARY_EXPONENT1) >>> 53);
             sig_x = (x & MASK_BINARY_SIG1);
@@ -992,7 +992,7 @@ class JavaImplCmp {
         if ((y & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT2) >>> 51);
             sig_y = (y & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            non_canon_y = UnsignedLong.isGreater(sig_y, 9999999999999999L);
+            non_canon_y = sig_y > 9999999999999999L;
         } else {
             exp_y = (int) ((y & MASK_BINARY_EXPONENT1) >>> 53);
             sig_y = (y & MASK_BINARY_SIG1);
@@ -1063,7 +1063,7 @@ class JavaImplCmp {
             // if steering bits are 11 (condition will be 0), then exponent is G[0:w+1]
             // => sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
             // if(sig_x > 9999999999999999ull) {return 1;}
-            return UnsignedLong.isGreater(((x & MASK_BINARY_SIG2) | MASK_BINARY_OR2), 9999999999999999L);
+            return ((x & MASK_BINARY_SIG2) | MASK_BINARY_OR2) > 9999999999999999L;
         } else {
             return (x & MASK_BINARY_SIG1) == 0;
         }
@@ -1081,7 +1081,7 @@ class JavaImplCmp {
             if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
                 sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
                 // check for zero or non-canonical
-                if (UnsignedLong.isGreater(sig_x, 9999999999999999L) || sig_x == 0) {
+                if (sig_x > 9999999999999999L || sig_x == 0) {
                     return false;    // zero or non-canonical
                 }
                 exp_x = (int) ((x & MASK_BINARY_EXPONENT2) >>> 51);

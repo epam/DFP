@@ -35,7 +35,7 @@ class JavaImplEtc {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
@@ -44,7 +44,7 @@ class JavaImplEtc {
                     // coefficient
                     long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -114,7 +114,7 @@ class JavaImplEtc {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -141,7 +141,7 @@ class JavaImplEtc {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             x_exp = (x & MASK_BINARY_EXPONENT2) >>> 51;    // biased
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 x_exp = 0;
                 C1 = 0;
             }
@@ -241,7 +241,7 @@ class JavaImplEtc {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -268,7 +268,7 @@ class JavaImplEtc {
         if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {
             x_exp = (x & MASK_BINARY_EXPONENT2) >>> 51;    // biased
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 x_exp = 0;
                 C1 = 0;
             }

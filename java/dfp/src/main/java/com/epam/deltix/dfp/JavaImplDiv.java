@@ -90,7 +90,7 @@ class JavaImplDiv {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
@@ -99,7 +99,7 @@ class JavaImplDiv {
                     // coefficient
                     long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -131,7 +131,7 @@ class JavaImplDiv {
                 if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_y = 0;
                     coefficient_y = y & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((y & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_y = y & 0xfe00000000000000L;
                     if ((y & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_y = y & SINFINITY_MASK64;
@@ -140,7 +140,7 @@ class JavaImplDiv {
                     // coefficient
                     long coeff = (y & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_y = coeff;
                     // get exponent
@@ -660,7 +660,7 @@ class JavaImplDiv {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
@@ -669,7 +669,7 @@ class JavaImplDiv {
                     // coefficient
                     long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent

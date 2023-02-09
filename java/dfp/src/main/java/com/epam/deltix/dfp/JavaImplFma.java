@@ -72,14 +72,14 @@ class JavaImplFma {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
                     valid_x = 0;    // NaN or Infinity
                 } else {
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -110,7 +110,7 @@ class JavaImplFma {
                 if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_y = 0;
                     coefficient_y = y & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((y & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_y = y & 0xfe00000000000000L;
                     if ((y & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_y = y & SINFINITY_MASK64;
@@ -148,7 +148,7 @@ class JavaImplFma {
                 if ((z & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_z = 0;
                     coefficient_z = z & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(z & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((z & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_z = z & 0xfe00000000000000L;
                     if ((z & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_z = z & SINFINITY_MASK64;
@@ -173,7 +173,7 @@ class JavaImplFma {
                 // if x = {0, f, inf, NaN}, y = NaN, z = {0, f, inf, NaN} then res = Q (y)
                 // check first for non-canonical NaN payload
                 y = y & 0xfe03ffffffffffffL;    // clear G6-G12
-                if (UnsignedLong.isGreater(y & 0x0003ffffffffffffL, 999999999999999L)) {
+                if ((y & 0x0003ffffffffffffL) >= 1000000000000000L) {
                     y = y & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
                 }
                 if ((y & MASK_SNAN) == MASK_SNAN) {    // y is SNAN
@@ -195,7 +195,7 @@ class JavaImplFma {
                 // if x = {0, f, inf, NaN}, y = {0, f, inf}, z = NaN then res = Q (z)
                 // check first for non-canonical NaN payload
                 z = z & 0xfe03ffffffffffffL;    // clear G6-G12
-                if (UnsignedLong.isGreater(z & 0x0003ffffffffffffL, 999999999999999L)) {
+                if ((z & 0x0003ffffffffffffL) >= 1000000000000000L) {
                     z = z & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
                 }
                 if ((z & MASK_SNAN) == MASK_SNAN) {    // z is SNAN
@@ -217,7 +217,7 @@ class JavaImplFma {
                 // if x = NaN, y = {0, f, inf}, z = {0, f, inf} then res = Q (x)
                 // check first for non-canonical NaN payload
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
-                if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L)) {
+                if ((x & 0x0003ffffffffffffL) >= 1000000000000000L) {
                     x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
                 }
                 if ((x & MASK_SNAN) == MASK_SNAN) {    // x is SNAN
