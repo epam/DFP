@@ -117,7 +117,7 @@ class JavaImplFma {
                     valid_y = 0;    // NaN or Infinity
                 } else {
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_y = coeff;
                     // get exponent
@@ -155,7 +155,7 @@ class JavaImplFma {
                     valid_z = 0;    // NaN or Infinity
                 } else {
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_z = coeff;
                     // get exponent
