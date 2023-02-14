@@ -44,3 +44,14 @@ The output values of these functions are presented in the next table.
 | isZero | false | false | **TRUE** | false | false | false |
 | isNonZero | **TRUE** | **TRUE** | false | **TRUE** | **TRUE** | **TRUE** |
 
+# Do we have a method of parsing value like "1.703E-5"?
+
+All the parse() and tryParse() methods supports this scientific notation.
+Use the method you like best
+
+```
+Decimal64Utils.parse() or Decimal64Utils.tryParse()
+Decimal64.parse() or Decimal64.tryParse()
+```
+
+
