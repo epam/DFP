@@ -161,15 +161,35 @@ class JavaImpl {
         if (coefficient == 0)
             return ZERO;
 
-        long div10 = coefficient / 10;
-        if (div10 * 10 != coefficient)
-            return value;
-
-        do {
-            coefficient = div10;
-            div10 /= 10;
-            ++exponent;
-        } while (div10 * 10 == coefficient);
+        if ((int) coefficient == coefficient) {
+            long p = coefficient * 3435973837L;
+            if ((p & 0x780000000L) != 0)
+                return value;
+            do {
+                coefficient = p >> 35;
+                p = coefficient * 3435973837L;
+                ++exponent;
+            } while ((p & 0x780000000L) == 0);
+        } else {
+            long div10 = coefficient / 10;
+            if (div10 * 10 != coefficient)
+                return value;
+            do {
+                if ((int) div10 == div10) {
+                    long p;
+                    do {
+                        coefficient = div10;
+                        p = coefficient * 3435973837L;
+                        div10 = p >> 35;
+                        ++exponent;
+                    } while ((p & 0x780000000L) == 0);
+                    break;
+                }
+                coefficient = div10;
+                div10 /= 10;
+                ++exponent;
+            } while (div10 * 10 == coefficient);
+        }
         return pack(signMask, exponent, coefficient, BID_ROUNDING_TO_NEAREST);
     }
 
