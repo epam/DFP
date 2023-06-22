@@ -341,6 +341,17 @@ class JavaImpl {
             return y;
 
         for (long n = m; ; ) {
+            if ((int) n == n) {
+                long p;
+                while (true) {
+                    p = n * FAST_DIV10_RECIPROCAL;
+                    final long m10 = n >> FAST_DIV10_SHIFT;
+                    if ((p & FAST_DIV10_MUL10_MASK) != 0)
+                        return signAndExp + n;
+                    n = m10;
+                    signAndExp += 1L << EXPONENT_SHIFT_SMALL;
+                }
+            }
             final long m10 = n / 10;
             if (m10 * 10 != n)
                 return signAndExp + n;
