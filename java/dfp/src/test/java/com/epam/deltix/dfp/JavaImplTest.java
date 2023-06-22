@@ -898,4 +898,17 @@ public class JavaImplTest {
         assertEquals(sig_x > 9999999999999999L, UnsignedLong.isGreater(sig_x, 9999999999999999L));
         assertEquals(sig_x < Long.MAX_VALUE, UnsignedLong.isLess(sig_x, Long.MAX_VALUE));
     }
+
+    @Test
+    public void div10Test() {
+        final long coefficient = Long.MAX_VALUE / FAST_DIV10_RECIPROCAL; // Critical point
+        assertTrue(coefficient > Integer.MAX_VALUE);
+
+        final long r = coefficient / 10;
+
+        long p = coefficient * FAST_DIV10_RECIPROCAL;
+        final long coefficient10 = p >> FAST_DIV10_SHIFT;
+
+        assertEquals(r, coefficient10);
+    }
 }
