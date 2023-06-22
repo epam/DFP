@@ -29,6 +29,12 @@ class JavaImpl {
     public static final int MIN_EXPONENT = -383;
     public static final int MAX_EXPONENT = 384;
 
+    // See the https://www.agner.org/optimize/optimizing_assembly.pdf part 16.8 Division (all processors)
+    public static final long FAST_DIV10_RECIPROCAL = 0xCCCCCCCDL; // (2^FAST_DIV10_SHIFT) / 10
+    public static final int FAST_DIV10_SHIFT = 35;
+    public static final long FAST_DIV10_MUL10_MASK = 0x780000000L; // Highest nibble shifted out by FAST_DIV10_SHIFT
+    // (((1L << FAST_DIV10_SHIFT) - 1) >> (FAST_DIV10_SHIFT - 4)) << (FAST_DIV10_SHIFT - 4)
+
     public static long fromInt32(final int value) {
         final long longValue = value; // Fixes -Integer.MIN_VALUE
         return value >= 0 ? (0x31C00000L << 32) | longValue : (0xB1C00000L << 32) | -longValue;
@@ -162,14 +168,14 @@ class JavaImpl {
             return ZERO;
 
         if ((int) coefficient == coefficient) {
-            long p = coefficient * 3435973837L;
-            if ((p & 0x780000000L) != 0)
+            long p = coefficient * FAST_DIV10_RECIPROCAL;
+            if ((p & FAST_DIV10_MUL10_MASK) != 0)
                 return value;
             do {
-                coefficient = p >> 35;
-                p = coefficient * 3435973837L;
+                coefficient = p >> FAST_DIV10_SHIFT;
+                p = coefficient * FAST_DIV10_RECIPROCAL;
                 ++exponent;
-            } while ((p & 0x780000000L) == 0);
+            } while ((p & FAST_DIV10_MUL10_MASK) == 0);
         } else {
             long div10 = coefficient / 10;
             if (div10 * 10 != coefficient)
@@ -179,10 +185,10 @@ class JavaImpl {
                     long p;
                     do {
                         coefficient = div10;
-                        p = coefficient * 3435973837L;
-                        div10 = p >> 35;
+                        p = coefficient * FAST_DIV10_RECIPROCAL;
+                        div10 = p >> FAST_DIV10_SHIFT;
                         ++exponent;
-                    } while ((p & 0x780000000L) == 0);
+                    } while ((p & FAST_DIV10_MUL10_MASK) == 0);
                     break;
                 }
                 coefficient = div10;
