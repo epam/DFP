@@ -9,6 +9,9 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
 
+import static com.epam.deltix.dfp.JavaImpl.*;
+import static com.epam.deltix.dfp.JavaImpl.EXPONENT_SHIFT_SMALL;
+
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Warmup(time = 3, iterations = 1)
@@ -16,14 +19,18 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Thread)
 public class MathBenchmark {
     private long[] decimalValues;
+    private double[] doubleValues;
     public static int fixedSeed = 42 * 42 * 42 * 42 * 42;
 
     @Setup
     public void setUp() {
         TestUtils.RandomDecimalsGenerator generator = new TestUtils.RandomDecimalsGenerator(fixedSeed);
         decimalValues = new long[1004];
-        for (int i = 0; i < decimalValues.length; ++i)
+        doubleValues = new double[decimalValues.length];
+        for (int i = 0; i < decimalValues.length; ++i) {
             decimalValues[i] = generator.nextX();
+            doubleValues[i] = Decimal64Utils.toDouble(decimalValues[i]);
+        }
     }
 
     @Benchmark
@@ -242,6 +249,59 @@ public class MathBenchmark {
 //            bh.consume(NativeImpl.bid64Fdim(decimalValues[i], Decimal64Utils.negate(decimalValues[i + 1])));
 //    }
 
+    @Benchmark
+    public void fromDecimalDouble(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(Decimal64Utils.fromDecimalDouble(doubleValues[i]));
+    }
+
+    @Benchmark
+    public void fromDecimalDoubleOrig(Blackhole bh) {
+        for (int i = 0; i < 1000; ++i)
+            bh.consume(fromDecimalDoubleOrig(doubleValues[i]));
+    }
+
+    public static long fromDecimalDoubleOrig(final double x) {
+        final long y = Decimal64Utils.fromDouble(x);
+        long m, signAndExp;
+
+        // Odd + special encoding(16 digits)
+        final long notY = ~y;
+        if ((MASK_SPECIAL & notY) == 0) {
+            if ((MASK_INFINITY_AND_NAN & notY) == 0)
+                return y;
+
+            m = (y & LARGE_COEFFICIENT_MASK) + LARGE_COEFFICIENT_HIGH_BIT;
+            signAndExp = ((y << 2) & EXPONENT_MASK_SMALL) + (y & MASK_SIGN);
+        } else {
+            m = y & SMALL_COEFFICIENT_MASK;
+            // 16 digits + odd
+            signAndExp = y & (-1L << EXPONENT_SHIFT_SMALL);
+            if (m <= MAX_COEFFICIENT / 10 + 1)
+                return y;
+        }
+
+        if ((y & 1) == 0)
+            return y;
+        // NeedAdjustment
+        // Check the last digit
+        final long m1 = m + 1;
+        m = m1 / 10;
+        if (m1 - m * 10 > 2)
+            return y;
+
+        signAndExp += 1L << EXPONENT_SHIFT_SMALL;
+        if (Decimal64Utils.toDouble(signAndExp + m) != x)
+            return y;
+
+        for (long n = m; ; ) {
+            final long m10 = n / 10;
+            if (m10 * 10 != n)
+                return signAndExp + n;
+            n = m10;
+            signAndExp += 1L << EXPONENT_SHIFT_SMALL;
+        }
+    }
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
