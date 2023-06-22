@@ -345,7 +345,7 @@ class JavaImpl {
                 long p;
                 while (true) {
                     p = n * FAST_DIV10_RECIPROCAL;
-                    final long m10 = n >> FAST_DIV10_SHIFT;
+                    final long m10 = p >> FAST_DIV10_SHIFT;
                     if ((p & FAST_DIV10_MUL10_MASK) != 0)
                         return signAndExp + n;
                     n = m10;
