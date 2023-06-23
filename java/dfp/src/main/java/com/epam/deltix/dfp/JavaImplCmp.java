@@ -190,7 +190,7 @@ class JavaImplCmp {
         }
         // if positive, return whichever significand abs is smaller
         // (converse if negative)
-        return (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
+        return (((/*UnsignedLong.isGreater*/(sig_n_prime_w1 != 0))
             || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ (!x_mask_sign)) ? 1 : -1;  // @AD: TODO: Check this case carefully
     }
 
@@ -418,7 +418,7 @@ class JavaImplCmp {
             if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
                 return false;
             }
-            return (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
+            return (((/*UnsignedLong.isGreater*/(sig_n_prime_w1 != 0))
                 || UnsignedLong.isGreater(sig_n_prime_w0, sig_y)) ^ (x_mask_sign));
         }
         // adjust the y significand upwards
@@ -614,7 +614,7 @@ class JavaImplCmp {
         }
         // if positive, return whichever significand abs is smaller
         // (converse if negative)
-        return (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
+        return (((/*UnsignedLong.isGreater*/(sig_n_prime_w1 != 0))
             || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ (!x_mask_sign));
     }
 
@@ -782,7 +782,7 @@ class JavaImplCmp {
         }
         // if positive, return whichever significand abs is smaller
         // (converse if negative)
-        return (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
+        return (((/*UnsignedLong.isGreater*/(sig_n_prime_w1 != 0))
             || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ (x_mask_sign));
     }
 
@@ -949,7 +949,7 @@ class JavaImplCmp {
         }
         // if positive, return whichever significand abs is smaller
         //     (converse if negative)
-        return (((UnsignedLong.isGreater(sig_n_prime_w1, 0))
+        return (((/*UnsignedLong.isGreater*/(sig_n_prime_w1 != 0))
             || (UnsignedLong.isLess(sig_x, sig_n_prime_w0))) ^ (x_mask_sign));
     }
 

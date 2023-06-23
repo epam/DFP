@@ -169,7 +169,7 @@ class JavaImplMinMax {
                 return y;
             }
 
-            return ((UnsignedLong.isGreater(sig_n_prime_w1, 0)
+            return ((/*UnsignedLong.isGreater*/(sig_n_prime_w1 != 0)
                 || UnsignedLong.isGreater(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) == MASK_SIGN)) ? y : x;
         }
         // adjust the y significand upwards
@@ -361,7 +361,7 @@ class JavaImplMinMax {
             if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_y)) {
                 return y;
             }
-            return ((UnsignedLong.isGreater(sig_n_prime_w1, 0)
+            return ((/*UnsignedLong.isGreater*/(sig_n_prime_w1 != 0)
                 || UnsignedLong.isGreater(sig_n_prime_w0, sig_y)) ^ ((x & MASK_SIGN) == MASK_SIGN)) ? x : y;
         }
         // adjust the y significand upwards
