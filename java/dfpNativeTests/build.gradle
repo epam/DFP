@@ -1,9 +1,8 @@
 plugins {
-    id "me.champeau.gradle.jmh" version "0.5.3" apply false
+    id "me.champeau.jmh" version "0.7.1"
 }
 
 apply plugin: 'java'
-apply plugin: 'me.champeau.gradle.jmh'
 
 group = 'com.epam.deltix'
 
@@ -40,8 +39,4 @@ task copyNativeDfpResources(type: Copy) {
     }
 }
 compileJava.dependsOn(copyNativeDfpResources)
-
-jmh {
-    include = '.*Benchmark.*'
-}
 

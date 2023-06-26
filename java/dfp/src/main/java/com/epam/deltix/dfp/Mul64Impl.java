@@ -2,7 +2,7 @@ package com.epam.deltix.dfp;
 
 import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
 
-public class Mul64Impl {
+class Mul64Impl {
     public static long multiplyHigh(final long __CX, final long __CY) {
         //__mul_64x64_to_128(ALBL, (A)_w0, (B)_w0);
         {

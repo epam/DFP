@@ -79,7 +79,7 @@ public class MulBenchmark {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-            .include(".*" + MathBenchmark.class.getSimpleName() + ".*")
+            .include(".*" + MulBenchmark.class.getSimpleName() + ".*")
             .forks(1)
             .build();
         new Runner(opt).run();
