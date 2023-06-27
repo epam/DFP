@@ -130,3 +130,18 @@ jar {
 sourcesJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+task testsJar(type: Jar, dependsOn: [jar, testClasses, processTestResources]) {
+    archiveClassifier = 'tests'
+    from sourceSets.test.output
+}
+
+task copyTestDeps(type: Copy) {
+    from(sourceSets.test.runtimeClasspath) { include '*.jar' }
+    into('testLibs')
+}
+
+task copyTestJars(type: Copy, dependsOn: [testsJar, copyTestDeps]) {
+    from(testsJar.outputs.files)
+    into('testLibs')
+}
