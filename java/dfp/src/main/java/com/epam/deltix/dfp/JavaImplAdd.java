@@ -386,8 +386,11 @@ class JavaImplAdd {
 
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_a, bid_reciprocals10_64[extra_digits]);
-            CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_a, bid_reciprocals10_64[extra_digits]);
-            CT_w0 = coefficient_a * bid_reciprocals10_64[extra_digits];
+            {
+                final long __CY = bid_reciprocals10_64[extra_digits];
+                CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_a, __CY);
+                CT_w0 = coefficient_a * __CY;
+            }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
             amount = bid_short_recip_scale[extra_digits];
@@ -425,8 +428,11 @@ class JavaImplAdd {
 
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
-            CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, bid_reciprocals10_64[extra_digits]);
-            CT_w0 = coefficient_b * bid_reciprocals10_64[extra_digits];
+            {
+                final long __CY = bid_reciprocals10_64[extra_digits];
+                CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
+                CT_w0 = coefficient_b * __CY;
+            }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
             amount = bid_short_recip_scale[extra_digits];
@@ -461,8 +467,11 @@ class JavaImplAdd {
 
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
-                    CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, bid_reciprocals10_64[extra_digits]);
-                    CT_w0 = coefficient_b * bid_reciprocals10_64[extra_digits];
+                    {
+                        final long __CY = bid_reciprocals10_64[extra_digits];
+                        CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
+                        CT_w0 = coefficient_b * __CY;
+                    }
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[extra_digits];
                     C0_64 = CT_w1 >>> amount;
@@ -479,8 +488,11 @@ class JavaImplAdd {
 
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT_new, coefficient_b, bid_reciprocals10_64[extra_digits]);
-                    CT_new_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, bid_reciprocals10_64[extra_digits]);
-                    CT_new_w0 = coefficient_b * bid_reciprocals10_64[extra_digits];
+                    {
+                        final long __CY = bid_reciprocals10_64[extra_digits];
+                        CT_new_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
+                        CT_new_w0 = coefficient_b * __CY;
+                    }
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[extra_digits];
                     C0_64 = CT_new_w1 >>> amount;
