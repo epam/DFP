@@ -200,66 +200,14 @@ class JavaImplCastBinary64 {
             {
                 long /*BID_UINT128*/ lP0_w0, lP0_w1, lP1_w0, lP1_w1, lP2_w0, lP2_w1, lP3_w0, lP3_w1;
                 long /*BID_UINT64*/ lC;
-                {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = c_w0 >>> 32;
-                    CXL = LONG_LOW_PART & c_w0;
-                    CYH = r_w0 >>> 32;
-                    CYL = LONG_LOW_PART & r_w0;
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    lP0_w1 = PH + (PM >>> 32);
-                    lP0_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-                }
-                {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = c_w0 >>> 32;
-                    CXL = LONG_LOW_PART & c_w0;
-                    CYH = r_w1 >>> 32;
-                    CYL = LONG_LOW_PART & r_w1;
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    lP1_w1 = PH + (PM >>> 32);
-                    lP1_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-                }
-                {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = c_w0 >>> 32;
-                    CXL = LONG_LOW_PART & c_w0;
-                    CYH = r_w2 >>> 32;
-                    CYL = LONG_LOW_PART & r_w2;
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    lP2_w1 = PH + (PM >>> 32);
-                    lP2_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-                }
-                {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = c_w0 >>> 32;
-                    CXL = LONG_LOW_PART & c_w0;
-                    CYH = r_w3 >>> 32;
-                    CYL = LONG_LOW_PART & r_w3;
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    lP3_w1 = PH + (PM >>> 32);
-                    lP3_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-                }
+                lP0_w1 = Mul64Impl.unsignedMultiplyHigh(c_w0, r_w0);
+                lP0_w0 = c_w0 * r_w0;
+                lP1_w1 = Mul64Impl.unsignedMultiplyHigh(c_w0, r_w1);
+                lP1_w0 = c_w0 * r_w1;
+                lP2_w1 = Mul64Impl.unsignedMultiplyHigh(c_w0, r_w2);
+                lP2_w0 = c_w0 * r_w2;
+                lP3_w1 = Mul64Impl.unsignedMultiplyHigh(c_w0, r_w3);
+                lP3_w0 = c_w0 * r_w3;
                 P0_w0 = lP0_w0;
                 {
                     long /*BID_UINT64*/ X1 = lP1_w0;
@@ -281,66 +229,14 @@ class JavaImplCastBinary64 {
             {
                 long /*BID_UINT128*/ lP0_w0, lP0_w1, lP1_w0, lP1_w1, lP2_w0, lP2_w1, lP3_w0, lP3_w1;
                 long /*BID_UINT64*/ lC;
-                {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = c_w1 >>> 32;
-                    CXL = LONG_LOW_PART & c_w1;
-                    CYH = r_w0 >>> 32;
-                    CYL = LONG_LOW_PART & r_w0;
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    lP0_w1 = PH + (PM >>> 32);
-                    lP0_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-                }
-                {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = c_w1 >>> 32;
-                    CXL = LONG_LOW_PART & c_w1;
-                    CYH = r_w1 >>> 32;
-                    CYL = LONG_LOW_PART & r_w1;
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    lP1_w1 = PH + (PM >>> 32);
-                    lP1_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-                }
-                {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = c_w1 >>> 32;
-                    CXL = LONG_LOW_PART & c_w1;
-                    CYH = r_w2 >>> 32;
-                    CYL = LONG_LOW_PART & r_w2;
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    lP2_w1 = PH + (PM >>> 32);
-                    lP2_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-                }
-                {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = c_w1 >>> 32;
-                    CXL = LONG_LOW_PART & c_w1;
-                    CYH = r_w3 >>> 32;
-                    CYL = LONG_LOW_PART & r_w3;
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    lP3_w1 = PH + (PM >>> 32);
-                    lP3_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-                }
+                lP0_w1 = Mul64Impl.unsignedMultiplyHigh(c_w1, r_w0);
+                lP0_w0 = c_w1 * r_w0;
+                lP1_w1 = Mul64Impl.unsignedMultiplyHigh(c_w1, r_w1);
+                lP1_w0 = c_w1 * r_w1;
+                lP2_w1 = Mul64Impl.unsignedMultiplyHigh(c_w1, r_w2);
+                lP2_w0 = c_w1 * r_w2;
+                lP3_w1 = Mul64Impl.unsignedMultiplyHigh(c_w1, r_w3);
+                lP3_w0 = c_w1 * r_w3;
                 P1_w0 = lP0_w0;
                 {
                     long /*BID_UINT64*/ X1 = lP1_w0;
@@ -510,69 +406,17 @@ class JavaImplCastBinary64 {
             long /*BID_UINT128*/ lP0_w0, lP0_w1, lP1_w0, lP1_w1, lP2_w0, lP2_w1, lP3_w0, lP3_w1;
             long /*BID_UINT64*/ lC;
             //__mul_64x64_to_128(lP0, c_w1, r_w0);
-            {
-                long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = c_w1 >>> 32;
-                CXL = LONG_LOW_PART & c_w1;
-                CYH = r_w0 >>> 32;
-                CYL = LONG_LOW_PART & r_w0;
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += PM >>> 32;
-                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                lP0_w1 = PH + (PM >>> 32);
-                lP0_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-            }
+            lP0_w1 = Mul64Impl.unsignedMultiplyHigh(c_w1, r_w0);
+            lP0_w0 = c_w1 * r_w0;
             //__mul_64x64_to_128(lP1, c_w1, r_w1);
-            {
-                long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = c_w1 >>> 32;
-                CXL = LONG_LOW_PART & c_w1;
-                CYH = r_w1 >>> 32;
-                CYL = LONG_LOW_PART & r_w1;
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += PM >>> 32;
-                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                lP1_w1 = PH + (PM >>> 32);
-                lP1_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-            }
+            lP1_w1 = Mul64Impl.unsignedMultiplyHigh(c_w1, r_w1);
+            lP1_w0 = c_w1 * r_w1;
             //__mul_64x64_to_128(lP2, c_w1, r_w2);
-            {
-                long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = c_w1 >>> 32;
-                CXL = LONG_LOW_PART & c_w1;
-                CYH = r_w2 >>> 32;
-                CYL = LONG_LOW_PART & r_w2;
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += PM >>> 32;
-                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                lP2_w1 = PH + (PM >>> 32);
-                lP2_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-            }
+            lP2_w1 = Mul64Impl.unsignedMultiplyHigh(c_w1, r_w2);
+            lP2_w0 = c_w1 * r_w2;
             //__mul_64x64_to_128(lP3, c_w1, r_w3);
-            {
-                long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = c_w1 >>> 32;
-                CXL = LONG_LOW_PART & c_w1;
-                CYH = r_w3 >>> 32;
-                CYL = LONG_LOW_PART & r_w3;
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += PM >>> 32;
-                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                lP3_w1 = PH + (PM >>> 32);
-                lP3_w0 = (PM << 32) + (LONG_LOW_PART & PL);
-            }
+            lP3_w1 = Mul64Impl.unsignedMultiplyHigh(c_w1, r_w3);
+            lP3_w0 = c_w1 * r_w3;
             z_w0 = lP0_w0;
             //__add_carry_out(P_w1,lC,lP1_w0,lP0_w1);
             {
