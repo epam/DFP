@@ -37,8 +37,8 @@ public class MulBenchmark {
     @Benchmark
     public void mul0(Blackhole bh) {
         for (int i = 0; i < 1000; ++i) {
-            long __CX = decimalValues[i];
-            long __CY = decimalValues[i + 1];
+            final long __CX = decimalValues[i];
+            final long __CY = decimalValues[i + 1];
             long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
             __CXH = __CX >>> 32;
             __CXL = LONG_LOW_PART & __CX;
