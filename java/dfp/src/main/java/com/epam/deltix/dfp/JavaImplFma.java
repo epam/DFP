@@ -369,23 +369,8 @@ class JavaImplFma {
             // get 128-bit product: coefficient_x*coefficient_y
 
             //__mul_64x64_to_128(P, coefficient_x, coefficient_y);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = coefficient_x >>> 32;
-                __CXL = LONG_LOW_PART & coefficient_x;
-                __CYH = coefficient_y >>> 32;
-                __CYL = LONG_LOW_PART & coefficient_y;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P_w1 = __PH + (__PM >>> 32);
-                P_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            P_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_x, coefficient_y);
+            P_w0 = coefficient_x * coefficient_y;
 
 
             // tighten binary range of P:  leading bit is 2^bp
@@ -465,22 +450,9 @@ class JavaImplFma {
                 // align coeff_x, CYh
                 //__mul_64x64_to_128(CZ, coefficient_z, bid_power10_table_128_flat[(extra_digits << 1) /*+ 0*/]);
                 {
-                    long __CY = bid_power10_table_128_BID_UINT128[(extra_digits << 1) /*+ 0*/];
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = coefficient_z >>> 32;
-                    __CXL = LONG_LOW_PART & coefficient_z;
-                    __CYH = __CY >>> 32;
-                    __CYL = LONG_LOW_PART & __CY;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    CZ_w1 = __PH + (__PM >>> 32);
-                    CZ_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                    final long __CY = bid_power10_table_128_BID_UINT128[(extra_digits << 1) /*+ 0*/];
+                    CZ_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_z, __CY);
+                    CZ_w0 = coefficient_z * __CY;
                 }
 
                 if (sign_z == (sign_y ^ sign_x)) {
@@ -755,22 +727,9 @@ class JavaImplFma {
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_a, bid_reciprocals10_64[extra_digits]);
             {
-                long __CY = bid_reciprocals10_64[extra_digits];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = coefficient_a >>> 32;
-                __CXL = LONG_LOW_PART & coefficient_a;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                CT_w1 = __PH + (__PM >>> 32);
-                CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_reciprocals10_64[extra_digits];
+                CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_a, __CY);
+                CT_w0 = coefficient_a * __CY;
             }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
@@ -825,22 +784,9 @@ class JavaImplFma {
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
             {
-                long __CY = bid_reciprocals10_64[extra_digits];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = coefficient_b >>> 32;
-                __CXL = LONG_LOW_PART & coefficient_b;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                CT_w1 = __PH + (__PM >>> 32);
-                CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_reciprocals10_64[extra_digits];
+                CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
+                CT_w0 = coefficient_b * __CY;
             }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
@@ -863,24 +809,8 @@ class JavaImplFma {
                         saved_ca = saved_ca + T1;
 
                         //__mul_64x64_to_128(CA, saved_ca, 0x3333333333333334L);
-                        {
-                            long __CY = 0x3333333333333334L;
-                            long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                            __CXH = saved_ca >>> 32;
-                            __CXL = LONG_LOW_PART & saved_ca;
-                            __CYH = __CY >>> 32;
-                            __CYL = LONG_LOW_PART & __CY;
-
-                            __PM = __CXH * __CYL;
-                            __PH = __CXH * __CYH;
-                            __PL = __CXL * __CYL;
-                            __PM2 = __CXL * __CYH;
-                            __PH += (__PM >>> 32);
-                            __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                            CA_w1 = __PH + (__PM >>> 32);
-                            CA_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                        }
+                        CA_w1 = Mul64Impl.unsignedMultiplyHigh(saved_ca, 0x3333333333333334L);
+                        // CA_w0 = saved_ca * 0x3333333333333334L; // @optimization
 
                         //reciprocals10_64[1]);
                         coefficient_a = CA_w1 >>> 1;
@@ -902,22 +832,9 @@ class JavaImplFma {
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
                     {
-                        long __CY = bid_reciprocals10_64[extra_digits];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = coefficient_b >>> 32;
-                        __CXL = LONG_LOW_PART & coefficient_b;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        CT_w1 = __PH + (__PM >>> 32);
-                        CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_reciprocals10_64[extra_digits];
+                        CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
+                        CT_w0 = coefficient_b * __CY;
                     }
 
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
@@ -939,22 +856,9 @@ class JavaImplFma {
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT_new, coefficient_b, bid_reciprocals10_64[extra_digits]);
                     {
-                        long __CY = bid_reciprocals10_64[extra_digits];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = coefficient_b >>> 32;
-                        __CXL = LONG_LOW_PART & coefficient_b;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        CT_new_w1 = __PH + (__PM >>> 32);
-                        CT_new_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_reciprocals10_64[extra_digits];
+                        CT_new_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
+                        CT_new_w0 = coefficient_b * __CY;
                     }
 
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
@@ -1046,80 +950,20 @@ class JavaImplFma {
             long _ALBL_w1, _ALBH_w1, _AHBL_w1, _AHBH_w1, _QM_w1, _QM2_w1;
 
             //__mul_64x64_to_128(ALBH, (A)_w0, (B)_w1);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = _A_w0 >>> 32;
-                __CXL = LONG_LOW_PART & _A_w0;
-                __CYH = _B_w1 >>> 32;
-                __CYL = LONG_LOW_PART & _B_w1;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _ALBH_w1 = __PH + (__PM >>> 32);
-                _ALBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _ALBH_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w0, _B_w1);
+            _ALBH_w0 = _A_w0 * _B_w1;
 
             //__mul_64x64_to_128(AHBL, (B)_w0, (A)_w1);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = _B_w0 >>> 32;
-                __CXL = LONG_LOW_PART & _B_w0;
-                __CYH = _A_w1 >>> 32;
-                __CYL = LONG_LOW_PART & _A_w1;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _AHBL_w1 = __PH + (__PM >>> 32);
-                _AHBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _AHBL_w1 = Mul64Impl.unsignedMultiplyHigh(_B_w0, _A_w1);
+            _AHBL_w0 = _B_w0 * _A_w1;
 
             //__mul_64x64_to_128(ALBL, (A)_w0, (B)_w0);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = _A_w0 >>> 32;
-                __CXL = LONG_LOW_PART & _A_w0;
-                __CYH = _B_w0 >>> 32;
-                __CYL = LONG_LOW_PART & _B_w0;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _ALBL_w1 = __PH + (__PM >>> 32);
-                _ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _ALBL_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w0, _B_w0);
+            _ALBL_w0 = _A_w0 * _B_w0;
 
             //__mul_64x64_to_128(AHBH, (A)_w1,(B)_w1);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = _A_w1 >>> 32;
-                __CXL = LONG_LOW_PART & _A_w1;
-                __CYH = _B_w1 >>> 32;
-                __CYL = LONG_LOW_PART & _B_w1;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _AHBH_w1 = __PH + (__PM >>> 32);
-                _AHBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _AHBH_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w1, _B_w1);
+            _AHBH_w0 = _A_w1 * _B_w1;
 
             //__add_128_128(QM, ALBH, AHBL); // add 128-bit value to 128-bit assume no carry-out
             {
@@ -1266,80 +1110,20 @@ class JavaImplFma {
             long _ALBL_w1, _ALBH_w1, _AHBL_w1, _AHBH_w1, _QM_w1, _QM2_w1;
 
             //__mul_64x64_to_128(ALBH, (A)_w0, (B)_w1);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = _A_w0 >>> 32;
-                __CXL = LONG_LOW_PART & _A_w0;
-                __CYH = _B_w1 >>> 32;
-                __CYL = LONG_LOW_PART & _B_w1;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _ALBH_w1 = __PH + (__PM >>> 32);
-                _ALBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _ALBH_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w0, _B_w1);
+            _ALBH_w0 = _A_w0 * _B_w1;
 
             //__mul_64x64_to_128(AHBL, (B)_w0, (A)_w1);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = _B_w0 >>> 32;
-                __CXL = LONG_LOW_PART & _B_w0;
-                __CYH = _A_w1 >>> 32;
-                __CYL = LONG_LOW_PART & _A_w1;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _AHBL_w1 = __PH + (__PM >>> 32);
-                _AHBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _AHBL_w1 = Mul64Impl.unsignedMultiplyHigh(_B_w0, _A_w1);
+            _AHBL_w0 = _B_w0 * _A_w1;
 
             //__mul_64x64_to_128(ALBL, (A)_w0, (B)_w0);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = _A_w0 >>> 32;
-                __CXL = LONG_LOW_PART & _A_w0;
-                __CYH = _B_w0 >>> 32;
-                __CYL = LONG_LOW_PART & _B_w0;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _ALBL_w1 = __PH + (__PM >>> 32);
-                _ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _ALBL_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w0, _B_w0);
+            _ALBL_w0 = _A_w0 * _B_w0;
 
             //__mul_64x64_to_128(AHBH, (A)_w1,(B)_w1);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = _A_w1 >>> 32;
-                __CXL = LONG_LOW_PART & _A_w1;
-                __CYH = _B_w1 >>> 32;
-                __CYL = LONG_LOW_PART & _B_w1;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _AHBH_w1 = __PH + (__PM >>> 32);
-                _AHBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _AHBH_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w1, _B_w1);
+            _AHBH_w0 = _A_w1 * _B_w1;
 
             //__add_128_128(QM, ALBH, AHBL); // add 128-bit value to 128-bit assume no carry-out
             {
@@ -1441,80 +1225,20 @@ class JavaImplFma {
                 long _ALBL_w1, _ALBH_w1, _AHBL_w1, _AHBH_w1, _QM_w1, _QM2_w1;
 
                 //__mul_64x64_to_128(ALBH, (A)_w0, (B)_w1);
-                {
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = _A_w0 >>> 32;
-                    __CXL = LONG_LOW_PART & _A_w0;
-                    __CYH = _B_w1 >>> 32;
-                    __CYL = LONG_LOW_PART & _B_w1;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    _ALBH_w1 = __PH + (__PM >>> 32);
-                    _ALBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                }
+                _ALBH_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w0, _B_w1);
+                _ALBH_w0 = _A_w0 * _B_w1;
 
                 //__mul_64x64_to_128(AHBL, (B)_w0, (A)_w1);
-                {
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = _B_w0 >>> 32;
-                    __CXL = LONG_LOW_PART & _B_w0;
-                    __CYH = _A_w1 >>> 32;
-                    __CYL = LONG_LOW_PART & _A_w1;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    _AHBL_w1 = __PH + (__PM >>> 32);
-                    _AHBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                }
+                _AHBL_w1 = Mul64Impl.unsignedMultiplyHigh(_B_w0, _A_w1);
+                _AHBL_w0 = _B_w0 * _A_w1;
 
                 //__mul_64x64_to_128(ALBL, (A)_w0, (B)_w0);
-                {
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = _A_w0 >>> 32;
-                    __CXL = LONG_LOW_PART & _A_w0;
-                    __CYH = _B_w0 >>> 32;
-                    __CYL = LONG_LOW_PART & _B_w0;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    _ALBL_w1 = __PH + (__PM >>> 32);
-                    _ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                }
+                _ALBL_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w0, _B_w0);
+                _ALBL_w0 = _A_w0 * _B_w0;
 
                 //__mul_64x64_to_128(AHBH, (A)_w1,(B)_w1);
-                {
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = _A_w1 >>> 32;
-                    __CXL = LONG_LOW_PART & _A_w1;
-                    __CYH = _B_w1 >>> 32;
-                    __CYL = LONG_LOW_PART & _B_w1;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    _AHBH_w1 = __PH + (__PM >>> 32);
-                    _AHBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                }
+                _AHBH_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w1, _B_w1);
+                _AHBH_w0 = _A_w1 * _B_w1;
 
                 //__add_128_128(QM, ALBH, AHBL); // add 128-bit value to 128-bit assume no carry-out
                 {
@@ -1690,80 +1414,20 @@ class JavaImplFma {
                 long _ALBL_w1, _ALBH_w1, _AHBL_w1, _AHBH_w1, _QM_w1, _QM2_w1;
 
                 //__mul_64x64_to_128(ALBH, (A)_w0, (B)_w1);
-                {
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = _A_w0 >>> 32;
-                    __CXL = LONG_LOW_PART & _A_w0;
-                    __CYH = _B_w1 >>> 32;
-                    __CYL = LONG_LOW_PART & _B_w1;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    _ALBH_w1 = __PH + (__PM >>> 32);
-                    _ALBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                }
+                _ALBH_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w0, _B_w1);
+                _ALBH_w0 = _A_w0 * _B_w1;
 
                 //__mul_64x64_to_128(AHBL, (B)_w0, (A)_w1);
-                {
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = _B_w0 >>> 32;
-                    __CXL = LONG_LOW_PART & _B_w0;
-                    __CYH = _A_w1 >>> 32;
-                    __CYL = LONG_LOW_PART & _A_w1;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    _AHBL_w1 = __PH + (__PM >>> 32);
-                    _AHBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                }
+                _AHBL_w1 = Mul64Impl.unsignedMultiplyHigh(_B_w0, _A_w1);
+                _AHBL_w0 = _B_w0 * _A_w1;
 
                 //__mul_64x64_to_128(ALBL, (A)_w0, (B)_w0);
-                {
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = _A_w0 >>> 32;
-                    __CXL = LONG_LOW_PART & _A_w0;
-                    __CYH = _B_w0 >>> 32;
-                    __CYL = LONG_LOW_PART & _B_w0;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    _ALBL_w1 = __PH + (__PM >>> 32);
-                    _ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                }
+                _ALBL_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w0, _B_w0);
+                _ALBL_w0 = _A_w0 * _B_w0;
 
                 //__mul_64x64_to_128(AHBH, (A)_w1,(B)_w1);
-                {
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = _A_w1 >>> 32;
-                    __CXL = LONG_LOW_PART & _A_w1;
-                    __CYH = _B_w1 >>> 32;
-                    __CYL = LONG_LOW_PART & _B_w1;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    _AHBH_w1 = __PH + (__PM >>> 32);
-                    _AHBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                }
+                _AHBH_w1 = Mul64Impl.unsignedMultiplyHigh(_A_w1, _B_w1);
+                _AHBH_w0 = _A_w1 * _B_w1;
 
                 //__add_128_128(QM, ALBH, AHBL); // add 128-bit value to 128-bit assume no carry-out
                 {
@@ -1931,19 +1595,8 @@ class JavaImplFma {
                     //__mul_64x64_to_128(CX, coefficient_x, bid_power10_table_128_flat[(diff_dec_expon << 1) /*+ 0*/]);
                     {
                         final long /*BID_UINT64*/ __CY = bid_power10_table_128_BID_UINT128[(diff_dec_expon << 1) /*+ 0*/];
-                        long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                        CXH = coefficient_x >>> 32;
-                        CXL = LONG_LOW_PART & coefficient_x;
-                        CYH = __CY >>> 32;
-                        CYL = LONG_LOW_PART & __CY;
-                        PM = CXH * CYL;
-                        PH = CXH * CYH;
-                        PL = CXL * CYL;
-                        PM2 = CXL * CYH;
-                        PH += PM >>> 32;
-                        PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                        CX_w1 = PH + (PM >>> 32);
-                        CX_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+                        CX_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_x, __CY);
+                        CX_w0 = coefficient_x * __CY;
                     }
 
                     if (sign_x == sign_y) {
@@ -2053,19 +1706,8 @@ class JavaImplFma {
                 //__mul_64x64_to_128(CX, coefficient_x, bid_power10_table_128_flat[(diff_dec2 << 1) /*+ 0*/]);
                 {
                     long /*BID_UINT64*/ __CY = bid_power10_table_128_BID_UINT128[(diff_dec2 << 1) /*+ 0*/];
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = coefficient_x >>> 32;
-                    CXL = LONG_LOW_PART & coefficient_x;
-                    CYH = __CY >>> 32;
-                    CYL = LONG_LOW_PART & __CY;
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    CX_w1 = PH + (PM >>> 32);
-                    CX_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+                    CX_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_x, __CY);
+                    CX_w0 = coefficient_x * __CY;
                 }
 
 
@@ -2169,23 +1811,8 @@ class JavaImplFma {
                     final long /*BID_UINT64*/ ALBH_L = S * CY_w1;
 
                     //__mul_64x64_to_128(CY_L, S, CY_w0);
-                    {
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = S >>> 32;
-                        __CXL = LONG_LOW_PART & S;
-                        __CYH = CY_w0 >>> 32;
-                        __CYL = LONG_LOW_PART & CY_w0;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        CY_L_w1 = __PH + (__PM >>> 32);
-                        CY_L_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                    }
+                    CY_L_w1 = Mul64Impl.unsignedMultiplyHigh(S, CY_w0);
+                    CY_L_w0 = S * CY_w0;
 
                     CY_L_w1 += ALBH_L;
                 }
@@ -2224,19 +1851,8 @@ class JavaImplFma {
 
             //__mul_64x64_to_128(F, coefficient_y, S);
             {
-                long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                CXH = coefficient_y >>> 32;
-                CXL = LONG_LOW_PART & coefficient_y;
-                CYH = S >>> 32;
-                CYL = LONG_LOW_PART & S;
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += PM >>> 32;
-                PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                F_w1 = PH + (PM >>> 32);
-                F_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+                F_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_y, S);
+                F_w0 = coefficient_y * S;
             }
 
             // fraction

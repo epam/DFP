@@ -146,18 +146,22 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: '8'
+          java-version: '19'
       - name: build
         run: |
           ./gradlew jar
           ./gradlew javadocJar
+          ./gradlew copyTestJars
       - uses: actions/upload-artifact@v3
         with:
           name: java-jars
           path: |
             ./*java/dfp/build/libs/*
             ./*java/dfp-math/build/libs/*
-            ./*java/decimalDemo/build/libs/*
+            ./*java/dfp/testLibs/*
+            ./*java/dfp-math/testLibs/*
+            ./*java/dfpNativeTests/testLibs/*
+            ./*java/vtaTest/testLibs/*
           retention-days: 7
 
   build-dotnet:
@@ -190,20 +194,20 @@ jobs:
 
   test-java:
     runs-on: ${{ matrix.os }}
-    needs: [compress-native]
+    needs: [build-java]
     strategy:
       fail-fast: false
       matrix:
         os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
-        java: [ '8', '11', '15']
+        java: [ '8', '11', '19']
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: Download compress-native artifacts
+      - name: Download java-jars artifacts
         uses: actions/download-artifact@v3
         with:
-          name: compress-native
+          name: java-jars
       - name: Setup java
         uses: actions/setup-java@v3
         with:
@@ -214,15 +218,7 @@ jobs:
           ./gradlew :java:systemInfo:runSystemInfo
       - name: test
         run: |
-          ./gradlew check
-      - name: Upload test results on failure
-        uses: actions/upload-artifact@v3
-        if: ${{ failure() }}
-        with:
-          path: |
-            java/dfp/build/reports/*
-            java/dfp-math/build/reports/*
-          name: Java-{{ matrix.java }}-${{ matrix.os }}-TestReports
+          ./gradlew runTestJars
 
   test-dotnet:
     runs-on: ${{ matrix.os }}

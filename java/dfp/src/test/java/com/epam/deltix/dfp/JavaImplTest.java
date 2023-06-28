@@ -15,6 +15,7 @@ import java.security.SecureRandom;
 import java.util.Random;
 
 import static com.epam.deltix.dfp.JavaImpl.*;
+import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
 import static com.epam.deltix.dfp.JavaImplCmp.MASK_BINARY_SIG2;
 import static com.epam.deltix.dfp.JavaImplCmp.MASK_BINARY_OR2;
 import static com.epam.deltix.dfp.TestUtils.*;
@@ -897,5 +898,100 @@ public class JavaImplTest {
         final long sig_x = (-1 & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
         assertEquals(sig_x > 9999999999999999L, UnsignedLong.isGreater(sig_x, 9999999999999999L));
         assertEquals(sig_x < Long.MAX_VALUE, UnsignedLong.isLess(sig_x, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void div10Test() {
+        final long coefficient = Long.MAX_VALUE / FAST_DIV10_RECIPROCAL; // Critical point
+        assertTrue(coefficient > Integer.MAX_VALUE);
+
+        final long r = coefficient / 10;
+
+        long p = coefficient * FAST_DIV10_RECIPROCAL;
+        final long coefficient10 = p >> FAST_DIV10_SHIFT;
+
+        assertEquals(r, coefficient10);
+    }
+
+    @Test
+    public void mul0() {
+        final long[] testValues = new long[]{
+            0, 4, 5, 10, 1153, 1155,
+            Integer.MAX_VALUE - 11, Integer.MAX_VALUE - 1,
+            Integer.MAX_VALUE, 0x80000000L,
+            0x80000001L, 0x80000007L,
+            Long.MAX_VALUE - 13, Long.MAX_VALUE - 1,
+            Long.MAX_VALUE, 0x8000000000000000L,
+            0x8000000000000001L, 0x8000000000000011L,
+            0xFFFFFFFFFFFFFFFCL, 0xFFFFFFFFFFFFFFFFL,
+        };
+
+        final boolean[] doOp = new boolean[]{false, true};
+
+        for (final long au : testValues)
+            for (final long bu : testValues)
+                for (final boolean negA : doOp)
+                    for (final boolean negB : doOp)
+                        for (final boolean shrA : doOp)
+                            for (final boolean shrB : doOp) {
+
+                                final long a = prepareArg(au, negA, shrA);
+                                final long b = prepareArg(bu, negB, shrB);
+
+                                final long w1, w0;
+                                {
+                                    long __CX = a;
+                                    long __CY = b;
+                                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
+                                    __CXH = __CX >>> 32;
+                                    __CXL = LONG_LOW_PART & __CX;
+                                    __CYH = __CY >>> 32;
+                                    __CYL = LONG_LOW_PART & __CY;
+
+                                    __PM = __CXH * __CYL;
+                                    __PH = __CXH * __CYH;
+                                    __PL = __CXL * __CYL;
+                                    __PM2 = __CXL * __CYH;
+                                    __PH += (__PM >>> 32);
+                                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
+
+                                    w1 = __PH + (__PM >>> 32);
+                                    w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                                }
+                                final BigInteger rOld = unsignedLongToBigInteger(w1).multiply(twoPow64).add(unsignedLongToBigInteger(w0));
+
+                                final BigInteger ab = unsignedLongToBigInteger(a);
+                                final BigInteger bb = unsignedLongToBigInteger(b);
+                                final BigInteger rb = ab.multiply(bb);
+
+                                if (!rb.equals(rOld))
+                                    throw new RuntimeException("The case " + a + " * " + b + " result " + rb + " != " + rOld);
+
+                                final long m1 = Mul64Impl.unsignedMultiplyHigh(a, b);
+                                final long m0 = a * b;
+
+                                if (w1 != m1 || w0 != m0)
+                                    throw new RuntimeException("The case " + Long.toHexString(a) + " * " + Long.toHexString(b) + " result [" +
+                                        Long.toHexString(w1) + ", " + Long.toHexString(w0) + "] != [" +
+                                        Long.toHexString(m1) + ", " + Long.toHexString(m0) + "]");
+                            }
+    }
+
+    private static long prepareArg(long x, final boolean negX, final boolean shrX) {
+        if (negX)
+            x = -x;
+        if (shrX)
+            x = x >>> 1;
+        return x;
+    }
+
+    private static final BigInteger twoPow64 = unsignedLongToBigInteger(0x100000000L).multiply(unsignedLongToBigInteger(0x100000000L));
+
+    private static BigInteger unsignedLongToBigInteger(long x) {
+        final byte[] p = new byte[9];
+        for (int i = 0; i < p.length; ++i, x = x >>> 8)
+            p[p.length - 1 - i] = (byte) (x & 0xFF);
+
+        return new BigInteger(p);
     }
 }

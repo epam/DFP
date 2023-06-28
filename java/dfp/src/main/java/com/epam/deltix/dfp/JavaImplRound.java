@@ -136,22 +136,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // if (0 < f* < 10^(-x)) then the result is a midpoint
@@ -239,22 +226,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // if (0 < f* < 10^(-x)) then the result is a midpoint
@@ -331,22 +305,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -397,22 +358,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -463,22 +411,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -606,22 +541,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                P128_w0 = C1 * __CY;
             }
 
             // if (0 < f* < 10^(-x)) then the result is a midpoint
@@ -755,22 +677,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                P128_w0 = C1 * __CY;
             }
 
             // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -904,22 +813,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                P128_w0 = C1 * __CY;
             }
 
             // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -1047,22 +943,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                P128_w0 = C1 * __CY;
             }
 
             // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -1185,22 +1068,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                // P128_w0 = C1 * __CY; // @optimization
             }
 
             // if (0 < f* < 10^(-x)) then the result is a midpoint

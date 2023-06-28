@@ -92,19 +92,9 @@ class JavaImplCast {
 
                 //__mul_64x64_to_128MACH(C, C1, bid_ten2k64[20 - q]);
                 {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = C1 >>> 32;
-                    CXL = LONG_LOW_PART & C1;
-                    CYH = bid_ten2k64[20 - q] >>> 32;
-                    CYL = LONG_LOW_PART & bid_ten2k64[20 - q];
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    C_w1 = PH + (PM >>> 32);
-                    C_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+                    final long __CY = bid_ten2k64[20 - q];
+                    C_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                    C_w0 = C1 * __CY;
                 }
 
                 // Note: C1 * 10^(11-q) has 19 or 20 digits; 0x5000000000000000a, has 20
@@ -128,19 +118,9 @@ class JavaImplCast {
 
                 //__mul_64x64_to_128MACH(C, C1, bid_ten2k64[20 - q]);
                 {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = C1 >>> 32;
-                    CXL = LONG_LOW_PART & C1;
-                    CYH = bid_ten2k64[20 - q] >>> 32;
-                    CYL = LONG_LOW_PART & bid_ten2k64[20 - q];
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    C_w1 = PH + (PM >>> 32);
-                    C_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+                    final long __CY = bid_ten2k64[20 - q];
+                    C_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                    C_w0 = C1 * __CY;
                 }
 
                 if (UnsignedLong.isGreaterOrEqual(C_w1, 0x05L)) {
@@ -180,19 +160,9 @@ class JavaImplCast {
 
                 //__mul_64x64_to_128MACH(P128, C1, bid_ten2mk64[ind - 1]);
                 {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = C1 >>> 32;
-                    CXL = LONG_LOW_PART & C1;
-                    CYH = bid_ten2mk64[ind - 1] >>> 32;
-                    CYL = LONG_LOW_PART & bid_ten2mk64[ind - 1];
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    P128_w1 = PH + (PM >>> 32);
-                    P128_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+                    final long __CY = bid_ten2mk64[ind - 1];
+                    P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                    P128_w0 = C1 * __CY;
                 }
 
                 Cstar = P128_w1;
@@ -624,19 +594,9 @@ class JavaImplCast {
 
                 //__mul_64x64_to_128MACH(__P128, C, bid_Kx64[__ind]);
                 {
-                    long /*BID_UINT64*/ CXH, CXL, CYH, CYL, PL, PH, PM, PM2;
-                    CXH = C >>> 32;
-                    CXL = LONG_LOW_PART & C;
-                    CYH = bid_Kx64[__ind] >>> 32;
-                    CYL = LONG_LOW_PART & bid_Kx64[__ind];
-                    PM = CXH * CYL;
-                    PH = CXH * CYH;
-                    PL = CXL * CYL;
-                    PM2 = CXL * CYH;
-                    PH += PM >>> 32;
-                    PM = (LONG_LOW_PART & PM) + PM2 + (PL >>> 32);
-                    __P128_w1 = PH + (PM >>> 32);
-                    __P128_w0 = (PM << 32) + (LONG_LOW_PART & PL);
+                    final long __CY = bid_Kx64[__ind];
+                    __P128_w1 = Mul64Impl.unsignedMultiplyHigh(C, __CY);
+                    __P128_w0 = C * __CY;
                 }
 
                 // calculate C* = floor (__P128) and f*
