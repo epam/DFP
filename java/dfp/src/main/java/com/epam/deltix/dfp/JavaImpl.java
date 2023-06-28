@@ -1708,48 +1708,14 @@ class JavaImpl {
             final long QM2_0;
             final long QM2_1;
             {
-                final long CXH;
-                final long CXL;
-                final long CYH;
-                final long CYL;
-                final long PL;
-                long PH;
-                long PM;
-                final long PM2;
-                CXH = (C128_0) >>> 32;
-                CXL = C128_0 & UINT32_MAX;
-                CYH = (bid_reciprocals10_128[extra_digits][1]) >>> 32;
-                CYL = bid_reciprocals10_128[extra_digits][1] & UINT32_MAX;
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += (PM >>> 32);
-                PM = (PM & UINT32_MAX) + PM2 + (PL >>> 32);
-                ALBH_1 = PH + (PM >>> 32);
-                ALBH_0 = (PM << 32) + (PL & UINT32_MAX);
+                final long __CY = bid_reciprocals10_128[extra_digits][1];
+                ALBH_1 = Mul64Impl.unsignedMultiplyHigh(C128_0, __CY);
+                ALBH_0 = C128_0 * __CY;
             }
             {
-                final long CXH;
-                final long CXL;
-                final long CYH;
-                final long CYL;
-                final long PL;
-                long PH;
-                long PM;
-                final long PM2;
-                CXH = ((C128_0)) >>> 32;
-                CXL = C128_0 & UINT32_MAX;
-                CYH = (bid_reciprocals10_128[extra_digits][0]) >>> 32;
-                CYL = bid_reciprocals10_128[extra_digits][0] & UINT32_MAX;
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += (PM >>> 32);
-                PM = (PM & UINT32_MAX) + PM2 + (PL >>> 32);
-                ALBL_1 = PH + (PM >>> 32);
-                ALBL_0 = (PM << 32) + (PL & UINT32_MAX);
+                final long __CY = bid_reciprocals10_128[extra_digits][0];
+                ALBL_1 = Mul64Impl.unsignedMultiplyHigh(C128_0, __CY);
+                ALBL_0 = C128_0 * __CY;
             }
             Q_low_0 = ALBL_0;
             {
@@ -2091,48 +2057,14 @@ class JavaImpl {
                     final long QM2_0;
                     final long QM2_1;
                     {
-                        final long CXH;
-                        final long CXL;
-                        final long CYH;
-                        final long CYL;
-                        final long PL;
-                        long PH;
-                        long PM;
-                        final long PM2;
-                        CXH = coefficient >>> 32;
-                        CXL = (int) ((coefficient));
-                        CYH = bid_reciprocals10_128[extra_digits][1] >>> 32;
-                        CYL = (int) bid_reciprocals10_128[extra_digits][1];
-                        PM = CXH * CYL;
-                        PH = CXH * CYH;
-                        PL = CXL * CYL;
-                        PM2 = CXL * CYH;
-                        PH += (PM >>> 32);
-                        PM = (PM & 0xFFFFFFFFL) + PM2 + (PL >> 32);
-                        ALBH_1 = PH + (PM >> 32);
-                        ALBH_0 = (PM << 32) + (int) PL;
+                        final long __CY = bid_reciprocals10_128[extra_digits][1];
+                        ALBH_1 = Mul64Impl.unsignedMultiplyHigh(coefficient, __CY);
+                        ALBH_0 = coefficient * __CY;
                     }
                     {
-                        final long CXH;
-                        final long CXL;
-                        final long CYH;
-                        final long CYL;
-                        final long PL;
-                        long PH;
-                        long PM;
-                        final long PM2;
-                        CXH = ((coefficient)) >>> 32;
-                        CXL = (int) ((coefficient));
-                        CYH = bid_reciprocals10_128[extra_digits][0] >>> 32;
-                        CYL = (int) bid_reciprocals10_128[extra_digits][0];
-                        PM = CXH * CYL;
-                        PH = CXH * CYH;
-                        PL = CXL * CYL;
-                        PM2 = CXL * CYH;
-                        PH += (PM >>> 32);
-                        PM = (PM & 0xFFFFFFFFL) + PM2 + (PL >>> 32);
-                        ALBL_1 = PH + (PM >>> 32);
-                        ALBL_0 = (PM << 32) + (PL & 0xFFFFFFFFL);
+                        final long __CY = bid_reciprocals10_128[extra_digits][0];
+                        ALBL_1 = Mul64Impl.unsignedMultiplyHigh(coefficient, __CY);
+                        ALBL_0 = coefficient * __CY;
                     }
                     Q_low_0 = ALBL_0;
                     {
