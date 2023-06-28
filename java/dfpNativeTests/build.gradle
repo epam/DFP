@@ -54,3 +54,14 @@ task copyTestJars(type: Copy, dependsOn: [testsJar, copyTestDeps]) {
     from(testsJar.outputs.files)
     into('testLibs')
 }
+
+task runTestJars(type: JavaExec) {
+    mainClass = 'org.junit.runner.JUnitCore'
+    classpath = files { file('testLibs').listFiles() }
+
+    def testClassesRoot = file('src/test/java').absolutePath
+    fileTree(dir: testClassesRoot, include: '**/*.java').each { File file ->
+        def ap = file.absolutePath
+        args += ap.substring(testClassesRoot.length() + 1, ap.length() - 5).replace(File.separator, '.')
+    }
+}

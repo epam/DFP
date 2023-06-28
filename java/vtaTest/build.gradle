@@ -42,3 +42,27 @@ task testVta(dependsOn: compileJava, type: JavaExec) {
     jvmArgs += '-javaagent:' + vta_path + '=' + vta_config
 }
 test.dependsOn testVta
+
+task copyTestDeps(type: Copy) {
+    from(sourceSets.main.runtimeClasspath) { include '*.jar' }
+    into('testLibs')
+}
+
+task copyTestJars(type: Copy, dependsOn: [jar, copyTestDeps]) {
+    from(jar.outputs.files)
+    into('testLibs')
+}
+
+task runTestJars(type: JavaExec) {
+    mainClass = "com.example.demo.DemoApplication"
+    classpath = files { file('testLibs').listFiles() }
+    workingDir = "$projectDir"
+
+    String vta_path = findDependency(".*value-types.*jar")
+    print "VTA path: " + vta_path + "\n"
+
+    String vta_config = "$projectDir/value-types.json"
+    print "VTA config: " + vta_config + "\n"
+
+    jvmArgs += '-javaagent:' + vta_path + '=' + vta_config
+}
