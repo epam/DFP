@@ -136,7 +136,7 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
+                        final long __CY = bid_ten2mk64[ind - 1];
                         P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                         P128_w0 = C1 * __CY;
                     }
@@ -226,7 +226,7 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
+                        final long __CY = bid_ten2mk64[ind - 1];
                         P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                         P128_w0 = C1 * __CY;
                     }
@@ -305,7 +305,7 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
+                        final long __CY = bid_ten2mk64[ind - 1];
                         P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                         P128_w0 = C1 * __CY;
                     }
@@ -358,7 +358,7 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
+                        final long __CY = bid_ten2mk64[ind - 1];
                         P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                         P128_w0 = C1 * __CY;
                     }
@@ -411,7 +411,7 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
+                        final long __CY = bid_ten2mk64[ind - 1];
                         P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                         P128_w0 = C1 * __CY;
                     }
@@ -541,7 +541,7 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
+                final long __CY = bid_ten2mk64[ind - 1];
                 P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                 P128_w0 = C1 * __CY;
             }
@@ -677,7 +677,7 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
+                final long __CY = bid_ten2mk64[ind - 1];
                 P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                 P128_w0 = C1 * __CY;
             }
@@ -813,7 +813,7 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
+                final long __CY = bid_ten2mk64[ind - 1];
                 P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                 P128_w0 = C1 * __CY;
             }
@@ -943,7 +943,7 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
+                final long __CY = bid_ten2mk64[ind - 1];
                 P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                 P128_w0 = C1 * __CY;
             }
@@ -1068,7 +1068,7 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
+                final long __CY = bid_ten2mk64[ind - 1];
                 P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
                 // P128_w0 = C1 * __CY; // @optimization
             }

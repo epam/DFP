@@ -856,7 +856,7 @@ class JavaImplFma {
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT_new, coefficient_b, bid_reciprocals10_64[extra_digits]);
                     {
-                        long __CY = bid_reciprocals10_64[extra_digits];
+                        final long __CY = bid_reciprocals10_64[extra_digits];
                         CT_new_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
                         CT_new_w0 = coefficient_b * __CY;
                     }
