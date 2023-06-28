@@ -24,6 +24,10 @@ sourceSets {
 }
 
 compileJava {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+compileTestJava {
     sourceCompatibility = 8
     targetCompatibility = 8
 }
