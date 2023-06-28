@@ -366,7 +366,7 @@ class JavaImplDiv {
 
                 //__mul_64x64_to_128 (CT, Q, bid_reciprocals10_64[nzeros]);
                 CT_w1 = Mul64Impl.unsignedMultiplyHigh(Q, bid_reciprocals10_64[nzeros]);
-                CT_w0 = Q * bid_reciprocals10_64[nzeros];
+                // CT_w0 = Q * bid_reciprocals10_64[nzeros]; // @optimization
 
                 // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                 amount = bid_short_recip_scale[nzeros];
@@ -415,7 +415,7 @@ class JavaImplDiv {
                 if (nzeros != 0) {
                     //__mul_64x64_to_128 (CT, Q, bid_reciprocals10_64[nzeros]);
                     CT_w1 = Mul64Impl.unsignedMultiplyHigh(Q, bid_reciprocals10_64[nzeros]);
-                    CT_w0 = Q * bid_reciprocals10_64[nzeros];
+                    // CT_w0 = Q * bid_reciprocals10_64[nzeros]; // @optimization
 
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[nzeros];
