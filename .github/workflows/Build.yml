@@ -204,10 +204,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: Download build-java artifacts
+      - name: Download java-jars artifacts
         uses: actions/download-artifact@v3
         with:
-          name: build-java
+          name: java-jars
       - name: Setup java
         uses: actions/setup-java@v3
         with:
