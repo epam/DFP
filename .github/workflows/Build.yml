@@ -194,7 +194,7 @@ jobs:
 
   test-java:
     runs-on: ${{ matrix.os }}
-    needs: [compress-native]
+    needs: [build-java]
     strategy:
       fail-fast: false
       matrix:
