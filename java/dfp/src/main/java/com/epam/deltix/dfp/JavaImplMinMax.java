@@ -142,25 +142,8 @@ class JavaImplMinMax {
 
             // otherwise adjust the x significand upwards
             // __mul_64x64_to_128MACH (sig_n_prime, sig_x, bid_mult_factor[exp_x - exp_y]); // @AD: Note: The __mul_64x64_to_128MACH macro is the same as __mul_64x64_to_128
-            {
-                final long __CX = sig_x;
-                final long __CY = bid_mult_factor[exp_x - exp_y];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                sig_n_prime_w1 = __PH + (__PM >>> 32);
-                sig_n_prime_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            sig_n_prime_w1 = Mul64Impl.unsignedMultiplyHigh(sig_x, bid_mult_factor[exp_x - exp_y]);
+            sig_n_prime_w0 = sig_x * bid_mult_factor[exp_x - exp_y];
 
 
             // if postitive, return whichever significand is larger
@@ -174,25 +157,8 @@ class JavaImplMinMax {
         }
         // adjust the y significand upwards
         // __mul_64x64_to_128MACH (sig_n_prime, sig_y, bid_mult_factor[exp_y - exp_x]); // @AD: Note: The __mul_64x64_to_128MACH macro is the same as __mul_64x64_to_128
-        {
-            final long __CX = sig_y;
-            final long __CY = bid_mult_factor[exp_y - exp_x];
-            long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-            __CXH = __CX >>> 32;
-            __CXL = LONG_LOW_PART & __CX;
-            __CYH = __CY >>> 32;
-            __CYL = LONG_LOW_PART & __CY;
-
-            __PM = __CXH * __CYL;
-            __PH = __CXH * __CYH;
-            __PL = __CXL * __CYL;
-            __PM2 = __CXL * __CYH;
-            __PH += (__PM >>> 32);
-            __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-            sig_n_prime_w1 = __PH + (__PM >>> 32);
-            sig_n_prime_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-        }
+        sig_n_prime_w1 = Mul64Impl.unsignedMultiplyHigh(sig_y, bid_mult_factor[exp_y - exp_x]);
+        sig_n_prime_w0 = sig_y * bid_mult_factor[exp_y - exp_x];
 
         // if postitive, return whichever significand is larger (converse if negative)
         if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {
@@ -336,25 +302,8 @@ class JavaImplMinMax {
         if (exp_x > exp_y) {    // to simplify the loop below,
             // otherwise adjust the x significand upwards
             // __mul_64x64_to_128MACH (sig_n_prime, sig_x, bid_mult_factor[exp_x - exp_y]); // @AD: Note: The __mul_64x64_to_128MACH macro is the same as __mul_64x64_to_128
-            {
-                final long __CX = sig_x;
-                final long __CY = bid_mult_factor[exp_x - exp_y];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                sig_n_prime_w1 = __PH + (__PM >>> 32);
-                sig_n_prime_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            sig_n_prime_w1 = Mul64Impl.unsignedMultiplyHigh(sig_x, bid_mult_factor[exp_x - exp_y]);
+            sig_n_prime_w0 = sig_x * bid_mult_factor[exp_x - exp_y];
 
             // if postitive, return whichever significand is larger
             // (converse if negative)
@@ -366,25 +315,8 @@ class JavaImplMinMax {
         }
         // adjust the y significand upwards
         // __mul_64x64_to_128MACH (sig_n_prime, sig_y, bid_mult_factor[exp_y - exp_x]); // @AD: Note: The __mul_64x64_to_128MACH macro is the same as __mul_64x64_to_128
-        {
-            final long __CX = sig_y;
-            final long __CY = bid_mult_factor[exp_y - exp_x];
-            long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-            __CXH = __CX >>> 32;
-            __CXL = LONG_LOW_PART & __CX;
-            __CYH = __CY >>> 32;
-            __CYL = LONG_LOW_PART & __CY;
-
-            __PM = __CXH * __CYL;
-            __PH = __CXH * __CYH;
-            __PL = __CXL * __CYL;
-            __PM2 = __CXL * __CYH;
-            __PH += (__PM >>> 32);
-            __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-            sig_n_prime_w1 = __PH + (__PM >>> 32);
-            sig_n_prime_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-        }
+        sig_n_prime_w1 = Mul64Impl.unsignedMultiplyHigh(sig_y, bid_mult_factor[exp_y - exp_x]);
+        sig_n_prime_w0 = sig_y * bid_mult_factor[exp_y - exp_x];
 
         // if postitive, return whichever significand is larger (converse if negative)
         if (sig_n_prime_w1 == 0 && (sig_n_prime_w0 == sig_x)) {

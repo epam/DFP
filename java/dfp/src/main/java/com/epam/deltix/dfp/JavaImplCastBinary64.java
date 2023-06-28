@@ -146,25 +146,8 @@ class JavaImplCastBinary64 {
                         long /*BID_UINT64*/ QM64;
 
                         //__mul_64x64_to_128(ALBL, cc_w0, pow5_w0);
-                        {
-                            long __CX = cc_w0;
-                            long __CY = pow5_w0;
-                            long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                            __CXH = __CX >>> 32;
-                            __CXL = LONG_LOW_PART & __CX;
-                            __CYH = __CY >>> 32;
-                            __CYL = LONG_LOW_PART & __CY;
-
-                            __PM = __CXH * __CYL;
-                            __PH = __CXH * __CYH;
-                            __PL = __CXL * __CYL;
-                            __PM2 = __CXL * __CYH;
-                            __PH += (__PM >>> 32);
-                            __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                            ALBL_w1 = __PH + (__PM >>> 32);
-                            ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                        }
+                        ALBL_w1 = Mul64Impl.unsignedMultiplyHigh(cc_w0, pow5_w0);
+                        ALBL_w0 = cc_w0 * pow5_w0;
 
 
                         QM64 = pow5_w0 * cc_w1 + cc_w0 * pow5_w1;
