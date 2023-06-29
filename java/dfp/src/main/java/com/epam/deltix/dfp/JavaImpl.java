@@ -29,6 +29,12 @@ class JavaImpl {
     public static final int MIN_EXPONENT = -383;
     public static final int MAX_EXPONENT = 384;
 
+    // See the https://www.agner.org/optimize/optimizing_assembly.pdf part 16.8 Division (all processors)
+    public static final long FAST_DIV10_RECIPROCAL = 0xCCCCCCCDL; // (2^FAST_DIV10_SHIFT) / 10
+    public static final int FAST_DIV10_SHIFT = 35;
+    public static final long FAST_DIV10_MUL10_MASK = 0x780000000L; // Highest nibble shifted out by FAST_DIV10_SHIFT
+    // (((1L << FAST_DIV10_SHIFT) - 1) >> (FAST_DIV10_SHIFT - 4)) << (FAST_DIV10_SHIFT - 4)
+
     public static long fromInt32(final int value) {
         final long longValue = value; // Fixes -Integer.MIN_VALUE
         return value >= 0 ? (0x31C00000L << 32) | longValue : (0xB1C00000L << 32) | -longValue;
@@ -143,7 +149,7 @@ class JavaImpl {
 
             // Check for non-canonical values.
             final long x = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-            coefficient = UnsignedLong.isGreater(x, MAX_COEFFICIENT) ? 0 : x;
+            coefficient = x > MAX_COEFFICIENT ? 0 : x;
 
             // Extract exponent.
             final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -161,15 +167,35 @@ class JavaImpl {
         if (coefficient == 0)
             return ZERO;
 
-        long div10 = coefficient / 10;
-        if (div10 * 10 != coefficient)
-            return value;
-
-        do {
-            coefficient = div10;
-            div10 /= 10;
-            ++exponent;
-        } while (div10 * 10 == coefficient);
+        if ((int) coefficient == coefficient) {
+            long p = coefficient * FAST_DIV10_RECIPROCAL;
+            if ((p & FAST_DIV10_MUL10_MASK) != 0)
+                return value;
+            do {
+                coefficient = p >> FAST_DIV10_SHIFT;
+                p = coefficient * FAST_DIV10_RECIPROCAL;
+                ++exponent;
+            } while ((p & FAST_DIV10_MUL10_MASK) == 0);
+        } else {
+            long div10 = coefficient / 10;
+            if (div10 * 10 != coefficient)
+                return value;
+            do {
+                if ((int) div10 == div10) {
+                    long p;
+                    do {
+                        coefficient = div10;
+                        p = coefficient * FAST_DIV10_RECIPROCAL;
+                        div10 = p >> FAST_DIV10_SHIFT;
+                        ++exponent;
+                    } while ((p & FAST_DIV10_MUL10_MASK) == 0);
+                    break;
+                }
+                coefficient = div10;
+                div10 /= 10;
+                ++exponent;
+            } while (div10 * 10 == coefficient);
+        }
         return pack(signMask, exponent, coefficient, BID_ROUNDING_TO_NEAREST);
     }
 
@@ -190,7 +216,7 @@ class JavaImpl {
         if (isSpecial(value)) {
             // Check for non-canonical values.
             final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-            partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+            partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
             // Extract exponent.
             final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -250,7 +276,7 @@ class JavaImpl {
                 parts.exponent = 0;
 
                 parts.coefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-                if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+                if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
                     parts.coefficient = value & ~MASK_COEFFICIENT;
                 if (isInfinity(value))
                     parts.coefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -259,7 +285,7 @@ class JavaImpl {
 
             // Check for non-canonical values.
             final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-            parts.coefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+            parts.coefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
             // Extract exponent.
             final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -315,6 +341,17 @@ class JavaImpl {
             return y;
 
         for (long n = m; ; ) {
+            if ((int) n == n) {
+                long p;
+                while (true) {
+                    p = n * FAST_DIV10_RECIPROCAL;
+                    final long m10 = p >> FAST_DIV10_SHIFT;
+                    if ((p & FAST_DIV10_MUL10_MASK) != 0)
+                        return signAndExp + n;
+                    n = m10;
+                    signAndExp += 1L << EXPONENT_SHIFT_SMALL;
+                }
+            }
             final long m10 = n / 10;
             if (m10 * 10 != n)
                 return signAndExp + n;
@@ -353,7 +390,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -362,7 +399,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -479,7 +516,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -488,7 +525,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -627,7 +664,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -636,7 +673,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -719,7 +756,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -728,7 +765,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -868,7 +905,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -877,7 +914,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -1016,7 +1053,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -1025,7 +1062,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -1166,7 +1203,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -1175,7 +1212,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -1671,48 +1708,14 @@ class JavaImpl {
             final long QM2_0;
             final long QM2_1;
             {
-                final long CXH;
-                final long CXL;
-                final long CYH;
-                final long CYL;
-                final long PL;
-                long PH;
-                long PM;
-                final long PM2;
-                CXH = (C128_0) >>> 32;
-                CXL = C128_0 & UINT32_MAX;
-                CYH = (bid_reciprocals10_128[extra_digits][1]) >>> 32;
-                CYL = bid_reciprocals10_128[extra_digits][1] & UINT32_MAX;
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += (PM >>> 32);
-                PM = (PM & UINT32_MAX) + PM2 + (PL >>> 32);
-                ALBH_1 = PH + (PM >>> 32);
-                ALBH_0 = (PM << 32) + (PL & UINT32_MAX);
+                final long __CY = bid_reciprocals10_128[extra_digits][1];
+                ALBH_1 = Mul64Impl.unsignedMultiplyHigh(C128_0, __CY);
+                ALBH_0 = C128_0 * __CY;
             }
             {
-                final long CXH;
-                final long CXL;
-                final long CYH;
-                final long CYL;
-                final long PL;
-                long PH;
-                long PM;
-                final long PM2;
-                CXH = ((C128_0)) >>> 32;
-                CXL = C128_0 & UINT32_MAX;
-                CYH = (bid_reciprocals10_128[extra_digits][0]) >>> 32;
-                CYL = bid_reciprocals10_128[extra_digits][0] & UINT32_MAX;
-                PM = CXH * CYL;
-                PH = CXH * CYH;
-                PL = CXL * CYL;
-                PM2 = CXL * CYH;
-                PH += (PM >>> 32);
-                PM = (PM & UINT32_MAX) + PM2 + (PL >>> 32);
-                ALBL_1 = PH + (PM >>> 32);
-                ALBL_0 = (PM << 32) + (PL & UINT32_MAX);
+                final long __CY = bid_reciprocals10_128[extra_digits][0];
+                ALBL_1 = Mul64Impl.unsignedMultiplyHigh(C128_0, __CY);
+                ALBL_0 = C128_0 * __CY;
             }
             Q_low_0 = ALBL_0;
             {
@@ -2054,48 +2057,14 @@ class JavaImpl {
                     final long QM2_0;
                     final long QM2_1;
                     {
-                        final long CXH;
-                        final long CXL;
-                        final long CYH;
-                        final long CYL;
-                        final long PL;
-                        long PH;
-                        long PM;
-                        final long PM2;
-                        CXH = coefficient >>> 32;
-                        CXL = (int) ((coefficient));
-                        CYH = bid_reciprocals10_128[extra_digits][1] >>> 32;
-                        CYL = (int) bid_reciprocals10_128[extra_digits][1];
-                        PM = CXH * CYL;
-                        PH = CXH * CYH;
-                        PL = CXL * CYL;
-                        PM2 = CXL * CYH;
-                        PH += (PM >>> 32);
-                        PM = (PM & 0xFFFFFFFFL) + PM2 + (PL >> 32);
-                        ALBH_1 = PH + (PM >> 32);
-                        ALBH_0 = (PM << 32) + (int) PL;
+                        final long __CY = bid_reciprocals10_128[extra_digits][1];
+                        ALBH_1 = Mul64Impl.unsignedMultiplyHigh(coefficient, __CY);
+                        ALBH_0 = coefficient * __CY;
                     }
                     {
-                        final long CXH;
-                        final long CXL;
-                        final long CYH;
-                        final long CYL;
-                        final long PL;
-                        long PH;
-                        long PM;
-                        final long PM2;
-                        CXH = ((coefficient)) >>> 32;
-                        CXL = (int) ((coefficient));
-                        CYH = bid_reciprocals10_128[extra_digits][0] >>> 32;
-                        CYL = (int) bid_reciprocals10_128[extra_digits][0];
-                        PM = CXH * CYL;
-                        PH = CXH * CYH;
-                        PL = CXL * CYL;
-                        PM2 = CXL * CYH;
-                        PH += (PM >>> 32);
-                        PM = (PM & 0xFFFFFFFFL) + PM2 + (PL >>> 32);
-                        ALBL_1 = PH + (PM >>> 32);
-                        ALBL_0 = (PM << 32) + (PL & 0xFFFFFFFFL);
+                        final long __CY = bid_reciprocals10_128[extra_digits][0];
+                        ALBL_1 = Mul64Impl.unsignedMultiplyHigh(coefficient, __CY);
+                        ALBL_0 = coefficient * __CY;
                     }
                     Q_low_0 = ALBL_0;
                     {
@@ -2234,7 +2203,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -2242,7 +2211,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -2355,7 +2324,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -2431,7 +2400,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -2439,7 +2408,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;
@@ -3235,7 +3204,7 @@ class JavaImpl {
 //                    partsExponent = 0;
 //
 //                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-//                    if (UnsignedLong.isGreater(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT))
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
 //                        partsCoefficient = value & ~MASK_COEFFICIENT;
 //                    if (isInfinity(value))
 //                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
@@ -3243,7 +3212,7 @@ class JavaImpl {
                 {
                     // Check for non-canonical values.
                     final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
-                    partsCoefficient = UnsignedLong.isGreater(coefficient, MAX_COEFFICIENT) ? 0 : coefficient;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
 
                     // Extract exponent.
                     final long tmp = value >> EXPONENT_SHIFT_LARGE;

@@ -43,23 +43,14 @@ DFP was inspired on [Intel Decimal Floating-Point Math Library](https://software
 
 ## Supported platforms
 
-The Java DFP library does not contain native code, so all the JRE platforms must be supported.
+DFP for Java runs on all platforms where Java is supported.
 
-The Java DFP-Math library supports next platforms:
+DFP for .NET supports the following platforms:
 * x86-64 (Windows, Linux, Mac)
 * x86 (Windows, Linux)
 * arm64 (Linux, Mac)
 * arm7 (Linux)
 
-The .NET DFP and DFP-Math libraries supports next platforms:
-* x86-64 (Windows, Linux, Mac)
-* x86 (Windows, Linux)
-* arm64 (Linux, Mac)
-* arm7 (Linux)
-
-Linux Note: The Alpine Linux and other Linux distributions for the x86-64 platform are supported out of the box because the musl libc is statically linked with the native library. Other platforms require glibc.
-
-Mac Note: The Mac on the Apple M1 platform for now is supported through Rosetta application compatibility layer. We plan to support native arm64 platform in the future releases.
 
 ## Credits
 

@@ -264,12 +264,11 @@ public class Decimal64Utils {
     }
 
     /**
-     * Returns {@code true} if the supplied DFP64 value equals special {@code NULL} constant
-     * that corresponds to null reference of type {@link Decimal64}.
+     * Returns {@code true} if the supplied {@code DFP} value equals dedicated {@code NULL} constant
+     * (in the range of the NaN values) that imply null reference of type {@link Decimal64}.
      *
-     * @param value the DFP value being checked
-     * @return {@code true}, if {@code NULL}
-     * {@code false} otherwise
+     * @param value {@code DFP} value
+     * @return {@code true} for dedicated {@code NULL} constant
      */
     public static boolean isNull(@Decimal final long value) {
         return JavaImpl.isNull(value);
@@ -458,26 +457,66 @@ public class Decimal64Utils {
 
     /// region Classification
 
+    /**
+     * Checks is the {@code DFP} value is Not-a-Number.
+     * If you need check for all abnormal values use {@link #isNonFinite(long)} function.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for Not-a-Number values.
+     */
     public static boolean isNaN(@Decimal final long value) {
         return JavaImpl.isNaN(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is positive or negative infinity.
+     * If you need check for all abnormal values use {@link #isNonFinite(long)} function.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for positive or negative infinity.
+     */
     public static boolean isInfinity(@Decimal final long value) {
         return JavaImpl.isInfinity(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is positive infinity.
+     * If you need check for all abnormal values use {@link #isNonFinite(long)} function.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for positive infinity.
+     */
     public static boolean isPositiveInfinity(@Decimal final long value) {
         return JavaImpl.isPositiveInfinity(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is negative infinity.
+     * If you need check for all abnormal values use {@link #isNonFinite(long)} function.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for negative infinity.
+     */
     public static boolean isNegativeInfinity(@Decimal final long value) {
         return JavaImpl.isNegativeInfinity(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is a finite value: not a NaN, not a positive infinity, not a negative infinity.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for finite values.
+     */
     public static boolean isFinite(@Decimal final long value) {
         return JavaImpl.isFinite(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is abnormal: NaN or positive infinity or negative infinity.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for NaN or positive infinity or negative infinity.
+     */
     public static boolean isNonFinite(@Decimal final long value) {
         return JavaImpl.isNonFinite(value);
     }
@@ -518,26 +557,66 @@ public class Decimal64Utils {
         return JavaImplCmp.bid64_quiet_greater_equal(a, b);
     }
 
+    /**
+     * Checks is the {@code DFP} value is zero.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for zero.
+     */
     public static boolean isZero(@Decimal final long value) {
         return JavaImplCmp.bid64_isZero(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is not a zero or abnormal: NaN or positive infinity or negative infinity.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for not a zero or abnormal.
+     */
     public static boolean isNonZero(@Decimal final long value) {
         return !isZero(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is greater than zero.
+     * If you need check for values greater or equal to zero use {@link #isNonNegative(long)} function.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for values greater than zero.
+     */
     public static boolean isPositive(@Decimal final long value) {
         return JavaImplCmp.isPositive(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is less than zero.
+     * If you need check for values less or equal to zero use {@link #isNonPositive(long)} function.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for values less than zero.
+     */
     public static boolean isNegative(@Decimal final long value) {
         return JavaImplCmp.isNegative(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is less or equal to zero.
+     * If you need check for values strictly less than zero use {@link #isNegative(long)} function.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for values less or equal to zero.
+     */
     public static boolean isNonPositive(@Decimal final long value) {
         return JavaImplCmp.isNonPositive(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is greater or equal to zero.
+     * If you need check for values strictly greater than zero use {@link #isPositive(long)} function.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} for values greater or equal to zero.
+     */
     public static boolean isNonNegative(@Decimal final long value) {
         return JavaImplCmp.isNonNegative(value);
     }
@@ -1052,7 +1131,7 @@ public class Decimal64Utils {
                 return abnormalReturn;    // NaN or Infinity
             } else {
                 long coeff = (value & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
-                if (UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L))
+                if (coeff >= 10000000000000000L)
                     coeff = 0;
                 return sign ? -coeff : coeff;
             }
@@ -2013,8 +2092,8 @@ public class Decimal64Utils {
     /**
      * Implements {@link Decimal64#isRoundedToReciprocal(int)}, adds null check; do not use directly.
      *
-     * @param value     {@code DFP} argument to round
-     * @param r         the number whose reciprocal is rounded to
+     * @param value {@code DFP} argument to round
+     * @param r     the number whose reciprocal is rounded to
      * @return {@code DFP} the rounded value
      */
     @Decimal
@@ -2042,8 +2121,8 @@ public class Decimal64Utils {
     /**
      * Implements {@link Decimal64#isRounded(int)}, adds null check; do not use directly.
      *
-     * @param value     {@code DFP} argument to round
-     * @param n         the number of decimals to use when rounding the number
+     * @param value {@code DFP} argument to round
+     * @param n     the number of decimals to use when rounding the number
      * @return {@code DFP} the rounded value
      */
     @Decimal
@@ -2521,21 +2600,6 @@ public class Decimal64Utils {
     public static int compareToChecked(@Decimal final long a, final Object b) {
         checkNull(a);
         return compareTo(a, ((Decimal64) b).value);
-    }
-
-    /**
-     * Implements {@link Decimal64#tryParse(CharSequence, int, int, Decimal64Status)} do not use directly.
-     *
-     * @param text       Textual representation of dfp floating-point value.
-     * @param startIndex Index of character to start parsing at.
-     * @param endIndex   Index of character to stop parsing at, non-inclusive.
-     * @param outStatus  The parsing output status and value.
-     * @return Return {@code true} if value was parsed exactly without rounding.
-     */
-    @Deprecated
-    public static boolean tryParseChecked(final CharSequence text, final int startIndex, final int endIndex,
-                                          final Decimal64Status outStatus) {
-        return tryParse(text, startIndex, endIndex, outStatus);
     }
 
     /// endregion

@@ -25,7 +25,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -47,7 +47,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -136,22 +136,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // if (0 < f* < 10^(-x)) then the result is a midpoint
@@ -239,22 +226,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // if (0 < f* < 10^(-x)) then the result is a midpoint
@@ -331,22 +305,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -397,22 +358,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -463,22 +411,9 @@ class JavaImplRound {
 
                     //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
                     {
-                        long __CY = bid_ten2mk64[ind - 1];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = C1 >>> 32;
-                        __CXL = LONG_LOW_PART & C1;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        P128_w1 = __PH + (__PM >>> 32);
-                        P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        final long __CY = bid_ten2mk64[ind - 1];
+                        P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                        P128_w0 = C1 * __CY;
                     }
 
                     // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -528,7 +463,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -550,7 +485,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -606,22 +541,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                P128_w0 = C1 * __CY;
             }
 
             // if (0 < f* < 10^(-x)) then the result is a midpoint
@@ -674,7 +596,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -696,7 +618,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -755,22 +677,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                P128_w0 = C1 * __CY;
             }
 
             // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -823,7 +732,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -845,7 +754,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -904,22 +813,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                P128_w0 = C1 * __CY;
             }
 
             // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -971,7 +867,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -993,7 +889,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -1047,22 +943,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                P128_w0 = C1 * __CY;
             }
 
             // C* = floor(C*) (logical right shift; C has p decimal digits,
@@ -1107,7 +990,7 @@ class JavaImplRound {
 
         // check for NaNs and infinities
         if ((x & MASK_NAN) == MASK_NAN) {    // check for NaN
-            if (UnsignedLong.isGreater(x & 0x0003ffffffffffffL, 999999999999999L))
+            if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                 x = x & 0xfe00000000000000L;    // clear G6-G12 and the payload bits
             else
                 x = x & 0xfe03ffffffffffffL;    // clear G6-G12
@@ -1129,7 +1012,7 @@ class JavaImplRound {
             // the exponent is G[0:w+1]
             exp = (int) (((x & MASK_BINARY_EXPONENT2) >>> 51) - 398);
             C1 = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
-            if (UnsignedLong.isGreater(C1, 9999999999999999L)) {    // non-canonical
+            if (C1 > 9999999999999999L) {    // non-canonical
                 C1 = 0;
             }
         } else {    // if ((x & MASK_STEERING_BITS) != MASK_STEERING_BITS)
@@ -1185,22 +1068,9 @@ class JavaImplRound {
 
             //__mul_64x64_to_128(P128, C1, bid_ten2mk64[ind - 1]);
             {
-                long __CY = bid_ten2mk64[ind - 1];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C1 >>> 32;
-                __CXL = LONG_LOW_PART & C1;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                P128_w1 = __PH + (__PM >>> 32);
-                P128_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_ten2mk64[ind - 1];
+                P128_w1 = Mul64Impl.unsignedMultiplyHigh(C1, __CY);
+                // P128_w0 = C1 * __CY; // @optimization
             }
 
             // if (0 < f* < 10^(-x)) then the result is a midpoint

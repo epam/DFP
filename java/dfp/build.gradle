@@ -9,10 +9,37 @@ if (isReleaseVersion) {
 
 group = 'com.epam.deltix'
 
-sourceCompatibility = 1.7
+sourceSets {
+    java9 {
+        java {
+            srcDirs = ['src/main/java9']
+        }
+    }
+
+    java18 {
+        java {
+            srcDirs = ['src/main/java18']
+        }
+    }
+}
+
+compileJava {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
 compileTestJava {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+    sourceCompatibility = 8
+    targetCompatibility = 8
+}
+
+compileJava9Java {
+    sourceCompatibility = 9
+    targetCompatibility = 9
+}
+
+compileJava18Java {
+    sourceCompatibility = 18
+    targetCompatibility = 18
 }
 
 repositories {
@@ -25,6 +52,9 @@ java {
 }
 
 dependencies {
+    java9Implementation files(sourceSets.main.output.classesDirs) { builtBy compileJava }
+    java18Implementation files(sourceSets.main.output.classesDirs) { builtBy compileJava }
+
     testImplementation project(':java:testUtils')
     testImplementation 'junit:junit:4.+'
     testImplementation 'org.apache.commons:commons-math3:3.6.1'
@@ -97,8 +127,15 @@ if (isReleaseVersion) {
 }
 
 jar {
+    into('META-INF/versions/9') {
+        from sourceSets.java9.output
+    }
+    into('META-INF/versions/18') {
+        from sourceSets.java18.output
+    }
     manifest {
-        attributes 'Implementation-Title': 'Deltix Decimal Floating-Point Arithmetic Library',
+        attributes 'Multi-Release': 'true',
+            'Implementation-Title': 'Deltix Decimal Floating-Point Arithmetic Library',
             'Implementation-Version': archiveVersion,
             'Main-Class': 'com.epam.deltix.dfp.Demo'
     }
@@ -110,3 +147,29 @@ jar {
     }
 }
 
+task testsJar(type: Jar, dependsOn: [jar, testClasses, processTestResources]) {
+    archiveClassifier = 'tests'
+    from sourceSets.test.output
+}
+
+task copyTestDeps(type: Copy) {
+    from(sourceSets.test.runtimeClasspath) { include '*.jar' }
+    into('testLibs')
+}
+
+task copyTestJars(type: Copy, dependsOn: [testsJar, copyTestDeps]) {
+    from(jar.outputs.files)
+    from(testsJar.outputs.files)
+    into('testLibs')
+}
+
+task runTestJars(type: JavaExec) {
+    mainClass = 'org.junit.runner.JUnitCore'
+    classpath = files { file('testLibs').listFiles() }
+
+    def testClassesRoot = file('src/test/java').absolutePath
+    fileTree(dir: testClassesRoot, include: '**/*Test.java').each { File file ->
+        def ap = file.absolutePath
+        args += ap.substring(testClassesRoot.length() + 1, ap.length() - 5).replace(File.separator, '.')
+    }
+}

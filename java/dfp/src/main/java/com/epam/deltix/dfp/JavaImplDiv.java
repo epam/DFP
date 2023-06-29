@@ -90,7 +90,7 @@ class JavaImplDiv {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
@@ -99,7 +99,7 @@ class JavaImplDiv {
                     // coefficient
                     long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -131,7 +131,7 @@ class JavaImplDiv {
                 if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_y = 0;
                     coefficient_y = y & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((y & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_y = y & 0xfe00000000000000L;
                     if ((y & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_y = y & SINFINITY_MASK64;
@@ -140,7 +140,7 @@ class JavaImplDiv {
                     // coefficient
                     long coeff = (y & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_y = coeff;
                     // get exponent
@@ -231,25 +231,8 @@ class JavaImplDiv {
             T = bid_power10_table_128_w0[ed1];
 
             //__mul_64x64_to_128 (CA, A, T);
-            {
-                long __CX = A;
-                long __CY = T;
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                CA_w1 = __PH + (__PM >>> 32);
-                CA_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            CA_w1 = Mul64Impl.unsignedMultiplyHigh(A, T);
+            CA_w0 = A * T;
 
             Q = 0;
             diff_expon = diff_expon - ed2;
@@ -298,25 +281,8 @@ class JavaImplDiv {
             T = bid_power10_table_128_w0[ed2];
 
             //__mul_64x64_to_128 (CA, R, T);
-            {
-                long __CX = R;
-                long __CY = T;
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                CA_w1 = __PH + (__PM >>> 32);
-                CA_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            CA_w1 = Mul64Impl.unsignedMultiplyHigh(R, T);
+            CA_w0 = R * T;
 
             B = coefficient_y;
 
@@ -399,25 +365,8 @@ class JavaImplDiv {
                     nzeros = d5;
 
                 //__mul_64x64_to_128 (CT, Q, bid_reciprocals10_64[nzeros]);
-                {
-                    long __CX = Q;
-                    long __CY = bid_reciprocals10_64[nzeros];
-                    long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                    __CXH = __CX >>> 32;
-                    __CXL = LONG_LOW_PART & __CX;
-                    __CYH = __CY >>> 32;
-                    __CYL = LONG_LOW_PART & __CY;
-
-                    __PM = __CXH * __CYL;
-                    __PH = __CXH * __CYH;
-                    __PL = __CXL * __CYL;
-                    __PM2 = __CXL * __CYH;
-                    __PH += (__PM >>> 32);
-                    __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                    CT_w1 = __PH + (__PM >>> 32);
-                    CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                }
+                CT_w1 = Mul64Impl.unsignedMultiplyHigh(Q, bid_reciprocals10_64[nzeros]);
+                // CT_w0 = Q * bid_reciprocals10_64[nzeros]; // @optimization
 
                 // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                 amount = bid_short_recip_scale[nzeros];
@@ -465,25 +414,8 @@ class JavaImplDiv {
 
                 if (nzeros != 0) {
                     //__mul_64x64_to_128 (CT, Q, bid_reciprocals10_64[nzeros]);
-                    {
-                        long __CX = Q;
-                        long __CY = bid_reciprocals10_64[nzeros];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = __CX >>> 32;
-                        __CXL = LONG_LOW_PART & __CX;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        CT_w1 = __PH + (__PM >>> 32);
-                        CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                    }
+                    CT_w1 = Mul64Impl.unsignedMultiplyHigh(Q, bid_reciprocals10_64[nzeros]);
+                    // CT_w0 = Q * bid_reciprocals10_64[nzeros]; // @optimization
 
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[nzeros];
@@ -553,45 +485,11 @@ class JavaImplDiv {
             long _ALBL_w0, _ALBL_w1, _ALBH_w0, _ALBH_w1, _QM2_w0, _QM2_w1;
 
             //__mul_64x64_to_128(out ALBH, A, B.w1);
-            {
-                final long __CX = _A;
-                final long __CY = _B_w1;
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _ALBH_w1 = __PH + (__PM >>> 32);
-                _ALBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _ALBH_w1 = Mul64Impl.unsignedMultiplyHigh(_A, _B_w1);
+            _ALBH_w0 = _A * _B_w1;
             //__mul_64x64_to_128(out ALBL, A, B.w0);
-            {
-                final long __CX = _A;
-                final long __CY = _B_w0;
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _ALBL_w1 = __PH + (__PM >>> 32);
-                _ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _ALBL_w1 = Mul64Impl.unsignedMultiplyHigh(_A, _B_w0);
+            _ALBL_w0 = _A * _B_w0;
 
             Q_low_w0 = _ALBL_w0;
             //__add_128_64(out QM2, ALBH, ALBL.w1);
@@ -660,7 +558,7 @@ class JavaImplDiv {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
@@ -669,7 +567,7 @@ class JavaImplDiv {
                     // coefficient
                     long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent

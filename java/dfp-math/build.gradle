@@ -9,11 +9,7 @@ if (isReleaseVersion) {
 
 group = 'com.epam.deltix'
 
-sourceCompatibility = 1.7
-compileTestJava {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-}
+sourceCompatibility = 8
 
 repositories {
     mavenCentral()
@@ -133,4 +129,31 @@ jar {
 
 sourcesJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+task testsJar(type: Jar, dependsOn: [jar, testClasses, processTestResources]) {
+    archiveClassifier = 'tests'
+    from sourceSets.test.output
+}
+
+task copyTestDeps(type: Copy) {
+    from(sourceSets.test.runtimeClasspath) { include '*.jar' }
+    into('testLibs')
+}
+
+task copyTestJars(type: Copy, dependsOn: [testsJar, copyTestDeps]) {
+    from(jar.outputs.files)
+    from(testsJar.outputs.files)
+    into('testLibs')
+}
+
+task runTestJars(type: JavaExec) {
+    mainClass = 'org.junit.runner.JUnitCore'
+    classpath = files { file('testLibs').listFiles() }
+
+    def testClassesRoot = file('src/test/java').absolutePath
+    fileTree(dir: testClassesRoot, include: '**/*Test.java').each { File file ->
+        def ap = file.absolutePath
+        args += ap.substring(testClassesRoot.length() + 1, ap.length() - 5).replace(File.separator, '.')
+    }
 }

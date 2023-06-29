@@ -5,10 +5,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Random;
 
 import static com.epam.deltix.dfp.TestUtils.*;
@@ -676,7 +678,7 @@ public class Decimal64UtilsTest {
                 parameterTypes[0] = objectClass;
             }
 
-            for (int i=0; i<parameterTypes.length; ++i) {
+            for (int i = 0; i < parameterTypes.length; ++i) {
                 if (parameterTypes[i].equals(objectClass))
                     parameterTypes[i] = long.class;
             }
@@ -693,5 +695,81 @@ public class Decimal64UtilsTest {
             if (utilityMethod.getAnnotation(Deprecated.class) == null)
                 throw new RuntimeException("There is no @Deprecated annotation on method " + utilityMethod);
         }
+    }
+
+    @Test
+    public void signTest() {
+        final boolean printTable = false;
+
+        @Decimal final long[] x = {
+            Decimal64Utils.NEGATIVE_INFINITY,
+            Decimal64Utils.negate(Decimal64Utils.ONE),
+            Decimal64Utils.ZERO,
+            Decimal64Utils.ONE,
+            Decimal64Utils.POSITIVE_INFINITY,
+            Decimal64Utils.NaN};
+
+        if (printTable) {
+            System.out.print("| Function |");
+            for (final long value : x)
+                System.out.print(" " + Decimal64Utils.toString(value) + " |");
+            System.out.println();
+
+            System.out.print("| :--- |");
+            for (final long value : x)
+                System.out.print(" ---: |");
+            System.out.println();
+        }
+
+        checkSign("isPositive", x, new boolean[]{false, false, false, true, true, false}, printTable);
+        checkSign("isNonNegative", x, new boolean[]{false, false, true, true, true, false}, printTable);
+        checkSign("isNegative", x, new boolean[]{true, true, false, false, false, false}, printTable);
+        checkSign("isNonPositive", x, new boolean[]{true, true, true, false, false, false}, printTable);
+        checkSign("isInfinity", x, new boolean[]{true, false, false, false, true, false}, printTable);
+        checkSign("isPositiveInfinity", x, new boolean[]{false, false, false, false, true, false}, printTable);
+        checkSign("isNegativeInfinity", x, new boolean[]{true, false, false, false, false, false}, printTable);
+        checkSign("isNaN", x, new boolean[]{false, false, false, false, false, true}, printTable);
+        checkSign("isFinite", x, new boolean[]{false, true, true, true, false, false}, printTable);
+        checkSign("isNonFinite", x, new boolean[]{true, false, false, false, true, true}, printTable);
+        checkSign("isZero", x, new boolean[]{false, false, true, false, false, false}, printTable);
+        checkSign("isNonZero", x, new boolean[]{true, true, false, true, true, true}, printTable);
+    }
+
+    private static void checkSign(final String testFn, final long[] testValues, final boolean[] refValues, final boolean printTable) {
+        final Method method;
+        try {
+            method = Decimal64Utils.class.getMethod(testFn, long.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+
+        checkSign(testFn, (x) -> {
+            try {
+                return (Boolean) method.invoke(null, x);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }, testValues, refValues, printTable);
+    }
+
+    private static void checkSign(final String fnName, Function<Long, Boolean> testFn, final long[] testValues, final boolean[] refValues, final boolean printTable) {
+        if (testValues.length != refValues.length)
+            throw new RuntimeException("The testValues.length(=" + testValues.length + ") != refValues.length(" + refValues.length + ").");
+
+        if (printTable)
+            System.out.print("| " + fnName + " |");
+
+        for (int i = 0; i < testValues.length; ++i) {
+            final boolean testOut = testFn.apply(testValues[i]);
+            if (testOut != refValues[i]) {
+                throw new RuntimeException(fnName + "(" + Decimal64Utils.toString(testValues[i]) + ")(=" + testOut + ") != " + refValues[i]);
+            }
+
+            if (printTable)
+                System.out.print(" " + (testOut ? "**" + Boolean.toString(testOut).toUpperCase(Locale.ROOT) + "**" : testOut) + " |");
+        }
+
+        if (printTable)
+            System.out.println();
     }
 }

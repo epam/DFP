@@ -71,7 +71,7 @@ class JavaImplAdd {
             if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                 p.exponent = 0;
                 p.coefficient = x & 0xfe03ffffffffffffL;
-                if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                     p.coefficient = x & 0xfe00000000000000L;
                 if ((x & NAN_MASK64) == INFINITY_MASK64)
                     p.coefficient = x & SINFINITY_MASK64;
@@ -80,7 +80,7 @@ class JavaImplAdd {
                 // coefficient
                 long coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
                 // check for non-canonical values
-                if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                if (coeff >= 10000000000000000L)
                     coeff = 0;
                 p.coefficient = coeff;
                 // get exponent
@@ -170,14 +170,14 @@ class JavaImplAdd {
                 if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_x = 0;
                     coefficient_x = x & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(x & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((x & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_x = x & 0xfe00000000000000L;
                     if ((x & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_x = x & SINFINITY_MASK64;
                     valid_x = 0;    // NaN or Infinity
                 } else {
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_x = coeff;
                     // get exponent
@@ -208,14 +208,14 @@ class JavaImplAdd {
                 if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
                     exponent_y = 0;
                     coefficient_y = y & 0xfe03ffffffffffffL;
-                    if ((UnsignedLong.isGreaterOrEqual(y & 0x0003ffffffffffffL, 1000000000000000L)))
+                    if ((y & 0x0003ffffffffffffL) >= 1000000000000000L)
                         coefficient_y = y & 0xfe00000000000000L;
                     if ((y & NAN_MASK64) == INFINITY_MASK64)
                         coefficient_y = y & SINFINITY_MASK64;
                     valid_y = 0;    // NaN or Infinity
                 } else {
                     // check for non-canonical values
-                    if ((UnsignedLong.isGreaterOrEqual(coeff, 10000000000000000L)))
+                    if (coeff >= 10000000000000000L)
                         coeff = 0;
                     coefficient_y = coeff;
                     // get exponent
@@ -387,23 +387,9 @@ class JavaImplAdd {
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_a, bid_reciprocals10_64[extra_digits]);
             {
-                long __CX = coefficient_a;
-                long __CY = bid_reciprocals10_64[extra_digits];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                CT_w1 = __PH + (__PM >>> 32);
-                CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                final long __CY = bid_reciprocals10_64[extra_digits];
+                CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_a, __CY);
+                CT_w0 = coefficient_a * __CY;
             }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
@@ -443,23 +429,9 @@ class JavaImplAdd {
             // get P*(2^M[extra_digits])/10^extra_digits
             //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
             {
-                final long __CX = coefficient_b;
                 final long __CY = bid_reciprocals10_64[extra_digits];
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = __CX >>> 32;
-                __CXL = LONG_LOW_PART & __CX;
-                __CYH = __CY >>> 32;
-                __CYL = LONG_LOW_PART & __CY;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                CT_w1 = __PH + (__PM >>> 32);
-                CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
+                CT_w0 = coefficient_b * __CY;
             }
 
             // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
@@ -478,25 +450,8 @@ class JavaImplAdd {
                         // must divide coeff_a by 10
                         saved_ca = saved_ca + T1;
                         //__mul_64x64_to_128(CA, saved_ca, 0x3333333333333334L);
-                        {
-                            final long __CX = saved_ca;
-                            final long __CY = 0x3333333333333334L;
-                            long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                            __CXH = __CX >>> 32;
-                            __CXL = LONG_LOW_PART & __CX;
-                            __CYH = __CY >>> 32;
-                            __CYL = LONG_LOW_PART & __CY;
-
-                            __PM = __CXH * __CYL;
-                            __PH = __CXH * __CYH;
-                            __PL = __CXL * __CYL;
-                            __PM2 = __CXL * __CYH;
-                            __PH += (__PM >>> 32);
-                            __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                            CA_w1 = __PH + (__PM >>> 32);
-                            CA_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                        }
+                        CA_w1 = Mul64Impl.unsignedMultiplyHigh(saved_ca, 0x3333333333333334L);
+                        CA_w0 = saved_ca * 0x3333333333333334L;
                         //reciprocals10_64[1]);
                         coefficient_a = CA_w1 >>> 1;
                         rem_a =
@@ -513,23 +468,9 @@ class JavaImplAdd {
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT, coefficient_b, bid_reciprocals10_64[extra_digits]);
                     {
-                        final long __CX = coefficient_b;
                         final long __CY = bid_reciprocals10_64[extra_digits];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = __CX >>> 32;
-                        __CXL = LONG_LOW_PART & __CX;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        CT_w1 = __PH + (__PM >>> 32);
-                        CT_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        CT_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
+                        CT_w0 = coefficient_b * __CY;
                     }
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[extra_digits];
@@ -548,23 +489,9 @@ class JavaImplAdd {
                     // get P*(2^M[extra_digits])/10^extra_digits
                     //__mul_64x64_to_128(CT_new, coefficient_b, bid_reciprocals10_64[extra_digits]);
                     {
-                        final long __CX = coefficient_b;
                         final long __CY = bid_reciprocals10_64[extra_digits];
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = __CX >>> 32;
-                        __CXL = LONG_LOW_PART & __CX;
-                        __CYH = __CY >>> 32;
-                        __CYL = LONG_LOW_PART & __CY;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        CT_new_w1 = __PH + (__PM >>> 32);
-                        CT_new_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
+                        CT_new_w1 = Mul64Impl.unsignedMultiplyHigh(coefficient_b, __CY);
+                        CT_new_w0 = coefficient_b * __CY;
                     }
                     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
                     amount = bid_short_recip_scale[extra_digits];

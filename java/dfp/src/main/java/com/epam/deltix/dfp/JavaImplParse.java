@@ -509,41 +509,11 @@ class JavaImplParse {
             long _ALBL_w0, _ALBL_w1, _ALBH_w0, _ALBH_w1, _QM2_w0, _QM2_w1;
 
             //__mul_64x64_to_128(out ALBH, A, B.w1);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C128_w0 >>> 32;
-                __CXL = LONG_LOW_PART & C128_w0;
-                __CYH = _B_w1 >>> 32;
-                __CYL = LONG_LOW_PART & _B_w1;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _ALBH_w1 = __PH + (__PM >>> 32);
-                _ALBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _ALBH_w1 = Mul64Impl.unsignedMultiplyHigh(C128_w0, _B_w1);
+            _ALBH_w0 = C128_w0 * _B_w1;
             //__mul_64x64_to_128(out ALBL, A, B.w0);
-            {
-                long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                __CXH = C128_w0 >>> 32;
-                __CXL = LONG_LOW_PART & C128_w0;
-                __CYH = _B_w0 >>> 32;
-                __CYL = LONG_LOW_PART & _B_w0;
-
-                __PM = __CXH * __CYL;
-                __PH = __CXH * __CYH;
-                __PL = __CXL * __CYL;
-                __PM2 = __CXL * __CYH;
-                __PH += (__PM >>> 32);
-                __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                _ALBL_w1 = __PH + (__PM >>> 32);
-                _ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-            }
+            _ALBL_w1 = Mul64Impl.unsignedMultiplyHigh(C128_w0, _B_w0);
+            _ALBL_w0 = C128_w0 * _B_w0;
 
             Q_low_w0 = _ALBL_w0;
             //__add_128_64(out QM2, ALBH, ALBL.w1);
@@ -688,41 +658,11 @@ class JavaImplParse {
                     long _ALBL_w0, _ALBL_w1, _ALBH_w0, _ALBH_w1, _QM2_w0, _QM2_w1;
 
                     //__mul_64x64_to_128(out ALBH, A, B.w1);
-                    {
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = coeff >>> 32;
-                        __CXL = LONG_LOW_PART & coeff;
-                        __CYH = _B_w1 >>> 32;
-                        __CYL = LONG_LOW_PART & _B_w1;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        _ALBH_w1 = __PH + (__PM >>> 32);
-                        _ALBH_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                    }
+                    _ALBH_w1 = Mul64Impl.unsignedMultiplyHigh(coeff, _B_w1);
+                    _ALBH_w0 = coeff * _B_w1;
                     //__mul_64x64_to_128(out ALBL, A, B.w0);
-                    {
-                        long __CXH, __CXL, __CYH, __CYL, __PL, __PH, __PM, __PM2;
-                        __CXH = coeff >>> 32;
-                        __CXL = LONG_LOW_PART & coeff;
-                        __CYH = _B_w0 >>> 32;
-                        __CYL = LONG_LOW_PART & _B_w0;
-
-                        __PM = __CXH * __CYL;
-                        __PH = __CXH * __CYH;
-                        __PL = __CXL * __CYL;
-                        __PM2 = __CXL * __CYH;
-                        __PH += (__PM >>> 32);
-                        __PM = (LONG_LOW_PART & __PM) + __PM2 + (__PL >>> 32);
-
-                        _ALBL_w1 = __PH + (__PM >>> 32);
-                        _ALBL_w0 = (__PM << 32) + (LONG_LOW_PART & __PL);
-                    }
+                    _ALBL_w1 = Mul64Impl.unsignedMultiplyHigh(coeff, _B_w0);
+                    _ALBL_w0 = coeff * _B_w0;
 
                     Q_low_w0 = _ALBL_w0;
                     //__add_128_64(out QM2, ALBH, ALBL.w1);
