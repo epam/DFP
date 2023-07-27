@@ -15,8 +15,9 @@ import static com.epam.deltix.dfp.JavaImplAdd.LONG_LOW_PART;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-@Warmup(time = 3, iterations = 1)
+@Warmup(time = 3, iterations = 3)
 @Measurement(time = 3, iterations = 3)
+@Fork(3)
 @State(Scope.Thread)
 public class MulBenchmark {
     private long[] decimalValues;
