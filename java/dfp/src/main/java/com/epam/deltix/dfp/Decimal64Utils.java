@@ -530,7 +530,7 @@ public class Decimal64Utils {
     /// region Comparison
 
     public static int compareTo(@Decimal final long a, @Decimal final long b) {
-        return JavaImplCmp.compare(a, b);
+        return JavaImplCmp.compareNew(a, b);
     }
 
     public static boolean isEqual(@Decimal final long a, @Decimal final long b) {
