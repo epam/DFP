@@ -420,7 +420,7 @@ class JavaImpl {
         }
 
         if (0 == partsCoefficient)
-            return appendable.append('0');
+            return appendable.append("0.0");
 
         if (value < 0)
             appendable.append('-');
@@ -432,6 +432,7 @@ class JavaImpl {
             appendLongTo(partsCoefficient, appendable, digits);
             for (int i = 0; i < exponent; i += 1)
                 appendable.append('0');
+            appendable.append(".0");
         } else if (digits + exponent > 0) {
             final long integralPart = partsCoefficient / POWERS_OF_TEN[-exponent];
             final long fractionalPart = partsCoefficient % POWERS_OF_TEN[-exponent];
@@ -441,6 +442,8 @@ class JavaImpl {
                 for (int i = numberOfDigits(fractionalPart); i < -exponent; i += 1)
                     appendable.append('0');
                 appendLongTo(dropTrailingZeros(fractionalPart), appendable);
+            } else {
+                appendable.append(".0");
             }
         } else {
             appendable.append("0.");
@@ -546,16 +549,18 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return "0";
+            return "0.0";
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
         final char[] buffer = CHAR_BUFFER.get();
 
         if (exponent >= 0) {
-            int bi = buffer.length - exponent;
-            for (int i = buffer.length - exponent; i < buffer.length; ++i)
-                buffer[i] = '0';
+            int bi = buffer.length;
+            buffer[--bi] = '0';
+            buffer[--bi] = '.';
+            for (int i = 0; i < exponent; ++i)
+                buffer[--bi] = '0';
 
             while (partsCoefficient > 0) {
                 bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
@@ -608,8 +613,8 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                if (buffer[be - 1] == '.')
-                    --be;
+                if (buffer[be - 1] == '.' && be < buffer.length)
+                    buffer[be++] = '0';
 
                 return new String(buffer, bi, be - bi);
 
@@ -786,16 +791,18 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return stringBuilder.append('0');
+            return stringBuilder.append("0.0");
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
         final char[] buffer = CHAR_BUFFER.get();
 
         if (exponent >= 0) {
-            int bi = buffer.length - exponent;
-            for (int i = buffer.length - exponent; i < buffer.length; ++i)
-                buffer[i] = '0';
+            int bi = buffer.length;
+            buffer[--bi] = '0';
+            buffer[--bi] = '.';
+            for (int i = 0; i < exponent; ++i)
+                buffer[--bi] = '0';
 
             while (partsCoefficient > 0) {
                 bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
@@ -848,8 +855,8 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                if (buffer[be - 1] == '.')
-                    --be;
+                if (buffer[be - 1] == '.' && be < buffer.length)
+                    buffer[be++] = '0';
 
                 return stringBuilder.append(buffer, bi, be - bi);
 
@@ -1083,7 +1090,7 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return appendable.append('0');
+            return appendable.append("0.0");
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
@@ -1091,9 +1098,11 @@ class JavaImpl {
         final char[] buffer = charBuffer.buffer;
 
         if (exponent >= 0) {
-            int bi = buffer.length - exponent;
-            for (int i = buffer.length - exponent; i < buffer.length; ++i)
-                buffer[i] = '0';
+            int bi = buffer.length;
+            buffer[--bi] = '0';
+            buffer[--bi] = '.';
+            for (int i = 0; i < exponent; ++i)
+                buffer[--bi] = '0';
 
             while (partsCoefficient > 0) {
                 bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
@@ -1146,8 +1155,8 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                if (buffer[be - 1] == '.')
-                    --be;
+                if (buffer[be - 1] == '.' && be < buffer.length)
+                    buffer[be++] = '0';
 
                 return appendable.append(charBuffer.setRange(bi, be - bi));
 

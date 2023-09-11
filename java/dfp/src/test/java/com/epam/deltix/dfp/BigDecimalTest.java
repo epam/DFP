@@ -40,7 +40,9 @@ public class BigDecimalTest {
     }
 
     private static void toBigDecimalAndBack(@Decimal final long aD64) {
-        final String aStr = Decimal64Utils.toString(aD64);
+        String aStr = Decimal64Utils.toString(aD64);
+        if (aStr.endsWith(".0"))
+            aStr = aStr.substring(0, aStr.length() - 2);
 
         final BigDecimal big = Decimal64Utils.toBigDecimal(aD64);
 
@@ -94,10 +96,10 @@ public class BigDecimalTest {
 
         final String aStr = a.toPlainString();
         String bStr = Decimal64Utils.toString(b);
-        if (!aStr.contains(".") && aStr.length() != bStr.length())
+        if (!aStr.contains(".") && (aStr.length() + 2) != bStr.length())
             throw new RuntimeException("BigDecimal(=" + a + ") conversion to Decimal64 order mismatch.");
 
-        bStr = trimBackZerosAndDot(Decimal64Utils.toString(b));
+        bStr = trimBackZerosAndDot(bStr.endsWith(".0") ? bStr.substring(0, bStr.length() - 2) : bStr);
         if (!bStr.isEmpty())
             bStr = bStr.substring(0, bStr.length() - 1); // Remove rounded symbol
 
