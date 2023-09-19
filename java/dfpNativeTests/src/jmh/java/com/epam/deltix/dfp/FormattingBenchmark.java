@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static com.epam.deltix.dfp.Decimal64Utils.*;
 import static com.epam.deltix.dfp.MathBenchmark.fixedSeed;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -38,26 +39,26 @@ public class FormattingBenchmark {
     @Benchmark
     public Appendable appendToRefImplRet() throws IOException {
         stringBuilder.setLength(0);
-        JavaImpl.appendToRefImpl(decimalValue, stringBuilder);
+        JavaImpl.appendToRefImpl(decimalValue, DECIMAL_MARK_DEFAULT, stringBuilder);
         return stringBuilder;
     }
 
     @Benchmark
     public void appendToRefImplBlackHole(Blackhole bh) throws IOException {
         stringBuilder.setLength(0);
-        bh.consume(JavaImpl.appendToRefImpl(decimalValue, stringBuilder));
+        bh.consume(JavaImpl.appendToRefImpl(decimalValue, DECIMAL_MARK_DEFAULT, stringBuilder));
     }
 
     @Benchmark
     public void fastAppendToAppendable(Blackhole bh) throws IOException {
         stringBuilder.setLength(0);
-        bh.consume(JavaImpl.fastAppendToAppendable(decimalValue, stringBuilder));
+        bh.consume(JavaImpl.fastAppendToAppendable(decimalValue, DECIMAL_MARK_DEFAULT, stringBuilder));
     }
 
     @Benchmark
     public void fastAppendToStringBuilder(Blackhole bh) {
         stringBuilder.setLength(0);
-        bh.consume(JavaImpl.fastAppendToStringBuilder(decimalValue, stringBuilder));
+        bh.consume(JavaImpl.fastAppendToStringBuilder(decimalValue, DECIMAL_MARK_DEFAULT, stringBuilder));
     }
 
     @Benchmark
@@ -82,7 +83,7 @@ public class FormattingBenchmark {
     public void toStringJavaImpl(Blackhole bh) {
         for (int i = 0; i < decimalValues.length; ++i) {
             try {
-                bh.consume(JavaImpl.appendToRefImpl(decimalValues[i], new StringBuilder()).toString());
+                bh.consume(JavaImpl.appendToRefImpl(decimalValues[i], DECIMAL_MARK_DEFAULT, new StringBuilder()).toString());
             } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
@@ -92,13 +93,13 @@ public class FormattingBenchmark {
     @Benchmark
     public void toStringJavaFastImpl(Blackhole bh) {
         for (int i = 0; i < decimalValues.length; ++i)
-            bh.consume(JavaImpl.fastToString(decimalValues[i]));
+            bh.consume(JavaImpl.fastToString(decimalValues[i], DECIMAL_MARK_DEFAULT));
     }
 
     @Benchmark
     public void toScientificStringJavaFastImpl(Blackhole bh) {
         for (int i = 0; i < decimalValues.length; ++i)
-            bh.consume(JavaImpl.fastToScientificString(decimalValues[i]));
+            bh.consume(JavaImpl.fastToScientificString(decimalValues[i], DECIMAL_MARK_DEFAULT));
     }
 
     public static void main(String[] args) throws RunnerException {
