@@ -40,6 +40,11 @@ namespace EPAM.Deltix.DFP
 		public static readonly int MaxExponent = 384;
 		public static readonly int MinExponent = -383;
 
+		public const char DecimalMarkDot = '.';
+		public const char DecimalMarkComma = ',';
+		public const char DecimalMarkDefault = DecimalMarkDot;
+		public static string DecimalMarkAny = "" + DecimalMarkDot + DecimalMarkComma;
+
 		#endregion
 
 		public UInt64 Bits { get; }
@@ -53,7 +58,12 @@ namespace EPAM.Deltix.DFP
 
 		public override String ToString()
 		{
-			return DotNetImpl.ToString(Bits);
+			return DotNetImpl.ToString(Bits, DecimalMarkDefault);
+		}
+
+		public String ToString(char decimalMark)
+		{
+			return DotNetImpl.ToString(Bits, decimalMark);
 			//return ((Double)this).ToString(CultureInfo.InvariantCulture);
 		}
 
@@ -986,17 +996,32 @@ namespace EPAM.Deltix.DFP
 
 		public String ToScientificString()
 		{
-			return DotNetImpl.ToScientificString(Bits);
+			return DotNetImpl.ToScientificString(Bits, DecimalMarkDefault);
+		}
+
+		public String ToScientificString(char decimalMark)
+		{
+			return DotNetImpl.ToScientificString(Bits, decimalMark);
 		}
 
 		public StringBuilder AppendTo(StringBuilder text)
 		{
-			return DotNetImpl.AppendTo(Bits, text);
+			return DotNetImpl.AppendTo(Bits, DecimalMarkDefault, text);
+		}
+
+		public StringBuilder AppendTo(char decimalMark, StringBuilder text)
+		{
+			return DotNetImpl.AppendTo(Bits, decimalMark, text);
 		}
 
 		public StringBuilder ScientificAppendTo(StringBuilder text)
 		{
-			return DotNetImpl.ScientificAppendTo(Bits, text);
+			return DotNetImpl.ScientificAppendTo(Bits, DecimalMarkDefault, text);
+		}
+
+		public StringBuilder ScientificAppendTo(char decimalMark, StringBuilder text)
+		{
+			return DotNetImpl.ScientificAppendTo(Bits, decimalMark, text);
 		}
 
 		#endregion

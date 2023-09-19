@@ -229,7 +229,7 @@ namespace EPAM.Deltix.DFP
 			{
 				DecimalNet* decPtr = (DecimalNet*)&dec;
 				ulong sign = ((ulong)decPtr->flags & 0x80000000UL) << 32;
-				int exp = -((int)(decPtr ->flags >> 16) & 0xFF);
+				int exp = -((int)(decPtr->flags >> 16) & 0xFF);
 				ulong mantissa;
 				if (decPtr->hi == 0)
 				{
@@ -1158,7 +1158,7 @@ namespace EPAM.Deltix.DFP
 		#endregion
 		#region Formatting & Parsing
 
-		public static String ToString(UInt64 value)
+		public static String ToString(UInt64 value, char decimalMark)
 		{
 			if (!IsFinite(value))
 			{
@@ -1234,7 +1234,7 @@ namespace EPAM.Deltix.DFP
 					{
 						Int64 old = coefficient + '0';
 						coefficient /= 10;
-						*p = '.';
+						*p = decimalMark;
 						p += 0 == dotPos-- ? -1 : 0; // Hopefully branch-free method to insert decimal dot
 						*p-- = (char)(old - coefficient * 10); // = [old - new * 10]
 					} while (coefficient != 0);
@@ -1243,7 +1243,7 @@ namespace EPAM.Deltix.DFP
 					{
 						for (; dotPos > 0; --dotPos)
 							*p-- = '0';
-						p[0] = '.';
+						p[0] = decimalMark;
 						p[-1] = '0';
 						p -= 2;
 					}
@@ -1256,7 +1256,7 @@ namespace EPAM.Deltix.DFP
 						if ('0' == *e)
 						{
 							while ('0' == *--e) { }
-							if ('.' == *e)
+							if (decimalMark == *e)
 								--e;
 						}
 					}
@@ -1267,7 +1267,7 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
-		public static string ToScientificString(UInt64 value)
+		public static string ToScientificString(UInt64 value, char decimalMark)
 		{
 			if (IsNull(value))
 				return "null";
@@ -1285,7 +1285,7 @@ namespace EPAM.Deltix.DFP
 			UInt64 coefficient = Unpack(value, out sign, out exponent);
 
 			if (coefficient == 0)
-				return "0.000000000000000e+000";
+				return "0" + decimalMark + "000000000000000e+000";
 
 			exponent -= BaseExponent;
 
@@ -1308,7 +1308,7 @@ namespace EPAM.Deltix.DFP
 
 				bi--;
 				*bi = *(bi + 1);
-				*(bi + 1) = '.';
+				*(bi + 1) = decimalMark;
 
 				if (sign)
 					*--bi = '-';
@@ -1329,7 +1329,7 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
-		public static StringBuilder AppendTo(UInt64 value, StringBuilder text)
+		public static StringBuilder AppendTo(UInt64 value, char decimalMark, StringBuilder text)
 		{
 			if (!IsFinite(value))
 			{
@@ -1411,7 +1411,7 @@ namespace EPAM.Deltix.DFP
 					{
 						Int64 old = coefficient + '0';
 						coefficient /= 10;
-						*p = '.';
+						*p = decimalMark;
 						p += 0 == dotPos-- ? -1 : 0; // Hopefully branch-free method to insert decimal dot
 						*p-- = (char)(old - coefficient * 10); // = [old - new * 10]
 					} while (coefficient != 0);
@@ -1420,7 +1420,7 @@ namespace EPAM.Deltix.DFP
 					{
 						for (; dotPos > 0; --dotPos)
 							*p-- = '0';
-						p[0] = '.';
+						p[0] = decimalMark;
 						p[-1] = '0';
 						p -= 2;
 					}
@@ -1433,7 +1433,7 @@ namespace EPAM.Deltix.DFP
 						if ('0' == *e)
 						{
 							while ('0' == *--e) { }
-							if ('.' == *e)
+							if (decimalMark == *e)
 								--e;
 						}
 					}
@@ -1450,7 +1450,7 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
-		public static StringBuilder ScientificAppendTo(UInt64 value, StringBuilder text)
+		public static StringBuilder ScientificAppendTo(UInt64 value, char decimalMark, StringBuilder text)
 		{
 			if (IsNull(value))
 				return text.Append("null");
@@ -1467,7 +1467,7 @@ namespace EPAM.Deltix.DFP
 			UInt64 coefficient = Unpack(value, out sign, out exponent);
 
 			if (coefficient == 0)
-				return text.Append("0.000000000000000e+000");
+				return text.Append('0').Append(decimalMark).Append("000000000000000e+000");
 
 			exponent -= BaseExponent;
 
@@ -1490,7 +1490,7 @@ namespace EPAM.Deltix.DFP
 
 				bi--;
 				*bi = *(bi + 1);
-				*(bi + 1) = '.';
+				*(bi + 1) = decimalMark;
 
 				if (sign)
 					*--bi = '-';
