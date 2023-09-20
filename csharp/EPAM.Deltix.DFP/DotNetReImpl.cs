@@ -76,7 +76,7 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
-		public unsafe static BID_UINT64 bid64_from_string(string s, out _IDEC_flags pfpsf, string decimalMarks, int rnd_mode = BID_ROUNDING_TO_NEAREST/*, _EXC_MASKS_PARAM _EXC_INFO_PARAM*/)
+		public unsafe static BID_UINT64 bid64_from_string(string s, string decimalMarks, out _IDEC_flags pfpsf, int rnd_mode = BID_ROUNDING_TO_NEAREST/*, _EXC_MASKS_PARAM _EXC_INFO_PARAM*/)
 		{
 
 			BID_UINT64 coefficient_x = 0, rounded = 0;

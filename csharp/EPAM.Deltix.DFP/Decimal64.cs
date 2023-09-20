@@ -952,7 +952,18 @@ namespace EPAM.Deltix.DFP
 		public static Decimal64 Parse(String text)
 		{
 			uint fpsf;
-			var ret = DotNetReImpl.bid64_from_string(text, out fpsf);
+			var ret = DotNetReImpl.bid64_from_string(text, DecimalMarkAny, out fpsf);
+			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
+				throw new FormatException("Input string is not in a correct format.");
+			//else if ((fpsf & DotNetReImpl.BID_INEXACT_EXCEPTION) != 0)
+			//	throw new FormatException("Can't convert input string to value without precision loss.");
+			return FromUnderlying(ret);
+		}
+
+		public static Decimal64 Parse(String text, String decimalMarks)
+		{
+			uint fpsf;
+			var ret = DotNetReImpl.bid64_from_string(text, decimalMarks, out fpsf);
 			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
 				throw new FormatException("Input string is not in a correct format.");
 			//else if ((fpsf & DotNetReImpl.BID_INEXACT_EXCEPTION) != 0)
@@ -976,7 +987,15 @@ namespace EPAM.Deltix.DFP
 		public static Boolean TryParse(String text, out Decimal64 result, out StatusValue status)
 		{
 			uint fpsf;
-			result = FromUnderlying(DotNetReImpl.bid64_from_string(text, out fpsf));
+			result = FromUnderlying(DotNetReImpl.bid64_from_string(text, DecimalMarkAny, out fpsf));
+			status = (StatusValue)fpsf;
+			return status == StatusValue.Exact;
+		}
+
+		public static Boolean TryParse(String text, String decimalMarks, out Decimal64 result, out StatusValue status)
+		{
+			uint fpsf;
+			result = FromUnderlying(DotNetReImpl.bid64_from_string(text, decimalMarks, out fpsf));
 			status = (StatusValue)fpsf;
 			return status == StatusValue.Exact;
 		}
@@ -984,7 +1003,20 @@ namespace EPAM.Deltix.DFP
 		public static Boolean TryParse(String text, out Decimal64 result)
 		{
 			uint fpsf;
-			var ret = DotNetReImpl.bid64_from_string(text, out fpsf);
+			var ret = DotNetReImpl.bid64_from_string(text, DecimalMarkAny, out fpsf);
+			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
+			{
+				result = NaN;
+				return false;
+			}
+			result = FromUnderlying(ret);
+			return true;
+		}
+
+		public static Boolean TryParse(String text, String decimalMarks, out Decimal64 result)
+		{
+			uint fpsf;
+			var ret = DotNetReImpl.bid64_from_string(text, decimalMarks, out fpsf);
 			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
 			{
 				result = NaN;
