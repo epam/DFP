@@ -110,7 +110,7 @@ namespace EPAM.Deltix.DFP
 				bool cEqDot = decimalMarks.IndexOf(*ps) >= 0;
 
 				// detect special cases (INF or NaN)
-				if (cEqDot && (*ps < '0' || *ps > '9'))
+				if (!cEqDot && (*ps < '0' || *ps > '9'))
 				{
 					if (IsStrEq(ps, "inf") || IsStrEq(ps, "infinity")) // Infinity?
 					{
