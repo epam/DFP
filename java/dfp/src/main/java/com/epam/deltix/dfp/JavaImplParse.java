@@ -59,7 +59,7 @@ class JavaImplParse {
     }
 
     //public static long parse(final CharSequence s, final int si, final int ei, final int roundingMode)
-    public static long bid64_from_string(final CharSequence s, int si, int ei, final FloatingPointStatusFlag pfpsf, int rnd_mode /*= BID_ROUNDING_TO_NEAREST*/) {
+    public static long bid64_from_string(final CharSequence s, int si, int ei, final FloatingPointStatusFlag pfpsf, int rnd_mode /*= BID_ROUNDING_TO_NEAREST*/, final String decimalMarks) {
 
         long coefficient_x = 0, rounded = 0;
         int expon_x = 0, sgn_expon, ndigits, add_expon = 0, midpoint = 0, rounded_up = 0;
@@ -102,8 +102,10 @@ class JavaImplParse {
             }
         }
 
+        boolean cEqDot = decimalMarks.indexOf(c) >= 0;
+
         // detect special cases (INF or NaN)
-        if (c != '.' && (c < '0' || c > '9')) {
+        if (!cEqDot && (c < '0' || c > '9')) {
             if (IsStrEqIgnoreCase(s, ps, ei, "inf") || IsStrEqIgnoreCase(s, ps, ei, "infinity")) // Infinity?
             {
                 pfpsf.status = BID_EXACT_STATUS;
@@ -130,9 +132,9 @@ class JavaImplParse {
         int right_radix_leading_zeros = 0;
 
         // detect zero (and eliminate/ignore leading zeros)
-        if (c == '0' || c == '.') {
+        if (c == '0' || cEqDot) {
 
-            if (c == '.') {
+            if (cEqDot) {
                 rdx_pt_enc = 1;
                 ps++;
                 c = ps < ei ? s.charAt(ps) : '\0';
@@ -149,7 +151,7 @@ class JavaImplParse {
                 }
                 // if this character is a radix point, make sure we haven't already
                 // encountered one
-                if (c == '.') {
+                if (decimalMarks.indexOf(c) >= 0) {
                     if (rdx_pt_enc == 0) {
                         rdx_pt_enc = 1;
                         // if this is the first radix point, and the next character is NULL,
@@ -175,8 +177,69 @@ class JavaImplParse {
         c = ps < ei ? s.charAt(ps) : '\0';
 
         ndigits = 0;
-        while ((c >= '0' && c <= '9') || c == '.') {
-            if (c == '.') {
+        while ((c >= '0' && c <= '9') || (decimalMarks.indexOf(c) >= 0)) {
+            if (c >= '0' && c <= '9') {
+                dec_expon_scale += rdx_pt_enc;
+
+                ndigits++;
+                if (ndigits <= 16) {
+                    coefficient_x = (coefficient_x << 1) + (coefficient_x << 3);
+                    coefficient_x += (c - '0');
+                } else if (ndigits == 17) {
+                    // coefficient rounding
+                    switch (rnd_mode) {
+                        case BID_ROUNDING_TO_NEAREST:
+                            midpoint = (c == '5' && (coefficient_x & 1) == 0) ? 1 : 0;
+                            // if coefficient is even and c is 5, prepare to round up if
+                            // subsequent digit is nonzero
+                            // if str[MAXDIG+1] > 5, we MUST round up
+                            // if str[MAXDIG+1] == 5 and coefficient is ODD, ROUND UP!
+                            if (c > '5' || (c == '5' && (coefficient_x & 1) != 0)) {
+                                coefficient_x++;
+                                rounded_up = 1;
+                            }
+                            break;
+
+                        case BID_ROUNDING_DOWN:
+                            if (sign_x != 0) {
+                                coefficient_x++;
+                                rounded_up = 1;
+                            }
+                            break;
+                        case BID_ROUNDING_UP:
+                            if (sign_x == 0) {
+                                coefficient_x++;
+                                rounded_up = 1;
+                            }
+                            break;
+                        case BID_ROUNDING_TIES_AWAY:
+                            if (c >= '5') {
+                                coefficient_x++;
+                                rounded_up = 1;
+                            }
+                            break;
+                    }
+                    if (coefficient_x == 10000000000000000L) {
+                        coefficient_x = 1000000000000000L;
+                        add_expon = 1;
+                    }
+                    if (c > '0')
+                        rounded = 1;
+                    add_expon += 1;
+                } else { // ndigits > 17
+                    add_expon++;
+                    if (midpoint != 0 && c > '0') {
+                        coefficient_x++;
+                        midpoint = 0;
+                        rounded_up = 1;
+                    }
+                    if (c > '0')
+                        rounded = 1;
+                }
+                ps++;
+                c = ps < ei ? s.charAt(ps) : '\0';
+
+            } else { // decimalMarks.indexOf(c) >= 0
                 if (rdx_pt_enc != 0) {
                     pfpsf.status = BID_INVALID_FORMAT;
                     return NaN; // 0x7c00000000000000L | sign_x; // return NaN
@@ -184,67 +247,7 @@ class JavaImplParse {
                 rdx_pt_enc = 1;
                 ps++;
                 c = ps < ei ? s.charAt(ps) : '\0';
-                continue;
             }
-            dec_expon_scale += rdx_pt_enc;
-
-            ndigits++;
-            if (ndigits <= 16) {
-                coefficient_x = (coefficient_x << 1) + (coefficient_x << 3);
-                coefficient_x += (c - '0');
-            } else if (ndigits == 17) {
-                // coefficient rounding
-                switch (rnd_mode) {
-                    case BID_ROUNDING_TO_NEAREST:
-                        midpoint = (c == '5' && (coefficient_x & 1) == 0) ? 1 : 0;
-                        // if coefficient is even and c is 5, prepare to round up if
-                        // subsequent digit is nonzero
-                        // if str[MAXDIG+1] > 5, we MUST round up
-                        // if str[MAXDIG+1] == 5 and coefficient is ODD, ROUND UP!
-                        if (c > '5' || (c == '5' && (coefficient_x & 1) != 0)) {
-                            coefficient_x++;
-                            rounded_up = 1;
-                        }
-                        break;
-
-                    case BID_ROUNDING_DOWN:
-                        if (sign_x != 0) {
-                            coefficient_x++;
-                            rounded_up = 1;
-                        }
-                        break;
-                    case BID_ROUNDING_UP:
-                        if (sign_x == 0) {
-                            coefficient_x++;
-                            rounded_up = 1;
-                        }
-                        break;
-                    case BID_ROUNDING_TIES_AWAY:
-                        if (c >= '5') {
-                            coefficient_x++;
-                            rounded_up = 1;
-                        }
-                        break;
-                }
-                if (coefficient_x == 10000000000000000L) {
-                    coefficient_x = 1000000000000000L;
-                    add_expon = 1;
-                }
-                if (c > '0')
-                    rounded = 1;
-                add_expon += 1;
-            } else { // ndigits > 17
-                add_expon++;
-                if (midpoint != 0 && c > '0') {
-                    coefficient_x++;
-                    midpoint = 0;
-                    rounded_up = 1;
-                }
-                if (c > '0')
-                    rounded = 1;
-            }
-            ps++;
-            c = ps < ei ? s.charAt(ps) : '\0';
         }
 
         add_expon -= (dec_expon_scale + right_radix_leading_zeros);

@@ -367,7 +367,7 @@ class JavaImpl {
 //        }
 //    };
 
-    public static Appendable appendToRefImpl(final long value, final Appendable appendable) throws IOException {
+    public static Appendable appendToRefImpl(final long value, final char decimalMark, final Appendable appendable) throws IOException {
         if (isNull(value)) {
             return appendable.append("null");
         }
@@ -420,7 +420,7 @@ class JavaImpl {
         }
 
         if (0 == partsCoefficient)
-            return appendable.append('0');
+            return appendable.append("0" + decimalMark + "0");
 
         if (value < 0)
             appendable.append('-');
@@ -432,18 +432,21 @@ class JavaImpl {
             appendLongTo(partsCoefficient, appendable, digits);
             for (int i = 0; i < exponent; i += 1)
                 appendable.append('0');
+            appendable.append(decimalMark).append('0');
         } else if (digits + exponent > 0) {
             final long integralPart = partsCoefficient / POWERS_OF_TEN[-exponent];
             final long fractionalPart = partsCoefficient % POWERS_OF_TEN[-exponent];
             appendLongTo(integralPart, appendable);
             if (fractionalPart != 0L) {
-                appendable.append('.');
+                appendable.append(decimalMark);
                 for (int i = numberOfDigits(fractionalPart); i < -exponent; i += 1)
                     appendable.append('0');
                 appendLongTo(dropTrailingZeros(fractionalPart), appendable);
+            } else {
+                appendable.append(decimalMark).append('0');
             }
         } else {
-            appendable.append("0.");
+            appendable.append('0').append(decimalMark);
             for (int i = digits + exponent; i < 0; i += 1)
                 appendable.append('0');
             appendLongTo(dropTrailingZeros(partsCoefficient), appendable);
@@ -493,7 +496,7 @@ class JavaImpl {
         return table;
     }
 
-    public static String fastToString(final long value) {
+    public static String fastToString(final long value, final char decimalMark) {
         if (isNull(value))
             return "null";
 
@@ -546,16 +549,18 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return "0";
+            return "0" + decimalMark + "0";
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
         final char[] buffer = CHAR_BUFFER.get();
 
         if (exponent >= 0) {
-            int bi = buffer.length - exponent;
-            for (int i = buffer.length - exponent; i < buffer.length; ++i)
-                buffer[i] = '0';
+            int bi = buffer.length;
+            buffer[--bi] = '0';
+            buffer[--bi] = decimalMark;
+            for (int i = 0; i < exponent; ++i)
+                buffer[--bi] = '0';
 
             while (partsCoefficient > 0) {
                 bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
@@ -591,7 +596,7 @@ class JavaImpl {
 
                 bi = buffer.length + exponent; /* buffer.length - (-exponent) */
 
-                buffer[--bi] = '.';
+                buffer[--bi] = decimalMark;
 
                 while (integralPart > 0) {
                     bi = formatUIntFromBcdTable((int) (integralPart % BCD_DIVIDER), buffer, bi);
@@ -608,8 +613,8 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                if (buffer[be - 1] == '.')
-                    --be;
+                if (buffer[be - 1] == decimalMark && be < buffer.length)
+                    buffer[be++] = '0';
 
                 return new String(buffer, bi, be - bi);
 
@@ -626,7 +631,7 @@ class JavaImpl {
 
                 bi = buffer.length + exponent; /* buffer.length - (-exponent) */
 
-                buffer[--bi] = '.';
+                buffer[--bi] = decimalMark;
                 buffer[--bi] = '0';
 
                 if (value < 0)
@@ -641,7 +646,7 @@ class JavaImpl {
         }
     }
 
-    public static String fastToScientificString(final long value) {
+    public static String fastToScientificString(final long value, final char decimalMark) {
         if (isNull(value))
             return "null";
 
@@ -716,7 +721,7 @@ class JavaImpl {
 
         bi--;
         buffer[bi] = buffer[bi + 1];
-        buffer[bi + 1] = '.';
+        buffer[bi + 1] = decimalMark;
 
         if (value < 0)
             buffer[--bi] = '-';
@@ -733,7 +738,7 @@ class JavaImpl {
     }
 
     // Copy-paste of the fastToString
-    public static StringBuilder fastAppendToStringBuilder(final long value, final StringBuilder stringBuilder) {
+    public static StringBuilder fastAppendToStringBuilder(final long value, final char decimalMark, final StringBuilder stringBuilder) {
         if (isNull(value))
             return stringBuilder.append("null");
 
@@ -786,16 +791,18 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return stringBuilder.append('0');
+            return stringBuilder.append('0').append(decimalMark).append('0');
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
         final char[] buffer = CHAR_BUFFER.get();
 
         if (exponent >= 0) {
-            int bi = buffer.length - exponent;
-            for (int i = buffer.length - exponent; i < buffer.length; ++i)
-                buffer[i] = '0';
+            int bi = buffer.length;
+            buffer[--bi] = '0';
+            buffer[--bi] = decimalMark;
+            for (int i = 0; i < exponent; ++i)
+                buffer[--bi] = '0';
 
             while (partsCoefficient > 0) {
                 bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
@@ -831,7 +838,7 @@ class JavaImpl {
 
                 bi = buffer.length + exponent; /* buffer.length - (-exponent) */
 
-                buffer[--bi] = '.';
+                buffer[--bi] = decimalMark;
 
                 while (integralPart > 0) {
                     bi = formatUIntFromBcdTable((int) (integralPart % BCD_DIVIDER), buffer, bi);
@@ -848,8 +855,8 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                if (buffer[be - 1] == '.')
-                    --be;
+                if (buffer[be - 1] == decimalMark && be < buffer.length)
+                    buffer[be++] = '0';
 
                 return stringBuilder.append(buffer, bi, be - bi);
 
@@ -866,7 +873,7 @@ class JavaImpl {
 
                 bi = buffer.length + exponent; /* buffer.length - (-exponent) */
 
-                buffer[--bi] = '.';
+                buffer[--bi] = decimalMark;
                 buffer[--bi] = '0';
 
                 if (value < 0)
@@ -882,7 +889,7 @@ class JavaImpl {
     }
 
     // Copy-paste of the fastToScientificString
-    public static StringBuilder fastScientificAppendToStringBuilder(final long value, final StringBuilder stringBuilder) {
+    public static StringBuilder fastScientificAppendToStringBuilder(final long value, final char decimalMark, final StringBuilder stringBuilder) {
         if (isNull(value))
             return stringBuilder.append("null");
 
@@ -957,7 +964,7 @@ class JavaImpl {
 
         bi--;
         buffer[bi] = buffer[bi + 1];
-        buffer[bi + 1] = '.';
+        buffer[bi + 1] = decimalMark;
 
         if (value < 0)
             buffer[--bi] = '-';
@@ -1030,7 +1037,7 @@ class JavaImpl {
         };
 
     // Copy-paste of the fastToString
-    public static Appendable fastAppendToAppendable(final long value, final Appendable appendable) throws IOException {
+    public static Appendable fastAppendToAppendable(final long value, final char decimalMark, final Appendable appendable) throws IOException {
         if (isNull(value))
             return appendable.append("null");
 
@@ -1083,7 +1090,7 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return appendable.append('0');
+            return appendable.append('0').append(decimalMark).append('0');
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
@@ -1091,9 +1098,11 @@ class JavaImpl {
         final char[] buffer = charBuffer.buffer;
 
         if (exponent >= 0) {
-            int bi = buffer.length - exponent;
-            for (int i = buffer.length - exponent; i < buffer.length; ++i)
-                buffer[i] = '0';
+            int bi = buffer.length;
+            buffer[--bi] = '0';
+            buffer[--bi] = decimalMark;
+            for (int i = 0; i < exponent; ++i)
+                buffer[--bi] = '0';
 
             while (partsCoefficient > 0) {
                 bi = formatUIntFromBcdTable((int) (partsCoefficient % BCD_DIVIDER), buffer, bi);
@@ -1129,7 +1138,7 @@ class JavaImpl {
 
                 bi = buffer.length + exponent; /* buffer.length - (-exponent) */
 
-                buffer[--bi] = '.';
+                buffer[--bi] = decimalMark;
 
                 while (integralPart > 0) {
                     bi = formatUIntFromBcdTable((int) (integralPart % BCD_DIVIDER), buffer, bi);
@@ -1146,8 +1155,8 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                if (buffer[be - 1] == '.')
-                    --be;
+                if (buffer[be - 1] == decimalMark && be < buffer.length)
+                    buffer[be++] = '0';
 
                 return appendable.append(charBuffer.setRange(bi, be - bi));
 
@@ -1164,7 +1173,7 @@ class JavaImpl {
 
                 bi = buffer.length + exponent; /* buffer.length - (-exponent) */
 
-                buffer[--bi] = '.';
+                buffer[--bi] = decimalMark;
                 buffer[--bi] = '0';
 
                 if (value < 0)
@@ -1180,7 +1189,7 @@ class JavaImpl {
     }
 
     // Copy-paste of the fastToScientificString
-    public static Appendable fastScientificAppendToAppendable(final long value, final Appendable appendable) throws IOException {
+    public static Appendable fastScientificAppendToAppendable(final long value, final char decimalMark, final Appendable appendable) throws IOException {
         if (isNull(value))
             return appendable.append("null");
 
@@ -1256,7 +1265,7 @@ class JavaImpl {
 
         bi--;
         buffer[bi] = buffer[bi + 1];
-        buffer[bi + 1] = '.';
+        buffer[bi + 1] = decimalMark;
 
         if (value < 0)
             buffer[--bi] = '-';
@@ -1420,7 +1429,7 @@ class JavaImpl {
         return new NumberFormatException(s.subSequence(si, ei).toString());
     }
 
-    public static long parse(final CharSequence s, final int si, final int ei, final int roundingMode) {
+    static long parse(final CharSequence s, final int si, final int ei, final int roundingMode, final String decimalMarks) {
         char c;
         int p = si;
         boolean sign = false;
@@ -1437,7 +1446,7 @@ class JavaImpl {
             c = p < ei ? s.charAt(p) : 0;
         }
 
-        if (c != '.' && (c < '0' || c > '9')) {
+        if (decimalMarks.indexOf(c) < 0 && (c < '0' || c > '9')) {
             if (TextUtils.equalsIgnoringCase(s, p, ei, "Infinity") ||
                 TextUtils.equalsIgnoringCase(s, p, ei, "Inf"))
                 return sign ? JavaImpl.NEGATIVE_INFINITY : JavaImpl.POSITIVE_INFINITY;
@@ -1450,8 +1459,8 @@ class JavaImpl {
         boolean seenRadixPoint = false;
         int leadingZerosAfterPoint = 0;
 
-        if (c == '0' || c == '.') {
-            if (c == '.') {
+        if (c == '0' || decimalMarks.indexOf(c) >= 0) {
+            if (decimalMarks.indexOf(c) >= 0) {
                 seenRadixPoint = true;
 
                 p += 1;
@@ -1465,7 +1474,7 @@ class JavaImpl {
                 if (seenRadixPoint)
                     leadingZerosAfterPoint += 1;
 
-                if (c == '.') {
+                if (decimalMarks.indexOf(c) >= 0) {
                     if (seenRadixPoint)
                         throw invalidFormat(s, si, ei);
                     seenRadixPoint = true;
@@ -1486,8 +1495,8 @@ class JavaImpl {
         boolean roundedUp = false, rounded = false, midpoint = false;
         int additionalExponent = 0;
 
-        while ((c >= '0' && c <= '9') || c == '.') {
-            if (c == '.') {
+        while ((c >= '0' && c <= '9') || decimalMarks.indexOf(c) >= 0) {
+            if (decimalMarks.indexOf(c) >= 0) {
                 if (seenRadixPoint)
                     throw invalidFormat(s, si, ei);
 

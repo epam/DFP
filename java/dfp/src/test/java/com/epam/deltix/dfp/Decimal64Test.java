@@ -261,14 +261,14 @@ public class Decimal64Test {
     @Test
     public void toStringTest() {
 
-        Assert.assertEquals("0", Decimal64.fromLong(0).toString());
-        Assert.assertEquals("42", Decimal64.fromLong(42).toString());
-        Assert.assertEquals(String.valueOf(Integer.MAX_VALUE), Decimal64.fromInt(Integer.MAX_VALUE).toString());
-        Assert.assertEquals(String.valueOf(Integer.MIN_VALUE), Decimal64.fromInt(Integer.MIN_VALUE).toString());
-        Assert.assertEquals(String.valueOf(Integer.MAX_VALUE), Decimal64.fromLong(Integer.MAX_VALUE).toString());
-        Assert.assertEquals(String.valueOf(Integer.MIN_VALUE), Decimal64.fromLong(Integer.MIN_VALUE).toString());
-        Assert.assertEquals(String.valueOf(Integer.MAX_VALUE), Decimal64.fromFixedPoint(Integer.MAX_VALUE, 0).toString());
-        Assert.assertEquals(String.valueOf(Integer.MIN_VALUE), Decimal64.fromFixedPoint(Integer.MIN_VALUE, 0).toString());
+        Assert.assertEquals("0.0", Decimal64.fromLong(0).toString());
+        Assert.assertEquals("42.0", Decimal64.fromLong(42).toString());
+        Assert.assertEquals(Integer.MAX_VALUE + ".0", Decimal64.fromInt(Integer.MAX_VALUE).toString());
+        Assert.assertEquals(Integer.MIN_VALUE + ".0", Decimal64.fromInt(Integer.MIN_VALUE).toString());
+        Assert.assertEquals(Integer.MAX_VALUE + ".0", Decimal64.fromLong(Integer.MAX_VALUE).toString());
+        Assert.assertEquals(Integer.MIN_VALUE + ".0", Decimal64.fromLong(Integer.MIN_VALUE).toString());
+        Assert.assertEquals(Integer.MAX_VALUE + ".0", Decimal64.fromFixedPoint(Integer.MAX_VALUE, 0).toString());
+        Assert.assertEquals(Integer.MIN_VALUE + ".0", Decimal64.fromFixedPoint(Integer.MIN_VALUE, 0).toString());
         Assert.assertEquals("123.456", Decimal64.fromDouble(123.456).toString());
         Assert.assertEquals("123.4567", Decimal64.fromFixedPoint(1234567, 4).toString());
 
@@ -282,8 +282,8 @@ public class Decimal64Test {
         Assert.assertEquals("Infinity", Decimal64.toString(Decimal64.POSITIVE_INFINITY));
         Assert.assertEquals("-Infinity", Decimal64.toString(Decimal64.NEGATIVE_INFINITY));
 
-        Assert.assertEquals("0", Decimal64.toString(Decimal64.ZERO));
-        Assert.assertEquals("1000000", Decimal64.toString(Decimal64.MILLION));
+        Assert.assertEquals("0.0", Decimal64.toString(Decimal64.ZERO));
+        Assert.assertEquals("1000000.0", Decimal64.toString(Decimal64.MILLION));
         Assert.assertEquals("0.01", Decimal64.toString(Decimal64.ONE_HUNDREDTH));
     }
 }
