@@ -76,7 +76,7 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
-		public unsafe static BID_UINT64 bid64_from_string(string s, out _IDEC_flags pfpsf, int rnd_mode = BID_ROUNDING_TO_NEAREST/*, _EXC_MASKS_PARAM _EXC_INFO_PARAM*/)
+		public unsafe static BID_UINT64 bid64_from_string(string s, string decimalMarks, out _IDEC_flags pfpsf, int rnd_mode = BID_ROUNDING_TO_NEAREST/*, _EXC_MASKS_PARAM _EXC_INFO_PARAM*/)
 		{
 
 			BID_UINT64 coefficient_x = 0, rounded = 0;
@@ -107,8 +107,10 @@ namespace EPAM.Deltix.DFP
 					}
 				}
 
+				bool cEqDot = decimalMarks.IndexOf(*ps) >= 0;
+
 				// detect special cases (INF or NaN)
-				if (*ps != '.' && (*ps < '0' || *ps > '9'))
+				if (!cEqDot && (*ps < '0' || *ps > '9'))
 				{
 					if (IsStrEq(ps, "inf") || IsStrEq(ps, "infinity")) // Infinity?
 					{
@@ -137,10 +139,10 @@ namespace EPAM.Deltix.DFP
 				int right_radix_leading_zeros = 0;
 
 				// detect zero (and eliminate/ignore leading zeros)
-				if (*ps == '0' || *ps == '.')
+				if (*ps == '0' || cEqDot)
 				{
 
-					if (*ps == '.')
+					if (cEqDot)
 					{
 						rdx_pt_enc = 1;
 						ps++;
@@ -158,7 +160,7 @@ namespace EPAM.Deltix.DFP
 						}
 						// if this character is a radix point, make sure we haven't already 
 						// encountered one
-						if (*ps == '.')
+						if (decimalMarks.IndexOf(*ps) >= 0)
 						{
 							if (rdx_pt_enc == 0)
 							{
@@ -189,9 +191,71 @@ namespace EPAM.Deltix.DFP
 				char c = *ps;
 
 				ndigits = 0;
-				while ((c >= '0' && c <= '9') || c == '.')
+				while ((c >= '0' && c <= '9') || (decimalMarks.IndexOf(c) >= 0))
 				{
-					if (c == '.')
+					if (c >= '0' && c <= '9')
+					{
+						dec_expon_scale += rdx_pt_enc;
+
+						ndigits++;
+						if (ndigits <= 16)
+						{
+							coefficient_x = (coefficient_x << 1) + (coefficient_x << 3);
+							coefficient_x += (BID_UINT64)(c - '0');
+						}
+						else if (ndigits == 17)
+						{
+							// coefficient rounding
+							switch (rnd_mode)
+							{
+								case BID_ROUNDING_TO_NEAREST:
+									midpoint = (c == '5' && (coefficient_x & 1) == 0) ? 1 : 0;
+									// if coefficient is even and c is 5, prepare to round up if 
+									// subsequent digit is nonzero
+									// if str[MAXDIG+1] > 5, we MUST round up
+									// if str[MAXDIG+1] == 5 and coefficient is ODD, ROUND UP!
+									if (c > '5' || (c == '5' && (coefficient_x & 1) != 0))
+									{
+										coefficient_x++;
+										rounded_up = 1;
+									}
+									break;
+
+								case BID_ROUNDING_DOWN:
+									if (sign_x != 0) { coefficient_x++; rounded_up = 1; }
+									break;
+								case BID_ROUNDING_UP:
+									if (sign_x == 0) { coefficient_x++; rounded_up = 1; }
+									break;
+								case BID_ROUNDING_TIES_AWAY:
+									if (c >= '5') { coefficient_x++; rounded_up = 1; }
+									break;
+							}
+							if (coefficient_x == 10000000000000000UL)
+							{
+								coefficient_x = 1000000000000000UL;
+								add_expon = 1;
+							}
+							if (c > '0')
+								rounded = 1;
+							add_expon += 1;
+						}
+						else
+						{ // ndigits > 17
+							add_expon++;
+							if (midpoint != 0 && c > '0')
+							{
+								coefficient_x++;
+								midpoint = 0;
+								rounded_up = 1;
+							}
+							if (c > '0')
+								rounded = 1;
+						}
+						ps++;
+						c = *ps;
+					}
+					else
 					{
 						if (rdx_pt_enc != 0)
 						{
@@ -201,67 +265,7 @@ namespace EPAM.Deltix.DFP
 						rdx_pt_enc = 1;
 						ps++;
 						c = *ps;
-						continue;
 					}
-					dec_expon_scale += rdx_pt_enc;
-
-					ndigits++;
-					if (ndigits <= 16)
-					{
-						coefficient_x = (coefficient_x << 1) + (coefficient_x << 3);
-						coefficient_x += (BID_UINT64)(c - '0');
-					}
-					else if (ndigits == 17)
-					{
-						// coefficient rounding
-						switch (rnd_mode)
-						{
-							case BID_ROUNDING_TO_NEAREST:
-								midpoint = (c == '5' && (coefficient_x & 1) == 0) ? 1 : 0;
-								// if coefficient is even and c is 5, prepare to round up if 
-								// subsequent digit is nonzero
-								// if str[MAXDIG+1] > 5, we MUST round up
-								// if str[MAXDIG+1] == 5 and coefficient is ODD, ROUND UP!
-								if (c > '5' || (c == '5' && (coefficient_x & 1) != 0))
-								{
-									coefficient_x++;
-									rounded_up = 1;
-								}
-								break;
-
-							case BID_ROUNDING_DOWN:
-								if (sign_x != 0) { coefficient_x++; rounded_up = 1; }
-								break;
-							case BID_ROUNDING_UP:
-								if (sign_x == 0) { coefficient_x++; rounded_up = 1; }
-								break;
-							case BID_ROUNDING_TIES_AWAY:
-								if (c >= '5') { coefficient_x++; rounded_up = 1; }
-								break;
-						}
-						if (coefficient_x == 10000000000000000UL)
-						{
-							coefficient_x = 1000000000000000UL;
-							add_expon = 1;
-						}
-						if (c > '0')
-							rounded = 1;
-						add_expon += 1;
-					}
-					else
-					{ // ndigits > 17
-						add_expon++;
-						if (midpoint != 0 && c > '0')
-						{
-							coefficient_x++;
-							midpoint = 0;
-							rounded_up = 1;
-						}
-						if (c > '0')
-							rounded = 1;
-					}
-					ps++;
-					c = *ps;
 				}
 
 				add_expon -= (dec_expon_scale + right_radix_leading_zeros);
