@@ -1575,6 +1575,29 @@ public class Decimal64Utils {
     }
 
     /**
+     * Parses a dfp floating-point value from the given textual representation.
+     * <p>
+     * Besides regular floating-point values (possibly in scientific notation) the following special cases are accepted:
+     * <ul>
+     * <li>{@code +Inf}, {@code Inf}, {@code +Infinity}, {@code Infinity} in any character case result in
+     * {@code Decimal64Utils.POSITIVE_INFINITY}</li>
+     * <li>{@code -Inf}, {@code -Infinity} in any character case result in
+     * {@code Decimal64Utils.NEGATIVE_INFINITY}</li>
+     * <li>{@code +NaN}, {@code -NaN}, {@code NaN} in any character case result in
+     * {@code Decimal64Utils.NaN}</li>
+     * </ul>
+     *
+     * @param text         Textual representation of dfp floating-point value.
+     * @param decimalMarks A decimal separators used to separate the integer part from the fractional part.
+     * @return parsed 64-bit decimal floating point value.
+     * @throws NumberFormatException if {@code text} does not contain a valid DFP value.
+     */
+    @Decimal
+    public static long parse(final CharSequence text, final String decimalMarks) {
+        return parse(text, 0, text.length(), decimalMarks);
+    }
+
+    /**
      * Tries to parse a dfp floating-point value from the given textual representation.
      * Returns the default value in case of fail.
      *
