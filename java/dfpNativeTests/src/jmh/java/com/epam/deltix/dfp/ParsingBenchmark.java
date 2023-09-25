@@ -23,8 +23,14 @@ public class ParsingBenchmark {
 
     @Benchmark
     @Decimal
-    public long parseDecimal() throws IOException {
+    public long parseDecimalDot() throws IOException {
         return Decimal64Utils.parse(stringValue);
+    }
+
+    @Benchmark
+    @Decimal
+    public long parseDecimalAny() throws IOException {
+        return Decimal64Utils.parse(stringValue, Decimal64Utils.DECIMAL_MARK_ANY);
     }
 
     @Benchmark

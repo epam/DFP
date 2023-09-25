@@ -153,6 +153,15 @@ public class Decimal64Utils {
 
     /// endregion
 
+    /// region String formatting
+
+    public static final char DECIMAL_MARK_DOT = '.';
+    public static final char DECIMAL_MARK_COMMA = ',';
+    public static final char DECIMAL_MARK_DEFAULT = DECIMAL_MARK_DOT;
+    public static final String DECIMAL_MARK_ANY = "" + DECIMAL_MARK_DOT + DECIMAL_MARK_COMMA;
+
+    /// endregion
+
     /// region Object Implementation
 
     /**
@@ -187,11 +196,19 @@ public class Decimal64Utils {
 
 
     public static String toString(@Decimal final long value) {
-        return JavaImpl.fastToString(value);
+        return JavaImpl.fastToString(value, DECIMAL_MARK_DEFAULT);
+    }
+
+    public static String toString(@Decimal final long value, final char decimalMark) {
+        return JavaImpl.fastToString(value, decimalMark);
     }
 
     public static String toScientificString(@Decimal final long value) {
-        return JavaImpl.fastToScientificString(value);
+        return JavaImpl.fastToScientificString(value, DECIMAL_MARK_DEFAULT);
+    }
+
+    public static String toScientificString(@Decimal final long value, final char decimalMark) {
+        return JavaImpl.fastToScientificString(value, decimalMark);
     }
 
     static String toDebugString(@Decimal final long value) {
@@ -1232,7 +1249,22 @@ public class Decimal64Utils {
      * @throws IOException from {@link Appendable#append(char)}
      */
     public static Appendable appendTo(@Decimal final long value, final Appendable appendable) throws IOException {
-        return JavaImpl.fastAppendToAppendable(value, appendable);
+        return JavaImpl.fastAppendToAppendable(value, DECIMAL_MARK_DEFAULT, appendable);
+    }
+
+    /**
+     * Append string representation of {@code DFP} {@code value} to {@link Appendable} {@code appendable}
+     * <p>
+     * Same as {@code appendable.append(value.toString())}, but more efficient.
+     *
+     * @param value       {@code DFP64} argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param appendable  {@link Appendable} instance to which the string representation of the {@code value} will be appended
+     * @return the 2nd argument ({@link Appendable} {@code appendable})
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    public static Appendable appendTo(@Decimal final long value, final char decimalMark, final Appendable appendable) throws IOException {
+        return JavaImpl.fastAppendToAppendable(value, decimalMark, appendable);
     }
 
     /**
@@ -1246,7 +1278,22 @@ public class Decimal64Utils {
      * @throws IOException from {@link Appendable#append(char)}
      */
     public static Appendable scientificAppendTo(@Decimal final long value, final Appendable appendable) throws IOException {
-        return JavaImpl.fastScientificAppendToAppendable(value, appendable);
+        return JavaImpl.fastScientificAppendToAppendable(value, DECIMAL_MARK_DEFAULT, appendable);
+    }
+
+    /**
+     * Append string representation of {@code DFP} {@code value} to {@link Appendable} {@code appendable}
+     * <p>
+     * Same as {@code appendable.append(value.toString())}, but more efficient.
+     *
+     * @param value       {@code DFP64} argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param appendable  {@link Appendable} instance to which the string representation of the {@code value} will be appended
+     * @return the 2nd argument ({@link Appendable} {@code appendable})
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    public static Appendable scientificAppendTo(@Decimal final long value, final char decimalMark, final Appendable appendable) throws IOException {
+        return JavaImpl.fastScientificAppendToAppendable(value, decimalMark, appendable);
     }
 
     /**
@@ -1264,6 +1311,22 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#scientificAppendTo(Appendable)}, adds null check; do not use directly.
+     *
+     * @param value       DFP argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param appendable  an object, implementing Appendable interface
+     * @return ..
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    @Deprecated
+    public static Appendable scientificAppendToChecked(@Decimal final long value, final char decimalMark, final Appendable appendable) throws IOException {
+        checkNull(value);
+        return scientificAppendTo(value, decimalMark, appendable);
+    }
+
+
+    /**
      * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
      * <p>
      * Same as {@code sb.append(value.toString());}, but more efficient.
@@ -1273,7 +1336,21 @@ public class Decimal64Utils {
      * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
      */
     public static StringBuilder appendTo(@Decimal final long value, final StringBuilder sb) {
-        return JavaImpl.fastAppendToStringBuilder(value, sb);
+        return JavaImpl.fastAppendToStringBuilder(value, DECIMAL_MARK_DEFAULT, sb);
+    }
+
+    /**
+     * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
+     * <p>
+     * Same as {@code sb.append(value.toString());}, but more efficient.
+     *
+     * @param value       {@code DFP64} argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param sb          {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
+     * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
+     */
+    public static StringBuilder appendTo(@Decimal final long value, final char decimalMark, final StringBuilder sb) {
+        return JavaImpl.fastAppendToStringBuilder(value, decimalMark, sb);
     }
 
     /**
@@ -1286,7 +1363,21 @@ public class Decimal64Utils {
      * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
      */
     public static StringBuilder scientificAppendTo(@Decimal final long value, final StringBuilder sb) {
-        return JavaImpl.fastScientificAppendToStringBuilder(value, sb);
+        return JavaImpl.fastScientificAppendToStringBuilder(value, DECIMAL_MARK_DEFAULT, sb);
+    }
+
+    /**
+     * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
+     * <p>
+     * Same as {@code sb.append(value.toString());}, but more efficient.
+     *
+     * @param value       {@code DFP64} argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param sb          {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
+     * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
+     */
+    public static StringBuilder scientificAppendTo(@Decimal final long value, final char decimalMark, final StringBuilder sb) {
+        return JavaImpl.fastScientificAppendToStringBuilder(value, decimalMark, sb);
     }
 
     /**
@@ -1300,6 +1391,20 @@ public class Decimal64Utils {
     public static StringBuilder scientificAppendToChecked(@Decimal final long value, final StringBuilder sb) {
         checkNull(value);
         return scientificAppendTo(value, sb);
+    }
+
+    /**
+     * Implements {@link Decimal64#scientificAppendTo(StringBuilder)}, adds null check; do not use directly.
+     *
+     * @param value       DFP argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param sb          {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
+     * @return ..
+     */
+    @Deprecated
+    public static StringBuilder scientificAppendToChecked(@Decimal final long value, final char decimalMark, final StringBuilder sb) {
+        checkNull(value);
+        return scientificAppendTo(value, decimalMark, sb);
     }
 
     /**
@@ -1324,7 +1429,34 @@ public class Decimal64Utils {
     @Decimal
     public static boolean tryParse(final CharSequence text, final int startIndex, final int endIndex,
                                    final Decimal64Status outStatus) {
-        outStatus.underlying = JavaImplParse.bid64_from_string(text, startIndex, endIndex, outStatus, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        outStatus.underlying = JavaImplParse.bid64_from_string(text, startIndex, endIndex, outStatus, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_DOT);
+        return outStatus.isExact();
+    }
+
+    /**
+     * Try parse a dfp floating-point value from the given textual representation.
+     * <p>
+     * Besides regular floating-point values (possibly in scientific notation) the following special cases are accepted:
+     * <ul>
+     * <li>{@code +Inf}, {@code Inf}, {@code +Infinity}, {@code Infinity} in any character case result in
+     * {@code Decimal64Utils.POSITIVE_INFINITY}</li>
+     * <li>{@code -Inf}, {@code -Infinity} in any character case result in
+     * {@code Decimal64Utils.NEGATIVE_INFINITY}</li>
+     * <li>{@code +NaN}, {@code -NaN}, {@code NaN} in any character case result in
+     * {@code Decimal64Utils.NaN}</li>
+     * </ul>
+     *
+     * @param text         Textual representation of dfp floating-point value.
+     * @param startIndex   Index of character to start parsing at.
+     * @param endIndex     Index of character to stop parsing at, non-inclusive.
+     * @param decimalMarks A decimal separators used to separate the integer part from the fractional part.
+     * @param outStatus    The parsing output status and value.
+     * @return Return {@code true} if value was parsed exactly without rounding.
+     */
+    @Decimal
+    public static boolean tryParse(final CharSequence text, final int startIndex, final int endIndex, final String decimalMarks,
+                                   final Decimal64Status outStatus) {
+        outStatus.underlying = JavaImplParse.bid64_from_string(text, startIndex, endIndex, outStatus, JavaImpl.BID_ROUNDING_TO_NEAREST, decimalMarks);
         return outStatus.isExact();
     }
 
@@ -1350,7 +1482,38 @@ public class Decimal64Utils {
     @Decimal
     public static long parse(final CharSequence text, final int startIndex, final int endIndex) {
         JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
-        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_DOT);
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
+            throw new NumberFormatException("Input string is not in a correct format.");
+//        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
+//        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
+        return ret;
+    }
+
+    /**
+     * Parses a dfp floating-point value from the given textual representation.
+     * <p>
+     * Besides regular floating-point values (possibly in scientific notation) the following special cases are accepted:
+     * <ul>
+     * <li>{@code +Inf}, {@code Inf}, {@code +Infinity}, {@code Infinity} in any character case result in
+     * {@code Decimal64Utils.POSITIVE_INFINITY}</li>
+     * <li>{@code -Inf}, {@code -Infinity} in any character case result in
+     * {@code Decimal64Utils.NEGATIVE_INFINITY}</li>
+     * <li>{@code +NaN}, {@code -NaN}, {@code NaN} in any character case result in
+     * {@code Decimal64Utils.NaN}</li>
+     * </ul>
+     *
+     * @param text         Textual representation of dfp floating-point value.
+     * @param startIndex   Index of character to start parsing at.
+     * @param endIndex     Index of character to stop parsing at, non-inclusive.
+     * @param decimalMarks A decimal separators used to separate the integer part from the fractional part.
+     * @return parsed 64-bit decimal floating point value.
+     * @throws NumberFormatException if {@code text} does not contain valid dfp value.
+     */
+    @Decimal
+    public static long parse(final CharSequence text, final int startIndex, final int endIndex, final String decimalMarks) {
+        JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, decimalMarks);
         if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             throw new NumberFormatException("Input string is not in a correct format.");
 //        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
@@ -1408,7 +1571,36 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long parse(final CharSequence text) {
-        return parse(text, 0, text.length());
+        JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, 0, text.length(), fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_DOT);
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
+            throw new NumberFormatException("Input string is not in a correct format.");
+//        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
+//        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
+        return ret;
+    }
+
+    /**
+     * Parses a dfp floating-point value from the given textual representation.
+     * <p>
+     * Besides regular floating-point values (possibly in scientific notation) the following special cases are accepted:
+     * <ul>
+     * <li>{@code +Inf}, {@code Inf}, {@code +Infinity}, {@code Infinity} in any character case result in
+     * {@code Decimal64Utils.POSITIVE_INFINITY}</li>
+     * <li>{@code -Inf}, {@code -Infinity} in any character case result in
+     * {@code Decimal64Utils.NEGATIVE_INFINITY}</li>
+     * <li>{@code +NaN}, {@code -NaN}, {@code NaN} in any character case result in
+     * {@code Decimal64Utils.NaN}</li>
+     * </ul>
+     *
+     * @param text         Textual representation of dfp floating-point value.
+     * @param decimalMarks A decimal separators used to separate the integer part from the fractional part.
+     * @return parsed 64-bit decimal floating point value.
+     * @throws NumberFormatException if {@code text} does not contain a valid DFP value.
+     */
+    @Decimal
+    public static long parse(final CharSequence text, final String decimalMarks) {
+        return parse(text, 0, text.length(), decimalMarks);
     }
 
     /**
@@ -1424,7 +1616,29 @@ public class Decimal64Utils {
     @Decimal
     public static long tryParse(final CharSequence text, final int startIndex, final int endIndex, @Decimal final long defaultValue) {
         JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
-        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST);
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_DOT);
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
+            return defaultValue;
+//        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
+//        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
+        return ret;
+    }
+
+    /**
+     * Tries to parse a dfp floating-point value from the given textual representation.
+     * Returns the default value in case of fail.
+     *
+     * @param text         Textual representation of dfp floating-point value.
+     * @param startIndex   Index of character to start parsing at.
+     * @param endIndex     Index of character to stop parsing at, non-inclusive.
+     * @param decimalMarks A decimal separators used to separate the integer part from the fractional part.
+     * @param defaultValue Default value in case of fail.
+     * @return parsed 64-bit decimal floating point value.
+     */
+    @Decimal
+    public static long tryParse(final CharSequence text, final int startIndex, final int endIndex, final String decimalMarks, @Decimal final long defaultValue) {
+        JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, decimalMarks);
         if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             return defaultValue;
 //        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
@@ -2371,6 +2585,21 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#appendTo(Appendable)}, adds null check; do not use directly.
+     *
+     * @param value       DFP argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param appendable  an object, implementing Appendable interface
+     * @return ..
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    @Deprecated
+    public static Appendable appendToChecked(@Decimal final long value, final char decimalMark, final Appendable appendable) throws IOException {
+        checkNull(value);
+        return appendTo(value, decimalMark, appendable);
+    }
+
+    /**
      * Implements {@link Decimal64#appendTo(StringBuilder)}, adds null check; do not use directly.
      *
      * @param value         DFP argument
@@ -2381,6 +2610,20 @@ public class Decimal64Utils {
     public static StringBuilder appendToChecked(@Decimal final long value, final StringBuilder stringBuilder) {
         checkNull(value);
         return appendTo(value, stringBuilder);
+    }
+
+    /**
+     * Implements {@link Decimal64#appendTo(StringBuilder)}, adds null check; do not use directly.
+     *
+     * @param value         DFP argument
+     * @param decimalMark   A decimal separator used to separate the integer part from the fractional part.
+     * @param stringBuilder StringBuilder argument
+     * @return ..
+     */
+    @Deprecated
+    public static StringBuilder appendToChecked(@Decimal final long value, final char decimalMark, final StringBuilder stringBuilder) {
+        checkNull(value);
+        return appendTo(value, decimalMark, stringBuilder);
     }
 
     /**
@@ -2396,6 +2639,19 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#toString()}, adds null checks; do not use directly.
+     *
+     * @param value       DFP argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @return ..
+     */
+    @Deprecated
+    public static String toStringChecked(@Decimal final long value, final char decimalMark) {
+        checkNull(value);
+        return toString(value, decimalMark);
+    }
+
+    /**
      * Implements {@link Decimal64#toScientificString()}, adds null checks; do not use directly.
      *
      * @param value DFP argument
@@ -2405,6 +2661,19 @@ public class Decimal64Utils {
     public static String toScientificStringChecked(@Decimal final long value) {
         checkNull(value);
         return toScientificString(value);
+    }
+
+    /**
+     * Implements {@link Decimal64#toScientificString()}, adds null checks; do not use directly.
+     *
+     * @param value       DFP argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @return ..
+     */
+    @Deprecated
+    public static String toScientificStringChecked(@Decimal final long value, final char decimalMark) {
+        checkNull(value);
+        return toScientificString(value, decimalMark);
     }
 
     /**
