@@ -59,7 +59,261 @@ class JavaImplParse {
     }
 
     //public static long parse(final CharSequence s, final int si, final int ei, final int roundingMode)
+    public static long bid64_from_string(final CharSequence s, int si, int ei, final FloatingPointStatusFlag pfpsf, int rnd_mode /*= BID_ROUNDING_TO_NEAREST*/, final char decimalMark) {
+
+        long coefficient_x = 0, rounded = 0;
+        int expon_x = 0, sgn_expon, ndigits, add_expon = 0, midpoint = 0, rounded_up = 0;
+        int dec_expon_scale = 0;
+        char c;
+
+        { // rTrim
+            c = ei - 1 >= si ? s.charAt(ei - 1) : '\0';
+            while (Character.isWhitespace(c)) {
+                ei--;
+                c = ei - 1 >= si ? s.charAt(ei - 1) : '\0';
+            }
+        }
+        { // lTrim
+            c = si < ei ? s.charAt(si) : '\0';
+            while (Character.isWhitespace(c)) {
+                si++;
+                c = si < ei ? s.charAt(si) : '\0';
+            }
+        }
+
+        int ps = si;
+
+
+        if (c == '\0') {
+            pfpsf.status = BID_INVALID_FORMAT;
+            return 0x7c00000000000000L;                    // return qNaN
+        }
+
+
+        // determine sign
+        long sign_x = c == '-' ? 0x8000000000000000L : 0;
+        // get next character if leading +/- sign
+        if (c == '-' || c == '+') {
+            ps++;
+            c = ps < ei ? s.charAt(ps) : '\0';
+            if (c == '\0') {
+                pfpsf.status = BID_INVALID_FORMAT;
+                return 0x7c00000000000000L;                    // return qNaN
+            }
+        }
+
+        // detect special cases (INF or NaN)
+        if (c != decimalMark && (c < '0' || c > '9')) {
+            if (IsStrEqIgnoreCase(s, ps, ei, "inf") || IsStrEqIgnoreCase(s, ps, ei, "infinity")) // Infinity?
+            {
+                pfpsf.status = BID_EXACT_STATUS;
+                return 0x7800000000000000L | sign_x;
+            }
+            // return sNaN
+            if (IsStrEqIgnoreCase(s, ps, ei, "snan")) // case insensitive check for snan
+            {
+                pfpsf.status = BID_EXACT_STATUS;
+                return 0x7e00000000000000L | sign_x;
+            }
+            if (IsStrEqIgnoreCase(s, ps, ei, "nan")) // return qNaN
+            {
+                pfpsf.status = BID_EXACT_STATUS;
+                return 0x7c00000000000000L | sign_x;
+            } else // if c isn't a decimal point or a decimal digit, return NaN
+            {
+                pfpsf.status = BID_INVALID_FORMAT;
+                return 0x7c00000000000000L;                    // return qNaN
+            }
+        }
+
+        int rdx_pt_enc = 0;
+        int right_radix_leading_zeros = 0;
+
+        // detect zero (and eliminate/ignore leading zeros)
+        if (c == '0' || c == decimalMark) {
+
+            if (c == decimalMark) {
+                rdx_pt_enc = 1;
+                ps++;
+                c = ps < ei ? s.charAt(ps) : '\0';
+            }
+            // if all numbers are zeros (with possibly 1 radix point, the number is zero
+            // should catch cases such as: 000.0
+            while (c == '0') {
+                ps++;
+                c = ps < ei ? s.charAt(ps) : '\0';
+                // for numbers such as 0.0000000000000000000000000000000000001001,
+                // we want to count the leading zeros
+                if (rdx_pt_enc != 0) {
+                    right_radix_leading_zeros++;
+                }
+                // if this character is a radix point, make sure we haven't already
+                // encountered one
+                if (c == decimalMark) {
+                    if (rdx_pt_enc == 0) {
+                        rdx_pt_enc = 1;
+                        // if this is the first radix point, and the next character is NULL,
+                        // we have a zero
+                        char c1 = ps + 1 < ei ? s.charAt(ps + 1) : '\0';
+                        if (c1 == '\0') {
+                            pfpsf.status = BID_EXACT_STATUS;
+                            return ZERO | sign_x; // ((BID_UINT64)(398 - right_radix_leading_zeros) << 53) | sign_x;
+                        }
+                        ps++;
+                        c = ps < ei ? s.charAt(ps) : '\0';
+                    } else {
+                        pfpsf.status = BID_INVALID_FORMAT;
+                        return NaN; // 0x7c00000000000000L | sign_x; // if 2 radix points, return NaN
+                    }
+                } else if (c == '\0') {
+                    pfpsf.status = BID_EXACT_STATUS;
+                    return ZERO | sign_x; // ((BID_UINT64)(398 - right_radix_leading_zeros) << 53) | sign_x; //pres->w[1] = 0x3040000000000000L | sign_x;
+                }
+            }
+        }
+
+        c = ps < ei ? s.charAt(ps) : '\0';
+
+        ndigits = 0;
+        while ((c >= '0' && c <= '9') || c == decimalMark) {
+            if (c >= '0' && c <= '9') {
+                dec_expon_scale += rdx_pt_enc;
+
+                ndigits++;
+                if (ndigits <= 16) {
+                    coefficient_x = (coefficient_x << 1) + (coefficient_x << 3);
+                    coefficient_x += (c - '0');
+                } else if (ndigits == 17) {
+                    // coefficient rounding
+                    switch (rnd_mode) {
+                        case BID_ROUNDING_TO_NEAREST:
+                            midpoint = (c == '5' && (coefficient_x & 1) == 0) ? 1 : 0;
+                            // if coefficient is even and c is 5, prepare to round up if
+                            // subsequent digit is nonzero
+                            // if str[MAXDIG+1] > 5, we MUST round up
+                            // if str[MAXDIG+1] == 5 and coefficient is ODD, ROUND UP!
+                            if (c > '5' || (c == '5' && (coefficient_x & 1) != 0)) {
+                                coefficient_x++;
+                                rounded_up = 1;
+                            }
+                            break;
+
+                        case BID_ROUNDING_DOWN:
+                            if (sign_x != 0) {
+                                coefficient_x++;
+                                rounded_up = 1;
+                            }
+                            break;
+                        case BID_ROUNDING_UP:
+                            if (sign_x == 0) {
+                                coefficient_x++;
+                                rounded_up = 1;
+                            }
+                            break;
+                        case BID_ROUNDING_TIES_AWAY:
+                            if (c >= '5') {
+                                coefficient_x++;
+                                rounded_up = 1;
+                            }
+                            break;
+                    }
+                    if (coefficient_x == 10000000000000000L) {
+                        coefficient_x = 1000000000000000L;
+                        add_expon = 1;
+                    }
+                    if (c > '0')
+                        rounded = 1;
+                    add_expon += 1;
+                } else { // ndigits > 17
+                    add_expon++;
+                    if (midpoint != 0 && c > '0') {
+                        coefficient_x++;
+                        midpoint = 0;
+                        rounded_up = 1;
+                    }
+                    if (c > '0')
+                        rounded = 1;
+                }
+                ps++;
+                c = ps < ei ? s.charAt(ps) : '\0';
+
+            } else { // c == decimalMark
+                if (rdx_pt_enc != 0) {
+                    pfpsf.status = BID_INVALID_FORMAT;
+                    return NaN; // 0x7c00000000000000L | sign_x; // return NaN
+                }
+                rdx_pt_enc = 1;
+                ps++;
+                c = ps < ei ? s.charAt(ps) : '\0';
+            }
+        }
+
+        add_expon -= (dec_expon_scale + right_radix_leading_zeros);
+
+        if (c == '\0') {
+            pfpsf.status = BID_EXACT_STATUS;
+            if (rounded != 0)
+                __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+            return /*fast_get_BID64_check_OF*/get_BID64(sign_x,
+                add_expon + DECIMAL_EXPONENT_BIAS,
+                coefficient_x, 0, pfpsf);
+        }
+
+        if (c != 'E' && c != 'e') {
+            pfpsf.status = BID_INVALID_FORMAT;
+            return NaN; // 0x7c00000000000000L | sign_x; // return NaN
+        }
+        ps++;
+        c = ps < ei ? s.charAt(ps) : '\0';
+        sgn_expon = (c == '-') ? 1 : 0;
+        if (c == '-' || c == '+') {
+            ps++;
+            c = ps < ei ? s.charAt(ps) : '\0';
+        }
+        if (c == '\0' || c < '0' || c > '9') {
+            pfpsf.status = BID_INVALID_FORMAT;
+            return NaN; // 0x7c00000000000000L | sign_x; // return NaN
+        }
+
+        while ((c >= '0') && (c <= '9')) {
+            if (expon_x < (1 << 20)) {
+                expon_x = (expon_x << 1) + (expon_x << 3);
+                expon_x += (int) (c - '0');
+            }
+
+            ps++;
+            c = ps < ei ? s.charAt(ps) : '\0';
+        }
+
+        if (c != '\0') {
+            pfpsf.status = BID_INVALID_FORMAT;
+            return NaN; // 0x7c00000000000000L | sign_x; // return NaN
+        }
+
+        if (rounded != 0) {
+            pfpsf.status = BID_EXACT_STATUS;
+            __set_status_flags(pfpsf, BID_INEXACT_EXCEPTION);
+        }
+
+        if (sgn_expon != 0)
+            expon_x = -expon_x;
+
+        expon_x += add_expon + DECIMAL_EXPONENT_BIAS;
+
+        if (expon_x < 0) {
+            if (rounded_up != 0)
+                coefficient_x--;
+            rnd_mode = 0;
+            pfpsf.status = BID_EXACT_STATUS;
+            return get_BID64_UF(sign_x, expon_x, coefficient_x, rounded, rnd_mode, pfpsf);
+        }
+        pfpsf.status = BID_EXACT_STATUS;
+        return get_BID64(sign_x, expon_x, coefficient_x, rnd_mode, pfpsf);
+    }
+
     public static long bid64_from_string(final CharSequence s, int si, int ei, final FloatingPointStatusFlag pfpsf, int rnd_mode /*= BID_ROUNDING_TO_NEAREST*/, final String decimalMarks) {
+        if (decimalMarks.length() == 1)
+            return bid64_from_string(s, si, ei, pfpsf, rnd_mode, decimalMarks.charAt(0));
 
         long coefficient_x = 0, rounded = 0;
         int expon_x = 0, sgn_expon, ndigits, add_expon = 0, midpoint = 0, rounded_up = 0;
