@@ -1429,7 +1429,7 @@ public class Decimal64Utils {
     @Decimal
     public static boolean tryParse(final CharSequence text, final int startIndex, final int endIndex,
                                    final Decimal64Status outStatus) {
-        outStatus.underlying = JavaImplParse.bid64_from_string(text, startIndex, endIndex, outStatus, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_ANY);
+        outStatus.underlying = JavaImplParse.bid64_from_string(text, startIndex, endIndex, outStatus, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_DOT);
         return outStatus.isExact();
     }
 
@@ -1482,7 +1482,7 @@ public class Decimal64Utils {
     @Decimal
     public static long parse(final CharSequence text, final int startIndex, final int endIndex) {
         JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
-        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_ANY);
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_DOT);
         if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             throw new NumberFormatException("Input string is not in a correct format.");
 //        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
@@ -1571,7 +1571,13 @@ public class Decimal64Utils {
      */
     @Decimal
     public static long parse(final CharSequence text) {
-        return parse(text, 0, text.length());
+        JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
+        final long ret = JavaImplParse.bid64_from_string(text, 0, text.length(), fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_DOT);
+        if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
+            throw new NumberFormatException("Input string is not in a correct format.");
+//        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)
+//        	throw new NumberFormatException("Can't convert input string to value without precision loss.");
+        return ret;
     }
 
     /**
@@ -1610,7 +1616,7 @@ public class Decimal64Utils {
     @Decimal
     public static long tryParse(final CharSequence text, final int startIndex, final int endIndex, @Decimal final long defaultValue) {
         JavaImplParse.FloatingPointStatusFlag fpsf = tlsFpst.get();
-        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_ANY);
+        final long ret = JavaImplParse.bid64_from_string(text, startIndex, endIndex, fpsf, JavaImpl.BID_ROUNDING_TO_NEAREST, DECIMAL_MARK_DOT);
         if ((fpsf.status & JavaImplParse.BID_INVALID_FORMAT) != 0)
             return defaultValue;
 //        else if ((fpsf.value & JavaImplParse.BID_INEXACT_EXCEPTION) != 0)

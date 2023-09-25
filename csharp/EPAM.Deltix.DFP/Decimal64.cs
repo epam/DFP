@@ -952,7 +952,7 @@ namespace EPAM.Deltix.DFP
 		public static Decimal64 Parse(String text)
 		{
 			uint fpsf;
-			var ret = DotNetReImpl.bid64_from_string(text, DecimalMarkAny, out fpsf);
+			var ret = DotNetReImpl.bid64_from_string(text, DecimalMarkDot, out fpsf);
 			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
 				throw new FormatException("Input string is not in a correct format.");
 			//else if ((fpsf & DotNetReImpl.BID_INEXACT_EXCEPTION) != 0)
@@ -987,7 +987,7 @@ namespace EPAM.Deltix.DFP
 		public static Boolean TryParse(String text, out Decimal64 result, out StatusValue status)
 		{
 			uint fpsf;
-			result = FromUnderlying(DotNetReImpl.bid64_from_string(text, DecimalMarkAny, out fpsf));
+			result = FromUnderlying(DotNetReImpl.bid64_from_string(text, DecimalMarkDot, out fpsf));
 			status = (StatusValue)fpsf;
 			return status == StatusValue.Exact;
 		}
@@ -1003,7 +1003,7 @@ namespace EPAM.Deltix.DFP
 		public static Boolean TryParse(String text, out Decimal64 result)
 		{
 			uint fpsf;
-			var ret = DotNetReImpl.bid64_from_string(text, DecimalMarkAny, out fpsf);
+			var ret = DotNetReImpl.bid64_from_string(text, DecimalMarkDot, out fpsf);
 			if ((fpsf & DotNetReImpl.BID_INVALID_FORMAT) != 0)
 			{
 				result = NaN;
