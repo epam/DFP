@@ -38,6 +38,7 @@ DDFP_API(int32) PPCAT(API_PREFIX, compare) ( BID_UINT64 a, BID_UINT64 b) {
         return 0;
     return bid64_isNaN(b) - bid64_isNaN(a);
 }
+JAVA_API_IMPL(
 JNI_API(int32) PPCAT(PPCAT(Java_, JAVA_PREFIX), compare) (void *jEnv, void *jClass,  BID_UINT64 a, BID_UINT64 b) {
     if (bid64_quiet_less(a, b))
         return -1;
@@ -56,6 +57,7 @@ JNI_API(int32) PPCAT(PPCAT(JavaCritical_, JAVA_PREFIX), compare) ( BID_UINT64 a,
         return 0;
     return bid64_isNaN(a) - bid64_isNaN(b);
 }
+)
 
 OPN_BOOL(isEqual, bid64_quiet_equal(a, b), BID_UINT64 a, BID_UINT64 b)
 OPN_BOOL(isNotEqual, bid64_quiet_not_equal(a, b), BID_UINT64 a, BID_UINT64 b)

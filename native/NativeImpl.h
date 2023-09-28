@@ -57,16 +57,25 @@ STATIC_ASSERT(sizeof(uint32) == 4)
 STATIC_ASSERT(sizeof(int64) == 8)
 STATIC_ASSERT(sizeof(uint64) == 8)
 
+#ifndef NOJAVA
+#define JAVA_API_IMPL(X) X
+#else
+#define JAVA_API_IMPL(X)
+#endif
+
+
 #define OPNRR(mcr__name, mcr__type, mcr__body, ...)                                                         \
 DDFP_API(mcr__type) PPCAT(API_PREFIX, mcr__name) (__VA_ARGS__) {                                            \
     mcr__body                                                                                               \
 }                                                                                                           \
+JAVA_API_IMPL(                                                                                              \
 JNI_API(mcr__type) PPCAT(PPCAT(Java_, JAVA_PREFIX), mcr__name) (void *jEnv, void *jClass, __VA_ARGS__) {    \
     mcr__body                                                                                               \
 }                                                                                                           \
 JNI_API(mcr__type) PPCAT(PPCAT(JavaCritical_, JAVA_PREFIX), mcr__name) (__VA_ARGS__) {                      \
     mcr__body                                                                                               \
-}
+}                                                                                                           \
+)
 
 #define OPNR(mcr__name, mcr__type, mcr__body, ...)  OPNRR(mcr__name, mcr__type, return (mcr__body);, __VA_ARGS__)
 

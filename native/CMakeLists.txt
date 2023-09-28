@@ -62,3 +62,32 @@ target_compile_definitions(dfpmath PRIVATE API_PREFIX=ddfpmath${VERSION_SUFFIX}_
 target_link_libraries (dfpmath LINK_PUBLIC bid)
 set_target_properties(dfpmath PROPERTIES OUTPUT_NAME "ddfpmath${VERSION_SUFFIX}")
 install(TARGETS dfpmath DESTINATION ./binmath/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
+
+file(GLOB BID_SRCS_STATIC
+        ../thirdparty/IntelRDFPMathLib20U2/LIBRARY/src/*.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_bid.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_bessel.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_cbrt.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_erf.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_exp.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_int.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_inv_hyper.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_inv_trig.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_lgamma.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_log.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_mod.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_powi.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_pow.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_sqrt.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_trig.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_ops.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_ops_64.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_four_over_pi.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_exception.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/sqrt_tab_t.c)
+
+add_library(dfpStatic STATIC NativeImpl.c ${BID_SRCS_STATIC})
+include_directories(../thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
+target_compile_definitions(dfpStatic PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ NOJAVA)
+set_target_properties(dfpStatic PROPERTIES OUTPUT_NAME "ddfpStatic${VERSION_SUFFIX}")
+install(TARGETS dfpStatic DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
