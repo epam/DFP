@@ -6,20 +6,27 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import static com.epam.deltix.dfp.ApiEntry.getCppType;
 
 public class CxxWrappers {
-    public static void make(final String outputC, final String outputCpp, final List<ApiEntry> api, final String decimalNativePrefix) throws IOException {
+    public static void make(final String outputC, final String outputCpp, final List<ApiEntry> api, final String decimalNativePrefix, final String versionThreeDigits) throws IOException {
         final String dfpType = "decimal_native_t";
         final String dfpClassType = "Decimal64_t";
 
         try (final BufferedWriter outFileH = Files.newBufferedWriter(Paths.get(outputC), StandardCharsets.UTF_8);
              final BufferedWriter outFileHpp = Files.newBufferedWriter(Paths.get(outputCpp), StandardCharsets.UTF_8)) {
+
+            final String outputCDefine = Paths.get(outputC).getFileName().toString()
+                .replace('.', '_').replace('-', '_').toUpperCase(Locale.ROOT);
+            final String outputCppDefine = Paths.get(outputCpp).getFileName().toString()
+                .replace('.', '_').replace('-', '_').toUpperCase(Locale.ROOT);
+
             outFileH.write(
-                "#ifndef DECIMALNATIVE_H\n" +
-                    "#define DECIMALNATIVE_H\n" +
+                "#ifndef " + outputCDefine + "\n" +
+                    "#define " + outputCDefine + "\n" +
                     "\n" +
                     "#ifdef __cplusplus\n" +
                     "#include <cstdint>\n" +
@@ -27,27 +34,29 @@ public class CxxWrappers {
                     "#include <stdint.h>\n" +
                     "#endif\n" +
                     "\n" +
+                    "#define " + outputCDefine + "_VERSION \"" + versionThreeDigits + "\"\n" +
+                    "\n" +
                     "#ifdef __cplusplus\n" +
-                    "#define DECIMALNATIVE_MANGLING \"C\"\n" +
+                    "#define " + outputCDefine + "_MANGLING \"C\"\n" +
                     "#else\n" +
-                    "#define DECIMALNATIVE_MANGLING\n" +
+                    "#define " + outputCDefine + "_MANGLING\n" +
                     "#endif\n" +
                     "\n" +
-                    "#ifdef DECIMALNATIVE_EXPORTS\n" +
+                    "#ifdef " + outputCDefine + "_EXPORTS\n" +
                     "#if defined(_WIN64)\n" +
-                    "#define DECIMALNATIVE_API(x) extern DECIMALNATIVE_MANGLING __declspec(dllexport) x __fastcall\n" +
+                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING __declspec(dllexport) x __fastcall\n" +
                     "#elif defined(_WIN32)\n" +
-                    "#define DECIMALNATIVE_API(x) extern DECIMALNATIVE_MANGLING __declspec(dllexport) x __stdcall\n" +
+                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING __declspec(dllexport) x __stdcall\n" +
                     "#else\n" +
-                    "#define DECIMALNATIVE_API(x) extern DECIMALNATIVE_MANGLING x __attribute__ ((visibility(\"default\")))\n" +
+                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING x __attribute__ ((visibility(\"default\")))\n" +
                     "#endif\n" +
                     "#else\n" +
                     "#if defined(_WIN64)\n" +
-                    "#define DECIMALNATIVE_API(x) extern DECIMALNATIVE_MANGLING __declspec(dllimport) x __fastcall\n" +
+                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING __declspec(dllimport) x __fastcall\n" +
                     "#elif defined(_WIN32)\n" +
-                    "#define DECIMALNATIVE_API(x) extern DECIMALNATIVE_MANGLING __declspec(dllimport) x __stdcall\n" +
+                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING __declspec(dllimport) x __stdcall\n" +
                     "#else\n" +
-                    "#define DECIMALNATIVE_API(x) extern DECIMALNATIVE_MANGLING x __attribute__ ((visibility(\"default\")))\n" +
+                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING x __attribute__ ((visibility(\"default\")))\n" +
                     "#endif\n" +
                     "#endif\n" +
                     "\n" +
@@ -89,8 +98,8 @@ public class CxxWrappers {
 
             outFileHpp.write(
                 "#pragma once\n" +
-                    "#ifndef DECIMALNATIVE_HPP\n" +
-                    "#define DECIMALNATIVE_HPP\n" +
+                    "#ifndef " + outputCppDefine + "\n" +
+                    "#define " + outputCppDefine + "\n" +
                     "\n" +
                     "#include \"DecimalNative.h\"\n" +
                     "#include <iostream>\n" +
@@ -269,7 +278,7 @@ public class CxxWrappers {
                 final String fnCall = fnCallBuilder.toString();
                 fnArg = fnArgBuilder.toString();
 
-                outFileH.write("DECIMALNATIVE_API(" + fnRet + ") " + fnNameC + "(" + fnArg + ");\n");
+                outFileH.write(outputCDefine + "_API(" + fnRet + ") " + fnNameC + "(" + fnArg + ");\n");
 
                 String preOutHpp = "";
                 String outHpp = "";

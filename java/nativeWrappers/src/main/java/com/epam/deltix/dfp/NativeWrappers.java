@@ -34,7 +34,7 @@ public class NativeWrappers {
         final List<ApiEntry> api = collectApi(preprocess, apiPrefix);
 
         if (!outputC.isEmpty() && !outputCpp.isEmpty()) {
-            CxxWrappers.make(outputC, outputCpp, api, apiPrefix);
+            CxxWrappers.make(outputC, outputCpp, api, apiPrefix, versionThreeDigits);
         }
 
         CsWrappers.make(outputCs, api, apiPrefix);
