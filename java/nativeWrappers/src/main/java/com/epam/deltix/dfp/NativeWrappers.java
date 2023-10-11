@@ -14,8 +14,8 @@ import static com.epam.deltix.dfp.ApiEntry.collectApi;
 
 public class NativeWrappers {
     public static void main(final String[] args) throws IOException, InterruptedException {
-        if (args.length != 10) {
-            System.err.println("Usage: NativeWrappers <versionThreeDigits> <versionSuffix> <versionSha> <apiPrefix> <javaPrefix> <inputFile> <outputJava> <outputCs> <outputCxx> <outputC> <outputCpp>");
+        if (args.length != 9) {
+            System.err.println("Usage: NativeWrappers <versionThreeDigits> <versionSuffix> <versionSha> <apiPrefix> <javaPrefix> <inputFile> <outputJava> <outputCs> <outputCxx> <outputC>");
             System.exit(-1);
         }
         final String versionThreeDigits = args[0];
@@ -26,15 +26,14 @@ public class NativeWrappers {
         final String inputFile = args[5];
         final String outputJava = args[6];
         final String outputCs = args[7];
-        final String outputC = args[8];
-        final String outputCpp = args[9];
+        final String outputCRoot = args[8];
 
         final String preprocess = callPreprocess(inputFile, apiPrefix, javaPrefix);
 
         final List<ApiEntry> api = collectApi(preprocess, apiPrefix);
 
-        if (!outputC.isEmpty() && !outputCpp.isEmpty()) {
-            CxxWrappers.make(outputC, outputCpp, api, apiPrefix, versionThreeDigits);
+        if (!outputCRoot.isEmpty()) {
+            CxxWrappers.make(outputCRoot, api, apiPrefix, versionThreeDigits);
         }
 
         CsWrappers.make(outputCs, api, apiPrefix);

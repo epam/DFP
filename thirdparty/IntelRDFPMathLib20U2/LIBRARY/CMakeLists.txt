@@ -21,7 +21,8 @@ file(GLOB ${NAME}_SRCS
 		float128/dpml_ux_ops_64.c
 		float128/dpml_four_over_pi.c
 		float128/dpml_exception.c
-		float128/sqrt_tab_t.c)
+		float128/sqrt_tab_t.c
+		../../../native/NativeImplToString.cpp)
 
 add_library(${NAME} STATIC ${${NAME}_SRCS})
 

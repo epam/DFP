@@ -11,6 +11,12 @@
 #define JAVA_PREFIX    com_epam_deltix_dfp_NativeImpl_
 #endif
 
+#ifdef __cplusplus
+#define DDFP_MANGLING extern "C"
+#else
+#define DDFP_MANGLING
+#endif
+
 #if defined(_WIN32)
 #define JNI_API(x) __declspec(dllexport) x __stdcall
 #else
@@ -18,11 +24,10 @@
 #endif
 
 #if defined(_WIN32)
-#define DDFP_API(x) __declspec(dllexport) x __cdecl
+#define DDFP_API(x) DDFP_MANGLING __declspec(dllexport) x __cdecl
 #else
-#define DDFP_API(x) x __attribute__ ((externally_visible,visibility("default")))
+#define DDFP_API(x) DDFP_MANGLING x __attribute__ ((externally_visible,visibility("default")))
 #endif
-
 
 /*
  * Concatenate preprocessor tokens A and B without expanding macro definitions

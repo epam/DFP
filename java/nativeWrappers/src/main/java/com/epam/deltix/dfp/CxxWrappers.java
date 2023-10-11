@@ -12,20 +12,19 @@ import java.util.regex.Pattern;
 import static com.epam.deltix.dfp.ApiEntry.getCppType;
 
 public class CxxWrappers {
-    public static void make(final String outputC, final String outputCpp, final List<ApiEntry> api, final String decimalNativePrefix, final String versionThreeDigits) throws IOException {
+    public static void make(final String outputRoot, final List<ApiEntry> api, final String decimalNativePrefix, final String versionThreeDigits) throws IOException {
         final String dfpType = "decimal_native_t";
         final String dfpClassType = "Decimal64_t";
 
-        try (final BufferedWriter outFileH = Files.newBufferedWriter(Paths.get(outputC), StandardCharsets.UTF_8);
-             final BufferedWriter outFileHpp = Files.newBufferedWriter(Paths.get(outputCpp), StandardCharsets.UTF_8)) {
+        try (final BufferedWriter outFileH = Files.newBufferedWriter(Paths.get(outputRoot, "DecimalNative.h"), StandardCharsets.UTF_8);
+             final BufferedWriter outFileHpp = Files.newBufferedWriter(Paths.get(outputRoot, "DecimalNative.hpp"), StandardCharsets.UTF_8)) {
 
-            final String outputCDefine = Paths.get(outputC).getFileName().toString()
-                .replace('.', '_').replace('-', '_').toUpperCase(Locale.ROOT);
-            final String outputCppDefine = Paths.get(outputCpp).getFileName().toString()
-                .replace('.', '_').replace('-', '_').toUpperCase(Locale.ROOT);
+            final String outputCDefine = "DECIMALNATIVE";
+            final String outputCppDefine = "DECIMALNATIVEHPP";
 
             outFileH.write(
-                "#ifndef " + outputCDefine + "\n" +
+                "#pragma once\n" +
+                    "#ifndef " + outputCDefine + "\n" +
                     "#define " + outputCDefine + "\n" +
                     "\n" +
                     "#ifdef __cplusplus\n" +
@@ -37,37 +36,42 @@ public class CxxWrappers {
                     "#define " + outputCDefine + "_VERSION \"" + versionThreeDigits + "\"\n" +
                     "\n" +
                     "#ifdef __cplusplus\n" +
-                    "#define " + outputCDefine + "_MANGLING \"C\"\n" +
+                    "#    define " + outputCDefine + "_MANGLING extern \"C\"\n" +
                     "#else\n" +
-                    "#define " + outputCDefine + "_MANGLING\n" +
+                    "#    define " + outputCDefine + "_MANGLING\n" +
                     "#endif\n" +
                     "\n" +
-                    "#ifdef " + outputCDefine + "_EXPORTS\n" +
-                    "#if defined(_WIN64)\n" +
-                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING __declspec(dllexport) x __fastcall\n" +
-                    "#elif defined(_WIN32)\n" +
-                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING __declspec(dllexport) x __stdcall\n" +
+                    "#if defined(_WIN32)\n" +
+                    "#    define " + outputCDefine + "_CALLING __stdcall\n" +
                     "#else\n" +
-                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING x __attribute__ ((visibility(\"default\")))\n" +
+                    "#    define " + outputCDefine + "_CALLING\n" +
                     "#endif\n" +
+                    "\n" +
+                    "#ifdef " + outputCDefine + "_SHARED_LIBRARY\n" +
+                    "#    ifdef _MSC_VER\n" +
+                    "#        ifdef " + outputCDefine + "_EXPORTS\n" +
+                    "#            define " + outputCDefine + "_EXPORT    __declspec(dllexport)\n" +
+                    "#        else\n" +
+                    "#            define " + outputCDefine + "_EXPORT    __declspec(dllimport)\n" +
+                    "#        endif\n" +
+                    "#    else\n" +
+                    "#        define " + outputCDefine + "_EXPORT        __attribute__ ((visibility(\"default\")))\n" +
+                    "#    endif\n" +
                     "#else\n" +
-                    "#if defined(_WIN64)\n" +
-                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING __declspec(dllimport) x __fastcall\n" +
-                    "#elif defined(_WIN32)\n" +
-                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING __declspec(dllimport) x __stdcall\n" +
-                    "#else\n" +
-                    "#define " + outputCDefine + "_API(x) extern " + outputCDefine + "_MANGLING x __attribute__ ((visibility(\"default\")))\n" +
+                    "#    define " + outputCDefine + "_EXPORT\n" +
                     "#endif\n" +
-                    "#endif\n" +
+                    "\n" +
+                    "#define " + outputCDefine + "_API(x) " + outputCDefine + "_MANGLING " + outputCDefine + "_EXPORT x " + outputCDefine + "_CALLING\n" +
                     "\n" +
                     "typedef struct {\n" +
                     "    uint64_t val;\n" +
                     "} " + dfpType + ";\n" +
                     "\n" +
-                    "inline static uint64_t decimal_native_toUnderlying(decimal_native_t _value) {\n" +
+                    "inline static uint64_t " + decimalNativePrefix + "toUnderlying(decimal_native_t _value) {\n" +
                     "    return _value.val;\n" +
                     "}\n" +
-                    "inline static decimal_native_t decimal_native_fromUnderlying(uint64_t value) {\n" +
+                    "\n" +
+                    "inline static decimal_native_t " + decimalNativePrefix + "fromUnderlying(uint64_t value) {\n" +
                     "    decimal_native_t dn;\n" +
                     "    dn.val = value;\n" +
                     "    return dn;\n" +
@@ -119,125 +123,120 @@ public class CxxWrappers {
                     "#define DN_NAMEOF(a) #a\n" +
                     "\n" +
                     "inline std::ostream& operator <<(std::ostream& output, " + dfpType + " const& a) {\n" +
-                    "    if (a.val == DECIMAL_NATIVE_UNDERLYING_NULL) {\n" +
-                    "        output << \"null\";\n" +
-                    "    }\n" +
-                    "    else {\n" +
-                    "        char str[32];\n" +
-                    "        " + decimalNativePrefix + "toString(a, str);\n" +
-                    "        output << str;\n" +
-                    "    }\n" +
+                    "    char str[512];\n" +
+                    "    output << " + decimalNativePrefix + "to_string_3(a, '.', str);\n" +
                     "    return output;\n" +
                     "}\n" +
+                    "\n" +
                     "inline std::istream& operator >>(std::istream& input, " + dfpType + "& a) {\n" +
                     "    std::string word;\n" +
                     "    input >> word;\n" +
-                    "    a = word == \"null\"\n" +
-                    "        ? " + decimalNativePrefix + "fromUnderlying(DECIMAL_NATIVE_UNDERLYING_NULL)\n" +
-                    "        : " + decimalNativePrefix + "fromString(word.c_str());\n" +
+                    "    a = " + decimalNativePrefix + "parse(word.c_str());\n" +
                     "    return input;\n" +
                     "}\n" +
                     "\n" +
-                    "namespace deltix {\n" +
-                    "    namespace dfp {\n" +
+                    "namespace epam {\n" +
+                    "    namespace deltix {\n" +
+                    "        namespace dfp {\n" +
                     "\n" +
-                    "        template <bool nullCheck = false>\n" +
-                    "        class " + dfpClassType + " {\n" +
-                    "        protected:\n" +
-                    "            " + dfpType + " _value;\n" +
+                    "            template <bool nullCheck = false>\n" +
+                    "            class " + dfpClassType + " {\n" +
+                    "            protected:\n" +
+                    "                " + dfpType + " _value;\n" +
                     "\n" +
-                    "        public:\n" +
-                    "            uint64_t toUnderlying() const {\n" +
-                    "                return _value.val;\n" +
-                    "            }\n" +
-                    "            static " + dfpClassType + " fromUnderlying(uint64_t value) {\n" +
-                    "                decimal_native_t dn;\n" +
-                    "                dn.val = value;\n" +
-                    "                return " + dfpClassType + "(dn);\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "() {\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "(" + dfpClassType + " const &b) {\n" +
-                    "                _value = b._value;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "& operator =(" + dfpClassType + " const &b) {\n" +
-                    "                _value = b._value;\n" +
-                    "                return *this;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "(" + dfpType + " const &b) {\n" +
-                    "                _value = b;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "& operator =(" + dfpType + " const &b) {\n" +
-                    "                _value = b;\n" +
-                    "                return *this;\n" +
-                    "            }\n" +
-                    "            explicit operator " + dfpType + "() const {\n" +
-                    "                return _value;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + " operator +(" + dfpClassType + " const& b) const {\n" +
-                    "                return add(*this, b);\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "& operator +=(" + dfpClassType + " const& b) {\n" +
-                    "                *this = add(*this, b);\n" +
-                    "                return *this;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "& operator++() {\n" +
-                    "                *this += fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONE);\n" +
-                    "                return *this;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + " operator++(int) {\n" +
-                    "                " + dfpClassType + " ret = *this;\n" +
-                    "                ++*this;\n" +
-                    "                return ret;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + " operator -(" + dfpClassType + " const& b) const {\n" +
-                    "                return subtract(*this, b);\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "& operator -=(" + dfpClassType + " const& b) {\n" +
-                    "                *this = subtract(*this, b);\n" +
-                    "                return *this;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "& operator--() {\n" +
-                    "                *this -= fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONE);\n" +
-                    "                return *this;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + " operator--(int) {\n" +
-                    "                " + dfpClassType + " ret = *this;\n" +
-                    "                --*this;\n" +
-                    "                return ret;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + " operator *(" + dfpClassType + " const& b) const {\n" +
-                    "                return multiply(*this, b);\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "& operator *=(" + dfpClassType + " const& b) {\n" +
-                    "                *this = multiply(*this, b);\n" +
-                    "                return *this;\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + " operator /(" + dfpClassType + " const& b) const {\n" +
-                    "                return divide(*this, b);\n" +
-                    "            }\n" +
-                    "            " + dfpClassType + "& operator /=(" + dfpClassType + " const& b) {\n" +
-                    "                *this = divide(*this, b);\n" +
-                    "                return *this;\n" +
-                    "            }\n" +
-                    "            explicit operator std::string() const {\n" +
-                    "                char str[32];\n" +
-                    "                toString(str);\n" +
-                    "                return std::string(str);\n" +
-                    "            }\n" +
-                    "            friend std::ostream& operator <<(std::ostream& output, " + dfpClassType + " const& a) {\n" +
-                    "                output << a._value;\n" +
-                    "                return output;\n" +
-                    "            }\n" +
-                    "            friend std::istream& operator >>(std::istream& input, " + dfpClassType + "& a) {\n" +
-                    "                decimal_native_t val;\n" +
-                    "                input >> val;\n" +
-                    "                a = " + dfpClassType + "(val);\n" +
-                    "                return input;\n" +
-                    "            }\n" +
-                    "            bool isNull() const {\n" +
-                    "                return toUnderlying() == DECIMAL_NATIVE_UNDERLYING_NULL;\n" +
-                    "            }\n" +
+                    "            public:\n" +
+                    "                uint64_t toUnderlying() const {\n" +
+                    "                    return _value.val;\n" +
+                    "                }\n" +
+                    "                static " + dfpClassType + " fromUnderlying(uint64_t value) {\n" +
+                    "                    decimal_native_t dn;\n" +
+                    "                    dn.val = value;\n" +
+                    "                    return " + dfpClassType + "(dn);\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "() {\n" +
+                    "                    _value.val = DECIMAL_NATIVE_UNDERLYING_ZERO;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "(" + dfpClassType + " const &b) {\n" +
+                    "                    _value = b._value;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "& operator =(" + dfpClassType + " const &b) {\n" +
+                    "                    _value = b._value;\n" +
+                    "                    return *this;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "(" + dfpType + " const &b) {\n" +
+                    "                    _value = b;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "& operator =(" + dfpType + " const &b) {\n" +
+                    "                    _value = b;\n" +
+                    "                    return *this;\n" +
+                    "                }\n" +
+                    "                explicit operator " + dfpType + "() const {\n" +
+                    "                    return _value;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + " operator +(" + dfpClassType + " const& b) const {\n" +
+                    "                    return add(*this, b);\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "& operator +=(" + dfpClassType + " const& b) {\n" +
+                    "                    *this = add(*this, b);\n" +
+                    "                    return *this;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "& operator++() {\n" +
+                    "                    *this += fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONE);\n" +
+                    "                    return *this;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + " operator++(int) {\n" +
+                    "                    " + dfpClassType + " ret = *this;\n" +
+                    "                    ++*this;\n" +
+                    "                    return ret;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + " operator -(" + dfpClassType + " const& b) const {\n" +
+                    "                    return subtract(*this, b);\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "& operator -=(" + dfpClassType + " const& b) {\n" +
+                    "                    *this = subtract(*this, b);\n" +
+                    "                    return *this;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "& operator--() {\n" +
+                    "                    *this -= fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONE);\n" +
+                    "                    return *this;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + " operator--(int) {\n" +
+                    "                    " + dfpClassType + " ret = *this;\n" +
+                    "                    --*this;\n" +
+                    "                    return ret;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + " operator *(" + dfpClassType + " const& b) const {\n" +
+                    "                    return multiply(*this, b);\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "& operator *=(" + dfpClassType + " const& b) {\n" +
+                    "                    *this = multiply(*this, b);\n" +
+                    "                    return *this;\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + " operator /(" + dfpClassType + " const& b) const {\n" +
+                    "                    return divide(*this, b);\n" +
+                    "                }\n" +
+                    "                " + dfpClassType + "& operator /=(" + dfpClassType + " const& b) {\n" +
+                    "                    *this = divide(*this, b);\n" +
+                    "                    return *this;\n" +
+                    "                }\n" +
+                    "                explicit operator std::string() const {\n" +
+                    "                    char str[32];\n" +
+                    "                    toString(str);\n" +
+                    "                    return std::string(str);\n" +
+                    "                }\n" +
+                    "                friend std::ostream& operator <<(std::ostream& output, " + dfpClassType + " const& a) {\n" +
+                    "                    output << a._value;\n" +
+                    "                    return output;\n" +
+                    "                }\n" +
+                    "                friend std::istream& operator >>(std::istream& input, " + dfpClassType + "& a) {\n" +
+                    "                    decimal_native_t val;\n" +
+                    "                    input >> val;\n" +
+                    "                    a = " + dfpClassType + "(val);\n" +
+                    "                    return input;\n" +
+                    "                }\n" +
+                    "                bool isNull() const {\n" +
+                    "                    return toUnderlying() == DECIMAL_NATIVE_UNDERLYING_NULL;\n" +
+                    "                }\n" +
                     "\n");
 
             for (final ApiEntry entry : api) {
@@ -283,33 +282,33 @@ public class CxxWrappers {
                 String preOutHpp = "";
                 String outHpp = "";
                 if (outHpp.isEmpty() && fnArgCount == 0 && fnNameApi.startsWith("from")) {
-                    outHpp = "            explicit " + dfpClassType + "(" + fnArg + ") {\n";
-                    if (fnNameApi.equals("fromString"))
-                        outHpp += "                if (str == nullptr)\n" +
-                            "                    throw std::invalid_argument(DN_FUNC + \": Argument '\" + DN_NAMEOF(str) + \"' is nullptr.\");\n" +
-                            "                decimal_native_t _value;\n" +
-                            "                if (!strncmp(str, \"null\", 4) && (str[4] == '\\0' || strchr(\" \\f\\n\\r\\t\\v\", str[4])))\n" +
-                            "                    _value = decimal_native_fromUnderlying(DECIMAL_NATIVE_UNDERLYING_NULL);\n" +
-                            "                else\n" +
-                            "                    _value = decimal_native_fromString(str);\n";
-                    else
-                        outHpp += "                _value = " + fnNameC + "(" + fnCall + ");\n";
-                    outHpp += "            }\n";
+                    outHpp += "                explicit " + dfpClassType + "(" + fnArg + ") {\n" +
+                        "                    _value = " + fnNameC + "(" + fnCall + ");\n" +
+                        "                }\n";
                 }
 
-                if (outHpp.isEmpty() && fnArgCount == 0 && fnArg.startsWith(dfpType) && fnNameApi.startsWith("to")) {
-                    preOutHpp = "            explicit operator " + fnRet + "() const {\n" +
-                        "                return " + fnNameApi + "(_value);\n" +
-                        "            }\n";
-                    outHpp = "            " + fnRet + " " + fnNameApi + "() const {\n" +
-                        "                return " + fnNameC + "(_value);\n" +
-                        "            }\n";
+                if (outHpp.isEmpty() && fnArgCount == 0 && fnNameApi.equals("parse")) {
+                    outHpp += "                explicit " + dfpClassType + "(" + fnArg + ") {\n" +
+                        "                    _value = " + fnNameC + "(" + fnCall + ");\n" +
+                        "                }\n" +
+                        "\n" +
+                        "                explicit " + dfpClassType + "(const std::string &str) : this(str.c_str()) {\n" +
+                        "                }\n";
+                }
+
+                if (outHpp.isEmpty() && fnArgCount == 0 && fnArg.startsWith(dfpType) && fnNameApi.startsWith("to") && !fnNameApi.startsWith("to_scientific_string")) {
+                    preOutHpp = "                explicit operator " + fnRet + "() const {\n" +
+                        "                    return " + fnNameApi + "(_value);\n" +
+                        "                }\n";
+                    outHpp = "                " + fnRet + " " + fnNameApi + "() const {\n" +
+                        "                    return " + fnNameC + "(_value);\n" +
+                        "                }\n";
                 }
 
                 if (outHpp.isEmpty() && fnArgCount == 0 && fnArg.startsWith(dfpType) && (fnNameApi.startsWith("is") || fnNameApi.equals("signBit")))
-                    outHpp = "            bool " + fnNameApi + "() const {\n" +
-                        "                return " + fnNameC + "(_value) != 0;\n" +
-                        "            }\n";
+                    outHpp = "                bool " + fnNameApi + "() const {\n" +
+                        "                    return " + fnNameC + "(_value) != 0;\n" +
+                        "                }\n";
 
                 if (outHpp.isEmpty() && fnRet.equals(dfpType) && fnArg.startsWith(dfpType) &&
                     (fnArgCount == 0 || fnNameApi.equals("scaleByPowerOfTen"))) {
@@ -317,19 +316,19 @@ public class CxxWrappers {
                     final int fnCall2Index = fnCall.indexOf(",");
                     final String fnCall2 = fnCall2Index > 0 ? fnCall.substring(fnCall2Index).trim() : "";
 
-                    outHpp = "            " + dfpClassType + "& " + fnNameApi + "(" + fnArg2Finder.group(1).replace(dfpType, dfpClassType + " const&") + ") {\n" +
-                        "                _value = " + fnNameC + "(_value" + fnCall2 + ");\n" +
+                    outHpp = "                " + dfpClassType + "& " + fnNameApi + "(" + fnArg2Finder.group(1).replace(dfpType, dfpClassType + " const&") + ") {\n" +
+                        "                    _value = " + fnNameC + "(_value" + fnCall2 + ");\n" +
                         "\n" +
-                        "                return *this;\n" +
-                        "            }\n";
+                        "                    return *this;\n" +
+                        "                }\n";
                 }
 
                 if (outHpp.isEmpty() && fnNameApi.equals("multiplyAndAdd"))
-                    outHpp = "            " + dfpClassType + "& " + fnNameApi + "(" + dfpClassType + " const& a, " + dfpClassType + " const& b) {\n" +
-                        "                _value = " + fnNameC + "(a._value, b._value, _value);\n" +
+                    outHpp = "                " + dfpClassType + "& " + fnNameApi + "(" + dfpClassType + " const& a, " + dfpClassType + " const& b) {\n" +
+                        "                    _value = " + fnNameC + "(a._value, b._value, _value);\n" +
                         "\n" +
-                        "                return *this;\n" +
-                        "            }\n";
+                        "                    return *this;\n" +
+                        "                }\n";
 
                 if (outHpp.isEmpty() && fnArgCount == 1 && allArgDfp && fnNameApi.startsWith("is")) {
                     String opName = "";
@@ -355,66 +354,66 @@ public class CxxWrappers {
                     }
                     if (!opName.isEmpty()) {
                         if (opName.equals("==") || opName.equals("!=")) {
-                            preOutHpp = "            bool operator " + opName + "(" + dfpClassType + " const &b) const {\n" +
-                                "                if (toUnderlying() == DECIMAL_NATIVE_UNDERLYING_NULL &&\n" +
-                                "                    b.toUnderlying() == DECIMAL_NATIVE_UNDERLYING_NULL)\n" +
-                                "                    return " + (opName.equals("==") ? "true" : "false") + ";\n" +
+                            preOutHpp = "                bool operator " + opName + "(" + dfpClassType + " const &b) const {\n" +
+                                "                    if (toUnderlying() == DECIMAL_NATIVE_UNDERLYING_NULL &&\n" +
+                                "                        b.toUnderlying() == DECIMAL_NATIVE_UNDERLYING_NULL)\n" +
+                                "                        return " + (opName.equals("==") ? "true" : "false") + ";\n" +
                                 "\n" +
-                                "                return " + fnNameC + "(_value, b._value) != 0;\n" +
-                                "            }\n";
+                                "                    return " + fnNameC + "(_value, b._value) != 0;\n" +
+                                "                }\n";
 
                         } else {
-                            preOutHpp = "            bool operator " + opName + "(" + dfpClassType + " const &b) const {\n" +
-                                "                return " + fnNameApi + "(b);\n" +
-                                "            }\n";
+                            preOutHpp = "                bool operator " + opName + "(" + dfpClassType + " const &b) const {\n" +
+                                "                    return " + fnNameApi + "(b);\n" +
+                                "                }\n";
 
-                            outHpp = "            bool " + fnNameApi + "(" + dfpClassType + " const &b) const {\n" +
-                                "                return " + fnNameC + "(_value, b._value) != 0;\n" +
-                                "            }\n";
+                            outHpp = "                bool " + fnNameApi + "(" + dfpClassType + " const &b) const {\n" +
+                                "                    return " + fnNameC + "(_value, b._value) != 0;\n" +
+                                "                }\n";
                         }
                     }
                 }
 
                 if (outHpp.isEmpty() && fnNameApi.equals("toString")) {
-                    outHpp = "            " + fnRet + " " + fnNameApi + "(char* dst) const {\n" +
-                        "                if (dst == nullptr)\n" +
-                        "                    throw std::invalid_argument(DN_FUNC + \": Argument '\" + DN_NAMEOF(dst) + \"' is nullptr.\");\n" +
-                        "                if (isNull())\n" +
-                        "                    memcpy(dst, \"null\", 5 * sizeof(char));\n" +
-                        "                else\n" +
-                        "                    " + fnNameC + "(_value, dst);\n" +
-                        "            }\n";
+                    outHpp = "                " + fnRet + " " + fnNameApi + "(char* dst) const {\n" +
+                        "                    if (dst == nullptr)\n" +
+                        "                        throw std::invalid_argument(DN_FUNC + \": Argument '\" + DN_NAMEOF(dst) + \"' is nullptr.\");\n" +
+                        "                    if (isNull())\n" +
+                        "                        memcpy(dst, \"null\", 5 * sizeof(char));\n" +
+                        "                    else\n" +
+                        "                        " + fnNameC + "(_value, dst);\n" +
+                        "                }\n";
                 }
 
                 if (outHpp.isEmpty() && fnNameApi.startsWith("fromFixedPoint")) {
-                    outHpp = "            static " + dfpClassType + " fromFixedPoint(" + fnArg + ") {\n" +
-                        "                return " + dfpClassType + "(" + fnNameC + "(" + fnCall + "));\n" +
-                        "            }\n";
+                    outHpp = "                static " + dfpClassType + " fromFixedPoint(" + fnArg + ") {\n" +
+                        "                    return " + dfpClassType + "(" + fnNameC + "(" + fnCall + "));\n" +
+                        "                }\n";
                 }
 
                 if (outHpp.isEmpty() && Pattern.compile("^(max|min|add|multiply|mean)\\d+|subtract|divide").matcher(fnNameApi).matches()) {
                     final SoftMatcher multipleArgFinder = new SoftMatcher(Pattern.compile("(.+?)\\d*$").matcher(fnNameApi));
-                    outHpp = "            static " + fnRet.replace(dfpType, dfpClassType) + " " + multipleArgFinder.group(1) + "(" + fnArg.replace(dfpType, dfpClassType + " const&") + ") {\n" +
-                        "                return " + dfpClassType + "(" + fnNameC + "(" + fnCall + "));\n" +
-                        "            }\n";
+                    outHpp = "                static " + fnRet.replace(dfpType, dfpClassType) + " " + multipleArgFinder.group(1) + "(" + fnArg.replace(dfpType, dfpClassType + " const&") + ") {\n" +
+                        "                    return " + dfpClassType + "(" + fnNameC + "(" + fnCall + "));\n" +
+                        "                }\n";
                 }
 
                 if (outHpp.isEmpty()) {
                     final SoftMatcher mulDivFinder = new SoftMatcher(Pattern.compile("^(multiply|divide)ByInt(32|64)$").matcher(fnNameApi));
                     if (mulDivFinder.matches()) {
-                        preOutHpp = "            " + dfpClassType + " operator " + (mulDivFinder.group(1).equals("multiply") ? "*" : "/") + "(int" + mulDivFinder.group(2) + "_t b) const {\n" +
-                            "                return " + fnNameApi + "(_value, b);\n" +
-                            "            }\n" +
+                        preOutHpp = "                " + dfpClassType + " operator " + (mulDivFinder.group(1).equals("multiply") ? "*" : "/") + "(int" + mulDivFinder.group(2) + "_t b) const {\n" +
+                            "                    return " + fnNameApi + "(_value, b);\n" +
+                            "                }\n" +
                             "\n" +
-                            "            " + dfpClassType + "& operator " + (mulDivFinder.group(1).equals("multiply") ? "*" : "/") + "=(int" + mulDivFinder.group(2) + "_t b) {\n" +
-                            "                _value = " + fnNameApi + "(_value, b);\n" +
+                            "                " + dfpClassType + "& operator " + (mulDivFinder.group(1).equals("multiply") ? "*" : "/") + "=(int" + mulDivFinder.group(2) + "_t b) {\n" +
+                            "                    _value = " + fnNameApi + "(_value, b);\n" +
                             "\n" +
-                            "                return *this;\n" +
-                            "            }\n";
+                            "                    return *this;\n" +
+                            "                }\n";
 
-                        outHpp = "            " + dfpClassType + " " + fnNameApi + "(int" + mulDivFinder.group(2) + "_t b) const {\n" +
-                            "                return " + dfpClassType + "(" + fnNameC + "(_value, b));\n" +
-                            "            }\n";
+                        outHpp = "                " + dfpClassType + " " + fnNameApi + "(int" + mulDivFinder.group(2) + "_t b) const {\n" +
+                            "                    return " + dfpClassType + "(" + fnNameC + "(_value, b));\n" +
+                            "                }\n";
                     }
                 }
 
@@ -423,15 +422,15 @@ public class CxxWrappers {
                     final int fnCall2Index = fnCall.indexOf(",");
                     final String fnCall2 = fnCall2Index > 0 ? fnCall.substring(fnCall2Index).trim() : "";
 
-                    outHpp = "            " + fnRet.replace(dfpType, dfpClassType) + " " + fnNameApi + "(" + fnArg2Finder.group(1).replace(dfpType, dfpClassType + " const&") + ") const {\n" +
-                        "                return " + fnNameC + "(_value" + fnCall2 + ");\n" +
-                        "            }\n";
+                    outHpp = "                " + fnRet.replace(dfpType, dfpClassType) + " " + fnNameApi + "(" + fnArg2Finder.group(1).replace(dfpType, dfpClassType + " const&") + ") const {\n" +
+                        "                    return " + fnNameC + "(_value" + fnCall2 + ");\n" +
+                        "                }\n";
                 }
 
                 if (preOutHpp.isEmpty() && outHpp.isEmpty())
-                    outHpp = "            static " + fnRet.replace(dfpType, dfpClassType) + " " + fnNameApi + "(" + fnArg.replace(dfpType, dfpClassType + " const&") + ") {\n" +
-                        "                return " + fnNameC + "(" + fnCall + ");\n" +
-                        "            }\n";
+                    outHpp = "                static " + fnRet.replace(dfpType, dfpClassType) + " " + fnNameApi + "(" + fnArg.replace(dfpType, dfpClassType + " const&") + ") {\n" +
+                        "                    return " + fnNameC + "(" + fnCall + ");\n" +
+                        "                }\n";
 
                 //            double toFloat64() const {                //                return ddfp1x0x2xSNAPSHOT_toFloat64(_value);
                 //            }
@@ -457,23 +456,23 @@ public class CxxWrappers {
                             oneArg = oneArg.trim();
                             if (oneArg.endsWith("_value")) {
                                 if (oneArg.equals("_value"))
-                                    nullCheck += "                if (isNull())\n" +
-                                        "                    throw std::invalid_argument(DN_FUNC + \": This object is null.\");\n";
+                                    nullCheck += "                    if (isNull())\n" +
+                                        "                        throw std::invalid_argument(DN_FUNC + \": This object is null.\");\n";
                                 else
-                                    nullCheck += "                if (" + oneArg.substring(0, oneArg.length() - 7) + ".isNull())\n" +
-                                        "                    throw std::invalid_argument(DN_FUNC + \": Argument '\" + DN_NAMEOF(" + oneArg.substring(0, oneArg.length() - 7) + ") + \"' is null.\");\n";
+                                    nullCheck += "                    if (" + oneArg.substring(0, oneArg.length() - 7) + ".isNull())\n" +
+                                        "                        throw std::invalid_argument(DN_FUNC + \": Argument '\" + DN_NAMEOF(" + oneArg.substring(0, oneArg.length() - 7) + ") + \"' is null.\");\n";
                             }
                         }
 
                         outHpp = outHppFinder.group(1) + " " + outHppFinder.group(2) + "(" + outHppFinder.group(3) + ")" + outHppFinder.group(4) + "{\n" +
-                            "                return nullCheck\n" +
-                            "                    ? " + outHppFinder.group(2) + "Checked(" + outHppCall + ")\n" +
-                            "                    : " + outHppFinder.group(2) + "Unchecked(" + outHppCall + ");\n" +
-                            "            }\n\n" +
+                            "                    return nullCheck\n" +
+                            "                        ? " + outHppFinder.group(2) + "Checked(" + outHppCall + ")\n" +
+                            "                        : " + outHppFinder.group(2) + "Unchecked(" + outHppCall + ");\n" +
+                            "                }\n\n" +
                             outHppFinder.group(1) + " " + outHppFinder.group(2) + "Checked(" + outHppFinder.group(3) + ")" + outHppFinder.group(4) + "{\n" +
                             nullCheck + "\n" +
-                            "                return " + outHppFinder.group(2) + "Unchecked(" + outHppCall + ");\n" +
-                            "            }\n\n" +
+                            "                    return " + outHppFinder.group(2) + "Unchecked(" + outHppCall + ");\n" +
+                            "                }\n\n" +
                             outHppFinder.group(1) + " " + outHppFinder.group(2) + "Unchecked(" + outHppFinder.group(3) + ")" + outHppFinder.group(4) +
                             outHpp.substring(outHpp.indexOf("{"));
                     }
@@ -486,31 +485,32 @@ public class CxxWrappers {
             outFileH.write("\n#endif\n");
 
             outFileHpp.write(
-                "        };\n" +
+                "            };\n" +
                     "\n" +
-                    "        typedef " + dfpClassType + "<> Decimal64;\n" +
+                    "            typedef " + dfpClassType + "<> Decimal64;\n" +
                     "\n" +
-                    "        static const Decimal64 D64_POSITIVE_INFINITY = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_POSITIVE_INFINITY);\n" +
-                    "        static const Decimal64 D64_NEGATIVE_INFINITY = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_NEGATIVE_INFINITY);\n" +
-                    "        static const Decimal64 D64_NAN = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_NAN);\n" +
-                    "        static const Decimal64 D64_NULL = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_NULL); // = -0x80\n" +
+                    "            static const Decimal64 D64_POSITIVE_INFINITY = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_POSITIVE_INFINITY);\n" +
+                    "            static const Decimal64 D64_NEGATIVE_INFINITY = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_NEGATIVE_INFINITY);\n" +
+                    "            static const Decimal64 D64_NAN = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_NAN);\n" +
+                    "            static const Decimal64 D64_NULL = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_NULL); // = -0x80\n" +
                     "\n" +
-                    "        static const Decimal64 D64_MIN_VALUE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MIN_VALUE);\n" +
-                    "        static const Decimal64 D64_MAX_VALUE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MAX_VALUE);\n" +
+                    "            static const Decimal64 D64_MIN_VALUE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MIN_VALUE);\n" +
+                    "            static const Decimal64 D64_MAX_VALUE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MAX_VALUE);\n" +
                     "\n" +
-                    "        static const Decimal64 D64_MIN_POSITIVE_VALUE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MIN_POSITIVE_VALUE);\n" +
-                    "        static const Decimal64 D64_MAX_NEGATIVE_VALUE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MAX_NEGATIVE_VALUE);\n" +
+                    "            static const Decimal64 D64_MIN_POSITIVE_VALUE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MIN_POSITIVE_VALUE);\n" +
+                    "            static const Decimal64 D64_MAX_NEGATIVE_VALUE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MAX_NEGATIVE_VALUE);\n" +
                     "\n" +
-                    "        static const Decimal64 D64_ZERO = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ZERO); // e=0, m=0, sign=0\n" +
-                    "        static const Decimal64 D64_ONE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONE);\n" +
-                    "        static const Decimal64 D64_TWO = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_TWO);\n" +
-                    "        static const Decimal64 D64_TEN = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_TEN);\n" +
-                    "        static const Decimal64 D64_HUNDRED = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_HUNDRED);\n" +
-                    "        static const Decimal64 D64_THOUSAND = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_THOUSAND);\n" +
-                    "        static const Decimal64 D64_MILLION = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MILLION);\n" +
+                    "            static const Decimal64 D64_ZERO = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ZERO); // e=0, m=0, sign=0\n" +
+                    "            static const Decimal64 D64_ONE = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONE);\n" +
+                    "            static const Decimal64 D64_TWO = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_TWO);\n" +
+                    "            static const Decimal64 D64_TEN = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_TEN);\n" +
+                    "            static const Decimal64 D64_HUNDRED = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_HUNDRED);\n" +
+                    "            static const Decimal64 D64_THOUSAND = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_THOUSAND);\n" +
+                    "            static const Decimal64 D64_MILLION = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_MILLION);\n" +
                     "\n" +
-                    "        static const Decimal64 D64_ONETENTH = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONETENTH);\n" +
-                    "        static const Decimal64 D64_ONEHUNDREDTH = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONEHUNDREDTH);\n" +
+                    "            static const Decimal64 D64_ONETENTH = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONETENTH);\n" +
+                    "            static const Decimal64 D64_ONEHUNDREDTH = Decimal64::fromUnderlying(DECIMAL_NATIVE_UNDERLYING_ONEHUNDREDTH);\n" +
+                    "        }\n" +
                     "    }\n" +
                     "}\n" +
                     "\n" +
@@ -519,7 +519,7 @@ public class CxxWrappers {
     }
 
     private static String cppTypeToC(String type) {
-        type = getCppType(type);
+        type = getCppType(type, false);
         switch (type) {
             case "_Decimal64":
             case "decimal64":
@@ -558,6 +558,17 @@ public class CxxWrappers {
                 return "double";
             case "intBool":
                 return "int";
+            case "char":
+                return "char";
+            case "const char *":
+            case "const char*":
+                return "const char *";
+            case "char *":
+            case "char*":
+                return "char *";
+            case "uint32 *":
+            case "uint32*":
+                return "uint32_t *";
             default:
                 throw new RuntimeException("Can't convert C++ type (='" + type + "') to C type.");
         }

@@ -699,7 +699,7 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return "0.000000000000000e+000";
+            return "0" + decimalMark + "000000000000000e+000";
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
@@ -942,7 +942,7 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return stringBuilder.append("0.000000000000000e+000");
+            return stringBuilder.append("0").append(decimalMark).append("000000000000000e+000");
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
@@ -1242,7 +1242,7 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return appendable.append("0.000000000000000e+000");
+            return appendable.append("0").append(decimalMark).append("000000000000000e+000");
 
         int exponent = partsExponent - EXPONENT_BIAS;
 

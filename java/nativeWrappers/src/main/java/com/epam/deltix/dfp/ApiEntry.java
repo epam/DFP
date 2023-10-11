@@ -16,6 +16,11 @@ public class ApiEntry {
         this.arguments = arguments;
     }
 
+    @Override
+    public String toString() {
+        return returnType + ' ' + name + '(' + arguments + ')';
+    }
+
     public static List<ApiEntry> collectApi(String body, final String apiPrefix) {
         body = body
             .replaceAll("\\b__declspec\\s*\\(\\s*dllexport\\s*\\)", "")
@@ -42,10 +47,15 @@ public class ApiEntry {
         // https://stackoverflow.com/questions/17759004/how-to-match-string-within-parentheses-nested-in-java
         "\\(([^()]*|\\(([^()]*|\\([^()]*\\))*\\))*\\)";
 
-    public static String getCppType(String type) {
-        type = type.replaceAll(gccAttributePattern, "")
-            .replaceAll("\\bconst\\b", "")
-            .replace("\\bextern\\b", "");
+    public static String getCppType(final String type) {
+        return getCppType(type, true);
+    }
+
+    public static String getCppType(String type, boolean replaceConst) {
+        type = type.replaceAll(gccAttributePattern, "");
+        if (replaceConst)
+            type = type.replaceAll("\\bconst\\b", "");
+        type = type.replace("\\bextern\\b", "");
 
         return type.trim();
     }

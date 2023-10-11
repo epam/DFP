@@ -54,6 +54,12 @@ public class JavaWrappers {
             );
 
             for (final ApiEntry entry : javaApi) {
+                if (entry.name.startsWith(javaPrefix + "tryParse") ||
+                    entry.name.startsWith(javaPrefix + "parse") ||
+                    entry.name.startsWith(javaPrefix + "to_string") ||
+                    entry.name.startsWith(javaPrefix + "to_scientific_string"))
+                    continue;
+
                 writer.write("\n    public static native " + cppTypeToJava(entry.returnType) + " " + entry.name.substring(prefixLength) + "(");
 
                 final String[] args = entry.arguments.split(",");

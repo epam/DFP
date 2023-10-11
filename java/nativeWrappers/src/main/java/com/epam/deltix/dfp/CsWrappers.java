@@ -51,7 +51,11 @@ public class CsWrappers {
             nativeClassBody.append("\t\tinternal static readonly " + outputClass + "Obj impl = new " + outputClass + "Obj();\n");
 
             for (final ApiEntry entry : api) {
-                writer.write("\n\t\t[DllImport(libName, CallingConvention = callType)]\n");
+                if (entry.name.startsWith(apiPrefix + "to_string_3") ||
+                    entry.name.startsWith(apiPrefix + "to_scientific_string_3"))
+                    continue;
+
+                writer.write("\n\t\t[DllImport(libName, CallingConvention = callType, CharSet = CharSet.Ansi)]\n");
 
                 final String csRetType = cppTypeToCs(entry.returnType);
                 writer.write("\t\tinternal static extern " + csRetType + " " + entry.name + "(");
@@ -72,8 +76,16 @@ public class CsWrappers {
                     final Matcher cppArgMatcher = cppArgRegEx.matcher(cppArg);
                     if (!cppArgMatcher.matches())
                         throw new RuntimeException("Can't parse c++ argument(=" + cppArg + ").");
-                    csArgs.append("[In] ").append(cppTypeToCs(cppArgMatcher.group(1))).append(" ").append(cppArgMatcher.group(2).trim());
-                    csCall.append(cppArgMatcher.group(2).trim());
+
+                    final String csType = cppTypeToCs(cppArgMatcher.group(1));
+                    final boolean isOutType = csType.startsWith("out ");
+
+                    csArgs.append(isOutType ? "[Out] " : "[In] ")
+                        .append(cppTypeToCs(cppArgMatcher.group(1)))
+                        .append(" ")
+                        .append(cppArgMatcher.group(2).trim());
+                    csCall.append(isOutType ? "out " : "")
+                        .append(cppArgMatcher.group(2).trim());
                 }
                 final String csArgsStr = csArgs.toString();
                 final String csCallStr = csCall.toString();
@@ -146,6 +158,14 @@ public class CsWrappers {
                 return "double";
             case "intBool":
                 return "bool";
+            case "char *":
+            case "char*":
+                return "string";
+            case "char":
+                return "char";
+            case "uint32 *":
+            case "uint32*":
+                return "out uint";
             default:
                 throw new RuntimeException("Can't convert C++ type (='" + type + "') to Cs type.");
         }
