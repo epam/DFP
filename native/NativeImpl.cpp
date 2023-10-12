@@ -1,17 +1,24 @@
 #include <cstring>
 #include <cstdint>
-#include "NativeImpl.h"
-#include "NativeImplToString.h"
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#include "NativeImpl.h"
+#include "NativeImplToString.h"
+
+#ifdef _MSC_VER
+#define strcmpIgnoreCase stricmp
+#else
+#define strcmpIgnoreCase strcasecmp
 #endif
 
     //region Conversion
     static const uint64_t DECIMAL_NATIVE_UNDERLYING_NULL = 0xFFFFFFFFFFFFFF80ULL;	// = -0x80
 
     BID_UINT64 dfp64_try_parse(const char* str, _IDEC_flags* exception) {
-        if (!stricmp(str, "null"))
+        if (!strcmpIgnoreCase(str, "null"))
             return DECIMAL_NATIVE_UNDERLYING_NULL;
         auto ret = bid64_from_string((char*)str);
         if (exception)
