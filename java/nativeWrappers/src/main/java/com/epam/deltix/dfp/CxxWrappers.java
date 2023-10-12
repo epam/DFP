@@ -38,24 +38,20 @@ public class CxxWrappers {
                     "#ifdef __cplusplus\n" +
                     "#    define " + outputCDefine + "_MANGLING extern \"C\"\n" +
                     "#else\n" +
-                    "#    define " + outputCDefine + "_MANGLING\n" +
+                    "#    define " + outputCDefine + "_MANGLING extern\n" +
                     "#endif\n" +
                     "\n" +
                     "#if defined(_WIN32)\n" +
-                    "#    define " + outputCDefine + "_CALLING __stdcall\n" +
+                    "#    define " + outputCDefine + "_CALLING __cdecl\n" +
                     "#else\n" +
                     "#    define " + outputCDefine + "_CALLING\n" +
                     "#endif\n" +
                     "\n" +
                     "#ifdef " + outputCDefine + "_SHARED_LIBRARY\n" +
                     "#    ifdef _MSC_VER\n" +
-                    "#        ifdef " + outputCDefine + "_EXPORTS\n" +
-                    "#            define " + outputCDefine + "_EXPORT    __declspec(dllexport)\n" +
-                    "#        else\n" +
-                    "#            define " + outputCDefine + "_EXPORT    __declspec(dllimport)\n" +
-                    "#        endif\n" +
+                    "#        define " + outputCDefine + "_EXPORT    __declspec(dllimport)\n" +
                     "#    else\n" +
-                    "#        define " + outputCDefine + "_EXPORT        __attribute__ ((visibility(\"default\")))\n" +
+                    "#        define " + outputCDefine + "_EXPORT    __attribute__ ((visibility(\"default\")))\n" +
                     "#    endif\n" +
                     "#else\n" +
                     "#    define " + outputCDefine + "_EXPORT\n" +
