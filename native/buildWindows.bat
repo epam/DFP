@@ -1,24 +1,32 @@
-mkdir buildi386
-cd buildi386
-cmake -G "Visual Studio 16 2019" -A Win32 -DVERSION_SUFFIX=%1 ../
-MSBuild /p:PlatformToolset=ClangCL /p:Platform=Win32 /p:Configuration=Release /t:Rebuild ./native.sln
-mkdir ..\binmath\Release\windows\i386
-move /y Release\*math*.dll ..\binmath\Release\windows\i386
-mkdir ..\bin\Release\windows\i386
-move /y Release\*.dll ..\bin\Release\windows\i386
-mkdir ..\binDemo\Release\windows\i386
-move /y EXAMPLES\Release\*.exe ..\binDemo\Release\windows\i386
+mkdir buildi386													|| goto :error
+cd buildi386													|| goto :error
+cmake -A Win32 -T ClangCL -DVERSION_SUFFIX=%1 ../				|| goto :error
+cmake --build . --config Release								|| goto :error
+cmake --install . --config Release --prefix ./installation		|| goto :error
+mkdir ..\binmath\Release\windows\i386							|| goto :error
+move /y Release\*math*.dll ..\binmath\Release\windows\i386		|| goto :error
+mkdir ..\bin\Release\windows\i386								|| goto :error
+move /y Release\*.dll ..\bin\Release\windows\i386				|| goto :error
+mkdir ..\binDemo\Release\windows\i386							|| goto :error
+move /y Release\*.exe ..\binDemo\Release\windows\i386			|| goto :error
 
-cd ..
+cd ..															|| goto :error
 
-mkdir buildamd64
-cd buildamd64
-cmake -G "Visual Studio 16 2019" -A x64 -DVERSION_SUFFIX=%1 ../
-MSBuild /p:PlatformToolset=ClangCL /p:Platform=x64 /p:Configuration=Release /t:Rebuild ./native.sln
-mkdir ..\binmath\Release\windows\amd64
-move /y Release\*math*.dll ..\binmath\Release\windows\amd64
-mkdir ..\bin\Release\windows\amd64
-move /y Release\*.dll ..\bin\Release\windows\amd64
-mkdir ..\binDemo\Release\windows\amd64
-move /y EXAMPLES\Release\*.exe ..\binDemo\Release\windows\amd64
-cd ..
+mkdir buildamd64												|| goto :error
+cd buildamd64													|| goto :error
+cmake -A x64 -T ClangCL -DVERSION_SUFFIX=%1 ../					|| goto :error
+cmake --build . --config Release								|| goto :error
+cmake --install . --config Release --prefix ./installation		|| goto :error
+mkdir ..\binmath\Release\windows\amd64							|| goto :error
+move /y Release\*math*.dll ..\binmath\Release\windows\amd64		|| goto :error
+mkdir ..\bin\Release\windows\amd64								|| goto :error
+move /y Release\*.dll ..\bin\Release\windows\amd64				|| goto :error
+mkdir ..\binDemo\Release\windows\amd64							|| goto :error
+move /y Release\*.exe ..\binDemo\Release\windows\amd64			|| goto :error
+cd ..															|| goto :error
+
+goto :EOF
+
+:error
+echo Failed with error #%errorlevel%.
+exit /b %errorlevel%
