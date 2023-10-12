@@ -216,9 +216,8 @@ public class CxxWrappers {
                     "                    return *this;\n" +
                     "                }\n" +
                     "                explicit operator std::string() const {\n" +
-                    "                    char str[32];\n" +
-                    "                    toString(str);\n" +
-                    "                    return std::string(str);\n" +
+                    "                    char str[512];\n" +
+                    "                    return std::string(" + decimalNativePrefix + "to_string_3(_value, '.', str));\n" +
                     "                }\n" +
                     "                friend std::ostream& operator <<(std::ostream& output, " + dfpClassType + " const& a) {\n" +
                     "                    output << a._value;\n" +

@@ -37,6 +37,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    std::cout << x << "(=" << x.toUnderlying() << ") " << op << " " << y << "(=" << y.toUnderlying() << ") = " << z << "(=" << z.toUnderlying() << ")" << std::endl;
+    std::cout << x << "(=" << x.toUnderlying() << ") " << op << " " << (std::string)y << "(=" << y.toUnderlying() << ") = " << z << "(=" << z.toUnderlying() << ")" << std::endl;
 	return 0;
 }
