@@ -31,6 +31,9 @@ public class NativeWrappers {
         final String preprocess = callPreprocess(inputFile, apiPrefix, javaPrefix);
 
         final List<ApiEntry> api = collectApi(preprocess, apiPrefix);
+        if (api.isEmpty()) {
+            throw new RuntimeException("Can't collect API.");
+        }
 
         if (!outputCRoot.isEmpty()) {
             CxxWrappers.make(outputCRoot, api, apiPrefix, versionThreeDigits);

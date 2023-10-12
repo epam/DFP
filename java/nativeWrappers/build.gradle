@@ -16,7 +16,7 @@ task makeNativeWrappersDfp(dependsOn: compileJava, type: JavaExec) {
     args = [ver["three"], ver["suffix"], ver["sha"],
             "ddfp" + ver["suffix"] + "_",
             "com_epam_deltix_dfp_NativeImpl_",
-            "$rootDir/native/NativeImpl.c",
+            "$rootDir/native/NativeImpl.cpp",
             "$rootDir/java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp/NativeImpl.java",
             "$rootDir/csharp/EPAM.Deltix.DFP/NativeImpl.cs",
             "$rootDir/native"
