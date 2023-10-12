@@ -292,7 +292,7 @@ public class CxxWrappers {
                         "                    _value = " + fnNameC + "(" + fnCall + ");\n" +
                         "                }\n" +
                         "\n" +
-                        "                explicit " + dfpClassType + "(const std::string &str) : this(str.c_str()) {\n" +
+                        "                explicit " + dfpClassType + "(const std::string &str) : " + dfpClassType + "(str.c_str()) {\n" +
                         "                }\n";
                 }
 
