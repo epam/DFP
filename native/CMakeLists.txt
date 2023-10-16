@@ -50,7 +50,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_subdirectory (../thirdparty/IntelRDFPMathLib20U2/LIBRARY LIBRARY)
 
-add_library(dfp SHARED NativeImpl.cpp)
+add_library(dfp SHARED NativeImpl.c)
 target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ JAVA_PREFIX=com_epam_deltix_dfp_NativeImpl_ DECIMALNATIVE_SHARED_LIBRARY DECIMALNATIVE_EXPORTS)
 target_link_libraries(dfp LINK_PUBLIC bid)
 set_target_properties(dfp PROPERTIES OUTPUT_NAME "ddfp${VERSION_SUFFIX}")
@@ -84,9 +84,9 @@ file(GLOB BID_SRCS_STATIC
 		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_four_over_pi.c
 		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_exception.c
 		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/sqrt_tab_t.c
-		NativeImplToString.cpp)
+		NativeImplToString.c)
 
-add_library(dfpStatic STATIC NativeImpl.cpp ${BID_SRCS_STATIC})
+add_library(dfpStatic STATIC NativeImpl.c ${BID_SRCS_STATIC})
 include_directories(../thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
 target_compile_definitions(dfpStatic PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ NOJAVA)
 set_target_properties(dfpStatic PROPERTIES OUTPUT_NAME "ddfpStatic${VERSION_SUFFIX}")
@@ -94,4 +94,4 @@ install(TARGETS dfpStatic DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX
 
 add_executable(demo demo.cpp)
 #target_link_libraries(demo LINK_PRIVATE dfp stdc++)
-target_link_libraries(demo LINK_PRIVATE dfpStatic stdc++)
+target_link_libraries(demo LINK_PRIVATE dfpStatic) # stdc++)

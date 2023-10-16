@@ -1,8 +1,7 @@
 #include "NativeImpl.h"
 #include <bid_internal.h>
-#include <vector>
-#include <algorithm>
-#include <cmath>
+#include <math.h>
+#include <stdbool.h>
 #include "NativeImplToString.h"
 
 static const BID_UINT64 DFP_NAN_NULL = 0xFFFFFFFFFFFFFF80ull; // = -0x80L;
@@ -28,16 +27,18 @@ static const int BCD_TABLE_DIGITS = 3;
 static const int BCD_DIVIDER = 1000000000;
 static const int BCD_DIVIDER_GROUPS = 3; // log10(BCD_DIVIDER) / BCD_TABLE_DIGITS must be natural value
 
-std::vector<char> makeBcdTable(int tenPowerMaxIndex) {
+char* makeBcdTable(int tenPowerMaxIndex) {
     int n = 1;
     for (int i = 0; i < tenPowerMaxIndex; ++i)
         n *= 10;
 
-    std::vector<char> table(n * tenPowerMaxIndex);
+    char *table = (char *)malloc(n * tenPowerMaxIndex * sizeof(char));
+    if (!table)
+        return 0;
 
-    std::vector<char> value(tenPowerMaxIndex);
+    char value[tenPowerMaxIndex];
 
-    std::fill(value.begin(), value.end(), '0');
+    memset(value, '0', tenPowerMaxIndex * sizeof(char));
 
     for (int i = 0, ib = 0; i < n; ++i) {
         for (int j = 0; j < tenPowerMaxIndex; ++j)
@@ -56,9 +57,12 @@ std::vector<char> makeBcdTable(int tenPowerMaxIndex) {
     return table;
 }
 
-static const std::vector<char> BCD_TABLE = makeBcdTable(BCD_TABLE_DIGITS);
+static const char* BCD_TABLE; // makeBcdTable(BCD_TABLE_DIGITS);
 
 int formatUIntFromBcdTable(int value, char* buffer, int bi) {
+    if (!BCD_TABLE)
+        BCD_TABLE = makeBcdTable(BCD_TABLE_DIGITS);
+
     for (int blockIndex = 0; blockIndex < BCD_DIVIDER_GROUPS; ++blockIndex) {
         int newValue = (int)((unsigned long long)(2199023256ull * value) >> 41);
         int remainder = value - newValue * 1000;
@@ -101,9 +105,8 @@ int numberOfDigits(BID_UINT64 value) {
     return 19;
 }
 
-
 static const int bufferMinLength = 511;
-static thread_local char tls_to_string_buffer[bufferMinLength + 1];
+_Thread_local char tls_to_string_buffer[bufferMinLength + 1];
 
 BID_EXTERN_C const char* dfp64_to_string(BID_UINT64 value) {
     return dfp64_to_string_2(value, '.');
@@ -259,7 +262,7 @@ BID_EXTERN_C const char* dfp64_to_scientific_string_3(BID_UINT64 value, char dec
     unpack_BID64(&partsSignMask, &partsExponent, &partsCoefficient, value);
 
     if (partsCoefficient == 0) {
-        std::copy(SCIENTIFIC_ZERO, SCIENTIFIC_ZERO + sizeof(SCIENTIFIC_ZERO) / sizeof(SCIENTIFIC_ZERO[0]) + 1, buffer512);
+        memcpy(buffer512, SCIENTIFIC_ZERO, sizeof(SCIENTIFIC_ZERO) / sizeof(SCIENTIFIC_ZERO[0]) + 1);
         buffer512[1] = decimalMark;
         return buffer512;
     }
@@ -290,8 +293,11 @@ BID_EXTERN_C const char* dfp64_to_scientific_string_3(BID_UINT64 value, char dec
     buffer512[be++] = 'e';
     buffer512[be++] = exponent >= 0 ? '+' : '-';
     {
+        if (!BCD_TABLE)
+            BCD_TABLE = makeBcdTable(BCD_TABLE_DIGITS);
+
         be += BCD_TABLE_DIGITS;
-        for (int j = 0, ti = std::abs(exponent) * BCD_TABLE_DIGITS /* (remainder << 1) + remainder */; j < BCD_TABLE_DIGITS; ++j, ++ti)
+        for (int j = 0, ti = abs(exponent) * BCD_TABLE_DIGITS /* (remainder << 1) + remainder */; j < BCD_TABLE_DIGITS; ++j, ++ti)
             buffer512[be - 1 - j] = BCD_TABLE[ti];
     }
 
