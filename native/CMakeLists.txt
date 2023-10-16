@@ -52,18 +52,18 @@ add_subdirectory (../thirdparty/IntelRDFPMathLib20U2/LIBRARY LIBRARY)
 
 add_library(dfp SHARED NativeImpl.cpp)
 target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ JAVA_PREFIX=com_epam_deltix_dfp_NativeImpl_ DECIMALNATIVE_SHARED_LIBRARY DECIMALNATIVE_EXPORTS)
-target_link_libraries (dfp LINK_PUBLIC bid)
+target_link_libraries(dfp LINK_PUBLIC bid)
 set_target_properties(dfp PROPERTIES OUTPUT_NAME "ddfp${VERSION_SUFFIX}")
 install(TARGETS dfp DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
 
 add_library(dfpmath SHARED NativeMathImpl.c)
 target_compile_definitions(dfpmath PRIVATE API_PREFIX=ddfpmath${VERSION_SUFFIX}_ JAVA_PREFIX=com_epam_deltix_dfpmath_NativeMathImpl_)
-target_link_libraries (dfpmath LINK_PUBLIC bid)
+target_link_libraries(dfpmath LINK_PUBLIC bid)
 set_target_properties(dfpmath PROPERTIES OUTPUT_NAME "ddfpmath${VERSION_SUFFIX}")
 install(TARGETS dfpmath DESTINATION ./binmath/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
 
 file(GLOB BID_SRCS_STATIC
-        ../thirdparty/IntelRDFPMathLib20U2/LIBRARY/src/*.c
+		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/src/*.c
 		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_bid.c
 		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_bessel.c
 		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_cbrt.c
@@ -93,6 +93,5 @@ set_target_properties(dfpStatic PROPERTIES OUTPUT_NAME "ddfpStatic${VERSION_SUFF
 install(TARGETS dfpStatic DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
 
 add_executable(demo demo.cpp)
-#target_compile_definitions(demo PRIVATE DECIMALNATIVE_SHARED_LIBRARY)
-#target_link_libraries (demo LINK_PUBLIC dfp)
-target_link_libraries (demo LINK_PUBLIC dfpStatic)
+#target_link_libraries(demo LINK_PUBLIC dfp stdc++)
+target_link_libraries(demo LINK_PUBLIC dfpStatic stdc++)

@@ -1,7 +1,7 @@
 set(NAME bid)
 
 file(GLOB ${NAME}_SRCS
-        src/*.c
+		src/*.c
 		float128/dpml_ux_bid.c
 		float128/dpml_ux_bessel.c
 		float128/dpml_ux_cbrt.c
