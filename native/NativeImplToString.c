@@ -2,6 +2,8 @@
 #include <bid_internal.h>
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
 #include "NativeImplToString.h"
 
 static const BID_UINT64 DFP_NAN_NULL = 0xFFFFFFFFFFFFFF80ull; // = -0x80L;
@@ -105,8 +107,9 @@ int numberOfDigits(BID_UINT64 value) {
     return 19;
 }
 
-static const int bufferMinLength = 511;
-_Thread_local char tls_to_string_buffer[bufferMinLength + 1];
+#define bufferMinLength 511
+#define bufferMinLengthWithZero 512
+static _Thread_local char tls_to_string_buffer[bufferMinLengthWithZero];
 
 BID_EXTERN_C const char* dfp64_to_string(BID_UINT64 value) {
     return dfp64_to_string_2(value, '.');

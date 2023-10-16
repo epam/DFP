@@ -3,8 +3,8 @@ set -Eeuo pipefail
 set -x
 
 CCOMPILER=${2:-clang}
-CXXCOMPILER=${2:-clang}
-VERBOSE=${3:-ON}
+CXXCOMPILER=${3:-clang}
+VERBOSE=${4:-ON}
 
 rm -rf ./build
 mkdir build
@@ -25,11 +25,13 @@ make install
 
 rm -rf ./*
 cmake -G "Unix Makefiles" -DVERSION_SUFFIX=$1 -DCMAKE_VERBOSE_MAKEFILE=$VERBOSE -DCMAKE_C_COMPILER=$CCOMPILER -DCMAKE_CXX_COMPILER=$CXXCOMPILER -DCMAKE_INSTALL_PREFIX=../ -DINSTALL_SUFFIX=linux/amd64 ../
-make install
+cmake --build . --config Release
+cmake --install . --config Release
 
 rm -rf ./*
-cmake -G "Unix Makefiles" -DVERSION_SUFFIX=$1 -DCMAKE_VERBOSE_MAKEFILE=$VERBOSE -DCMAKE_C_COMPILER=musl-gcc -DCMAKE_CXX_COMPILER=musl-gcc -DCMAKE_C_FLAGS_IN=-static -DCMAKE_INSTALL_PREFIX=../ -DINSTALL_SUFFIX=linux/amd64/musl-gcc ../
-make install
+cmake -G "Unix Makefiles" -DVERSION_SUFFIX=$1 -DCMAKE_VERBOSE_MAKEFILE=$VERBOSE -DCMAKE_C_COMPILER=musl-gcc -DCMAKE_CXX_COMPILER=musl-gcc -DCMAKE_C_FLAGS_IN=-static -DCMAKE_CXX_FLAGS_IN=-static -DCMAKE_INSTALL_PREFIX=../ -DINSTALL_SUFFIX=linux/amd64/musl-gcc ../
+cmake --build . --config Release
+cmake --install . --config Release
 
 cd ..
 rm -rf ./build
