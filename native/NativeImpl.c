@@ -16,7 +16,7 @@ static const uint64_t DECIMAL_NATIVE_UNDERLYING_NULL = 0xFFFFFFFFFFFFFF80ULL;	//
 BID_UINT64 dfp64_try_parse(const char* str, _IDEC_flags* exception) {
 	if (!strcmpIgnoreCase(str, "null"))
 		return DECIMAL_NATIVE_UNDERLYING_NULL;
-	auto ret = bid64_from_string((char*)str);
+	BID_UINT64 ret = bid64_from_string((char*)str);
 	if (exception)
 		*exception = _IDEC_glbflags;
 	return ret;
