@@ -93,5 +93,5 @@ set_target_properties(dfpStatic PROPERTIES OUTPUT_NAME "ddfpStatic${VERSION_SUFF
 install(TARGETS dfpStatic DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
 
 add_executable(demo demo.cpp)
-#target_link_libraries(demo LINK_PUBLIC dfp stdc++)
-target_link_libraries(demo LINK_PUBLIC dfpStatic stdc++)
+#target_link_libraries(demo LINK_PRIVATE dfp stdc++)
+target_link_libraries(demo LINK_PRIVATE dfpStatic stdc++)
