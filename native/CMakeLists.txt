@@ -2,16 +2,17 @@ cmake_minimum_required (VERSION 2.8.12)
 project (native)
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+	set(CMAKE_BUILD_TYPE Release)
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_IN}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_IN}")
 
 if (TARGET)
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --target=${TARGET} ${TARGET_EX} --sysroot=${SYSROOT} -I${SYSROOT}/include/c++/v1 -I/usr/${TARGET}/include")
+	set(TARGET_FLAGS "--target=${TARGET} ${TARGET_EX} --sysroot=${SYSROOT} -I${SYSROOT}/include/c++/v1 -I/usr/${TARGET}/include")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${TARGET_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TARGET_FLAGS}")
 endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}")
 
 message(STATUS "CMAKE_SYSTEM_PROCESSOR: " ${CMAKE_SYSTEM_PROCESSOR})
 message(STATUS "CMAKE_C_COMPILER_TARGET: " ${CMAKE_C_COMPILER_TARGET})
@@ -47,6 +48,13 @@ add_definitions(-DDECIMAL_GLOBAL_EXCEPTION_FLAGS=${GLOBAL_FLAGS})
 #set(CMAKE_CXX_VISIBILITY_PRESET default)
 #set(CMAKE_VISIBILITY_INLINES_HIDDEN 0)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+if (MSVC)
+	add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+	add_definitions(-D_SCL_SECURE_NO_DEPRECATE)
+	add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+	add_definitions(-DNOMINMAX)
+endif()
 
 add_subdirectory (../thirdparty/IntelRDFPMathLib20U2/LIBRARY LIBRARY)
 
@@ -94,4 +102,8 @@ install(TARGETS dfpStatic DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX
 
 add_executable(demo demo.cpp)
 #target_link_libraries(demo LINK_PRIVATE dfp stdc++)
-target_link_libraries(demo LINK_PRIVATE dfpStatic) # stdc++)
+if (MSVC)
+	target_link_libraries(demo LINK_PRIVATE dfpStatic)
+else()
+	target_link_libraries(demo LINK_PRIVATE dfpStatic stdc++)
+endif()
