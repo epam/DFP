@@ -14,12 +14,40 @@ env:
 
 jobs:
 
-  build-native-linux:
-    runs-on: ubuntu-20.04
+  build-wrappers:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - name: build
+        run: |
+          ./gradlew makeNativeWrappers
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build-wrappers
+          path: |
+            ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
+            ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
+            ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
+            ./csharp/EPAM.Deltix.DFP/Version.targets
+            ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
+            ./csharp/EPAM.Deltix.DFPMath/Version.targets
+            ./native/DecimalNative.h
+            ./native/DecimalNative.hpp
+          retention-days: 7
+
+  build-native-linux:
+    runs-on: ubuntu-20.04
+    needs: [build-wrappers]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Download build-wrappers artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-wrappers
       - name: build
         run: |
           sudo apt update
@@ -56,10 +84,15 @@ jobs:
 
   build-native-windows:
     runs-on: windows-2019
+    needs: [build-wrappers]
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - name: Download build-wrappers artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-wrappers
       - name: Use MSBuild
         uses: microsoft/setup-msbuild@v1.1
       - name: build
@@ -74,10 +107,15 @@ jobs:
 
   build-native-macos:
     runs-on: ubuntu-20.04
+    needs: [build-wrappers]
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - name: Download build-wrappers artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-wrappers
       - name: build
         run: |
           sudo apt update
@@ -97,9 +135,13 @@ jobs:
 
   compress-native:
     runs-on: ubuntu-latest
-    needs: [build-native-linux, build-native-windows, build-native-macos]
+    needs: [build-wrappers, build-native-linux, build-native-windows, build-native-macos]
     steps:
       - uses: actions/checkout@v3
+      - name: Download build-wrappers artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-wrappers
       - name: Download native-linux artifacts
         uses: actions/download-artifact@v3
         with:
@@ -129,6 +171,8 @@ jobs:
             ./csharp/EPAM.Deltix.DFP/Version.targets
             ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
             ./csharp/EPAM.Deltix.DFPMath/Version.targets
+            ./native/DecimalNative.h
+            ./native/DecimalNative.hpp
           retention-days: 7
 
   build-java:
