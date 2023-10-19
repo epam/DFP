@@ -1,14 +1,211 @@
+def llvmRoot = "$rootDir/llvm"
+def versionSuffix = versioning()["suffix"]
+def CCOMPILER = "clang"
+def CXXCOMPILER = "clang++"
+def VERBOSE = "ON"
+
 task makeNativeWindows(type: Exec) {
     commandLine "$rootDir/native/buildWindows.bat", versioning()["suffix"]
     workingDir("$rootDir/native")
 }
 
-task makeNativeLinux(type: Exec) {
-    commandLine "$rootDir/native/buildLinux.sh", versioning()["suffix"]
-    workingDir("$rootDir/native")
+task makeNativeLinuxArm7(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def llvmToolset = 'clang+llvm-14.0.6-armv7a-linux-gnueabihf'
+    def installSuffix = 'linux/arm'
+    def buildRoot = "$rootDir/native/buildArm7"
+
+    doLast {
+        if (project.hasProperty('sudoPassword')) {
+            exec { // ./gradlew makeNativeLinuxArm7 -PsudoPassword=<sudoPassword>
+                commandLine 'sh', '-c', "echo $sudoPassword | sudo -S apt install -y curl tar g++-arm-linux-gnueabihf"
+            }
+        }
+
+        if (!file("$llvmRoot/$llvmToolset").exists()) {
+            project.mkdir llvmRoot
+            exec {
+                workingDir llvmRoot
+                commandLine 'curl', '-OL', "https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/${llvmToolset}.tar.xz"
+            }
+            exec {
+                workingDir llvmRoot
+                commandLine 'tar', '-xf', "${llvmToolset}.tar.xz"
+            }
+        }
+
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=arm-linux-gnueabihf", "-DTARGET_EX=-march=armv7a -mfloat-abi=hard", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+        project.delete(files(buildRoot))
+    }
+
+    onlyIf {
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+    }
+}
+
+task makeNativeLinuxAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def target = 'aarch64-linux-gnu'
+    def llvmToolset = "clang+llvm-14.0.6-$target"
+    def installSuffix = 'linux/aarch64'
+    def buildRoot = "$rootDir/native/buildAArch64"
+
+    doLast {
+        if (project.hasProperty('sudoPassword')) {
+            exec { // ./gradlew makeNativeLinuxAArch64 -PsudoPassword=<sudoPassword>
+                commandLine 'sh', '-c', "echo $sudoPassword | sudo -S apt install -y curl tar g++-$target"
+            }
+        }
+
+        if (!file("$llvmRoot/$llvmToolset").exists()) {
+            project.mkdir llvmRoot
+            exec {
+                workingDir llvmRoot
+                commandLine 'curl', '-OL', "https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/${llvmToolset}.tar.xz"
+            }
+            exec {
+                workingDir llvmRoot
+                commandLine 'tar', '-xf', "${llvmToolset}.tar.xz"
+            }
+        }
+
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+        project.delete(files(buildRoot))
+    }
+
+    onlyIf {
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+    }
+}
+
+task makeNativeLinuxI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def target = 'i686-linux-gnu'
+    def installSuffix = 'linux/i386'
+    def buildRoot = "$rootDir/native/buildI386"
+
+    doLast {
+        if (project.hasProperty('sudoPassword')) {
+            exec { // ./gradlew makeNativeLinuxI386 -PsudoPassword=<sudoPassword>
+                commandLine 'sh', '-c', "echo $sudoPassword | sudo -S apt install -y g++-$target"
+            }
+        }
+
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DTARGET_EX=-m32", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+        project.delete(files(buildRoot))
+    }
+
+    onlyIf {
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+    }
+}
+
+task makeNativeLinuxAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installSuffix = 'linux/amd64'
+    def buildRoot = "$rootDir/native/buildAmd64"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+        project.delete(files(buildRoot))
+    }
+
+    onlyIf {
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+    }
+}
+
+task makeNativeLinuxMusl(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installSuffix = 'linux/musl'
+    def buildRoot = "$rootDir/native/buildMusl"
+
+    doLast {
+        if (project.hasProperty('sudoPassword')) {
+            exec { // ./gradlew makeNativeLinuxI386 -PsudoPassword=<sudoPassword>
+                commandLine 'sh', '-c', "echo $sudoPassword | sudo -S apt install -y musl-tools"
+            }
+        }
+
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=musl-gcc", "-DCMAKE_CXX_COMPILER=musl-gcc", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_C_FLAGS_IN=-static", "-DCMAKE_CXX_FLAGS_IN=-static", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+        project.delete(files(buildRoot))
+    }
+
+    onlyIf {
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+    }
+}
+
+task makeNativeLinux(dependsOn: [makeNativeLinuxArm7, makeNativeLinuxAArch64, makeNativeLinuxI386, makeNativeLinuxAmd64, makeNativeLinuxMusl]) {
 }
 
 task makeNativeDarwin(type: Exec) {
     commandLine "$rootDir/native/buildDarwin.sh", versioning()["suffix"], "apple-darwin20.4", "$rootDir/osxcross/target"
     workingDir("$rootDir/native")
 }
+
