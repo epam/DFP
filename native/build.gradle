@@ -3,10 +3,71 @@ def versionSuffix = versioning()["suffix"]
 def CCOMPILER = "clang"
 def CXXCOMPILER = "clang++"
 def VERBOSE = "ON"
+def deleteBuildDir = true
 
-task makeNativeWindows(type: Exec) {
-    commandLine "$rootDir/native/buildWindows.bat", versioning()["suffix"]
-    workingDir("$rootDir/native")
+task makeNativeWindowsI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installSuffix = 'windows/i386'
+    def buildRoot = "$rootDir/native/buildI386"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-A', 'Win32', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (deleteBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+        !file("$rootDir/native/bin/Release/$installSuffix/ddfp${versionSuffix}.dll").exists() ||
+            !file("$rootDir/native/bin/Release/$installSuffix/ddfpStatic${versionSuffix}.lib").exists() ||
+            !file("$rootDir/native/binmath/Release/$installSuffix/ddfpmath${versionSuffix}.dll").exists()
+    }
+}
+
+task makeNativeWindowsAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installSuffix = 'windows/amd64'
+    def buildRoot = "$rootDir/native/buildAmd64"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-A', 'x64', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (deleteBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+        !file("$rootDir/native/bin/Release/$installSuffix/ddfp${versionSuffix}.dll").exists() ||
+            !file("$rootDir/native/bin/Release/$installSuffix/ddfpStatic${versionSuffix}.lib").exists() ||
+            !file("$rootDir/native/binmath/Release/$installSuffix/ddfpmath${versionSuffix}.dll").exists()
+    }
+}
+
+task makeNativeWindows(dependsOn: [makeNativeWindowsI386, makeNativeWindowsAmd64]) {
 }
 
 task makeNativeLinuxArm7(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
@@ -46,13 +107,16 @@ task makeNativeLinuxArm7(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
             workingDir buildRoot
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
-        project.delete(files(buildRoot))
+
+        if (deleteBuildDir) {
+            project.delete(files(buildRoot))
+        }
     }
 
     onlyIf {
         !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
     }
 }
 
@@ -94,13 +158,16 @@ task makeNativeLinuxAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
             workingDir buildRoot
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
-        project.delete(files(buildRoot))
+
+        if (deleteBuildDir) {
+            project.delete(files(buildRoot))
+        }
     }
 
     onlyIf {
         !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
     }
 }
 
@@ -129,13 +196,16 @@ task makeNativeLinuxI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
             workingDir buildRoot
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
-        project.delete(files(buildRoot))
+
+        if (deleteBuildDir) {
+            project.delete(files(buildRoot))
+        }
     }
 
     onlyIf {
         !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
     }
 }
 
@@ -157,13 +227,16 @@ task makeNativeLinuxAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') 
             workingDir buildRoot
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
-        project.delete(files(buildRoot))
+
+        if (deleteBuildDir) {
+            project.delete(files(buildRoot))
+        }
     }
 
     onlyIf {
         !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
     }
 }
 
@@ -191,13 +264,16 @@ task makeNativeLinuxMusl(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
             workingDir buildRoot
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
-        project.delete(files(buildRoot))
+
+        if (deleteBuildDir) {
+            project.delete(files(buildRoot))
+        }
     }
 
     onlyIf {
         !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-        !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
     }
 }
 
@@ -208,4 +284,3 @@ task makeNativeDarwin(type: Exec) {
     commandLine "$rootDir/native/buildDarwin.sh", versioning()["suffix"], "apple-darwin20.4", "$rootDir/osxcross/target"
     workingDir("$rootDir/native")
 }
-
