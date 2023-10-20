@@ -342,5 +342,5 @@ task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers
     }
 }
 
-task makeNativeDarwin(dependsOn: [makeNativeDarwinAmd64, makeNativeDarwinAmd64]) {
+task makeNativeDarwin(dependsOn: [makeNativeDarwinAArch64, makeNativeDarwinAmd64]) {
 }
