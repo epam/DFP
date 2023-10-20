@@ -87,7 +87,7 @@ jobs:
           retention-days: 7
 
   build-native-macos:
-    runs-on: ubuntu-20.04
+    runs-on: macos-12
     needs: [build-wrappers]
     steps:
       - uses: actions/checkout@v3
@@ -99,13 +99,6 @@ jobs:
           name: build-wrappers
       - name: build
         run: |
-          sudo apt update
-          sudo apt install clang make libssl-dev liblzma-dev libxml2-dev fuse
-          cd ./osxcross/tarballs/
-          wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
-          cd ..
-          UNATTENDED=yes OSX_VERSION_MIN=10.7 JOBS=4 ./build.sh
-          cd ..
           ./gradlew makeNativeDarwin
       - uses: actions/upload-artifact@v3
         with:
