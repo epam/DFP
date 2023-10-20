@@ -3,7 +3,7 @@ def versionSuffix = versioning()["suffix"]
 def CCOMPILER = "clang"
 def CXXCOMPILER = "clang++"
 def VERBOSE = "ON"
-def deleteBuildDir = true
+def keepBuildDir = (findProperty('keepBuildDir')?.toBoolean()) ?: false
 
 task makeNativeWindowsI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
     def installSuffix = 'windows/i386'
@@ -24,7 +24,7 @@ task makeNativeWindowsI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers')
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
 
-        if (deleteBuildDir) {
+        if (!keepBuildDir) {
             project.delete(files(buildRoot))
         }
     }
@@ -55,7 +55,7 @@ task makeNativeWindowsAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
 
-        if (deleteBuildDir) {
+        if (!keepBuildDir) {
             project.delete(files(buildRoot))
         }
     }
@@ -108,7 +108,7 @@ task makeNativeLinuxArm7(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
 
-        if (deleteBuildDir) {
+        if (!keepBuildDir) {
             project.delete(files(buildRoot))
         }
     }
@@ -159,7 +159,7 @@ task makeNativeLinuxAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
 
-        if (deleteBuildDir) {
+        if (!keepBuildDir) {
             project.delete(files(buildRoot))
         }
     }
@@ -197,7 +197,7 @@ task makeNativeLinuxI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
 
-        if (deleteBuildDir) {
+        if (!keepBuildDir) {
             project.delete(files(buildRoot))
         }
     }
@@ -228,7 +228,7 @@ task makeNativeLinuxAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') 
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
 
-        if (deleteBuildDir) {
+        if (!keepBuildDir) {
             project.delete(files(buildRoot))
         }
     }
@@ -265,7 +265,7 @@ task makeNativeLinuxMusl(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
 
-        if (deleteBuildDir) {
+        if (!keepBuildDir) {
             project.delete(files(buildRoot))
         }
     }
@@ -299,7 +299,7 @@ task makeNativeDarwinAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers')
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
 
-        if (deleteBuildDir) {
+        if (!keepBuildDir) {
             project.delete(files(buildRoot))
         }
     }
@@ -330,7 +330,7 @@ task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers
             commandLine 'cmake', '--install', '.', '--config', 'Release'
         }
 
-        if (deleteBuildDir) {
+        if (!keepBuildDir) {
             project.delete(files(buildRoot))
         }
     }
