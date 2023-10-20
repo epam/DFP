@@ -15,7 +15,7 @@ env:
 jobs:
 
   build-wrappers:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
@@ -38,7 +38,7 @@ jobs:
           retention-days: 7
 
   build-native-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [build-wrappers]
     steps:
       - uses: actions/checkout@v3
@@ -115,7 +115,7 @@ jobs:
           retention-days: 7
 
   compress-native:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [build-wrappers, build-native-linux, build-native-windows, build-native-macos]
     steps:
       - uses: actions/checkout@v3
@@ -157,7 +157,7 @@ jobs:
           retention-days: 7
 
   build-java:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [compress-native]
     steps:
       - uses: actions/checkout@v3
@@ -223,7 +223,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
+        os: [ 'ubuntu-22.04', 'windows-2019', 'macos-latest']
         java: [ '8', '11', '19']
     steps:
       - uses: actions/checkout@v3
@@ -251,7 +251,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-latest', 'windows-2019', 'macos-latest']
+        os: [ 'ubuntu-22.04', 'windows-2019', 'macos-latest']
     steps:
       - uses: actions/checkout@v3
         with:
@@ -270,7 +270,7 @@ jobs:
           cd csharp
           ./build --target=Run-Unit-Tests
       - name: test nix
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' || matrix.os == 'macos-latest' }}
         run: |
           cd csharp
           ./build.sh --target=Run-Unit-Tests
