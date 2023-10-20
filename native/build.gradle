@@ -280,7 +280,67 @@ task makeNativeLinuxMusl(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
 task makeNativeLinux(dependsOn: [makeNativeLinuxArm7, makeNativeLinuxAArch64, makeNativeLinuxI386, makeNativeLinuxAmd64, makeNativeLinuxMusl]) {
 }
 
-task makeNativeDarwin(type: Exec) {
-    commandLine "$rootDir/native/buildDarwin.sh", versioning()["suffix"], "apple-darwin20.4", "$rootDir/osxcross/target"
-    workingDir("$rootDir/native")
+task makeNativeDarwinAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installSuffix = 'darwin/amd64'
+    def buildRoot = "$rootDir/native/buildAmd64"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DAPPLE=TRUE", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (deleteBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.dylib").exists() ||
+            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.dylib").exists()
+    }
+}
+
+task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installSuffix = 'darwin/aarch64'
+    def buildRoot = "$rootDir/native/buildAArch64"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DAPPLE=TRUE", "-DCMAKE_C_FLAGS_IN=-target arm64-apple-macos11", "-DCMAKE_CXX_FLAGS_IN=-target arm64-apple-macos11 -stdlib=libstdc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (deleteBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.dylib").exists() ||
+            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
+            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.dylib").exists()
+    }
+}
+
+task makeNativeDarwin(dependsOn: [makeNativeDarwinAmd64, makeNativeDarwinAmd64]) {
 }
