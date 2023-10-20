@@ -9,7 +9,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_IN}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_IN}")
 
 if (TARGET)
-	set(TARGET_FLAGS "--target=${TARGET} ${TARGET_EX} -I/usr/${TARGET}/include")
+	set(TARGET_FLAGS "--target=${TARGET} ${TARGET_EX}")
 	if (SYSROOT)
 		set(TARGET_FLAGS "${TARGET_FLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/include/c++/v1")
 	endif()
