@@ -288,7 +288,7 @@ task makeNativeDarwinAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers')
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DAPPLE=TRUE", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DAPPLE=TRUE", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -319,7 +319,7 @@ task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DAPPLE=TRUE", "-DCMAKE_C_FLAGS_IN=-target arm64-apple-macos11", "-DCMAKE_CXX_FLAGS_IN=-target arm64-apple-macos11 -stdlib=libstdc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DAPPLE=TRUE", "-DCMAKE_C_FLAGS_IN=-target arm64-apple-macos11", "-DCMAKE_CXX_FLAGS_IN=-target arm64-apple-macos11 -stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
