@@ -104,7 +104,7 @@ target_compile_definitions(dfpStatic PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ N
 set_target_properties(dfpStatic PROPERTIES OUTPUT_NAME "ddfpStatic${VERSION_SUFFIX}")
 install(TARGETS dfpStatic DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
 
-if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # Mean musl-gcc
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_executable(demoStatic demo.cpp)
 	target_link_libraries(demoStatic LINK_PRIVATE dfpStatic)
 
