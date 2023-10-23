@@ -13,26 +13,33 @@ var configuration = Argument("configuration", "Release");
 // TASKS
 //////////////////////////////////////////////////////////////////////
 
+using System.Linq;
+
+void NativeRename(string srcPath, string dstPath)
+{
+    foreach(var file in GetFiles("../native/" + srcPath + "/**/*.dylib.zst")
+         .Union(GetFiles("../native/" + srcPath + "/**/*.so.zst"))
+         .Union(GetFiles("../native/" + srcPath + "/**/*.dll.zst")))
+    {
+        var fileDirectory = file.GetDirectory().ToString();
+        if (fileDirectory.EndsWith("/linux/amd64", StringComparison.OrdinalIgnoreCase))
+            continue;
+
+        var toDirectory = fileDirectory;
+        if (toDirectory.EndsWith("/linux/musl", StringComparison.OrdinalIgnoreCase))
+            toDirectory = toDirectory.Substring(0, toDirectory.Length - 4) + "amd64";
+
+        toDirectory = toDirectory.Replace("/" + srcPath + "/", "/" + dstPath + "/");
+        CreateDirectory(toDirectory);
+        CopyFile(file, toDirectory + "/" + file.GetFilename().ToString().Replace('.', '_'));
+    }
+}
+
 Task("Native-Rename")
     .Does(() =>
 {
-    if (!DirectoryExists("../native/binCs"))
-    {
-        CopyDirectory("../native/bin", "../native/binCs");
-        foreach(var file in GetFiles("../native/binCs/Release/**/*.zst"))
-        {
-            MoveFile(file, file.ToString().Replace('.', '_'));
-        }
-    }
-
-    if (!DirectoryExists("../native/binmathCs"))
-    {
-        CopyDirectory("../native/binmath", "../native/binmathCs");
-        foreach(var file in GetFiles("../native/binmathCs/Release/**/*.zst"))
-        {
-            MoveFile(file, file.ToString().Replace('.', '_'));
-        }
-    }
+    NativeRename("bin/Release", "binCs/Release");
+    NativeRename("binmath/Release", "binmathCs/Release");
 });
 
 Task("Clean")
