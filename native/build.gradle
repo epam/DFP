@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 def llvmRoot = "$rootDir/llvm"
 def versionSuffix = versioning()["suffix"]
 def CCOMPILER = "clang"
@@ -240,8 +242,8 @@ task makeNativeLinuxAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') 
     }
 }
 
-task makeNativeLinuxMusl(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
-    def installSuffix = 'linux/musl'
+task makeNativeLinuxMuslGcc(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installSuffix = 'linux/musl-gcc'
     def buildRoot = "$rootDir/native/buildMusl"
 
     doLast {
@@ -277,7 +279,7 @@ task makeNativeLinuxMusl(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
     }
 }
 
-task makeNativeLinux(dependsOn: [makeNativeLinuxArm7, makeNativeLinuxAArch64, makeNativeLinuxI386, makeNativeLinuxAmd64, makeNativeLinuxMusl]) {
+task makeNativeLinux(dependsOn: [makeNativeLinuxArm7, makeNativeLinuxAArch64, makeNativeLinuxI386, makeNativeLinuxAmd64, makeNativeLinuxMuslGcc]) {
 }
 
 task makeNativeDarwinAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
@@ -343,4 +345,104 @@ task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers
 }
 
 task makeNativeDarwin(dependsOn: [makeNativeDarwinAArch64, makeNativeDarwinAmd64]) {
+}
+
+task nativeBinUnpack {
+    doLast {
+        exec {
+            workingDir "$rootDir/native/bin"
+            commandLine 'zstd', '-d', '--rm', '-r', '.'
+        }
+        exec {
+            workingDir "$rootDir/native/binmath"
+            commandLine 'zstd', '-d', '--rm', '-r', '.'
+        }
+    }
+    onlyIf {
+        !file("$rootDir/native/bin/Release/windows/amd64/ddfp${versionSuffix}.dll").exists()
+    }
+}
+
+static String osMap(String str) {
+    switch (str) {
+        case "windows": return "Windows";
+        case "linux": return "Linux";
+        case "darwin": return "Macos";
+        default: throw new Exception("Can't map OS with name ${str}")
+    }
+}
+
+static String archMap(String str) {
+    switch (str) {
+        case "aarch64": return "armv8"
+        case "arm": return "armv7hf"
+        case "amd64": return "x86_64"
+        case "i386": return "x86"
+        case "musl-gcc": return "x86_64"
+        default: throw new Exception("Can't map architecture with name ${str}")
+    }
+}
+
+static String compilerMap(String str) {
+    switch (str) {
+        case "Clang": return "clang"
+        case "GNU": return "gcc"
+        case "MSVC": return "msvc"
+        case "AppleClang": return "apple-clang"
+        default: throw new Exception("Can't map compiler with name ${str}")
+    }
+}
+
+task nativeBinPublishConan(dependsOn: nativeBinUnpack) {
+    doLast {
+        file("$rootDir/native/bin").eachDir { buildTypeDir ->
+            def buildType = buildTypeDir.getName()
+
+            buildTypeDir.eachDir { osDir ->
+                def os = osMap(osDir.getName())
+
+                osDir.eachDir { archDir ->
+                    def arch = archMap(archDir.getName())
+
+                    def cmakeVariables = new JsonSlurper().parse(new File(archDir, "cmakevariables.json"))
+                    def compiler = compilerMap(cmakeVariables["CMAKE_C_COMPILER_ID"])
+                    def compilerVersion = (cmakeVariables["CMAKE_C_COMPILER_VERSION"] =~ /\d+/)[0]
+
+                    for (isShared in [true, false]) {
+                        def dfpShared = isShared ? "True" : "False"
+
+                        def isWindows = osDir.getName() == "windows"
+                        def libMask = (isWindows ? "" : "lib") + "ddfp" + (dfpShared ? "" : "Static") + versionSuffix + ".*"
+
+                        def c_runtime = null
+                        def c_runtime_shared = null
+                        if (osDir.getName() == "linux" && archDir.getName() == "musl-gcc") {
+                            c_runtime = "musl"
+                            c_runtime_shared = "False"
+                        }
+
+                        def args = ['python3', 'conan_invoke.py', 'export-pkg', '.', '-of', 'conan_output',
+                                '-s', "os=$os",
+                                '-s', "build_type=$buildType",
+                                '-s', "arch=$arch",
+                                '-s', "compiler=$compiler",
+                                '-s', "compiler.version=$compilerVersion",
+                                '-o', "shared=$dfpShared",
+                                '-o', "libPath=$archDir",
+                                '-o', "libMask=$libMask"]
+
+                        if (c_runtime)
+                            args = args + ['-o', "c_runtime=$c_runtime"]
+                        if (c_runtime_shared)
+                            args = args + ['-o', "c_runtime_shared=$c_runtime_shared"]
+
+                        exec {
+                            workingDir "$rootDir/native"
+                            commandLine args
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
