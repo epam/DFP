@@ -6,7 +6,6 @@ def CCOMPILER = "clang"
 def CXXCOMPILER = "clang++"
 def VERBOSE = "ON"
 def keepBuildDir = (findProperty('keepBuildDir')?.toBoolean()) ?: false
-def javaPrefix = "com_epam_deltix_dfp_NativeImpl_"
 
 task makeNativeWindowsI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
     def installPrefix = '../install/windows/i386'
