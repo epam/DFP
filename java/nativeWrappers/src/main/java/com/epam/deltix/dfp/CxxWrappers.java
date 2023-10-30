@@ -1,6 +1,7 @@
 package com.epam.deltix.dfp;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,6 +16,8 @@ public class CxxWrappers {
     public static void make(final String outputRoot, final List<ApiEntry> api, final String decimalNativePrefix, final String versionThreeDigits) throws IOException {
         final String dfpType = "decimal_native_t";
         final String dfpClassType = "Decimal64_t";
+
+        new File(outputRoot).mkdirs();
 
         try (final BufferedWriter outFileH = Files.newBufferedWriter(Paths.get(outputRoot, "DecimalNative.h"), StandardCharsets.UTF_8);
              final BufferedWriter outFileHpp = Files.newBufferedWriter(Paths.get(outputRoot, "DecimalNative.hpp"), StandardCharsets.UTF_8)) {
