@@ -33,8 +33,7 @@ jobs:
             ./csharp/EPAM.Deltix.DFP/Version.targets
             ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
             ./csharp/EPAM.Deltix.DFPMath/Version.targets
-            ./native/DecimalNative.h
-            ./native/DecimalNative.hpp
+            ./native/include*
           retention-days: 7
 
   build-native-linux:
@@ -60,7 +59,7 @@ jobs:
         with:
           name: build-native-linux
           path: |
-            ./*native/bin*
+            ./*native/install*
           retention-days: 7
 
   build-native-windows:
@@ -83,7 +82,7 @@ jobs:
         with:
           name: build-native-windows
           path: |
-            ./*native/bin*
+            ./*native/install*
           retention-days: 7
 
   build-native-macos:
@@ -104,7 +103,7 @@ jobs:
         with:
           name: build-native-macos
           path: |
-            ./*native/bin*
+            ./*native/install*
           retention-days: 7
 
   compress-native:
@@ -131,22 +130,20 @@ jobs:
       - name: compress
         run: |
           zstd --version
-          zstd -19 --rm -r ./native/bin
-          zstd -19 --rm -r ./native/binmath
+          zstd -19 --rm -r ./native/install
       - uses: actions/upload-artifact@v3
         with:
           name: compress-native
           path: |
             ./gradle.properties
-            ./*native/bin*
+            ./*native/install*
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
             ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
             ./csharp/EPAM.Deltix.DFP/NativeImpl.cs
             ./csharp/EPAM.Deltix.DFP/Version.targets
             ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
             ./csharp/EPAM.Deltix.DFPMath/Version.targets
-            ./native/DecimalNative.h
-            ./native/DecimalNative.hpp
+            ./native/include*
           retention-days: 7
 
   build-java:
