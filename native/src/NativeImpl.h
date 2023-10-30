@@ -8,7 +8,7 @@
 #endif
 
 #ifndef JAVA_PREFIX
-#define JAVA_PREFIX    com_epam_deltix_dfp_NativeImpl_
+#define NOJAVA
 #endif
 
 #if defined(_WIN32)

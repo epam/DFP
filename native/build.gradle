@@ -6,16 +6,17 @@ def CCOMPILER = "clang"
 def CXXCOMPILER = "clang++"
 def VERBOSE = "ON"
 def keepBuildDir = (findProperty('keepBuildDir')?.toBoolean()) ?: false
+def javaPrefix = "com_epam_deltix_dfp_NativeImpl_"
 
 task makeNativeWindowsI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
-    def installSuffix = 'windows/i386'
+    def installPrefix = '../install/windows/i386'
     def buildRoot = "$rootDir/native/buildI386"
 
     doLast {
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-A', 'Win32', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "../"
+            commandLine 'cmake', '-A', 'Win32', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "../"
         }
         exec {
             workingDir buildRoot
@@ -32,21 +33,19 @@ task makeNativeWindowsI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers')
     }
 
     onlyIf {
-        !file("$rootDir/native/bin/Release/$installSuffix/ddfp${versionSuffix}.dll").exists() ||
-            !file("$rootDir/native/bin/Release/$installSuffix/ddfpStatic${versionSuffix}.lib").exists() ||
-            !file("$rootDir/native/binmath/Release/$installSuffix/ddfpmath${versionSuffix}.dll").exists()
+        !file("$buildRoot/$installPrefix").exists()
     }
 }
 
 task makeNativeWindowsAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
-    def installSuffix = 'windows/amd64'
+    def installPrefix = '../install/windows/amd64'
     def buildRoot = "$rootDir/native/buildAmd64"
 
     doLast {
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-A', 'x64', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "../"
+            commandLine 'cmake', '-A', 'x64', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "../"
         }
         exec {
             workingDir buildRoot
@@ -63,9 +62,7 @@ task makeNativeWindowsAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
     }
 
     onlyIf {
-        !file("$rootDir/native/bin/Release/$installSuffix/ddfp${versionSuffix}.dll").exists() ||
-            !file("$rootDir/native/bin/Release/$installSuffix/ddfpStatic${versionSuffix}.lib").exists() ||
-            !file("$rootDir/native/binmath/Release/$installSuffix/ddfpmath${versionSuffix}.dll").exists()
+        !file("$buildRoot/$installPrefix").exists()
     }
 }
 
@@ -74,7 +71,7 @@ task makeNativeWindows(dependsOn: [makeNativeWindowsI386, makeNativeWindowsAmd64
 
 task makeNativeLinuxArm7(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
     def llvmToolset = 'clang+llvm-14.0.6-armv7a-linux-gnueabihf'
-    def installSuffix = 'linux/arm'
+    def installPrefix = '../install/linux/arm'
     def buildRoot = "$rootDir/native/buildArm7"
 
     doLast {
@@ -99,7 +96,7 @@ task makeNativeLinuxArm7(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=arm-linux-gnueabihf", "-DTARGET_EX=-march=armv7a -mfloat-abi=hard", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=arm-linux-gnueabihf", "-DTARGET_EX=-march=armv7a -mfloat-abi=hard", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -116,16 +113,14 @@ task makeNativeLinuxArm7(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
     }
 
     onlyIf {
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+		!file("$buildRoot/$installPrefix").exists()
     }
 }
 
 task makeNativeLinuxAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
     def target = 'aarch64-linux-gnu'
     def llvmToolset = "clang+llvm-14.0.6-$target"
-    def installSuffix = 'linux/aarch64'
+    def installPrefix = '../install/linux/aarch64'
     def buildRoot = "$rootDir/native/buildAArch64"
 
     doLast {
@@ -150,7 +145,7 @@ task makeNativeLinuxAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -167,15 +162,13 @@ task makeNativeLinuxAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
     }
 
     onlyIf {
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+		!file("$buildRoot/$installPrefix").exists()
     }
 }
 
 task makeNativeLinuxI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
     def target = 'i686-linux-gnu'
-    def installSuffix = 'linux/i386'
+    def installPrefix = '../install/linux/i386'
     def buildRoot = "$rootDir/native/buildI386"
 
     doLast {
@@ -188,7 +181,7 @@ task makeNativeLinuxI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DTARGET_EX=-m32", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DTARGET_EX=-m32", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -205,21 +198,19 @@ task makeNativeLinuxI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
     }
 
     onlyIf {
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+		!file("$buildRoot/$installPrefix").exists()
     }
 }
 
 task makeNativeLinuxAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
-    def installSuffix = 'linux/amd64'
+    def installPrefix = '../install/linux/amd64'
     def buildRoot = "$rootDir/native/buildAmd64"
 
     doLast {
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -236,14 +227,12 @@ task makeNativeLinuxAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') 
     }
 
     onlyIf {
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+		!file("$buildRoot/$installPrefix").exists()
     }
 }
 
 task makeNativeLinuxMuslGcc(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
-    def installSuffix = 'linux/musl-gcc'
+    def installPrefix = '../install/linux/musl-gcc'
     def buildRoot = "$rootDir/native/buildMusl"
 
     doLast {
@@ -256,7 +245,7 @@ task makeNativeLinuxMuslGcc(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=musl-gcc", "-DCMAKE_CXX_COMPILER=musl-gcc", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DCMAKE_C_FLAGS_IN=-static", "-DCMAKE_CXX_FLAGS_IN=-static", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=musl-gcc", "-DCMAKE_CXX_COMPILER=musl-gcc", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_C_FLAGS_IN=-static", "-DCMAKE_CXX_FLAGS_IN=-static", "../"
         }
         exec {
             workingDir buildRoot
@@ -273,9 +262,7 @@ task makeNativeLinuxMuslGcc(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
     }
 
     onlyIf {
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.so").exists() ||
-            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.so").exists()
+		!file("$buildRoot/$installPrefix").exists()
     }
 }
 
@@ -283,14 +270,14 @@ task makeNativeLinux(dependsOn: [makeNativeLinuxArm7, makeNativeLinuxAArch64, ma
 }
 
 task makeNativeDarwinAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
-    def installSuffix = 'darwin/amd64'
+    def installPrefix = '../install/darwin/amd64'
     def buildRoot = "$rootDir/native/buildAmd64"
 
     doLast {
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DAPPLE=TRUE", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DAPPLE=TRUE", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -307,21 +294,19 @@ task makeNativeDarwinAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers')
     }
 
     onlyIf {
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.dylib").exists() ||
-            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.dylib").exists()
+		!file("$buildRoot/$installPrefix").exists()
     }
 }
 
 task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
-    def installSuffix = 'darwin/aarch64'
+    def installPrefix = '../install/darwin/aarch64'
     def buildRoot = "$rootDir/native/buildAArch64"
 
     doLast {
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=../", "-DINSTALL_SUFFIX=$installSuffix", "-DAPPLE=TRUE", "-DCMAKE_C_FLAGS_IN=-target arm64-apple-macos11", "-DCMAKE_CXX_FLAGS_IN=-target arm64-apple-macos11 -stdlib=libc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DAPPLE=TRUE", "-DCMAKE_C_FLAGS_IN=-target arm64-apple-macos11", "-DCMAKE_CXX_FLAGS_IN=-target arm64-apple-macos11 -stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -338,9 +323,7 @@ task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers
     }
 
     onlyIf {
-        !file("$rootDir/native/bin/Release/$installSuffix/libddfp${versionSuffix}.dylib").exists() ||
-            !file("$rootDir/native/bin/Release/$installSuffix/libddfpStatic${versionSuffix}.a").exists() ||
-            !file("$rootDir/native/binmath/Release/$installSuffix/libddfpmath${versionSuffix}.dylib").exists()
+		!file("$buildRoot/$installPrefix").exists()
     }
 }
 
@@ -350,16 +333,12 @@ task makeNativeDarwin(dependsOn: [makeNativeDarwinAArch64, makeNativeDarwinAmd64
 task nativeBinUnpack {
     doLast {
         exec {
-            workingDir "$rootDir/native/bin"
-            commandLine 'zstd', '-d', '--rm', '-r', '.'
-        }
-        exec {
-            workingDir "$rootDir/native/binmath"
+            workingDir "$rootDir/native/install"
             commandLine 'zstd', '-d', '--rm', '-r', '.'
         }
     }
     onlyIf {
-        !file("$rootDir/native/bin/Release/windows/amd64/ddfp${versionSuffix}.dll").exists()
+        !file("$rootDir/native/install/windows/amd64/ddfp${versionSuffix}.dll").exists()
     }
 }
 
@@ -395,7 +374,7 @@ static String compilerMap(String str) {
 
 task nativeBinPublishConan(dependsOn: nativeBinUnpack) {
     doLast {
-        file("$rootDir/native/bin").eachDir { buildTypeDir ->
+        file("$rootDir/native/install").eachDir { buildTypeDir ->
             def buildType = buildTypeDir.getName()
 
             buildTypeDir.eachDir { osDir ->

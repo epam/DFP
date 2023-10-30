@@ -24,7 +24,7 @@ message(STATUS "CMAKE_CROSSCOMPILING: " ${CMAKE_CROSSCOMPILING})
 message(STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS})
 message(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
 
-file(WRITE ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX}/cmakevariables.json "\
+file(WRITE ${CMAKE_INSTALL_PREFIX}/cmakevariables.json "\
 {\n\
     \"CMAKE_SYSTEM_NAME\": \"${CMAKE_SYSTEM_NAME}\",\n\
     \"CMAKE_TOOLCHAIN_FILE\": \"${CMAKE_TOOLCHAIN_FILE}\",\n\
@@ -75,54 +75,56 @@ if (MSVC)
 	add_definitions(-DNOMINMAX)
 endif()
 
-add_subdirectory (../thirdparty/IntelRDFPMathLib20U2/LIBRARY LIBRARY)
+file(GLOB BID_SRCS
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src/*.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_bid.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_bessel.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_cbrt.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_erf.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_exp.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_int.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_inv_hyper.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_inv_trig.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_lgamma.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_log.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_mod.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_powi.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_pow.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_sqrt.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_trig.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_ops.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_ops_64.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_four_over_pi.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_exception.c
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/sqrt_tab_t.c
+		src/NativeImplToString.c)
+		
+file(GLOB PUBLIC_HEADERS "include/*")
 
-add_library(dfp SHARED NativeImpl.c)
-target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ JAVA_PREFIX=com_epam_deltix_dfp_NativeImpl_ DECIMALNATIVE_SHARED_LIBRARY DECIMALNATIVE_EXPORTS)
-target_link_libraries(dfp LINK_PUBLIC bid)
+add_library(dfp SHARED ${BID_SRCS} src/NativeImpl.c)
+include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
+target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ ${JAVA_PREFIX})
 set_target_properties(dfp PROPERTIES OUTPUT_NAME "ddfp${VERSION_SUFFIX}")
-install(TARGETS dfp DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
+set_target_properties(dfp PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
+install(TARGETS dfp)
 
-add_library(dfpmath SHARED NativeMathImpl.c)
-target_compile_definitions(dfpmath PRIVATE API_PREFIX=ddfpmath${VERSION_SUFFIX}_ JAVA_PREFIX=com_epam_deltix_dfpmath_NativeMathImpl_)
-target_link_libraries(dfpmath LINK_PUBLIC bid)
-set_target_properties(dfpmath PROPERTIES OUTPUT_NAME "ddfpmath${VERSION_SUFFIX}")
-install(TARGETS dfpmath DESTINATION ./binmath/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
+#add_library(dfpmath SHARED ${BID_SRCS} src/NativeMathImpl.c)
+#include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
+#target_compile_definitions(dfpmath PRIVATE API_PREFIX=ddfpmath${VERSION_SUFFIX}_ JAVA_PREFIX=com_epam_deltix_dfpmath_NativeMathImpl_)
+#set_target_properties(dfpmath PROPERTIES OUTPUT_NAME "ddfpmath${VERSION_SUFFIX}")
+#install(TARGETS dfpmath)
 
-file(GLOB BID_SRCS_STATIC
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/src/*.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_bid.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_bessel.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_cbrt.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_erf.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_exp.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_int.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_inv_hyper.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_inv_trig.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_lgamma.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_log.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_mod.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_powi.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_pow.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_sqrt.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_trig.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_ops.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_ops_64.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_four_over_pi.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_exception.c
-		../thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/sqrt_tab_t.c
-		NativeImplToString.c)
 
-add_library(dfpStatic STATIC NativeImpl.c ${BID_SRCS_STATIC})
-include_directories(../thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
-target_compile_definitions(dfpStatic PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ NOJAVA)
-set_target_properties(dfpStatic PROPERTIES OUTPUT_NAME "ddfpStatic${VERSION_SUFFIX}")
-install(TARGETS dfpStatic DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
+#add_library(dfpStatic STATIC NativeImpl.c ${BID_SRCS})
+#include_directories(../thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
+#target_compile_definitions(dfpStatic PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ NOJAVA)
+#set_target_properties(dfpStatic PROPERTIES OUTPUT_NAME "ddfpStatic${VERSION_SUFFIX}")
+#install(TARGETS dfpStatic DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	add_executable(demoStatic demo.cpp)
-	target_link_libraries(demoStatic LINK_PRIVATE dfpStatic)
+#if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+#	add_executable(demoStatic demo.cpp)
+#	target_link_libraries(demoStatic LINK_PRIVATE dfpStatic)
 
-	add_executable(demo demo.cpp)
-	target_link_libraries(demo LINK_PRIVATE dfp)
-endif()
+#	add_executable(demo demo.cpp)
+#	target_link_libraries(demo LINK_PRIVATE dfp)
+#endif()
