@@ -26,8 +26,8 @@ void NativeRename(string srcPath, string dstPath)
             continue;
 
         var toDirectory = fileDirectory;
-        if (toDirectory.EndsWith("/linux/musl", StringComparison.OrdinalIgnoreCase))
-            toDirectory = toDirectory.Substring(0, toDirectory.Length - 4) + "amd64";
+        if (toDirectory.EndsWith("/linux/musl-gcc", StringComparison.OrdinalIgnoreCase))
+            toDirectory = toDirectory.Substring(0, toDirectory.Length - 8) + "amd64";
 
         toDirectory = toDirectory.Replace("/" + srcPath + "/", "/" + dstPath + "/");
         CreateDirectory(toDirectory);
