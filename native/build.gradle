@@ -15,7 +15,7 @@ task makeNativeWindowsI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers')
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-A', 'Win32', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "../"
+            commandLine 'cmake', '-A', 'Win32', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "../"
         }
         exec {
             workingDir buildRoot
@@ -44,7 +44,7 @@ task makeNativeWindowsAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-A', 'x64', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "../"
+            commandLine 'cmake', '-A', 'x64', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "../"
         }
         exec {
             workingDir buildRoot
@@ -95,7 +95,7 @@ task makeNativeLinuxArm7(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=arm-linux-gnueabihf", "-DTARGET_EX=-march=armv7a -mfloat-abi=hard", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=arm-linux-gnueabihf", "-DTARGET_EX=-march=armv7a -mfloat-abi=hard", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -144,7 +144,7 @@ task makeNativeLinuxAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -180,7 +180,7 @@ task makeNativeLinuxI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DTARGET_EX=-m32", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DTARGET_EX=-m32", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -209,7 +209,7 @@ task makeNativeLinuxAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') 
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -244,7 +244,7 @@ task makeNativeLinuxMuslGcc(dependsOn: ':java:nativeWrappers:makeNativeWrappers'
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=musl-gcc", "-DCMAKE_CXX_COMPILER=musl-gcc", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DCMAKE_C_FLAGS_IN=-static", "-DCMAKE_CXX_FLAGS_IN=-static", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=musl-gcc", "-DCMAKE_CXX_COMPILER=musl-gcc", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_C_FLAGS_IN=-static", "-DCMAKE_CXX_FLAGS_IN=-static", "../"
         }
         exec {
             workingDir buildRoot
@@ -276,7 +276,7 @@ task makeNativeDarwinAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers')
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DAPPLE=TRUE", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DAPPLE=TRUE", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
@@ -305,7 +305,7 @@ task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers
         project.mkdir buildRoot
         exec {
             workingDir buildRoot
-            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DAPPLE=TRUE", "-DCMAKE_C_FLAGS_IN=-target arm64-apple-macos11", "-DCMAKE_CXX_FLAGS_IN=-target arm64-apple-macos11 -stdlib=libc++", "../"
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DAPPLE=TRUE", "-DCMAKE_C_FLAGS_IN=-target arm64-apple-macos11", "-DCMAKE_CXX_FLAGS_IN=-target arm64-apple-macos11 -stdlib=libc++", "../"
         }
         exec {
             workingDir buildRoot
