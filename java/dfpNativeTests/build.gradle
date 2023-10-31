@@ -18,7 +18,7 @@ sourceSets {
         "$rootDir/NativeUtils/java/main/src/main/java",
         "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 
-    test.resources.srcDirs += "$rootDir/native/binJava/"
+    test.resources.srcDirs += "$rootDir/native/binJava/Release/"
 }
 
 dependencies {
@@ -31,20 +31,18 @@ dependencies {
 
 compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfp"
 
-def versionSuffix = versioning()["suffix"]
-
 task copyNativeDfpResourcesMuslToAmd64(type: Copy) {
-    from "$rootDir/native/bin/linux/musl-gcc"
-    into "$rootDir/native/binJava/resources_com_epam_deltix_dfp/linux/amd64"
-    include "**/*ddfp${versionSuffix}.so.zst"
+    from "$rootDir/native/bin/Release/linux/musl-gcc"
+    into "$rootDir/native/binJava/Release/resources_com_epam_deltix_dfp/linux/amd64"
+    include "**/*.so.zst"
 }
 
 task copyNativeDfpResources(type: Copy, dependsOn: copyNativeDfpResourcesMuslToAmd64) {
-    from "$rootDir/native/bin"
-    into "$rootDir/native/binJava/resources_com_epam_deltix_dfp"
-    include "**/*ddfp${versionSuffix}.dylib.zst"
-    include "**/*ddfp${versionSuffix}.so.zst"
-    include "**/*ddfp${versionSuffix}.dll.zst"
+    from "$rootDir/native/bin/Release"
+    into "$rootDir/native/binJava/Release/resources_com_epam_deltix_dfp"
+    include "**/*.dylib.zst"
+    include "**/*.so.zst"
+    include "**/*.dll.zst"
     exclude 'linux/amd64/**'
     exclude 'linux/musl-gcc/**'
 }
