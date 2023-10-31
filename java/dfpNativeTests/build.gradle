@@ -34,7 +34,7 @@ compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfp"
 def versionSuffix = versioning()["suffix"]
 
 task copyNativeDfpResourcesMuslToAmd64(type: Copy) {
-    from "$rootDir/native/bin/linux/musl"
+    from "$rootDir/native/bin/linux/musl-gcc"
     into "$rootDir/native/binJava/resources_com_epam_deltix_dfp/linux/amd64"
     include "**/*ddfp${versionSuffix}.so.zst"
 }

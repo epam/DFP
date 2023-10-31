@@ -41,7 +41,7 @@ compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfpMath"
 def versionSuffix = versioning()["suffix"]
 
 task copyNativeDfpMathResourcesMuslToAmd64(type: Copy) {
-    from "$rootDir/native/bin/linux/musl"
+    from "$rootDir/native/bin/linux/musl-gcc"
     into "$rootDir/native/binmathJava/resources_com_epam_deltix_dfpmath/linux/amd64"
     include "**/*ddfpmath${versionSuffix}.so.zst"
 }
@@ -49,9 +49,9 @@ task copyNativeDfpMathResourcesMuslToAmd64(type: Copy) {
 task copyNativeDfpMathResources(type: Copy, dependsOn: copyNativeDfpMathResourcesMuslToAmd64) {
     from "$rootDir/native/bin"
     into "$rootDir/native/binmathJava/resources_com_epam_deltix_dfpmath"
-    include "**/*ddfp${versionSuffix}.dylib.zst"
-    include "**/*ddfp${versionSuffix}.so.zst"
-    include "**/*ddfp${versionSuffix}.dll.zst"
+    include "**/*ddfpmath${versionSuffix}.dylib.zst"
+    include "**/*ddfpmath${versionSuffix}.so.zst"
+    include "**/*ddfpmath${versionSuffix}.dll.zst"
     exclude 'linux/amd64/**'
     exclude 'linux/musl-gcc/**'
 }
