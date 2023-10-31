@@ -130,12 +130,13 @@ jobs:
       - name: compress
         run: |
           zstd --version
-          zstd -19 --rm -r ./native/install
+          ./gradlew nativeInstallToBin
       - uses: actions/upload-artifact@v3
         with:
           name: compress-native
           path: |
             ./gradle.properties
+            ./*native/bin*
             ./*native/install*
             ./*java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp*
             ./*java/dfp-math/build/generated/sources/nativeWrappers/com/epam/deltix/dfpmath*
