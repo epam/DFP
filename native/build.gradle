@@ -1,5 +1,8 @@
 import groovy.json.JsonSlurper
 
+import java.nio.file.Files
+import java.nio.file.Paths
+
 def llvmRoot = "$rootDir/llvm"
 def versionSuffix = versioning()["suffix"]
 def CCOMPILER = "clang"
@@ -327,6 +330,33 @@ task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers
 }
 
 task makeNativeDarwin(dependsOn: [makeNativeDarwinAArch64, makeNativeDarwinAmd64]) {
+}
+
+task nativeInstallToBin(type: Copy) {
+    from "$rootDir/native/install"
+    into "$rootDir/native/bin"
+    include "**/*.dylib"
+    include "**/*.so"
+    include "**/*.dll"
+
+    eachFile { fileCopyDetails ->
+        // Copy one level up from the lib or bin directory
+        def relative = fileCopyDetails.relativePath
+        fileCopyDetails.relativePath = relative.getParent().append(true, "..", relative.getLastName())
+    }
+
+    doLast {
+        Files.walk(Paths.get("$rootDir/native/bin")).each { path ->
+            if (Files.isDirectory(path) && Files.list(path).count() == 0) {
+                Files.delete(path)
+            }
+        }
+
+        exec {
+            workingDir "$rootDir/native/bin"
+            commandLine 'zstd', '-19', '--rm', '-r', '.'
+        }
+    }
 }
 
 task nativeBinUnpack {
