@@ -334,7 +334,7 @@ task makeNativeDarwin(dependsOn: [makeNativeDarwinAArch64, makeNativeDarwinAmd64
 
 task nativeInstallToBin(type: Copy) {
     from "$rootDir/native/install"
-    into "$rootDir/native/bin"
+    into "$rootDir/native"
     include "**/*.dylib"
     include "**/*.so"
     include "**/*.dll"
@@ -342,7 +342,11 @@ task nativeInstallToBin(type: Copy) {
     eachFile { fileCopyDetails ->
         // Copy one level up from the lib or bin directory
         def relative = fileCopyDetails.relativePath
-        fileCopyDetails.relativePath = relative.getParent().append(true, "..", relative.getLastName())
+        if (relative.getLastName().contains("math")) {
+            fileCopyDetails.relativePath = relative.getParent().prepend('binmath', 'Release').append(true, "..", relative.getLastName())
+        } else {
+            fileCopyDetails.relativePath = relative.getParent().prepend('bin', 'Release').append(true, "..", relative.getLastName())
+        }
     }
 
     doLast {
@@ -352,8 +356,19 @@ task nativeInstallToBin(type: Copy) {
             }
         }
 
+        Files.walk(Paths.get("$rootDir/native/binmath")).each { path ->
+            if (Files.isDirectory(path) && Files.list(path).count() == 0) {
+                Files.delete(path)
+            }
+        }
+
         exec {
             workingDir "$rootDir/native/bin"
+            commandLine 'zstd', '-19', '--rm', '-r', '.'
+        }
+
+        exec {
+            workingDir "$rootDir/native/binmath"
             commandLine 'zstd', '-19', '--rm', '-r', '.'
         }
     }
