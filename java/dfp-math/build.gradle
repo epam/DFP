@@ -38,6 +38,8 @@ dependencies {
 
 compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfpMath"
 
+def versionSuffix = versioning()["suffix"]
+
 task copyNativeDfpMathResourcesMuslToAmd64(type: Copy) {
     from "$rootDir/native/bin/linux/musl"
     into "$rootDir/native/binmathJava/resources_com_epam_deltix_dfpmath/linux/amd64"
