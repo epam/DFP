@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
 plugins {
     id "me.champeau.jmh" version "0.7.1"
 }
@@ -18,7 +21,7 @@ sourceSets {
         "$rootDir/NativeUtils/java/main/src/main/java",
         "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 
-    test.resources.srcDirs += "$rootDir/native/binJava/Release/"
+    test.resources.srcDirs += "$rootDir/native/installJava/"
 }
 
 dependencies {
@@ -31,20 +34,40 @@ dependencies {
 
 compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfp"
 
+def versionSuffix = versioning()["suffix"]
+
 task copyNativeDfpResourcesMuslToAmd64(type: Copy) {
-    from "$rootDir/native/bin/Release/linux/musl"
-    into "$rootDir/native/binJava/Release/resources_com_epam_deltix_dfp/linux/amd64"
-    include '**/*.so.zst'
+    from "$rootDir/native/install/linux/musl-gcc/lib"
+    into "$rootDir/native/installJava/resources_com_epam_deltix_dfp/linux/amd64"
+    include "**/*ddfp${versionSuffix}.so.zst"
+}
+
+static void deleteEmptyFolders(String startingDir) {
+    Files.walk(Paths.get(startingDir)).each { path ->
+        if (Files.isDirectory(path) && Files.list(path).count() == 0) {
+            Files.delete(path)
+        }
+    }
 }
 
 task copyNativeDfpResources(type: Copy, dependsOn: copyNativeDfpResourcesMuslToAmd64) {
-    from "$rootDir/native/bin/Release"
-    into "$rootDir/native/binJava/Release/resources_com_epam_deltix_dfp"
-    include '**/*.dylib.zst'
-    include '**/*.so.zst'
-    include '**/*.dll.zst'
+    from "$rootDir/native/install"
+    into "$rootDir/native/installJava/resources_com_epam_deltix_dfp"
+    include "**/*ddfp${versionSuffix}.dylib.zst"
+    include "**/*ddfp${versionSuffix}.so.zst"
+    include "**/*ddfp${versionSuffix}.dll.zst"
     exclude 'linux/amd64/**'
-    exclude 'linux/musl/**'
+    exclude 'linux/musl-gcc/**'
+
+    eachFile { fileCopyDetails ->
+        // Copy one level up from the lib or bin directory
+        def relative = fileCopyDetails.relativePath
+        fileCopyDetails.relativePath = relative.getParent().append(true, "..", relative.getLastName())
+    }
+
+    doLast {
+        deleteEmptyFolders("$rootDir/native/installJava/resources_com_epam_deltix_dfp")
+    }
 }
 compileJava.dependsOn(copyNativeDfpResources)
 
