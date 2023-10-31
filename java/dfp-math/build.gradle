@@ -26,7 +26,7 @@ sourceSets {
         "$rootDir/NativeUtils/java/main/src/main/java",
         "$rootDir/NativeUtils/Zstandard/java/src/main/java"]
 
-    main.resources.srcDirs += "$rootDir/native/binmathJava/Release/"
+    main.resources.srcDirs += "$rootDir/native/binmathJava/"
 }
 
 dependencies {
@@ -39,19 +39,19 @@ dependencies {
 compileJava.dependsOn ":java:nativeWrappers:makeNativeWrappersDfpMath"
 
 task copyNativeDfpMathResourcesMuslToAmd64(type: Copy) {
-    from "$rootDir/native/binmath/Release/linux/musl"
-    into "$rootDir/native/binmathJava/Release/resources_com_epam_deltix_dfpmath/linux/amd64"
-    include '**/*.so.zst'
+    from "$rootDir/native/bin/linux/musl"
+    into "$rootDir/native/binmathJava/resources_com_epam_deltix_dfpmath/linux/amd64"
+    include "**/*ddfpmath${versionSuffix}.so.zst"
 }
 
 task copyNativeDfpMathResources(type: Copy, dependsOn: copyNativeDfpMathResourcesMuslToAmd64) {
-    from "$rootDir/native/binmath/Release"
-    into "$rootDir/native/binmathJava/Release/resources_com_epam_deltix_dfpmath"
-    include '**/*.dylib.zst'
-    include '**/*.so.zst'
-    include '**/*.dll.zst'
+    from "$rootDir/native/bin"
+    into "$rootDir/native/binmathJava/resources_com_epam_deltix_dfpmath"
+    include "**/*ddfp${versionSuffix}.dylib.zst"
+    include "**/*ddfp${versionSuffix}.so.zst"
+    include "**/*ddfp${versionSuffix}.dll.zst"
     exclude 'linux/amd64/**'
-    exclude 'linux/musl/**'
+    exclude 'linux/musl-gcc/**'
 }
 compileJava.dependsOn(copyNativeDfpMathResources)
 
