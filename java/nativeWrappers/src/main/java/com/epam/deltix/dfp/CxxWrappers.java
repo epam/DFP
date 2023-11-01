@@ -44,13 +44,7 @@ public class CxxWrappers {
                     "#    define " + outputCDefine + "_MANGLING extern\n" +
                     "#endif\n" +
                     "\n" +
-                    "#if defined(_WIN32)\n" +
-                    "#    define " + outputCDefine + "_CALLING __cdecl\n" +
-                    "#else\n" +
-                    "#    define " + outputCDefine + "_CALLING\n" +
-                    "#endif\n" +
-                    "\n" +
-                    "#ifdef " + outputCDefine + "_SHARED_LIBRARY\n" +
+                    "#ifdef " + outputCDefine + "_SHARED\n" +
                     "#    ifdef _MSC_VER\n" +
                     "#        define " + outputCDefine + "_EXPORT    __declspec(dllimport)\n" +
                     "#    else\n" +
@@ -60,7 +54,7 @@ public class CxxWrappers {
                     "#    define " + outputCDefine + "_EXPORT\n" +
                     "#endif\n" +
                     "\n" +
-                    "#define " + outputCDefine + "_API(x) " + outputCDefine + "_MANGLING " + outputCDefine + "_EXPORT x " + outputCDefine + "_CALLING\n" +
+                    "#define " + outputCDefine + "_API(x) " + outputCDefine + "_MANGLING " + outputCDefine + "_EXPORT x\n" +
                     "\n" +
                     "typedef struct {\n" +
                     "    uint64_t val;\n" +

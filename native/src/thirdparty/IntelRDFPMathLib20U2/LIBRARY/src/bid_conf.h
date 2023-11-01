@@ -30,7 +30,7 @@
 #if defined(__cplusplus) 
 #define BID_EXTERN_C extern "C" 
 #else 
-#define BID_EXTERN_C extern
+#define BID_EXTERN_C
 #endif 
 
 #ifndef _BID_CONF_H
@@ -858,9 +858,9 @@
 
 #ifndef BID_THREAD
 #if defined (_MSC_VER) //Windows
-#define BID_THREAD __declspec(thread)
+#define BID_THREAD static __declspec(thread)
 #else
-#define BID_THREAD __thread
+#define BID_THREAD static __thread
 #endif //Windows
 #endif //BID_THREAD
 

@@ -19,12 +19,10 @@ task makeNativeWrappersDfp(dependsOn: compileJava, type: JavaExec) {
             "$rootDir/native/src/NativeImpl.c",
             "$rootDir/java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp/NativeImpl.java",
             "$rootDir/csharp/EPAM.Deltix.DFP/NativeImpl.cs",
-            "$rootDir/native/include"
+            ""
     ]
     onlyIf {
-        !file("$rootDir/native/include/DecimalNative.h").exists() ||
-            !file("$rootDir/native/include/DecimalNative.hpp").exists() ||
-            !file("$rootDir/java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp/NativeImpl.java").exists() ||
+        !file("$rootDir/java/dfp/build/generated/sources/nativeWrappers/com/epam/deltix/dfp/NativeImpl.java").exists() ||
             !file("$rootDir/csharp/EPAM.Deltix.DFP/NativeImpl.cs").exists()
     }
 }
@@ -48,5 +46,24 @@ task makeNativeWrappersDfpMath(dependsOn: compileJava, type: JavaExec) {
     }
 }
 
-task makeNativeWrappers(dependsOn: [makeNativeWrappersDfp, makeNativeWrappersDfpMath]) {
+task makeNativeWrappersDfpCxx(dependsOn: compileJava, type: JavaExec) {
+    mainClass = "com.epam.deltix.dfp.NativeWrappers"
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = "$rootDir"
+    def ver = versioning()
+    args = [ver["three"], ver["suffix"], ver["sha"],
+            "ddfp_",
+            javaPrefix,
+            "$rootDir/native/src/NativeImpl.c",
+            "",
+            "",
+            "$rootDir/native/include"
+    ]
+    onlyIf {
+        !file("$rootDir/native/include/DecimalNative.h").exists() ||
+            !file("$rootDir/native/include/DecimalNative.hpp").exists()
+    }
+}
+
+task makeNativeWrappers(dependsOn: [makeNativeWrappersDfp, makeNativeWrappersDfpMath, makeNativeWrappersDfpCxx]) {
 }

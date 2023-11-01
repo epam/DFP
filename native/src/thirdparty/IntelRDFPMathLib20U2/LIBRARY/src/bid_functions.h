@@ -30,7 +30,7 @@
 #if defined(__cplusplus)
 #define BID_EXTERN_C extern "C"
 #else
-#define BID_EXTERN_C extern
+#define BID_EXTERN_C
 #endif
 
 #ifndef _BID_FUNCTIONS_H

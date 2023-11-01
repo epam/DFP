@@ -30,7 +30,6 @@
 #ifndef __BIDECIMAL_H
 #define __BIDECIMAL_H
 
-#define _CRT_SECURE_NO_DEPRECATE
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #   pragma warning( disable: 4996 )
 #endif

@@ -25,28 +25,28 @@ static bool isNaN(BID_UINT64 value) {
     return (value & MASK_INFINITY_NAN) == MASK_INFINITY_NAN;
 }
 
-static const int BCD_TABLE_DIGITS = 3;
+#define BCD_TABLE_DIGITS 3
 static const int BCD_DIVIDER = 1000000000;
 static const int BCD_DIVIDER_GROUPS = 3; // log10(BCD_DIVIDER) / BCD_TABLE_DIGITS must be natural value
 
-char* makeBcdTable(int tenPowerMaxIndex) {
+char* makeBcdTable() {
     int n = 1;
-    for (int i = 0; i < tenPowerMaxIndex; ++i)
+    for (int i = 0; i < BCD_TABLE_DIGITS; ++i)
         n *= 10;
 
-    char *table = (char *)malloc(n * tenPowerMaxIndex * sizeof(char));
+    char *table = (char *)malloc(n * BCD_TABLE_DIGITS * sizeof(char));
     if (!table)
         return 0;
 
-    char value[tenPowerMaxIndex];
+    char value[BCD_TABLE_DIGITS];
 
-    memset(value, '0', tenPowerMaxIndex * sizeof(char));
+    memset(value, '0', BCD_TABLE_DIGITS * sizeof(char));
 
     for (int i = 0, ib = 0; i < n; ++i) {
-        for (int j = 0; j < tenPowerMaxIndex; ++j)
+        for (int j = 0; j < BCD_TABLE_DIGITS; ++j)
             table[ib++] = value[j];
         value[0] += 1;
-        for (int j = 0; j < tenPowerMaxIndex - 1; ++j) {
+        for (int j = 0; j < BCD_TABLE_DIGITS - 1; ++j) {
             if (value[j] <= '9')
                 break;
             else {
@@ -63,7 +63,7 @@ static const char* BCD_TABLE; // makeBcdTable(BCD_TABLE_DIGITS);
 
 int formatUIntFromBcdTable(int value, char* buffer, int bi) {
     if (!BCD_TABLE)
-        BCD_TABLE = makeBcdTable(BCD_TABLE_DIGITS);
+        BCD_TABLE = makeBcdTable();
 
     for (int blockIndex = 0; blockIndex < BCD_DIVIDER_GROUPS; ++blockIndex) {
         int newValue = (int)((unsigned long long)(2199023256ull * value) >> 41);
@@ -109,17 +109,17 @@ int numberOfDigits(BID_UINT64 value) {
 
 #define bufferMinLength 511
 #define bufferMinLengthWithZero 512
-static _Thread_local char tls_to_string_buffer[bufferMinLengthWithZero];
+BID_THREAD char tls_to_string_buffer[bufferMinLengthWithZero];
 
-BID_EXTERN_C const char* dfp64_to_string(BID_UINT64 value) {
+const char* dfp64_to_string(BID_UINT64 value) {
     return dfp64_to_string_2(value, '.');
 }
 
-BID_EXTERN_C const char* dfp64_to_string_2(BID_UINT64 value, char decimalMark) {
+const char* dfp64_to_string_2(BID_UINT64 value, char decimalMark) {
     return dfp64_to_string_3(value, decimalMark, tls_to_string_buffer);
 }
 
-BID_EXTERN_C const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, char* buffer512) {
+const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, char* buffer512) {
     if (isNull(value))
         return "null";
 
@@ -242,15 +242,15 @@ BID_EXTERN_C const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, c
 
 const char SCIENTIFIC_ZERO[] = "0.000000000000000e+000";
 
-BID_EXTERN_C const char* dfp64_to_scientific_string(BID_UINT64 value) {
+const char* dfp64_to_scientific_string(BID_UINT64 value) {
     return dfp64_to_scientific_string_2(value, '.');
 }
 
-BID_EXTERN_C const char* dfp64_to_scientific_string_2(BID_UINT64 value, char decimalMark) {
+const char* dfp64_to_scientific_string_2(BID_UINT64 value, char decimalMark) {
     return dfp64_to_scientific_string_3(value, decimalMark, tls_to_string_buffer);
 }
 
-BID_EXTERN_C const char* dfp64_to_scientific_string_3(BID_UINT64 value, char decimalMark, char* buffer512) {
+const char* dfp64_to_scientific_string_3(BID_UINT64 value, char decimalMark, char* buffer512) {
     if (isNull(value))
         return "null";
 

@@ -39,12 +39,16 @@ public class NativeWrappers {
             CxxWrappers.make(outputCRoot, api, apiPrefix, versionThreeDigits);
         }
 
-        CsWrappers.make(outputCs, api, apiPrefix);
-        CsWrappers.makeVersion(outputCs, versionThreeDigits, versionSuffix, versionSha);
+        if (!outputCs.isEmpty()) {
+            CsWrappers.make(outputCs, api, apiPrefix);
+            CsWrappers.makeVersion(outputCs, versionThreeDigits, versionSuffix, versionSha);
+        }
 
-        final String javaPrefixJni = "Java_" + javaPrefix;
-        final List<ApiEntry> javaApi = collectApi(preprocess, javaPrefixJni);
-        JavaWrappers.make(outputJava, versionThreeDigits, javaApi, javaPrefixJni);
+        if (!outputJava.isEmpty()) {
+            final String javaPrefixJni = "Java_" + javaPrefix;
+            final List<ApiEntry> javaApi = collectApi(preprocess, javaPrefixJni);
+            JavaWrappers.make(outputJava, versionThreeDigits, javaApi, javaPrefixJni);
+        }
     }
 
     private static class StreamCollector implements Runnable {

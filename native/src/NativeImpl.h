@@ -9,19 +9,28 @@
 
 #ifndef JAVA_PREFIX
 #define NOJAVA
+
+#if defined(_MSC_VER)
+#define DDFP_API(x) __declspec(dllexport) x
+#else
+#define DDFP_API(x) __attribute__ ((visibility("default"))) x
 #endif
 
-#if defined(_WIN32)
+#else // ifndef JAVA_PREFIX
+
+#if defined(_MSC_VER)
 #define JNI_API(x) __declspec(dllexport) x __stdcall
 #else
-#define JNI_API(x) x __attribute__ ((visibility("default")))
+#define JNI_API(x) __attribute__ ((visibility("default"))) x
 #endif
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 #define DDFP_API(x) __declspec(dllexport) x __cdecl
 #else
-#define DDFP_API(x) x __attribute__ ((visibility("default")))
+#define DDFP_API(x) __attribute__ ((visibility("default"))) x
 #endif
+
+#endif // ifndef JAVA_PREFIX
 
 /*
  * Concatenate preprocessor tokens A and B without expanding macro definitions

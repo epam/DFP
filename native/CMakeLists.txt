@@ -24,24 +24,28 @@ message(STATUS "CMAKE_CROSSCOMPILING: " ${CMAKE_CROSSCOMPILING})
 message(STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS})
 message(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
 
-file(WRITE ${CMAKE_INSTALL_PREFIX}/cmakevariables.json "\
-{\n\
-    \"CMAKE_SYSTEM_NAME\": \"${CMAKE_SYSTEM_NAME}\",\n\
-    \"CMAKE_TOOLCHAIN_FILE\": \"${CMAKE_TOOLCHAIN_FILE}\",\n\
-    \"CMAKE_SYSTEM_PROCESSOR\": \"${CMAKE_SYSTEM_PROCESSOR}\",\n\
-    \"CMAKE_C_COMPILER_TARGET\": \"${CMAKE_C_COMPILER_TARGET}\",\n\
-    \"CMAKE_CROSSCOMPILING\": \"${CMAKE_CROSSCOMPILING}\",\n\
-    \"CMAKE_SIZEOF_VOID_P\": \"${CMAKE_SIZEOF_VOID_P}\",\n\
-    \"CMAKE_BUILD_TYPE\": \"${CMAKE_BUILD_TYPE}\",\n\
-    \"CMAKE_C_COMPILER\": \"${CMAKE_C_COMPILER}\",\n\
-    \"CMAKE_C_COMPILER_ID\": \"${CMAKE_C_COMPILER_ID}\",\n\
-    \"CMAKE_C_COMPILER_VERSION\": \"${CMAKE_C_COMPILER_VERSION}\",\n\
-    \"CMAKE_C_FLAGS\": \"${CMAKE_C_FLAGS}\",\n\
-}")
+if (JAVA_PREFIX)
+	file(WRITE ${CMAKE_INSTALL_PREFIX}/cmakevariables.json "\
+	{\n\
+		\"CMAKE_SYSTEM_NAME\": \"${CMAKE_SYSTEM_NAME}\",\n\
+		\"CMAKE_TOOLCHAIN_FILE\": \"${CMAKE_TOOLCHAIN_FILE}\",\n\
+		\"CMAKE_SYSTEM_PROCESSOR\": \"${CMAKE_SYSTEM_PROCESSOR}\",\n\
+		\"CMAKE_C_COMPILER_TARGET\": \"${CMAKE_C_COMPILER_TARGET}\",\n\
+		\"CMAKE_CROSSCOMPILING\": \"${CMAKE_CROSSCOMPILING}\",\n\
+		\"CMAKE_SIZEOF_VOID_P\": \"${CMAKE_SIZEOF_VOID_P}\",\n\
+		\"CMAKE_BUILD_TYPE\": \"${CMAKE_BUILD_TYPE}\",\n\
+		\"CMAKE_C_COMPILER\": \"${CMAKE_C_COMPILER}\",\n\
+		\"CMAKE_C_COMPILER_ID\": \"${CMAKE_C_COMPILER_ID}\",\n\
+		\"CMAKE_C_COMPILER_VERSION\": \"${CMAKE_C_COMPILER_VERSION}\",\n\
+		\"CMAKE_C_FLAGS\": \"${CMAKE_C_FLAGS}\",\n\
+	}")
+endif()
 
 set(CALL_BY_REF "0" CACHE STRING "The numerical arguments and results are passed by reference")
 set(GLOBAL_RND "1" CACHE STRING "The rounding mode is a global variable _IDEC_glbround")
 set(GLOBAL_FLAGS "1" CACHE STRING "The exception status flags are represented by a global variable _IDEC_glbflags")
+
+set(LINKTYPE "STATIC" CACHE STRING "The libraries linking type")
 
 if(APPLE)
 	add_definitions(-DAPPLE)
@@ -101,7 +105,7 @@ file(GLOB BID_SRCS
 		
 file(GLOB PUBLIC_HEADERS "include/*")
 
-add_library(dfp SHARED ${BID_SRCS} src/NativeImpl.c)
+add_library(dfp ${LINKTYPE} ${BID_SRCS} src/NativeImpl.c)
 include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
 target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_)
 if (JAVA_PREFIX)
@@ -111,7 +115,7 @@ set_target_properties(dfp PROPERTIES OUTPUT_NAME "ddfp${VERSION_SUFFIX}")
 set_target_properties(dfp PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 install(TARGETS dfp)
 
-add_library(dfpmath SHARED ${BID_SRCS} src/NativeMathImpl.c)
+add_library(dfpmath ${LINKTYPE} ${BID_SRCS} src/NativeMathImpl.c)
 include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
 target_compile_definitions(dfpmath PRIVATE API_PREFIX=ddfpmath${VERSION_SUFFIX}_)
 if (JAVA_MATH_PREFIX)
