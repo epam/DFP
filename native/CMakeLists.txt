@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.22)
-project (native)
+project (native VERSION ${VERSION})
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
@@ -39,13 +39,16 @@ if (JAVA_PREFIX)
 		\"CMAKE_C_COMPILER_VERSION\": \"${CMAKE_C_COMPILER_VERSION}\",\n\
 		\"CMAKE_C_FLAGS\": \"${CMAKE_C_FLAGS}\",\n\
 	}")
+	set(LINKTYPE SHARED)
+endif()
+
+if (NOT LINKTYPE)
+	set(LINKTYPE STATIC)
 endif()
 
 set(CALL_BY_REF "0" CACHE STRING "The numerical arguments and results are passed by reference")
 set(GLOBAL_RND "1" CACHE STRING "The rounding mode is a global variable _IDEC_glbround")
 set(GLOBAL_FLAGS "1" CACHE STRING "The exception status flags are represented by a global variable _IDEC_glbflags")
-
-set(LINKTYPE "STATIC" CACHE STRING "The libraries linking type")
 
 if(APPLE)
 	add_definitions(-DAPPLE)
@@ -112,29 +115,20 @@ if (JAVA_PREFIX)
 	target_compile_definitions(dfp PRIVATE JAVA_PREFIX=${JAVA_PREFIX})
 endif()
 set_target_properties(dfp PROPERTIES OUTPUT_NAME "ddfp${VERSION_SUFFIX}")
-set_target_properties(dfp PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
+if (NOT JAVA_PREFIX)
+	set_target_properties(dfp PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
+endif()
 install(TARGETS dfp)
 
-add_library(dfpmath ${LINKTYPE} ${BID_SRCS} src/NativeMathImpl.c)
-include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
-target_compile_definitions(dfpmath PRIVATE API_PREFIX=ddfpmath${VERSION_SUFFIX}_)
 if (JAVA_MATH_PREFIX)
-	target_compile_definitions(dfpmath PRIVATE JAVA_PREFIX=${JAVA_MATH_PREFIX})
+	add_library(dfpmath ${LINKTYPE} ${BID_SRCS} src/NativeMathImpl.c)
+	include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
+	target_compile_definitions(dfpmath PRIVATE API_PREFIX=ddfpmath${VERSION_SUFFIX}_)
+	if (JAVA_MATH_PREFIX)
+		target_compile_definitions(dfpmath PRIVATE JAVA_PREFIX=${JAVA_MATH_PREFIX})
+	endif()
+	set_target_properties(dfpmath PROPERTIES OUTPUT_NAME "ddfpmath${VERSION_SUFFIX}")
+	install(TARGETS dfpmath)
 endif()
-set_target_properties(dfpmath PROPERTIES OUTPUT_NAME "ddfpmath${VERSION_SUFFIX}")
-install(TARGETS dfpmath)
 
-
-#add_library(dfpStatic STATIC NativeImpl.c ${BID_SRCS})
-#include_directories(../thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
-#target_compile_definitions(dfpStatic PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_ NOJAVA)
-#set_target_properties(dfpStatic PROPERTIES OUTPUT_NAME "ddfpStatic${VERSION_SUFFIX}")
-#install(TARGETS dfpStatic DESTINATION ./bin/${CMAKE_BUILD_TYPE}/${INSTALL_SUFFIX})
-
-#if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-#	add_executable(demoStatic demo.cpp)
-#	target_link_libraries(demoStatic LINK_PRIVATE dfpStatic)
-
-#	add_executable(demo demo.cpp)
-#	target_link_libraries(demo LINK_PRIVATE dfp)
-#endif()
+include(CPack)

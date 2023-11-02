@@ -27,14 +27,16 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
+#ifndef _BID_FUNCTIONS_H
+#define _BID_FUNCTIONS_H
+
+#ifndef BID_EXTERN_C
 #if defined(__cplusplus)
 #define BID_EXTERN_C extern "C"
 #else
-#define BID_EXTERN_C
+#define BID_EXTERN_C extern
 #endif
-
-#ifndef _BID_FUNCTIONS_H
-#define _BID_FUNCTIONS_H
+#endif
 
 #if !defined (__GNUC__) || defined(__QNX__)
 #include <wchar.h>

@@ -1,10 +1,11 @@
-#include "NativeImpl.h"
-#include <bid_internal.h>
 #include <math.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include "NativeImplToString.h"
+#include <bid_conf.h>
+#include <bid_functions.h>
+#include <bid_internal.h>
 
 static const BID_UINT64 DFP_NAN_NULL = 0xFFFFFFFFFFFFFF80ull; // = -0x80L;
 static const BID_UINT64 MASK_INFINITY_AND_NAN = 0x7800000000000000ull;

@@ -27,14 +27,16 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
+#ifndef _BID_CONF_H
+#define _BID_CONF_H
+
+#ifndef BID_EXTERN_C
 #if defined(__cplusplus) 
 #define BID_EXTERN_C extern "C" 
 #else 
-#define BID_EXTERN_C
+#define BID_EXTERN_C extern 
 #endif 
-
-#ifndef _BID_CONF_H
-#define _BID_CONF_H
+#endif
 
 // Name Changes
 
@@ -995,11 +997,11 @@ typedef unsigned int _IDEC_flags;       // could be a struct with diagnostic inf
 #endif
 
 #if DECIMAL_GLOBAL_ROUNDING
-BID_EXTERN_C BID_THREAD _IDEC_round _IDEC_glbround;
+BID_THREAD _IDEC_round _IDEC_glbround;
 #endif
 
 #if DECIMAL_GLOBAL_EXCEPTION_FLAGS
-BID_EXTERN_C BID_THREAD _IDEC_flags _IDEC_glbflags;
+BID_THREAD _IDEC_flags _IDEC_glbflags;
 #endif
 
 #if DECIMAL_ALTERNATE_EXCEPTION_HANDLING
