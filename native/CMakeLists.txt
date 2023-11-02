@@ -39,11 +39,7 @@ if (JAVA_PREFIX)
 		\"CMAKE_C_COMPILER_VERSION\": \"${CMAKE_C_COMPILER_VERSION}\",\n\
 		\"CMAKE_C_FLAGS\": \"${CMAKE_C_FLAGS}\",\n\
 	}")
-	set(LINKTYPE SHARED)
-endif()
-
-if (NOT LINKTYPE)
-	set(LINKTYPE STATIC)
+	set(BUILD_SHARED_LIBS ON)
 endif()
 
 set(CALL_BY_REF "0" CACHE STRING "The numerical arguments and results are passed by reference")
@@ -108,7 +104,7 @@ file(GLOB BID_SRCS
 		
 file(GLOB PUBLIC_HEADERS "include/*")
 
-add_library(dfp ${LINKTYPE} ${BID_SRCS} src/NativeImpl.c)
+add_library(dfp ${BID_SRCS} src/NativeImpl.c)
 include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
 target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_)
 if (JAVA_PREFIX)
@@ -121,7 +117,7 @@ endif()
 install(TARGETS dfp)
 
 if (JAVA_MATH_PREFIX)
-	add_library(dfpmath ${LINKTYPE} ${BID_SRCS} src/NativeMathImpl.c)
+	add_library(dfpmath ${BID_SRCS} src/NativeMathImpl.c)
 	include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
 	target_compile_definitions(dfpmath PRIVATE API_PREFIX=ddfpmath${VERSION_SUFFIX}_)
 	if (JAVA_MATH_PREFIX)
