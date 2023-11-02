@@ -1,13 +1,13 @@
 #include <iostream>
 #include <sstream>
-#include "DecimalNative.hpp"
+#include <DecimalNative.hpp>
 
 using namespace epam::deltix::dfp;
 
 int main(int argc, char *argv[]) {
     if(argc!=4) {
-        std::cerr << "Usage: <A> <op> <B>" << std::endl;
-		return -1;
+        std::cout << "Usage: <A> <op> <B>" << std::endl;
+		return 0;
 	}
 
     const Decimal64 x(argv[1]); // Parsing call example - can throw std::invalid_argument

@@ -1,20 +1,26 @@
+import os
+
 from conan import ConanFile
-from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
-from conan.tools.build import cross_building
+from conan.tools.cmake import CMake, cmake_layout
+from conan.tools.build import can_run
 
 
 class TestExampleConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake", "cmake_find_package"
+    generators = "CMakeDeps", "CMakeToolchain"
+
+    def requirements(self):
+        self.requires(self.tested_reference_str)
 
     def build(self):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
 
-    def build_requirements(self):
-        self.tool_requires("dfp/[>=1.0.2]")
+    def layout(self):
+        cmake_layout(self)
 
     def test(self):
-        if not cross_building(self):
-            self.run("./test_package_example")
+        if can_run(self):
+            cmd = os.path.join(self.cpp.build.bindir, "demo")
+            self.run(cmd, env="conanrun")

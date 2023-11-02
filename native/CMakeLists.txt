@@ -130,5 +130,3 @@ if (JAVA_MATH_PREFIX)
 	set_target_properties(dfpmath PROPERTIES OUTPUT_NAME "ddfpmath${VERSION_SUFFIX}")
 	install(TARGETS dfpmath)
 endif()
-
-include(CPack)
