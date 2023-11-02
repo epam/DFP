@@ -860,9 +860,9 @@
 
 #ifndef BID_THREAD
 #if defined (_MSC_VER) //Windows
-#define BID_THREAD static __declspec(thread)
+#define BID_THREAD __declspec(thread)
 #else
-#define BID_THREAD static __thread
+#define BID_THREAD __thread
 #endif //Windows
 #endif //BID_THREAD
 
@@ -997,11 +997,11 @@ typedef unsigned int _IDEC_flags;       // could be a struct with diagnostic inf
 #endif
 
 #if DECIMAL_GLOBAL_ROUNDING
-BID_THREAD _IDEC_round _IDEC_glbround;
+BID_EXTERN_C BID_THREAD _IDEC_round _IDEC_glbround;
 #endif
 
 #if DECIMAL_GLOBAL_EXCEPTION_FLAGS
-BID_THREAD _IDEC_flags _IDEC_glbflags;
+BID_EXTERN_C BID_THREAD _IDEC_flags _IDEC_glbflags;
 #endif
 
 #if DECIMAL_ALTERNATE_EXCEPTION_HANDLING
