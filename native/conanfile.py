@@ -43,6 +43,11 @@ class DfpConan(ConanFile):
         # Command line ``--version=xxxx`` will be assigned first to self.version and have priority
         self.version = self.version or load_version(os.path.join(self.recipe_folder, "..", "gradle.properties"))
 
+    def configure(self):
+        # it's a C library
+        self.settings.rm_safe("compiler.libcxx")
+        self.settings.rm_safe("compiler.cppstd")
+
     def layout(self):
         cmake_layout(self)
 
