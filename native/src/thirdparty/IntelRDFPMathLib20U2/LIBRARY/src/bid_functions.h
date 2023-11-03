@@ -27,22 +27,25 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
+#ifndef _BID_FUNCTIONS_H
+#define _BID_FUNCTIONS_H
+
+#ifndef BID_EXTERN_C
 #if defined(__cplusplus)
 #define BID_EXTERN_C extern "C"
 #else
 #define BID_EXTERN_C extern
 #endif
-
-#ifndef _BID_FUNCTIONS_H
-#define _BID_FUNCTIONS_H
+#endif
 
 #if !defined (__GNUC__) || defined(__QNX__)
 #include <wchar.h>
 #endif
 #include <ctype.h>
+#include <stdlib.h>
 
 // Fix system header issue on Sun solaris and define required type by ourselves
-#if !defined(_WCHAR_T) && !defined(_WCHAR_T_DEFINED) && !defined(__QNX__)
+#if !defined(__cplusplus) && !defined(_WCHAR_T) && !defined(_WCHAR_T_DEFINED) && !defined(__QNX__)
 typedef int   wchar_t;
 #endif
 
