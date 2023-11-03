@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-22.04', 'windows-2019', 'macos-latest']
+        os: [ 'ubuntu-22.04', 'windows-2022', 'macos-12']
     steps:
       - uses: actions/checkout@v3
         with:
@@ -86,7 +86,7 @@ jobs:
           retention-days: 7
 
   build-native-windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     needs: [build-wrappers]
     steps:
       - uses: actions/checkout@v3
@@ -204,7 +204,7 @@ jobs:
           retention-days: 7
 
   build-dotnet:
-    runs-on: windows-2019
+    runs-on: windows-2022
     needs: [compress-native]
     steps:
       - uses: actions/checkout@v3
@@ -237,7 +237,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-22.04', 'windows-2019', 'macos-latest']
+        os: [ 'ubuntu-22.04', 'windows-2022', 'macos-12']
         java: [ '8', '11', '19']
     steps:
       - uses: actions/checkout@v3
@@ -265,7 +265,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-22.04', 'windows-2019', 'macos-latest']
+        os: [ 'ubuntu-22.04', 'windows-2022', 'macos-12']
     steps:
       - uses: actions/checkout@v3
         with:
@@ -279,12 +279,12 @@ jobs:
         with:
           dotnet-version: '3.1.x'
       - name: test windows
-        if: ${{ matrix.os == 'windows-2019' }}
+        if: ${{ matrix.os == 'windows-2022' }}
         run: |
           cd csharp
           ./build --target=Run-Unit-Tests
       - name: test nix
-        if: ${{ matrix.os == 'ubuntu-22.04' || matrix.os == 'macos-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' || matrix.os == 'macos-12' }}
         run: |
           cd csharp
           ./build.sh --target=Run-Unit-Tests
