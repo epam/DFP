@@ -37,11 +37,11 @@ class DfpConan(ConanFile):
     default_options = {"shared": False}
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "src/*", "include/*"
+    exports_sources = "LICENSE", "intel-eula.txt", "native/CMakeLists.txt", "native/src/*", "native/include/*"
 
     def set_version(self):
         # Command line ``--version=xxxx`` will be assigned first to self.version and have priority
-        self.version = self.version or load_version(os.path.join(self.recipe_folder, "..", "gradle.properties"))
+        self.version = self.version or load_version(os.path.join(self.recipe_folder, "gradle.properties"))
 
     def configure(self):
         # it's a C library
@@ -49,7 +49,7 @@ class DfpConan(ConanFile):
         self.settings.rm_safe("compiler.cppstd")
 
     def layout(self):
-        cmake_layout(self)
+        cmake_layout(self, src_folder="native")
 
     def generate(self):
         deps = CMakeDeps(self)
@@ -63,6 +63,8 @@ class DfpConan(ConanFile):
         cmake.build()
 
     def package(self):
+        copy(self, "LICENSE", dst=os.path.join(self.package_folder, "licenses"), src=os.path.join(self.source_folder, ".."))
+        copy(self, "intel-eula.txt", dst=os.path.join(self.package_folder, "licenses"), src=os.path.join(self.source_folder, ".."))
         cmake = CMake(self)
         cmake.install()
 
