@@ -74,7 +74,7 @@ jobs:
           name: build-wrappers
       - name: create
         run: |
-          pip install conan
+          pip3 install conan
           python3 conan_invoke.py profile detect
           python3 conan_invoke.py create .
 
