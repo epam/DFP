@@ -266,7 +266,7 @@ const char* dfp64_to_scientific_string_3(BID_UINT64 value, char decimalMark, cha
     unpack_BID64(&partsSignMask, &partsExponent, &partsCoefficient, value);
 
     if (partsCoefficient == 0) {
-        memcpy(buffer512, SCIENTIFIC_ZERO, sizeof(SCIENTIFIC_ZERO) / sizeof(SCIENTIFIC_ZERO[0]) + 1);
+        memcpy(buffer512, SCIENTIFIC_ZERO, sizeof(SCIENTIFIC_ZERO) / sizeof(SCIENTIFIC_ZERO[0]));
         buffer512[1] = decimalMark;
         return buffer512;
     }
