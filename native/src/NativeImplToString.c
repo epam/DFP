@@ -298,7 +298,7 @@ const char* dfp64_to_scientific_string_3(BID_UINT64 value, char decimalMark, cha
     buffer512[be++] = exponent >= 0 ? '+' : '-';
     {
         if (!BCD_TABLE)
-            BCD_TABLE = makeBcdTable(BCD_TABLE_DIGITS);
+            BCD_TABLE = makeBcdTable();
 
         be += BCD_TABLE_DIGITS;
         for (int j = 0, ti = abs(exponent) * BCD_TABLE_DIGITS /* (remainder << 1) + remainder */; j < BCD_TABLE_DIGITS; ++j, ++ti)
