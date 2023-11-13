@@ -57,27 +57,6 @@ jobs:
             ./native/include*
           retention-days: 7
 
-  build-cxx-conan:
-    runs-on: ${{ matrix.os }}
-    needs: [build-wrappers]
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ 'ubuntu-22.04', 'windows-2022', 'macos-12']
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-      - name: Download build-wrappers artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-wrappers
-      - name: create
-        run: |
-          pip3 install conan
-          python3 conan_invoke.py profile detect
-          python3 conan_invoke.py create .
-
   build-native-linux:
     runs-on: ubuntu-22.04
     needs: [build-wrappers]
