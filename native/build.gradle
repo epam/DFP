@@ -7,7 +7,7 @@ def llvmRoot = "$rootDir/llvm"
 def versionSuffix = versioning()["suffix"]
 def CCOMPILER = "clang"
 def CXXCOMPILER = "clang++"
-def VERBOSE = "ON"
+def VERBOSE = "FALSE"
 def keepBuildDir = (findProperty('keepBuildDir')?.toBoolean()) ?: false
 
 task makeNativeWindowsI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
