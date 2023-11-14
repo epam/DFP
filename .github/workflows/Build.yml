@@ -36,6 +36,12 @@ jobs:
             ./csharp/EPAM.Deltix.DFPMath/Version.targets
             ./native/include*
           retention-days: 7
+      - uses: actions/upload-artifact@v3
+        with:
+          name: native-sources
+          path: |
+            native/
+          retention-days: 7
 
   build-native-linux:
     runs-on: ubuntu-22.04
