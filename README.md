@@ -1,4 +1,4 @@
-# Decimal Floating Point Arithmetic for Java/.NET
+# Decimal Floating Point Arithmetic for C/C++/Java/.NET
 
 "...it is a bad idea to use floating point to try to represent exact quantities like monetary amounts. Using floating point for dollars-and-cents calculations is a recipe for disaster. Floating point numbers are best reserved for values such as measurements, whose values are fundamentally inexact to begin with." -- [Brian Goetz](https://www.ibm.com/developerworks/library/j-jtp0114/index.html)
 
