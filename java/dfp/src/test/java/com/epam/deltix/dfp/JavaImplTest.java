@@ -123,25 +123,25 @@ public class JavaImplTest {
         final StringBuilder string = new StringBuilder();
 
         string.setLength(0);
-        assertEquals("NaN", appendToRefImpl(Decimal64Utils.NaN, DECIMAL_MARK_DOT, string).toString());
+        assertEquals("NaN", appendToRefImpl(Decimal64Utils.NaN, DECIMAL_MARK_DOT, false, string).toString());
 
         string.setLength(0);
-        assertEquals("Infinity", appendToRefImpl(Decimal64Utils.POSITIVE_INFINITY, DECIMAL_MARK_DOT, string).toString());
+        assertEquals("Infinity", appendToRefImpl(Decimal64Utils.POSITIVE_INFINITY, DECIMAL_MARK_DOT, false, string).toString());
 
         string.setLength(0);
-        assertEquals("-Infinity", appendToRefImpl(Decimal64Utils.NEGATIVE_INFINITY, DECIMAL_MARK_DOT, string).toString());
+        assertEquals("-Infinity", appendToRefImpl(Decimal64Utils.NEGATIVE_INFINITY, DECIMAL_MARK_DOT, false, string).toString());
 
         string.setLength(0);
-        assertEquals("100000010000.0", JavaImpl.appendToRefImpl(Decimal64Utils.fromDouble(10000001E+04), DECIMAL_MARK_DOT, string).toString());
+        assertEquals("100000010000", JavaImpl.appendToRefImpl(Decimal64Utils.fromDouble(10000001E+04), DECIMAL_MARK_DOT, false, string).toString());
 
         string.setLength(0);
-        assertEquals("10000001.0", JavaImpl.appendToRefImpl(Decimal64Utils.fromDouble(10000001), DECIMAL_MARK_DOT, string).toString());
+        assertEquals("10000001", JavaImpl.appendToRefImpl(Decimal64Utils.fromDouble(10000001), DECIMAL_MARK_DOT, false, string).toString());
 
         string.setLength(0);
-        assertEquals("1000.0001", JavaImpl.appendToRefImpl(Decimal64Utils.fromDouble(10000001E-04), DECIMAL_MARK_DOT, string).toString());
+        assertEquals("1000.0001", JavaImpl.appendToRefImpl(Decimal64Utils.fromDouble(10000001E-04), DECIMAL_MARK_DOT, false, string).toString());
 
         string.setLength(0);
-        assertEquals("9.2", appendToRefImpl(Decimal64Utils.fromDecimalDouble(92E-01), DECIMAL_MARK_DOT, string).toString());
+        assertEquals("9.2", appendToRefImpl(Decimal64Utils.fromDecimalDouble(92E-01), DECIMAL_MARK_DOT, false, string).toString());
     }
 
     @Test
@@ -217,12 +217,12 @@ public class JavaImplTest {
 
     @Test
     public void toStringSpecialCase2() {
-        checkToString(null, "31800000013474D8", "202150.0", "+20215000E-2");
+        checkToString(null, "31800000013474D8", "202150", "+20215000E-2");
     }
 
     @Test
     public void toStringSpecialCase3() {
-        checkToString(null, "8020000000000000", "0.0", "-0E-397");
+        checkToString(null, "8020000000000000", "0", "-0E-397");
     }
 
     @Test
@@ -528,7 +528,7 @@ public class JavaImplTest {
 
     private static void checkStrEq(final long value) {
         try {
-            final String inStr = JavaImpl.appendToRefImpl(value, DECIMAL_MARK_DEFAULT, new StringBuilder()).toString();
+            final String inStr = JavaImpl.appendToRefImpl(value, DECIMAL_MARK_DEFAULT, false, new StringBuilder()).toString();
             final String testStr = Decimal64Utils.toString(value);
             if (!inStr.equals(testStr))
                 throw new RuntimeException("Case toString(" + value + "L) error: ref toString(=" + inStr + ") != test toString(=" + testStr + ")");
@@ -1009,17 +1009,17 @@ public class JavaImplTest {
             for (int shift = 0, f = 1; shift < 6; ++shift, f *= 10) {
                 final long d64up = shift == 0 ? d64u : JavaImplMul.get_BID64(dParts.signMask, dParts.exponent - shift, dParts.coefficient * f);
 
-                assertEquals(str, Decimal64Utils.toString(d64up));
+                assertEquals(str, Decimal64Utils.toFloatString(d64up));
 
                 {
                     final CharArrayWriter writer = new CharArrayWriter(1024);
-                    Decimal64Utils.appendTo(d64up, writer);
+                    Decimal64Utils.floatAppendTo(d64up, writer);
                     assertEquals(str, writer.toString());
                 }
 
                 {
                     final StringBuilder sb = new StringBuilder();
-                    Decimal64Utils.appendTo(d64up, sb);
+                    Decimal64Utils.floatAppendTo(d64up, sb);
                     assertEquals(str, sb.toString());
                 }
 
@@ -1037,17 +1037,17 @@ public class JavaImplTest {
         final long d64Up = JavaImplMul.get_BID64(dParts.signMask, dParts.exponent - 6 - 6, dParts.coefficient * 1000_000);
         final String strUp = "0.001234";
 
-        assertEquals(strUp, Decimal64Utils.toString(d64Up));
+        assertEquals(strUp, Decimal64Utils.toFloatString(d64Up));
 
         {
             final CharArrayWriter writer = new CharArrayWriter(1024);
-            Decimal64Utils.appendTo(d64Up, writer);
+            Decimal64Utils.floatAppendTo(d64Up, writer);
             assertEquals(strUp, writer.toString());
         }
 
         {
             final StringBuilder sb = new StringBuilder();
-            Decimal64Utils.appendTo(d64Up, sb);
+            Decimal64Utils.floatAppendTo(d64Up, sb);
             assertEquals(strUp, sb.toString());
         }
     }
