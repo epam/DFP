@@ -404,6 +404,28 @@ public class Decimal64Utils {
     }
 
     /**
+     * Create {@code DFP} value from 32-bit binary floating point ({@code float}) value.
+     *
+     * @param value source 32-bit binary floating point value
+     * @return New {@code DFP} value.
+     */
+    @Decimal
+    public static long fromFloat(final float value) {
+        return JavaImplCastBinary32.binary32_to_bid64(value, BID_ROUNDING_TO_NEAREST);
+    }
+
+    /**
+     * Convert {@code DFP} value to 32-bit binary floating point ({@code float}) value.
+     * <p>Note that not all decimal FP values can be exactly represented as binary FP values.
+     *
+     * @param value source {@code DFP} value
+     * @return {@code float} value
+     */
+    public static float toFloat(@Decimal final long value) {
+        return JavaImplCastBinary32.bid64_to_binary32(value, BID_ROUNDING_TO_NEAREST);
+    }
+
+    /**
      * Create {@code DFP} value from 64-bit binary floating point ({@code double}) value.
      *
      * @param value source 64-bit binary floating point value
@@ -1703,6 +1725,18 @@ public class Decimal64Utils {
     }
 
     /**
+     * Implements {@link Decimal64#toFloat()}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    @Deprecated
+    public static float toFloatChecked(@Decimal final long value) {
+        checkNull(value);
+        return toFloat(value);
+    }
+
+    /**
      * Implements {@link Decimal64#toDouble()}, adds null check; do not use directly.
      *
      * @param value DFP argument
@@ -2824,7 +2858,7 @@ public class Decimal64Utils {
     @Deprecated
     public static float floatValueChecked(@Decimal final long value) {
         checkNull(value);
-        return (float) toDouble(value);
+        return toFloat(value);
     }
 
     /**

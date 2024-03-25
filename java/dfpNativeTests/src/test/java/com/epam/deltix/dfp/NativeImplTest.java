@@ -365,4 +365,18 @@ public class NativeImplTest {
         assertDecimalEqual(Decimal64Utils.ZERO, NativeImpl.roundTowardsPositiveInfinity(zeroP));
         assertDecimalEqual(Decimal64Utils.ZERO, Decimal64Utils.ceil(zeroP));
     }
+
+    @Test
+    public void issue89FromFloatVsDouble() {
+        final float x = 3.15f;
+        final Decimal64 fd64 = Decimal64.fromFloat(x);
+        Decimal64Utils.fromDouble(x);
+//        In Java (double) == 3.1500000953674316, so the only way to convert value correctly - use string conversion.
+//        But the string conversion could be slow and also allocate memory.
+    }
+
+    @Test
+    public void issue89FromFloat() throws Exception {
+        checkWithCoverage(NativeImpl::fromFloat32, Decimal64Utils::fromDouble);
+    }
 }

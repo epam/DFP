@@ -225,6 +225,26 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     }
 
     /**
+     * Create {@code Decimal64} instance from 32-bit binary floating point value({@code float})
+     *
+     * @param value source 32-bit binary floating point value
+     * @return new {@code Decimal64} instance
+     */
+    public static Decimal64 fromFloat(final float value) {
+        return new Decimal64(Decimal64Utils.fromFloat(value));
+    }
+
+    /**
+     * Convert {@code Decimal64} instance to 32-bit binary floating point ({@code float}) value.
+     * <p>Note that not all decimal FP values can be exactly represented as binary FP values.
+     *
+     * @return {@code float} value
+     */
+    public float toFloat() {
+        return Decimal64Utils.toFloat(value);
+    }
+
+    /**
      * Create {@code Decimal64} instance from 64-bit binary floating point value({@code double})
      * <p>Note that not all binary FP values can be exactly represented as decimal FP values.
      *
@@ -1152,7 +1172,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
 
     @Override
     public float floatValue() {
-        return (float) toDouble();
+        return toFloat();
     }
 
     @Override
