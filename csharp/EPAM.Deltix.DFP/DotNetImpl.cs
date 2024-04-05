@@ -13,8 +13,6 @@ namespace EPAM.Deltix.DFP
 {
 	internal static class DotNetImpl
 	{
-		private const bool ToStringRemoveTrailingZeroes = true; // Controls if ToString removes trailing zeroes or not
-
 		#region Constants
 		public const UInt64 PositiveInfinity = 0x7800000000000000UL;
 		public const UInt64 NegativeInfinity = 0xF800000000000000UL;
@@ -1158,112 +1156,206 @@ namespace EPAM.Deltix.DFP
 		#endregion
 		#region Formatting & Parsing
 
-		public static String ToString(UInt64 value, char decimalMark)
+		private const int BcdTableDigits = 3;
+		private const int BcdDivider = 1000000000;
+		private const int BcdDividerGroups = 3; // log10(BCD_DIVIDER) / BCD_TABLE_DIGITS must be natural value
+
+		private static char[] BCD_TABLE = MakeBcdTable(BcdTableDigits);
+
+		private static char[] MakeBcdTable(int tenPowerMaxIndex)
+		{
+			int n = 1;
+			for (int i = 0; i < tenPowerMaxIndex; ++i)
+				n *= 10;
+
+			char[] table = new char[n * tenPowerMaxIndex];
+
+			char[] value = new char[tenPowerMaxIndex];
+			for (int i = 0; i < value.Length; ++i) // Array.Fill is not available in .NET Standard 2.0, but 2.1
+				value[i] = '0';
+
+			for (int i = 0, ib = 0; i < n; ++i)
+			{
+				for (int j = 0; j < tenPowerMaxIndex; ++j)
+					table[ib++] = value[j];
+				value[0] = (char)(value[0] + 1);
+				for (int j = 0; j < tenPowerMaxIndex - 1; ++j)
+				{
+					if (value[j] <= '9')
+						break;
+					else
+					{
+						value[j] = (char)(value[j] - 10);
+						value[j + 1] = (char)(value[j + 1] + 1);
+					}
+				}
+			}
+
+			return table;
+		}
+
+		private static unsafe int FormatUIntFromBcdTable(int value, char* buffer, int bi)
+		{
+			for (int blockIndex = 0; blockIndex < BcdDividerGroups; ++blockIndex)
+			{
+				int newValue = (int)((ulong)(2199023256L * value) >> 41);
+				int remainder = value - newValue * 1000;
+				//final int remainder = value - ((newValue << 10) - (newValue << 4) - (newValue << 3));
+				value = newValue;
+
+				for (int j = 0, ti = remainder * BcdTableDigits /* (remainder << 1) + remainder */; j < BcdTableDigits; ++j, ++ti)
+					buffer[--bi] = BCD_TABLE[ti];
+			}
+
+			return bi;
+		}
+
+		public static String ToString(UInt64 value, char decimalMark, bool floatStyle)
 		{
 			if (!IsFinite(value))
 			{
-				return
-					IsInfinity(value) ?
-						(SignBit(value) ? "-Infinity" : "Infinity")
-					: IsNaN(value) ?
-						(SignBit(value) ? "SNaN" : "NaN")
-					: "?";
+				// Value is either Inf or NaN
+				// TODO: Do we need SNaN?
+				return IsNaN(value) ? "NaN" : SignBit(value) ? "-Infinity" : "Infinity";
 			}
 
-			Int32 exponent;
-			Boolean isNegative = (Int64)value < 0;
-			Int64 coefficient; // Unsigned div by constant in not optimized by .NET
+			Int32 partsExponent;
+			BID_UINT64 partsCoefficient;
 			if ((~value & SpecialEncodingMask) == 0) //if ((x & SpecialEncodingMask) == SpecialEncodingMask)
 			{
-				Int32 exp2;
-				coefficient = (Int64)UnpackSpecial(value, out exp2);
-				exponent = exp2;
-
+				partsCoefficient = UnpackSpecial(value, out partsExponent);
 			}
 			else
 			{
 				// Extract the exponent.
-				exponent = (int)(value >> ExponentShiftSmall) & (int)ShiftedExponentMask;
+				partsExponent = (int)(value >> ExponentShiftSmall) & (int)ShiftedExponentMask;
 				// Extract the coefficient.
-				coefficient = (Int64)(value & SmallCoefficientMask);
+				partsCoefficient = value & SmallCoefficientMask;
 			}
+
+			if (partsCoefficient == 0)
+			{
+				return !floatStyle ? "0" : ("0" + decimalMark + "0");
+			}
+
+			int exponent = partsExponent - ExponentBias;
 
 			unsafe
 			{
-				// TODO: Special case possible for mantissa = 0, otherwise will be printed according to common rules, w/o normalization
-#pragma warning disable CS0162 // Unreachable code detected
-				if (ToStringRemoveTrailingZeroes)
-					if (0 == coefficient)
-						return "0";
+				var bufferLength = 512;
+				var buffer = stackalloc char[bufferLength];
 
-				if (exponent >= BaseExponent)
+				if (exponent >= 0)
 				{
-					if (!ToStringRemoveTrailingZeroes)
-						if (0 == coefficient)
-							return "0";
-
-					int nZeros = exponent - BaseExponent;
-					int nAlloc = exponent + (20 - BaseExponent);
-					char* s = stackalloc char[nAlloc];
-					char* e = s + nAlloc - 2, p = e - nZeros;
-
-					for (int i = nZeros; i != 0; --i)
-						p[i] = '0';
-
-					do
+					int bi = bufferLength;
+					if (floatStyle)
 					{
-						// This is to make the code generator generate 1 DIV instead of 2
-						Int64 old = coefficient + '0';
-						coefficient /= 10;
-						*p-- = (char)(old - coefficient * 10); // = [old - new * 10]
-					} while (coefficient != 0);
+						buffer[--bi] = '0';
+						buffer[--bi] = decimalMark;
+					}
+					for (int i = 0; i < exponent; ++i)
+						buffer[--bi] = '0';
 
-					if ((Int64)value < 0)
-						*p-- = '-';
+					while (partsCoefficient > 0)
+					{
+						bi = FormatUIntFromBcdTable((int)(partsCoefficient % BcdDivider), buffer, bi);
+						partsCoefficient /= BcdDivider;
+					}
 
-					return new string(p + 1, 0, (int)(e - p));
+					while (buffer[bi] == '0')
+						++bi;
+
+					if (SignBit(value))
+						buffer[--bi] = '-';
+
+					return new string(buffer, bi, bufferLength - bi);
+
 				}
 				else
-				{
-					int dotPos = BaseExponent - exponent;
-					int nAlloc = (20 + BaseExponent) - exponent;
-					char* s = stackalloc char[nAlloc];
-					char* p = s + nAlloc - 2, e = p;
+				{ // exponent < 0
+					int bi = bufferLength;
 
-					do
-					{
-						Int64 old = coefficient + '0';
-						coefficient /= 10;
-						*p = decimalMark;
-						p += 0 == dotPos-- ? -1 : 0; // Hopefully branch-free method to insert decimal dot
-						*p-- = (char)(old - coefficient * 10); // = [old - new * 10]
-					} while (coefficient != 0);
-					// Haven't placed the dot yet?
-					if (dotPos >= 0)
-					{
-						for (; dotPos > 0; --dotPos)
-							*p-- = '0';
-						p[0] = decimalMark;
-						p[-1] = '0';
-						p -= 2;
-					}
+					int digits = NumberOfDigits(partsCoefficient);
 
-					if ((Int64)value < 0)
-						*p-- = '-';
-
-					if (ToStringRemoveTrailingZeroes)
+					if (digits + exponent > 0)
 					{
-						if ('0' == *e)
+						ulong integralPart = partsCoefficient / PowersOfTen[-exponent];
+						ulong fractionalPart = partsCoefficient % PowersOfTen[-exponent];
+
+						while (fractionalPart > 0)
 						{
-							while ('0' == *--e) { }
-							if (decimalMark == *e)
-								--e;
+							bi = FormatUIntFromBcdTable((int)(fractionalPart % BcdDivider), buffer, bi);
+							fractionalPart /= BcdDivider;
 						}
-					}
 
-					return new string(p + 1, 0, (int)(e - p));
+						int written = bufferLength - bi /* already written */;
+						//if (written < -exponent /* must be written */)
+						for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
+							buffer[--bi] = '0';
+
+						bi = bufferLength + exponent; /* buffer.length - (-exponent) */
+
+						buffer[--bi] = decimalMark;
+
+						while (integralPart > 0)
+						{
+							bi = FormatUIntFromBcdTable((int)(integralPart % BcdDivider), buffer, bi);
+							integralPart /= BcdDivider;
+						}
+
+						while (buffer[bi] == '0')
+							++bi;
+
+						if (SignBit(value))
+							buffer[--bi] = '-';
+
+						int be = bufferLength;
+						while (buffer[be - 1] == '0')
+							--be;
+
+						if (buffer[be - 1] == decimalMark)
+						{
+							if (!floatStyle)
+							{
+								--be;
+							}
+							else if (be < bufferLength)
+							{
+								buffer[be++] = '0';
+							}
+						}
+
+						return new string(buffer, bi, be - bi);
+
+					}
+					else
+					{
+						while (partsCoefficient > 0)
+						{
+							bi = FormatUIntFromBcdTable((int)(partsCoefficient % BcdDivider), buffer, bi);
+							partsCoefficient /= BcdDivider;
+						}
+
+						int written = bufferLength - bi /* already written */;
+						//if (written < -exponent /* must be written */)
+						for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
+							buffer[--bi] = '0';
+
+						bi = bufferLength + exponent; /* buffer.length - (-exponent) */
+
+						buffer[--bi] = decimalMark;
+						buffer[--bi] = '0';
+
+						if (SignBit(value))
+							buffer[--bi] = '-';
+
+						int be = bufferLength;
+						while (buffer[be - 1] == '0')
+							--be;
+
+						return new string(buffer, bi, be - bi);
+					}
 				}
-#pragma warning restore CS0162
 			}
 		}
 
@@ -1329,125 +1421,172 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
-		public static StringBuilder AppendTo(UInt64 value, char decimalMark, StringBuilder text)
+		public static StringBuilder AppendTo(UInt64 value, char decimalMark, bool floatStyle, StringBuilder stringBuilder)
 		{
 			if (!IsFinite(value))
 			{
-				return text.Append(
-					IsInfinity(value) ?
-						(SignBit(value) ? "-Infinity" : "Infinity")
-					: IsNaN(value) ?
-						(SignBit(value) ? "SNaN" : "NaN")
-					: "?");
+				// Value is either Inf or NaN
+				// TODO: Do we need SNaN?
+				return stringBuilder.Append(IsNaN(value) ? "NaN" : SignBit(value) ? "-Infinity" : "Infinity");
 			}
 
-			Int32 exponent;
-			Boolean isNegative = (Int64)value < 0;
-			Int64 coefficient; // Unsigned div by constant in not optimized by .NET
+			Int32 partsExponent;
+			BID_UINT64 partsCoefficient;
 			if ((~value & SpecialEncodingMask) == 0) //if ((x & SpecialEncodingMask) == SpecialEncodingMask)
 			{
-				Int32 exp2;
-				coefficient = (Int64)UnpackSpecial(value, out exp2);
-				exponent = exp2;
-
+				partsCoefficient = UnpackSpecial(value, out partsExponent);
 			}
 			else
 			{
 				// Extract the exponent.
-				exponent = (int)(value >> ExponentShiftSmall) & (int)ShiftedExponentMask;
+				partsExponent = (int)(value >> ExponentShiftSmall) & (int)ShiftedExponentMask;
 				// Extract the coefficient.
-				coefficient = (Int64)(value & SmallCoefficientMask);
+				partsCoefficient = value & SmallCoefficientMask;
 			}
+
+			if (partsCoefficient == 0)
+			{
+				return stringBuilder.Append(!floatStyle ? "0" : ("0" + decimalMark + "0"));
+			}
+
+			int exponent = partsExponent - ExponentBias;
 
 			unsafe
 			{
-				// TODO: Special case possible for mantissa = 0, otherwise will be printed according to common rules, w/o normalization
-#pragma warning disable CS0162 // Unreachable code detected
-				if (ToStringRemoveTrailingZeroes)
-					if (0 == coefficient)
-						return text.Append("0");
+				var bufferLength = 512;
+				var buffer = stackalloc char[bufferLength];
 
-				if (exponent >= BaseExponent)
+				if (exponent >= 0)
 				{
-					if (!ToStringRemoveTrailingZeroes)
-						if (0 == coefficient)
-							return text.Append("0");
-
-					int nZeros = exponent - BaseExponent;
-					int nAlloc = exponent + (20 - BaseExponent);
-					char* s = stackalloc char[nAlloc];
-					char* e = s + nAlloc - 2, p = e - nZeros;
-
-					for (int i = nZeros; i != 0; --i)
-						p[i] = '0';
-
-					do
+					int bi = bufferLength;
+					if (floatStyle)
 					{
-						// This is to make the code generator generate 1 DIV instead of 2
-						Int64 old = coefficient + '0';
-						coefficient /= 10;
-						*p-- = (char)(old - coefficient * 10); // = [old - new * 10]
-					} while (coefficient != 0);
+						buffer[--bi] = '0';
+						buffer[--bi] = decimalMark;
+					}
+					for (int i = 0; i < exponent; ++i)
+						buffer[--bi] = '0';
 
-					if ((Int64)value < 0)
-						*p-- = '-';
+					while (partsCoefficient > 0)
+					{
+						bi = FormatUIntFromBcdTable((int)(partsCoefficient % BcdDivider), buffer, bi);
+						partsCoefficient /= BcdDivider;
+					}
+
+					while (buffer[bi] == '0')
+						++bi;
+
+					if (SignBit(value))
+						buffer[--bi] = '-';
 
 #if NET40
-					char[] heapBuffer = new char[(int)(e - p)];
-					Marshal.Copy((IntPtr)(p + 1), heapBuffer, 0, heapBuffer.Length);
-					return text.Append(heapBuffer);
+					char[] heapBuffer = new char[bufferLength - bi];
+					Marshal.Copy((IntPtr)(buffer + bi), heapBuffer, 0, heapBuffer.Length);
+					return stringBuilder.Append(heapBuffer);
 #else
-					return text.Append(p + 1, (int)(e - p));
+					return stringBuilder.Append(buffer + bi, bufferLength - bi);
 #endif
+
 				}
 				else
-				{
-					int dotPos = BaseExponent - exponent;
-					int nAlloc = (20 + BaseExponent) - exponent;
-					char* s = stackalloc char[nAlloc];
-					char* p = s + nAlloc - 2, e = p;
+				{ // exponent < 0
+					int bi = bufferLength;
 
-					do
-					{
-						Int64 old = coefficient + '0';
-						coefficient /= 10;
-						*p = decimalMark;
-						p += 0 == dotPos-- ? -1 : 0; // Hopefully branch-free method to insert decimal dot
-						*p-- = (char)(old - coefficient * 10); // = [old - new * 10]
-					} while (coefficient != 0);
-					// Haven't placed the dot yet?
-					if (dotPos >= 0)
-					{
-						for (; dotPos > 0; --dotPos)
-							*p-- = '0';
-						p[0] = decimalMark;
-						p[-1] = '0';
-						p -= 2;
-					}
+					int digits = NumberOfDigits(partsCoefficient);
 
-					if ((Int64)value < 0)
-						*p-- = '-';
-
-					if (ToStringRemoveTrailingZeroes)
+					if (digits + exponent > 0)
 					{
-						if ('0' == *e)
+						ulong integralPart = partsCoefficient / PowersOfTen[-exponent];
+						ulong fractionalPart = partsCoefficient % PowersOfTen[-exponent];
+
+						while (fractionalPart > 0)
 						{
-							while ('0' == *--e) { }
-							if (decimalMark == *e)
-								--e;
+							bi = FormatUIntFromBcdTable((int)(fractionalPart % BcdDivider), buffer, bi);
+							fractionalPart /= BcdDivider;
 						}
-					}
+
+						int written = bufferLength - bi /* already written */;
+						//if (written < -exponent /* must be written */)
+						for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
+							buffer[--bi] = '0';
+
+						bi = bufferLength + exponent; /* buffer.length - (-exponent) */
+
+						buffer[--bi] = decimalMark;
+
+						while (integralPart > 0)
+						{
+							bi = FormatUIntFromBcdTable((int)(integralPart % BcdDivider), buffer, bi);
+							integralPart /= BcdDivider;
+						}
+
+						while (buffer[bi] == '0')
+							++bi;
+
+						if (SignBit(value))
+							buffer[--bi] = '-';
+
+						int be = bufferLength;
+						while (buffer[be - 1] == '0')
+							--be;
+
+						if (buffer[be - 1] == decimalMark)
+						{
+							if (!floatStyle)
+							{
+								--be;
+							}
+							else if (be < bufferLength)
+							{
+								buffer[be++] = '0';
+							}
+						}
 
 #if NET40
-					char[] heapBuffer = new char[(int)(e - p)];
-					Marshal.Copy((IntPtr)(p + 1), heapBuffer, 0, heapBuffer.Length);
-					return text.Append(heapBuffer);
+						char[] heapBuffer = new char[be - bi];
+						Marshal.Copy((IntPtr)(buffer + bi), heapBuffer, 0, heapBuffer.Length);
+						return stringBuilder.Append(heapBuffer);
 #else
-					return text.Append(p + 1, (int)(e - p));
+						return stringBuilder.Append(buffer + bi, be - bi);
 #endif
+
+					}
+					else
+					{
+						while (partsCoefficient > 0)
+						{
+							bi = FormatUIntFromBcdTable((int)(partsCoefficient % BcdDivider), buffer, bi);
+							partsCoefficient /= BcdDivider;
+						}
+
+						int written = bufferLength - bi /* already written */;
+						//if (written < -exponent /* must be written */)
+						for (int ei = 0, ee = -exponent - written; ei < ee; ++ei)
+							buffer[--bi] = '0';
+
+						bi = bufferLength + exponent; /* buffer.length - (-exponent) */
+
+						buffer[--bi] = decimalMark;
+						buffer[--bi] = '0';
+
+						if (SignBit(value))
+							buffer[--bi] = '-';
+
+						int be = bufferLength;
+						while (buffer[be - 1] == '0')
+							--be;
+
+#if NET40
+						char[] heapBuffer = new char[be - bi];
+						Marshal.Copy((IntPtr)(buffer + bi), heapBuffer, 0, heapBuffer.Length);
+						return stringBuilder.Append(heapBuffer);
+#else
+						return stringBuilder.Append(buffer + bi, be - bi);
+#endif
+					}
 				}
-#pragma warning restore CS0162
 			}
+#pragma warning restore CS0162
 		}
 
 		public static StringBuilder ScientificAppendTo(UInt64 value, char decimalMark, StringBuilder text)
@@ -1568,7 +1707,8 @@ namespace EPAM.Deltix.DFP
 		public const Int32 MinExponent = -383;
 		public const Int32 MaxExponent = 384;
 		public const Int32 BiasedExponentMaxValue = 767;
-		public const Int32 BaseExponent = 0x18E;
+		public const Int32 ExponentBias = 398;
+		public const Int32 BaseExponent = ExponentBias;
 
 		public const Int32 MaxFormatDigits = 16;
 		public const Int32 BidRoundingToNearest = 0x00000;

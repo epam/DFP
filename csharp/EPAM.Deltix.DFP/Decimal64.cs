@@ -58,12 +58,12 @@ namespace EPAM.Deltix.DFP
 
 		public override String ToString()
 		{
-			return DotNetImpl.ToString(Bits, DecimalMarkDefault);
+			return DotNetImpl.ToString(Bits, DecimalMarkDefault, false);
 		}
 
 		public String ToString(char decimalMark)
 		{
-			return DotNetImpl.ToString(Bits, decimalMark);
+			return DotNetImpl.ToString(Bits, decimalMark, false);
 			//return ((Double)this).ToString(CultureInfo.InvariantCulture);
 		}
 
@@ -1036,14 +1036,24 @@ namespace EPAM.Deltix.DFP
 			return DotNetImpl.ToScientificString(Bits, decimalMark);
 		}
 
+		public String ToFloatString()
+		{
+			return DotNetImpl.ToString(Bits, DecimalMarkDefault, true);
+		}
+
+		public String ToFloatString(char decimalMark)
+		{
+			return DotNetImpl.ToString(Bits, decimalMark, true);
+		}
+
 		public StringBuilder AppendTo(StringBuilder text)
 		{
-			return DotNetImpl.AppendTo(Bits, DecimalMarkDefault, text);
+			return DotNetImpl.AppendTo(Bits, DecimalMarkDefault, false, text);
 		}
 
 		public StringBuilder AppendTo(char decimalMark, StringBuilder text)
 		{
-			return DotNetImpl.AppendTo(Bits, decimalMark, text);
+			return DotNetImpl.AppendTo(Bits, decimalMark, false, text);
 		}
 
 		public StringBuilder ScientificAppendTo(StringBuilder text)
@@ -1055,6 +1065,17 @@ namespace EPAM.Deltix.DFP
 		{
 			return DotNetImpl.ScientificAppendTo(Bits, decimalMark, text);
 		}
+
+		public StringBuilder FloatAppendTo(StringBuilder text)
+		{
+			return DotNetImpl.AppendTo(Bits, DecimalMarkDefault, true, text);
+		}
+
+		public StringBuilder FloatAppendTo(char decimalMark, StringBuilder text)
+		{
+			return DotNetImpl.AppendTo(Bits, decimalMark, true, text);
+		}
+
 
 		#endregion
 

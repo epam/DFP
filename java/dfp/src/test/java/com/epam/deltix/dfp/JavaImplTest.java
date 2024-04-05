@@ -1051,4 +1051,52 @@ public class JavaImplTest {
             assertEquals(strUp, sb.toString());
         }
     }
+
+    private static class ToStringData {
+        public final Decimal64 testValue;
+        public final String normalOut;
+        public final String floatOut;
+
+        public ToStringData(final Decimal64 testValue, final String normalOut, final String floatOut) {
+            this.testValue = testValue;
+            this.normalOut = normalOut;
+            this.floatOut = floatOut;
+        }
+    }
+
+    @Test
+    public void issue91ToFloatString() throws IOException {
+        final ToStringData[] testCases = new ToStringData[]
+            {
+                new ToStringData(Decimal64.fromFixedPoint(14L, 0), "14", "14.0"),
+                new ToStringData(Decimal64.fromFixedPoint(140000000000L, 10), "14", "14.0"),
+                new ToStringData(Decimal64.ZERO, "0", "0.0")
+            };
+
+        for (ToStringData testCase : testCases) {
+            final Decimal64 testValue = testCase.testValue;
+            assertEquals(testCase.normalOut, testValue.toString());
+            assertEquals(testCase.floatOut, testValue.toFloatString());
+
+            {
+                final StringBuilder sb = new StringBuilder();
+                assertEquals(testCase.normalOut, testValue.appendTo(sb).toString());
+            }
+
+            {
+                final StringBuilder sb = new StringBuilder();
+                assertEquals(testCase.floatOut, testValue.floatAppendTo(sb).toString());
+            }
+
+            {
+                final StringBuilder sb = new StringBuilder();
+                assertEquals(testCase.normalOut, testValue.appendTo((Appendable) sb).toString());
+            }
+
+            {
+                final StringBuilder sb = new StringBuilder();
+                assertEquals(testCase.floatOut, testValue.floatAppendTo((Appendable) sb).toString());
+            }
+        }
+    }
 }
