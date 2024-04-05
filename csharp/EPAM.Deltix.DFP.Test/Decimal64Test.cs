@@ -1254,17 +1254,17 @@ namespace EPAM.Deltix.DFP.Test
 			foreach(var testCase in testCases)
 			{
 				var testValue = testCase.TestValue;
-				Assert.Equals(testCase.NormalOut, testValue.ToString());
-				Assert.Equals(testCase.FloatOut, testValue.ToFloatString());
+				Assert.AreEqual(testCase.NormalOut, testValue.ToString());
+				Assert.AreEqual(testCase.FloatOut, testValue.ToFloatString());
 
 				{
 					var sb = new StringBuilder();
-					Assert.Equals(testCase.NormalOut, testValue.AppendTo(sb).ToString());
+					Assert.AreEqual(testCase.NormalOut, testValue.AppendTo(sb).ToString());
 				}
 
 				{
 					var sb = new StringBuilder();
-					Assert.Equals(testCase.FloatOut, testValue.FloatAppendTo(sb).ToString());
+					Assert.AreEqual(testCase.FloatOut, testValue.FloatAppendTo(sb).ToString());
 				}
 			}
 		}
