@@ -43,7 +43,7 @@ OPN(tryParse, dfp64_try_parse(str, exception), const char* str, uint32* exceptio
 OPNR(to_string, const char*, dfp64_to_string(x), BID_UINT64 x)
 OPNR(to_string_2, const char*, dfp64_to_string_2(x, decimalMark), BID_UINT64 x, char decimalMark)
 OPNR(to_string_3, const char*, dfp64_to_string_3(x, decimalMark, buffer512), BID_UINT64 x, char decimalMark, char* buffer512)
-OPNR(to_string_4, const char*, dfp64_to_string_4(x, decimalMark, buffer512, floatStyle), BID_UINT64 x, char decimalMark, char* buffer512, bool floatStyle)
+OPNR(to_string_4, const char*, dfp64_to_string_4(x, decimalMark, buffer512, floatStyle), BID_UINT64 x, char decimalMark, char* buffer512, int32 floatStyle)
 
 OPNR(to_scientific_string, const char*, dfp64_to_scientific_string(x), BID_UINT64 x)
 OPNR(to_scientific_string_2, const char*, dfp64_to_scientific_string_2(x, decimalMark), BID_UINT64 x, char decimalMark)
