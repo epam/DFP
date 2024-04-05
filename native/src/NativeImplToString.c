@@ -124,7 +124,7 @@ const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, char* buffer51
     return dfp64_to_string_4(value, decimalMark, buffer512, false);
 }
 
-const char* dfp64_to_string_4(BID_UINT64 value, char decimalMark, char* buffer512, bool floatStyle) {
+const char* dfp64_to_string_4(BID_UINT64 value, char decimalMark, char* buffer512, int floatStyle) {
     if (isNull(value))
         return "null";
 
