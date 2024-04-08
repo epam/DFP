@@ -121,6 +121,10 @@ const char* dfp64_to_string_2(BID_UINT64 value, char decimalMark) {
 }
 
 const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, char* buffer512) {
+    return dfp64_to_string_4(value, decimalMark, buffer512, false);
+}
+
+const char* dfp64_to_string_4(BID_UINT64 value, char decimalMark, char* buffer512, int floatStyle) {
     if (isNull(value))
         return "null";
 
@@ -136,9 +140,13 @@ const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, char* buffer51
 
     if (partsCoefficient == 0) { // return "0" + decimalMark + "0";
         buffer512[0] = '0';
-        buffer512[1] = decimalMark;
-        buffer512[2] = '0';
-        buffer512[3] = '\0';
+        if (!floatStyle) {
+            buffer512[1] = '\0';
+        } else {
+            buffer512[1] = decimalMark;
+            buffer512[2] = '0';
+            buffer512[3] = '\0';
+        }
         return buffer512;
     }
 
@@ -148,8 +156,10 @@ const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, char* buffer51
 
     if (exponent >= 0) {
         int bi = bufferMinLength;
-        buffer512[--bi] = '0';
-        buffer512[--bi] = decimalMark;
+        if (floatStyle) {
+            buffer512[--bi] = '0';
+            buffer512[--bi] = decimalMark;
+        }
         for (int i = 0; i < exponent; ++i)
             buffer512[--bi] = '0';
 
@@ -161,7 +171,7 @@ const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, char* buffer51
         while (buffer512[bi] == '0')
             ++bi;
 
-        if (value < 0)
+        if (partsSignMask)
             buffer512[--bi] = '-';
 
         return buffer512 + bi;
@@ -198,15 +208,21 @@ const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, char* buffer51
             while (buffer512[bi] == '0')
                 ++bi;
 
-            if (value < 0)
+            if (partsSignMask)
                 buffer512[--bi] = '-';
 
             int be = bufferMinLength;
             while (buffer512[be - 1] == '0')
                 --be;
 
-            if (buffer512[be - 1] == decimalMark && be < bufferMinLength)
-                buffer512[be++] = '0';
+            if (buffer512[be - 1] == decimalMark) {
+                if (!floatStyle) {
+                    --be;
+                }
+                else if (be < bufferMinLength) {
+                    buffer512[be++] = '0';
+                }
+            }
 
             buffer512[be] = '\0';
             return buffer512 + bi;
@@ -228,7 +244,7 @@ const char* dfp64_to_string_3(BID_UINT64 value, char decimalMark, char* buffer51
             buffer512[--bi] = decimalMark;
             buffer512[--bi] = '0';
 
-            if (value < 0)
+            if (partsSignMask)
                 buffer512[--bi] = '-';
 
             int be = bufferMinLength;
@@ -291,7 +307,7 @@ const char* dfp64_to_scientific_string_3(BID_UINT64 value, char decimalMark, cha
     buffer512[bi] = buffer512[bi + 1];
     buffer512[bi + 1] = decimalMark;
 
-    if (value < 0)
+    if (partsSignMask)
         buffer512[--bi] = '-';
 
     buffer512[be++] = 'e';
