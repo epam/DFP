@@ -173,6 +173,10 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
         return new Decimal64(Decimal64Utils.fromDecimalDouble(value));
     }
 
+    public static Decimal64 fromDecimalFloat(final float value) {
+        return new Decimal64(Decimal64Utils.fromDecimalFloat(value));
+    }
+
     /**
      * Convert to fixed-point representation: (123.4567, 2) -&gt; 12346
      *

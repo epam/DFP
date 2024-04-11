@@ -370,6 +370,7 @@ public class NativeImplTest {
     public void issue89FromFloatVsDouble() {
         final float x = 3.15f;
         final Decimal64 fd64 = Decimal64.fromFloat(x);
+        final Decimal64 fd64d = Decimal64.fromDecimalFloat(x);
         Decimal64Utils.fromDouble(x);
 //        In Java (double) == 3.1500000953674316, so the only way to convert value correctly - use string conversion.
 //        But the string conversion could be slow and also allocate memory.
@@ -377,6 +378,6 @@ public class NativeImplTest {
 
     @Test
     public void issue89FromFloat() throws Exception {
-        checkWithCoverage(NativeImpl::fromFloat32, Decimal64Utils::fromDouble);
+        checkWithCoverage(NativeImpl::fromFloat32, Decimal64Utils::fromFloat);
     }
 }

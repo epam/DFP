@@ -360,6 +360,61 @@ class JavaImpl {
         }
     }
 
+    public static long fromDecimalFloat(final float x) {
+        final long y = Decimal64Utils.fromFloat(x);
+        long m, signAndExp;
+
+        throw new UnsupportedOperationException("@Unimplemented");
+
+//        // Odd + special encoding(16 digits)
+//        final long notY = ~y;
+//        if ((MASK_SPECIAL & notY) == 0) {
+//            if ((MASK_INFINITY_AND_NAN & notY) == 0)
+//                return y;
+//
+//            m = (y & LARGE_COEFFICIENT_MASK) + LARGE_COEFFICIENT_HIGH_BIT;
+//            signAndExp = ((y << 2) & EXPONENT_MASK_SMALL) + (y & MASK_SIGN);
+//        } else {
+//            m = y & SMALL_COEFFICIENT_MASK;
+//            // 16 digits + odd
+//            signAndExp = y & (-1L << EXPONENT_SHIFT_SMALL);
+//            if (m <= MAX_COEFFICIENT / 10 + 1)
+//                return y;
+//        }
+//
+//        if ((y & 1) == 0)
+//            return y;
+//        // NeedAdjustment
+//        // Check the last digit
+//        final long m1 = m + 1;
+//        m = m1 / 10;
+//        if (m1 - m * 10 > 2)
+//            return y;
+//
+//        signAndExp += 1L << EXPONENT_SHIFT_SMALL;
+//        if (Decimal64Utils.toDouble(signAndExp + m) != x)
+//            return y;
+//
+//        for (long n = m; ; ) {
+//            if ((int) n == n) {
+//                long p;
+//                while (true) {
+//                    p = n * FAST_DIV10_RECIPROCAL;
+//                    final long m10 = p >> FAST_DIV10_SHIFT;
+//                    if ((p & FAST_DIV10_MUL10_MASK) != 0)
+//                        return signAndExp + n;
+//                    n = m10;
+//                    signAndExp += 1L << EXPONENT_SHIFT_SMALL;
+//                }
+//            }
+//            final long m10 = n / 10;
+//            if (m10 * 10 != n)
+//                return signAndExp + n;
+//            n = m10;
+//            signAndExp += 1L << EXPONENT_SHIFT_SMALL;
+//        }
+    }
+
 //    private final static ThreadLocal<Decimal64Parts> tlsDecimal64Parts = new ThreadLocal<Decimal64Parts>() {
 //        @Override
 //        protected Decimal64Parts initialValue() {

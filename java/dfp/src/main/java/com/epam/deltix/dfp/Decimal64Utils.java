@@ -397,6 +397,22 @@ public class Decimal64Utils {
     }
 
     /**
+     * Create {@code DFP} value from 32-bit binary floating point ({@code float}) value
+     * that was supposed to represent/approximate a decimal value instead of
+     * an arbitrary real number.
+     * The only difference from {@link #fromFloat(float)} is that it fudges the last digit of
+     * mantissa towards decimal 0 as long as the result produces shorter mantissa and
+     * is still within rounding error range.
+     *
+     * @param value source 32-bit binary floating point value
+     * @return New {@code DFP} value.
+     */
+    @Decimal
+    public static long fromDecimalFloat(final float value) {
+        return JavaImpl.fromDecimalFloat(value);
+    }
+
+    /**
      * Converts from floating-point dfp representation to fixed-point with given number of digits after the dot.
      * <p>
      * For example, dfp value of 1.23 can be represented as pair (1230, 3), where 1230 is a mantissa, and 3 is
