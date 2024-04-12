@@ -28,4 +28,7 @@ allprojects {
         return ["major": versionMajor, "minor": versionMinor, "build": versionBuild, "commit": versionCommit,
                 "three": version, "four": version4, "suffix": versionSuffix, "sha": versionSha]
     }
+
+    project.ext.set("javaPrefix", "com_epam_deltix_dfp_NativeImpl_")
+    project.ext.set("javaMathPrefix", "com_epam_deltix_dfpmath_NativeMathImpl_")
 }

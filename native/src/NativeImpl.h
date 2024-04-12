@@ -8,21 +8,29 @@
 #endif
 
 #ifndef JAVA_PREFIX
-#define JAVA_PREFIX    com_epam_deltix_dfp_NativeImpl_
+#define NOJAVA
+
+#if defined(_MSC_VER)
+#define DDFP_API(x) __declspec(dllexport) x
+#else
+#define DDFP_API(x) __attribute__ ((visibility("default"))) x
 #endif
 
-#if defined(_WIN32)
+#else // ifndef JAVA_PREFIX
+
+#if defined(_MSC_VER)
 #define JNI_API(x) __declspec(dllexport) x __stdcall
 #else
-#define JNI_API(x) x __attribute__ ((externally_visible,visibility("default")))
+#define JNI_API(x) __attribute__ ((visibility("default"))) x
 #endif
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 #define DDFP_API(x) __declspec(dllexport) x __cdecl
 #else
-#define DDFP_API(x) x __attribute__ ((externally_visible,visibility("default")))
+#define DDFP_API(x) __attribute__ ((visibility("default"))) x
 #endif
 
+#endif // ifndef JAVA_PREFIX
 
 /*
  * Concatenate preprocessor tokens A and B without expanding macro definitions
@@ -57,16 +65,25 @@ STATIC_ASSERT(sizeof(uint32) == 4)
 STATIC_ASSERT(sizeof(int64) == 8)
 STATIC_ASSERT(sizeof(uint64) == 8)
 
+#ifndef NOJAVA
+#define JAVA_API_IMPL(X) X
+#else
+#define JAVA_API_IMPL(X)
+#endif
+
+
 #define OPNRR(mcr__name, mcr__type, mcr__body, ...)                                                         \
 DDFP_API(mcr__type) PPCAT(API_PREFIX, mcr__name) (__VA_ARGS__) {                                            \
     mcr__body                                                                                               \
 }                                                                                                           \
+JAVA_API_IMPL(                                                                                              \
 JNI_API(mcr__type) PPCAT(PPCAT(Java_, JAVA_PREFIX), mcr__name) (void *jEnv, void *jClass, __VA_ARGS__) {    \
     mcr__body                                                                                               \
 }                                                                                                           \
 JNI_API(mcr__type) PPCAT(PPCAT(JavaCritical_, JAVA_PREFIX), mcr__name) (__VA_ARGS__) {                      \
     mcr__body                                                                                               \
-}
+}                                                                                                           \
+)
 
 #define OPNR(mcr__name, mcr__type, mcr__body, ...)  OPNRR(mcr__name, mcr__type, return (mcr__body);, __VA_ARGS__)
 

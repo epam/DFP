@@ -196,11 +196,11 @@ public class Decimal64Utils {
 
 
     public static String toString(@Decimal final long value) {
-        return JavaImpl.fastToString(value, DECIMAL_MARK_DEFAULT);
+        return JavaImpl.fastToString(value, DECIMAL_MARK_DEFAULT, false);
     }
 
     public static String toString(@Decimal final long value, final char decimalMark) {
-        return JavaImpl.fastToString(value, decimalMark);
+        return JavaImpl.fastToString(value, decimalMark, false);
     }
 
     public static String toScientificString(@Decimal final long value) {
@@ -209,6 +209,14 @@ public class Decimal64Utils {
 
     public static String toScientificString(@Decimal final long value, final char decimalMark) {
         return JavaImpl.fastToScientificString(value, decimalMark);
+    }
+
+    public static String toFloatString(@Decimal final long value) {
+        return JavaImpl.fastToString(value, DECIMAL_MARK_DEFAULT, true);
+    }
+
+    public static String toFloatString(@Decimal final long value, final char decimalMark) {
+        return JavaImpl.fastToString(value, decimalMark, true);
     }
 
     static String toDebugString(@Decimal final long value) {
@@ -1249,7 +1257,7 @@ public class Decimal64Utils {
      * @throws IOException from {@link Appendable#append(char)}
      */
     public static Appendable appendTo(@Decimal final long value, final Appendable appendable) throws IOException {
-        return JavaImpl.fastAppendToAppendable(value, DECIMAL_MARK_DEFAULT, appendable);
+        return JavaImpl.fastAppendToAppendable(value, DECIMAL_MARK_DEFAULT, false, appendable);
     }
 
     /**
@@ -1264,7 +1272,7 @@ public class Decimal64Utils {
      * @throws IOException from {@link Appendable#append(char)}
      */
     public static Appendable appendTo(@Decimal final long value, final char decimalMark, final Appendable appendable) throws IOException {
-        return JavaImpl.fastAppendToAppendable(value, decimalMark, appendable);
+        return JavaImpl.fastAppendToAppendable(value, decimalMark, false, appendable);
     }
 
     /**
@@ -1325,6 +1333,63 @@ public class Decimal64Utils {
         return scientificAppendTo(value, decimalMark, appendable);
     }
 
+    /**
+     * Append string representation of {@code DFP} {@code value} to {@link Appendable} {@code appendable}
+     * <p>
+     * Same as {@code appendable.append(value.toFloatString())}, but more efficient.
+     *
+     * @param value      {@code DFP64} argument
+     * @param appendable {@link Appendable} instance to which the string representation of the {@code value} will be appended
+     * @return the 2nd argument ({@link Appendable} {@code appendable})
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    public static Appendable floatAppendTo(@Decimal final long value, final Appendable appendable) throws IOException {
+        return JavaImpl.fastAppendToAppendable(value, DECIMAL_MARK_DEFAULT, true, appendable);
+    }
+
+    /**
+     * Append string representation of {@code DFP} {@code value} to {@link Appendable} {@code appendable}
+     * <p>
+     * Same as {@code appendable.append(value.toFloatString())}, but more efficient.
+     *
+     * @param value       {@code DFP64} argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param appendable  {@link Appendable} instance to which the string representation of the {@code value} will be appended
+     * @return the 2nd argument ({@link Appendable} {@code appendable})
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    public static Appendable floatAppendTo(@Decimal final long value, final char decimalMark, final Appendable appendable) throws IOException {
+        return JavaImpl.fastAppendToAppendable(value, decimalMark, true, appendable);
+    }
+
+    /**
+     * Implements {@link Decimal64#floatAppendTo(Appendable)}, adds null check; do not use directly.
+     *
+     * @param value      DFP argument
+     * @param appendable an object, implementing Appendable interface
+     * @return ..
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    @Deprecated
+    public static Appendable floatAppendToChecked(@Decimal final long value, final Appendable appendable) throws IOException {
+        checkNull(value);
+        return floatAppendTo(value, appendable);
+    }
+
+    /**
+     * Implements {@link Decimal64#floatAppendTo(Appendable)}, adds null check; do not use directly.
+     *
+     * @param value       DFP argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param appendable  an object, implementing Appendable interface
+     * @return ..
+     * @throws IOException from {@link Appendable#append(char)}
+     */
+    @Deprecated
+    public static Appendable floatAppendToChecked(@Decimal final long value, final char decimalMark, final Appendable appendable) throws IOException {
+        checkNull(value);
+        return floatAppendTo(value, decimalMark, appendable);
+    }
 
     /**
      * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
@@ -1336,7 +1401,7 @@ public class Decimal64Utils {
      * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
      */
     public static StringBuilder appendTo(@Decimal final long value, final StringBuilder sb) {
-        return JavaImpl.fastAppendToStringBuilder(value, DECIMAL_MARK_DEFAULT, sb);
+        return JavaImpl.fastAppendToStringBuilder(value, DECIMAL_MARK_DEFAULT, false, sb);
     }
 
     /**
@@ -1350,7 +1415,7 @@ public class Decimal64Utils {
      * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
      */
     public static StringBuilder appendTo(@Decimal final long value, final char decimalMark, final StringBuilder sb) {
-        return JavaImpl.fastAppendToStringBuilder(value, decimalMark, sb);
+        return JavaImpl.fastAppendToStringBuilder(value, decimalMark, false, sb);
     }
 
     /**
@@ -1405,6 +1470,60 @@ public class Decimal64Utils {
     public static StringBuilder scientificAppendToChecked(@Decimal final long value, final char decimalMark, final StringBuilder sb) {
         checkNull(value);
         return scientificAppendTo(value, decimalMark, sb);
+    }
+
+    /**
+     * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
+     * <p>
+     * Same as {@code sb.append(value.toFloatString());}, but more efficient.
+     *
+     * @param value {@code DFP64} argument
+     * @param sb    {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
+     * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
+     */
+    public static StringBuilder floatAppendTo(@Decimal final long value, final StringBuilder sb) {
+        return JavaImpl.fastAppendToStringBuilder(value, DECIMAL_MARK_DEFAULT, true, sb);
+    }
+
+    /**
+     * Append string representation of {@code DFP} value to {@link StringBuilder} {@code sb}
+     * <p>
+     * Same as {@code sb.append(value.toFloatString());}, but more efficient.
+     *
+     * @param value       {@code DFP64} argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param sb          {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
+     * @return the value of 2nd argument ({@link StringBuilder} {@code sb})
+     */
+    public static StringBuilder floatAppendTo(@Decimal final long value, final char decimalMark, final StringBuilder sb) {
+        return JavaImpl.fastAppendToStringBuilder(value, decimalMark, true, sb);
+    }
+
+    /**
+     * Implements {@link Decimal64#floatAppendTo(StringBuilder)}, adds null check; do not use directly.
+     *
+     * @param value DFP argument
+     * @param sb    {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
+     * @return ..
+     */
+    @Deprecated
+    public static StringBuilder floatAppendToChecked(@Decimal final long value, final StringBuilder sb) {
+        checkNull(value);
+        return floatAppendTo(value, sb);
+    }
+
+    /**
+     * Implements {@link Decimal64#floatAppendTo(StringBuilder)}, adds null check; do not use directly.
+     *
+     * @param value       DFP argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @param sb          {@link StringBuilder} instance to which the string representation of the {@code value} will be appended
+     * @return ..
+     */
+    @Deprecated
+    public static StringBuilder floatAppendToChecked(@Decimal final long value, final char decimalMark, final StringBuilder sb) {
+        checkNull(value);
+        return floatAppendTo(value, decimalMark, sb);
     }
 
     /**
@@ -2674,6 +2793,31 @@ public class Decimal64Utils {
     public static String toScientificStringChecked(@Decimal final long value, final char decimalMark) {
         checkNull(value);
         return toScientificString(value, decimalMark);
+    }
+
+    /**
+     * Implements {@link Decimal64#toFloatString()}, adds null checks; do not use directly.
+     *
+     * @param value DFP argument
+     * @return ..
+     */
+    @Deprecated
+    public static String toFloatStringChecked(@Decimal final long value) {
+        checkNull(value);
+        return toFloatString(value);
+    }
+
+    /**
+     * Implements {@link Decimal64#toFloatString()}, adds null checks; do not use directly.
+     *
+     * @param value       DFP argument
+     * @param decimalMark A decimal separator used to separate the integer part from the fractional part.
+     * @return ..
+     */
+    @Deprecated
+    public static String toFloatStringChecked(@Decimal final long value, final char decimalMark) {
+        checkNull(value);
+        return toFloatString(value, decimalMark);
     }
 
     /**

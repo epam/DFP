@@ -367,7 +367,7 @@ class JavaImpl {
 //        }
 //    };
 
-    public static Appendable appendToRefImpl(final long value, final char decimalMark, final Appendable appendable) throws IOException {
+    public static Appendable appendToRefImpl(final long value, final char decimalMark, final boolean floatStyle, final Appendable appendable) throws IOException {
         if (isNull(value)) {
             return appendable.append("null");
         }
@@ -419,8 +419,12 @@ class JavaImpl {
             }
         }
 
-        if (0 == partsCoefficient)
-            return appendable.append("0" + decimalMark + "0");
+        if (0 == partsCoefficient) {
+            appendable.append('0');
+            if (floatStyle)
+                appendable.append(decimalMark).append('0');
+            return appendable;
+        }
 
         if (value < 0)
             appendable.append('-');
@@ -432,7 +436,8 @@ class JavaImpl {
             appendLongTo(partsCoefficient, appendable, digits);
             for (int i = 0; i < exponent; i += 1)
                 appendable.append('0');
-            appendable.append(decimalMark).append('0');
+            if (floatStyle)
+                appendable.append(decimalMark).append('0');
         } else if (digits + exponent > 0) {
             final long integralPart = partsCoefficient / POWERS_OF_TEN[-exponent];
             final long fractionalPart = partsCoefficient % POWERS_OF_TEN[-exponent];
@@ -443,7 +448,8 @@ class JavaImpl {
                     appendable.append('0');
                 appendLongTo(dropTrailingZeros(fractionalPart), appendable);
             } else {
-                appendable.append(decimalMark).append('0');
+                if (floatStyle)
+                    appendable.append(decimalMark).append('0');
             }
         } else {
             appendable.append('0').append(decimalMark);
@@ -496,7 +502,7 @@ class JavaImpl {
         return table;
     }
 
-    public static String fastToString(final long value, final char decimalMark) {
+    public static String fastToString(final long value, final char decimalMark, final boolean floatStyle) {
         if (isNull(value))
             return "null";
 
@@ -548,8 +554,9 @@ class JavaImpl {
             }
         }
 
-        if (partsCoefficient == 0)
-            return "0" + decimalMark + "0";
+        if (partsCoefficient == 0) {
+            return !floatStyle ? "0" : ("0" + decimalMark + "0");
+        }
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
@@ -557,8 +564,10 @@ class JavaImpl {
 
         if (exponent >= 0) {
             int bi = buffer.length;
-            buffer[--bi] = '0';
-            buffer[--bi] = decimalMark;
+            if (floatStyle) {
+                buffer[--bi] = '0';
+                buffer[--bi] = decimalMark;
+            }
             for (int i = 0; i < exponent; ++i)
                 buffer[--bi] = '0';
 
@@ -613,8 +622,13 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                if (buffer[be - 1] == decimalMark && be < buffer.length)
-                    buffer[be++] = '0';
+                if (buffer[be - 1] == decimalMark) {
+                    if (!floatStyle) {
+                        --be;
+                    } else if (be < buffer.length) {
+                        buffer[be++] = '0';
+                    }
+                }
 
                 return new String(buffer, bi, be - bi);
 
@@ -699,7 +713,7 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return "0.000000000000000e+000";
+            return "0" + decimalMark + "000000000000000e+000";
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
@@ -738,7 +752,7 @@ class JavaImpl {
     }
 
     // Copy-paste of the fastToString
-    public static StringBuilder fastAppendToStringBuilder(final long value, final char decimalMark, final StringBuilder stringBuilder) {
+    public static StringBuilder fastAppendToStringBuilder(final long value, final char decimalMark, final boolean floatStyle, final StringBuilder stringBuilder) {
         if (isNull(value))
             return stringBuilder.append("null");
 
@@ -790,8 +804,12 @@ class JavaImpl {
             }
         }
 
-        if (partsCoefficient == 0)
-            return stringBuilder.append('0').append(decimalMark).append('0');
+        if (partsCoefficient == 0) {
+            stringBuilder.append('0');
+            if (floatStyle)
+                stringBuilder.append(decimalMark).append('0');
+            return stringBuilder;
+        }
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
@@ -799,8 +817,10 @@ class JavaImpl {
 
         if (exponent >= 0) {
             int bi = buffer.length;
-            buffer[--bi] = '0';
-            buffer[--bi] = decimalMark;
+            if (floatStyle) {
+                buffer[--bi] = '0';
+                buffer[--bi] = decimalMark;
+            }
             for (int i = 0; i < exponent; ++i)
                 buffer[--bi] = '0';
 
@@ -855,8 +875,13 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                if (buffer[be - 1] == decimalMark && be < buffer.length)
-                    buffer[be++] = '0';
+                if (buffer[be - 1] == decimalMark) {
+                    if (!floatStyle) {
+                        --be;
+                    } else if (be < buffer.length) {
+                        buffer[be++] = '0';
+                    }
+                }
 
                 return stringBuilder.append(buffer, bi, be - bi);
 
@@ -942,7 +967,7 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return stringBuilder.append("0.000000000000000e+000");
+            return stringBuilder.append("0").append(decimalMark).append("000000000000000e+000");
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
@@ -1037,7 +1062,7 @@ class JavaImpl {
         };
 
     // Copy-paste of the fastToString
-    public static Appendable fastAppendToAppendable(final long value, final char decimalMark, final Appendable appendable) throws IOException {
+    public static Appendable fastAppendToAppendable(final long value, final char decimalMark, final boolean floatStyle, final Appendable appendable) throws IOException {
         if (isNull(value))
             return appendable.append("null");
 
@@ -1089,8 +1114,12 @@ class JavaImpl {
             }
         }
 
-        if (partsCoefficient == 0)
-            return appendable.append('0').append(decimalMark).append('0');
+        if (partsCoefficient == 0) {
+            appendable.append('0');
+            if (floatStyle)
+                appendable.append(decimalMark).append('0');
+            return appendable;
+        }
 
         int exponent = partsExponent - EXPONENT_BIAS;
 
@@ -1099,8 +1128,10 @@ class JavaImpl {
 
         if (exponent >= 0) {
             int bi = buffer.length;
-            buffer[--bi] = '0';
-            buffer[--bi] = decimalMark;
+            if (floatStyle) {
+                buffer[--bi] = '0';
+                buffer[--bi] = decimalMark;
+            }
             for (int i = 0; i < exponent; ++i)
                 buffer[--bi] = '0';
 
@@ -1155,8 +1186,13 @@ class JavaImpl {
                 while (buffer[be - 1] == '0')
                     --be;
 
-                if (buffer[be - 1] == decimalMark && be < buffer.length)
-                    buffer[be++] = '0';
+                if (buffer[be - 1] == decimalMark) {
+                    if (!floatStyle) {
+                        --be;
+                    } else if (be < buffer.length) {
+                        buffer[be++] = '0';
+                    }
+                }
 
                 return appendable.append(charBuffer.setRange(bi, be - bi));
 
@@ -1242,7 +1278,7 @@ class JavaImpl {
         }
 
         if (partsCoefficient == 0)
-            return appendable.append("0.000000000000000e+000");
+            return appendable.append("0").append(decimalMark).append("000000000000000e+000");
 
         int exponent = partsExponent - EXPONENT_BIAS;
 

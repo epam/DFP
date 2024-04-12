@@ -1227,6 +1227,48 @@ namespace EPAM.Deltix.DFP.Test
 				throw new Exception($"TestToDecimalAndBackCase({mantissa}L, {exp}); // d1(={d0}) != d2(={d2})");
 		}
 
+		private class ToStringData
+		{
+			public Decimal64 TestValue;
+			public string NormalOut;
+			public string FloatOut;
+
+			public ToStringData(Decimal64 testValue, string normalOut, string floatOut)
+			{
+				this.TestValue = testValue;
+				this.NormalOut = normalOut;
+				this.FloatOut = floatOut;
+			}
+		}
+
+		[Test]
+		public void Issue91ToFloatString()
+		{
+			var testCases = new ToStringData[]
+			{
+				new ToStringData(Decimal64.FromFixedPoint(14L, 0), "14", "14.0"),
+				new ToStringData(Decimal64.FromFixedPoint(140000000000L, 10), "14", "14.0"),
+				new ToStringData(Decimal64.Zero, "0", "0.0")
+			};
+
+			foreach(var testCase in testCases)
+			{
+				var testValue = testCase.TestValue;
+				Assert.AreEqual(testCase.NormalOut, testValue.ToString());
+				Assert.AreEqual(testCase.FloatOut, testValue.ToFloatString());
+
+				{
+					var sb = new StringBuilder();
+					Assert.AreEqual(testCase.NormalOut, testValue.AppendTo(sb).ToString());
+				}
+
+				{
+					var sb = new StringBuilder();
+					Assert.AreEqual(testCase.FloatOut, testValue.FloatAppendTo(sb).ToString());
+				}
+			}
+		}
+
 		readonly int N = 5000000;
 
 		static void Main()

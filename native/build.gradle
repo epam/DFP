@@ -1,14 +1,471 @@
-task makeNativeWindows(type: Exec) {
-    commandLine "$rootDir/native/buildWindows.bat", versioning()["suffix"]
-    workingDir("$rootDir/native")
+import groovy.json.JsonSlurper
+
+import java.nio.file.Files
+import java.nio.file.Paths
+
+def llvmRoot = "$rootDir/llvm"
+def versionSuffix = versioning()["suffix"]
+def CCOMPILER = "clang"
+def CXXCOMPILER = "clang++"
+def VERBOSE = "FALSE"
+def keepBuildDir = (findProperty('keepBuildDir')?.toBoolean()) ?: false
+
+task makeNativeWindowsI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installPrefix = '../install/windows/i386'
+    def buildRoot = "$rootDir/native/buildI386"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-A', 'Win32', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (!keepBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+        !file("$buildRoot/$installPrefix").exists()
+    }
 }
 
-task makeNativeLinux(type: Exec) {
-    commandLine "$rootDir/native/buildLinux.sh", versioning()["suffix"]
-    workingDir("$rootDir/native")
+task makeNativeWindowsAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installPrefix = '../install/windows/amd64'
+    def buildRoot = "$rootDir/native/buildAmd64"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-A', 'x64', '-T', 'ClangCL', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (!keepBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+        !file("$buildRoot/$installPrefix").exists()
+    }
 }
 
-task makeNativeDarwin(type: Exec) {
-    commandLine "$rootDir/native/buildDarwin.sh", versioning()["suffix"], "apple-darwin20.4", "$rootDir/osxcross/target"
-    workingDir("$rootDir/native")
+task makeNativeWindows(dependsOn: [makeNativeWindowsI386, makeNativeWindowsAmd64]) {
+}
+
+task makeNativeLinuxArm7(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def llvmToolset = 'clang+llvm-14.0.6-armv7a-linux-gnueabihf'
+    def installPrefix = '../install/linux/arm'
+    def buildRoot = "$rootDir/native/buildArm7"
+
+    doLast {
+        if (project.hasProperty('sudoPassword')) {
+            exec { // ./gradlew makeNativeLinuxArm7 -PsudoPassword=<sudoPassword>
+                commandLine 'sh', '-c', "echo $sudoPassword | sudo -S apt install -y curl tar g++-arm-linux-gnueabihf"
+            }
+        }
+
+        if (!file("$llvmRoot/$llvmToolset").exists()) {
+            project.mkdir llvmRoot
+            exec {
+                workingDir llvmRoot
+                commandLine 'curl', '-OL', "https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/${llvmToolset}.tar.xz"
+            }
+            exec {
+                workingDir llvmRoot
+                commandLine 'tar', '-xf', "${llvmToolset}.tar.xz"
+            }
+        }
+
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=arm-linux-gnueabihf", "-DTARGET_EX=-march=armv7a -mfloat-abi=hard", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (!keepBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+		!file("$buildRoot/$installPrefix").exists()
+    }
+}
+
+task makeNativeLinuxAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def target = 'aarch64-linux-gnu'
+    def llvmToolset = "clang+llvm-14.0.6-$target"
+    def installPrefix = '../install/linux/aarch64'
+    def buildRoot = "$rootDir/native/buildAArch64"
+
+    doLast {
+        if (project.hasProperty('sudoPassword')) {
+            exec { // ./gradlew makeNativeLinuxAArch64 -PsudoPassword=<sudoPassword>
+                commandLine 'sh', '-c', "echo $sudoPassword | sudo -S apt install -y curl tar g++-$target"
+            }
+        }
+
+        if (!file("$llvmRoot/$llvmToolset").exists()) {
+            project.mkdir llvmRoot
+            exec {
+                workingDir llvmRoot
+                commandLine 'curl', '-OL', "https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/${llvmToolset}.tar.xz"
+            }
+            exec {
+                workingDir llvmRoot
+                commandLine 'tar', '-xf', "${llvmToolset}.tar.xz"
+            }
+        }
+
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DSYSROOT=$llvmRoot/$llvmToolset", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (!keepBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+		!file("$buildRoot/$installPrefix").exists()
+    }
+}
+
+task makeNativeLinuxI386(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def target = 'i686-linux-gnu'
+    def installPrefix = '../install/linux/i386'
+    def buildRoot = "$rootDir/native/buildI386"
+
+    doLast {
+        if (project.hasProperty('sudoPassword')) {
+            exec { // ./gradlew makeNativeLinuxI386 -PsudoPassword=<sudoPassword>
+                commandLine 'sh', '-c', "echo $sudoPassword | sudo -S apt install -y g++-$target"
+            }
+        }
+
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DTARGET=$target", "-DTARGET_EX=-m32", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (!keepBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+		!file("$buildRoot/$installPrefix").exists()
+    }
+}
+
+task makeNativeLinuxAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installPrefix = '../install/linux/amd64'
+    def buildRoot = "$rootDir/native/buildAmd64"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=$CCOMPILER", "-DCMAKE_CXX_COMPILER=$CXXCOMPILER", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libstdc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (!keepBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+		!file("$buildRoot/$installPrefix").exists()
+    }
+}
+
+task makeNativeLinuxMuslGcc(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installPrefix = '../install/linux/musl-gcc'
+    def buildRoot = "$rootDir/native/buildMusl"
+
+    doLast {
+        if (project.hasProperty('sudoPassword')) {
+            exec { // ./gradlew makeNativeLinuxI386 -PsudoPassword=<sudoPassword>
+                commandLine 'sh', '-c', "echo $sudoPassword | sudo -S apt install -y musl-tools"
+            }
+        }
+
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_C_COMPILER=musl-gcc", "-DCMAKE_CXX_COMPILER=musl-gcc", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DCMAKE_C_FLAGS_IN=-static", "-DCMAKE_CXX_FLAGS_IN=-static", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (!keepBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+		!file("$buildRoot/$installPrefix").exists()
+    }
+}
+
+task makeNativeLinux(dependsOn: [makeNativeLinuxArm7, makeNativeLinuxAArch64, makeNativeLinuxI386, makeNativeLinuxAmd64, makeNativeLinuxMuslGcc]) {
+}
+
+task makeNativeDarwinAmd64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installPrefix = '../install/darwin/amd64'
+    def buildRoot = "$rootDir/native/buildAmd64"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DAPPLE=TRUE", "-DCMAKE_CXX_FLAGS_IN=-stdlib=libc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (!keepBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+		!file("$buildRoot/$installPrefix").exists()
+    }
+}
+
+task makeNativeDarwinAArch64(dependsOn: ':java:nativeWrappers:makeNativeWrappers') {
+    def installPrefix = '../install/darwin/aarch64'
+    def buildRoot = "$rootDir/native/buildAArch64"
+
+    doLast {
+        project.mkdir buildRoot
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '-G', 'Unix Makefiles', "-DVERSION_SUFFIX=$versionSuffix", "-DCMAKE_VERBOSE_MAKEFILE=$VERBOSE", "-DCMAKE_INSTALL_PREFIX=$installPrefix", "-DJAVA_PREFIX=$javaPrefix", "-DJAVA_MATH_PREFIX=$javaMathPrefix", "-DAPPLE=TRUE", "-DCMAKE_C_FLAGS_IN=-target arm64-apple-macos11", "-DCMAKE_CXX_FLAGS_IN=-target arm64-apple-macos11 -stdlib=libc++", "../"
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--build', '.', '--config', 'Release'
+        }
+        exec {
+            workingDir buildRoot
+            commandLine 'cmake', '--install', '.', '--config', 'Release'
+        }
+
+        if (!keepBuildDir) {
+            project.delete(files(buildRoot))
+        }
+    }
+
+    onlyIf {
+		!file("$buildRoot/$installPrefix").exists()
+    }
+}
+
+task makeNativeDarwin(dependsOn: [makeNativeDarwinAArch64, makeNativeDarwinAmd64]) {
+}
+
+task nativeInstallToBin(type: Copy) {
+    from "$rootDir/native/install"
+    into "$rootDir/native"
+    include "**/*.dylib"
+    include "**/*.so"
+    include "**/*.dll"
+
+    eachFile { fileCopyDetails ->
+        // Copy one level up from the lib or bin directory
+        def relative = fileCopyDetails.relativePath
+        if (relative.getLastName().contains("math")) {
+            fileCopyDetails.relativePath = relative.getParent().prepend('binmath', 'Release').append(true, "..", relative.getLastName())
+        } else {
+            fileCopyDetails.relativePath = relative.getParent().prepend('bin', 'Release').append(true, "..", relative.getLastName())
+        }
+    }
+
+    doLast {
+        Files.walk(Paths.get("$rootDir/native/bin")).each { path ->
+            if (Files.isDirectory(path) && Files.list(path).count() == 0) {
+                Files.delete(path)
+            }
+        }
+
+        Files.walk(Paths.get("$rootDir/native/binmath")).each { path ->
+            if (Files.isDirectory(path) && Files.list(path).count() == 0) {
+                Files.delete(path)
+            }
+        }
+
+        exec {
+            workingDir "$rootDir/native/bin"
+            commandLine 'zstd', '-19', '--rm', '-r', '.'
+        }
+
+        exec {
+            workingDir "$rootDir/native/binmath"
+            commandLine 'zstd', '-19', '--rm', '-r', '.'
+        }
+    }
+}
+
+task nativeBinUnpack {
+    doLast {
+        exec {
+            workingDir "$rootDir/native/install"
+            commandLine 'zstd', '-d', '--rm', '-r', '.'
+        }
+    }
+    onlyIf {
+        !file("$rootDir/native/install/windows/amd64/ddfp${versionSuffix}.dll").exists()
+    }
+}
+
+static String osMap(String str) {
+    switch (str) {
+        case "windows": return "Windows";
+        case "linux": return "Linux";
+        case "darwin": return "Macos";
+        default: throw new Exception("Can't map OS with name ${str}")
+    }
+}
+
+static String archMap(String str) {
+    switch (str) {
+        case "aarch64": return "armv8"
+        case "arm": return "armv7hf"
+        case "amd64": return "x86_64"
+        case "i386": return "x86"
+        case "musl-gcc": return "x86_64"
+        default: throw new Exception("Can't map architecture with name ${str}")
+    }
+}
+
+static String compilerMap(String str) {
+    switch (str) {
+        case "Clang": return "clang"
+        case "GNU": return "gcc"
+        case "MSVC": return "msvc"
+        case "AppleClang": return "apple-clang"
+        default: throw new Exception("Can't map compiler with name ${str}")
+    }
+}
+
+task nativeBinPublishConan(dependsOn: nativeBinUnpack) {
+    doLast {
+        file("$rootDir/native/install").eachDir { buildTypeDir ->
+            def buildType = buildTypeDir.getName()
+
+            buildTypeDir.eachDir { osDir ->
+                def os = osMap(osDir.getName())
+
+                osDir.eachDir { archDir ->
+                    def arch = archMap(archDir.getName())
+
+                    def cmakeVariables = new JsonSlurper().parse(new File(archDir, "cmakevariables.json"))
+                    def compiler = compilerMap(cmakeVariables["CMAKE_C_COMPILER_ID"])
+                    def compilerVersion = (cmakeVariables["CMAKE_C_COMPILER_VERSION"] =~ /\d+/)[0]
+
+                    for (isShared in [true, false]) {
+                        def dfpShared = isShared ? "True" : "False"
+
+                        def isWindows = osDir.getName() == "windows"
+                        def libMask = (isWindows ? "" : "lib") + "ddfp" + (dfpShared ? "" : "Static") + versionSuffix + ".*"
+
+                        def c_runtime = null
+                        def c_runtime_shared = null
+                        if (osDir.getName() == "linux" && archDir.getName() == "musl-gcc") {
+                            c_runtime = "musl"
+                            c_runtime_shared = "False"
+                        }
+
+                        def args = ['python3', 'conan_invoke.py', 'export-pkg', '.', '-of', 'conan_output',
+                                '-s', "os=$os",
+                                '-s', "build_type=$buildType",
+                                '-s', "arch=$arch",
+                                '-s', "compiler=$compiler",
+                                '-s', "compiler.version=$compilerVersion",
+                                '-o', "shared=$dfpShared",
+                                '-o', "libPath=$archDir",
+                                '-o', "libMask=$libMask"]
+
+                        if (c_runtime)
+                            args = args + ['-o', "c_runtime=$c_runtime"]
+                        if (c_runtime_shared)
+                            args = args + ['-o', "c_runtime_shared=$c_runtime_shared"]
+
+                        exec {
+                            workingDir "$rootDir/native"
+                            commandLine args
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

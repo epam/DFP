@@ -27,14 +27,16 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
+#ifndef _BID_CONF_H
+#define _BID_CONF_H
+
+#ifndef BID_EXTERN_C
 #if defined(__cplusplus) 
 #define BID_EXTERN_C extern "C" 
 #else 
-#define BID_EXTERN_C extern
+#define BID_EXTERN_C extern 
 #endif 
-
-#ifndef _BID_CONF_H
-#define _BID_CONF_H
+#endif
 
 // Name Changes
 
