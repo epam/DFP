@@ -25,6 +25,7 @@ jobs:
           ./gradlew makeNativeWrappers
           cp LICENSE native/
           cp intel-eula.txt native/
+          tar -czf native-sources.tar.gz native
       - uses: actions/upload-artifact@v4
         with:
           name: build-wrappers
@@ -42,7 +43,7 @@ jobs:
         with:
           name: native-sources
           path: |
-            native/
+            ./native-sources.tar.gz
           retention-days: 7
 
   build-native-linux:
