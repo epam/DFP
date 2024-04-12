@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare
         if: ${{ startsWith(github.ref, 'refs/heads/release') }}
         run: |
@@ -22,7 +22,7 @@ jobs:
           versionRelease=`echo $versionSnapshot | sed 's/\([^-]*\)-SNAPSHOT/\1/'`
           echo "$versionSnapshot -> $versionRelease"
           sed -i "s/version=$versionSnapshot/version=$versionRelease/" gradle.properties
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: prepare-version
           path: |
@@ -33,17 +33,17 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [prepare]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download prepare-version artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: prepare-version
       - name: build
         run: |
           ./gradlew makeNativeWrappers
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build-wrappers
           path: |
@@ -61,11 +61,11 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [build-wrappers]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download build-wrappers artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-wrappers
       - name: build
@@ -76,7 +76,7 @@ jobs:
                                 g++-i686-linux-gnu \
                                 musl-tools
           ./gradlew makeNativeLinux
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build-native-linux
           path: |
@@ -87,19 +87,19 @@ jobs:
     runs-on: windows-2022
     needs: [build-wrappers]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download build-wrappers artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-wrappers
       - name: Use MSBuild
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v2
       - name: build
         run: |
           ./gradlew makeNativeWindows
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build-native-windows
           path: |
@@ -110,17 +110,17 @@ jobs:
     runs-on: macos-12
     needs: [build-wrappers]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download build-wrappers artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-wrappers
       - name: build
         run: |
           ./gradlew makeNativeDarwin
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build-native-macos
           path: |
@@ -131,28 +131,28 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [build-wrappers, build-native-linux, build-native-windows, build-native-macos]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Download build-wrappers artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-wrappers
       - name: Download native-linux artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-native-linux
       - name: Download native-windows artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-native-windows
       - name: Download native-macos artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-native-macos
       - name: compress
         run: |
           zstd --version
           ./gradlew nativeInstallToBin
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: compress-native
           path: |
@@ -172,15 +172,15 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [compress-native]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download compress-native artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: compress-native
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
           java-version: '19'
@@ -189,7 +189,7 @@ jobs:
           ./gradlew jar
           ./gradlew javadocJar
           ./gradlew copyTestJars
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: java-jars
           path: |
@@ -205,22 +205,22 @@ jobs:
     runs-on: windows-2022
     needs: [compress-native]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download compress-native artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: compress-native
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '3.1.x'
       - name: build
         run: |
           cd csharp
           ./build -Target Build
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: dotnet-build
           path: |
@@ -238,15 +238,15 @@ jobs:
         os: [ 'ubuntu-22.04', 'windows-2022', 'macos-12']
         java: [ '8', '11', '19']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download java-jars artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: java-jars
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
           java-version: ${{ matrix.java }}
@@ -265,15 +265,15 @@ jobs:
       matrix:
         os: [ 'ubuntu-22.04', 'windows-2022', 'macos-12']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download compress-native artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: compress-native
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '3.1.x'
       - name: test windows
@@ -287,7 +287,7 @@ jobs:
           cd csharp
           ./build.sh --target=Run-Unit-Tests
       - name: Upload test results on failure
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
           path: |
@@ -303,7 +303,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Release
         run: |
           git config user.name github-actions
@@ -330,14 +330,14 @@ jobs:
     needs: [release]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download compress-native artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: compress-native
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
           java-version: '19'
@@ -354,15 +354,15 @@ jobs:
     needs: [release]
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Download compress-native artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: compress-native
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '3.1.x'
       - name: build
