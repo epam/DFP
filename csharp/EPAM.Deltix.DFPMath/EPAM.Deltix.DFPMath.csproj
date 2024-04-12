@@ -14,6 +14,7 @@
 		<RepositoryUrl>git@github.com:epam/DFP.git $(VersionSha)</RepositoryUrl>
 		<PackageTags>.NET Decimal</PackageTags>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<CheckEolTargetFramework>false</CheckEolTargetFramework>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\EPAM.Deltix.DFP\EPAM.Deltix.DFP.csproj" />

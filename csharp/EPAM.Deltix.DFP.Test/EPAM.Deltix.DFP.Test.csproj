@@ -10,6 +10,7 @@
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <StartupObject>EPAM.Deltix.DFP.Test.Decimal64Test</StartupObject>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics.Signed" Version="4.15.0" />
