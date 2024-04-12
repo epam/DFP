@@ -43,6 +43,8 @@ jobs:
       - name: build
         run: |
           ./gradlew makeNativeWrappers
+          cp LICENSE native/
+          cp intel-eula.txt native/
       - uses: actions/upload-artifact@v4
         with:
           name: build-wrappers
@@ -55,6 +57,12 @@ jobs:
             ./csharp/EPAM.Deltix.DFPMath/NativeMathImpl.cs
             ./csharp/EPAM.Deltix.DFPMath/Version.targets
             ./native/include*
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-sources
+          path: |
+            native/
           retention-days: 7
 
   build-native-linux:
