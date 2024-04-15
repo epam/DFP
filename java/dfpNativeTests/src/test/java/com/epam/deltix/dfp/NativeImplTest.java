@@ -380,4 +380,39 @@ public class NativeImplTest {
     public void issue89FromFloat() throws Exception {
         checkWithCoverage(NativeImpl::fromFloat32, Decimal64Utils::fromFloat);
     }
+
+    @Test
+    public void fromDecimalDoubleVsString() throws Exception {
+        for (final long x : specialValues)
+            checkDecimalDoubleVsStringCase(x);
+
+        checkInMultipleThreads(() -> {
+            final MersenneTwister random = new MersenneTwister();
+            for (int i = 0; i < NTests; ++i)
+                checkDecimalDoubleVsStringCase(random.nextDouble());
+        });
+    }
+
+    private static void checkDecimalDoubleVsStringCase(final double x) {
+        final long testRet = Decimal64Utils.fromDecimalDouble(x);
+        final long refRet = Decimal64Utils.parse(Double.toString(x));
+
+        if (!Decimal64Utils.equals(testRet, refRet))
+            throw new RuntimeException("The function(" + x + " = 0x" + Long.toHexString(Double.doubleToRawLongBits(x)) +
+                "L) return " + Decimal64Utils.toScientificString(testRet) + " = 0x" + Long.toHexString(testRet) +
+                "L instead of " + Decimal64Utils.toScientificString(refRet) + " = 0x" + Long.toHexString(refRet) + "L");
+    }
+
+    @Test
+    public void testParserRounding() {
+        final double dbl = Double.longBitsToDouble(0x3fd962c0b1334d10L);
+        final String dblStr = Double.toString(dbl);
+
+        final Decimal64 d64Parse = Decimal64.parse(dblStr);
+        final Decimal64 d64Double = Decimal64.fromDouble(dbl);
+        final Decimal64 d64DecimalDouble = Decimal64.fromDouble(dbl);
+
+        assertEquals(d64Parse, d64Double);
+        assertEquals(d64Parse, d64DecimalDouble);
+    }
 }

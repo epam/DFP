@@ -201,7 +201,7 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(DotNetImpl.FromDecimalFloat64(value));
 		}
 
-		public static Decimal64 FromDecimalFloat(Float value)
+		public static Decimal64 FromDecimalFloat(Single value)
 		{
 			return new Decimal64(DotNetImpl.FromDecimalFloat32(value));
 		}

@@ -338,6 +338,11 @@ namespace EPAM.Deltix.DFP
 			}
 		}
 
+		internal static UInt64 FromDecimalFloat32(Single x)
+		{
+			throw new NotImplementedException();
+		}
+
 		#endregion
 
 		#region Comparison
