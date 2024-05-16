@@ -56,13 +56,6 @@ class UnsignedLong {
 //        return quotient + (compare(rem, divisor) >= 0 ? 1 : 0);
 //    }
 
-    /**
-     * The copy-paste of the OpenJDK Long.divideUnsigned
-     *
-     * @param dividend The value to be divided.
-     * @param divisor  The value doing the dividing.
-     * @return The unsigned quotient of the first argument divided by the second argument
-     */
     public static long divide(final long dividend, final long divisor) {
         /* See Hacker's Delight (2nd ed), section 9.3 */
         if (divisor >= 0) {
