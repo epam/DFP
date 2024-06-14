@@ -309,7 +309,8 @@ class JavaImpl {
 
     public static long fromDecimalDouble(final double x) {
         final long y = Decimal64Utils.fromDouble(x);
-        long m, signAndExp;
+        final long m;
+        long signAndExp;
 
         // Odd + special encoding(16 digits)
         final long notY = ~y;
@@ -332,15 +333,15 @@ class JavaImpl {
         // NeedAdjustment
         // Check the last digit
         final long m1 = m + 1;
-        m = m1 / 10;
-        if (m1 - m * 10 > 2)
+        final long m1div10 = m1 / 10;
+        if (m1 - m1div10 * 10 > 2)
             return y;
 
         signAndExp += 1L << EXPONENT_SHIFT_SMALL;
-        if (Decimal64Utils.toDouble(signAndExp + m) != x)
+        if (Decimal64Utils.toDouble(signAndExp + m1div10) != x)
             return y;
 
-        for (long n = m; ; ) {
+        for (long n = m1div10; ; ) {
             if ((int) n == n) {
                 long p;
                 while (true) {
@@ -360,59 +361,43 @@ class JavaImpl {
         }
     }
 
+    private static BigDecimal floatMantissaToBigDecimalRef(final int Mi) {
+        BigDecimal M = BigDecimal.valueOf(1);
+        BigDecimal Pow2 = const05;
+        for (int i = 1; i <= 23; ++i) {
+            final int bi = (Mi >>> (23 - i)) & 1;
+            if (bi != 0)
+                M = M.add(Pow2);
+            Pow2 = Pow2.multiply(const05);
+        }
+
+        return M;
+    }
+
+    private static final BigDecimal const05 = BigDecimal.valueOf(5, 1);
+    private static final BigDecimal constTwoPowNeg23 = calcTwoPowNeg(23);
+
+    private static BigDecimal calcTwoPowNeg(final int n) {
+        if (n < 1)
+            throw new IllegalArgumentException("The n(=" + n + ") must be positive.");
+        BigDecimal val = const05;
+        for (int i = 1; i < n; ++i) {
+            val = val.multiply(const05);
+        }
+        return val;
+    }
+
+    private static BigDecimal floatMantissaToBigDecimal(final int Mi) {
+        final BigDecimal out = constTwoPowNeg23.multiply(BigDecimal.valueOf(Mi)).add(BigDecimal.ONE);
+        final BigDecimal ref = floatMantissaToBigDecimalRef(Mi);
+        if (!ref.equals(out.stripTrailingZeros()))
+            throw new RuntimeException("Calculation error for Mi(=" + Mi + "): ref(=" + ref + ") != out(=" + out + ").");
+        return out;
+    }
+
     public static long fromDecimalFloat(final float x) {
-        final long y = Decimal64Utils.fromFloat(x);
-        long m, signAndExp;
-
-        throw new UnsupportedOperationException("@Unimplemented");
-
-//        // Odd + special encoding(16 digits)
-//        final long notY = ~y;
-//        if ((MASK_SPECIAL & notY) == 0) {
-//            if ((MASK_INFINITY_AND_NAN & notY) == 0)
-//                return y;
-//
-//            m = (y & LARGE_COEFFICIENT_MASK) + LARGE_COEFFICIENT_HIGH_BIT;
-//            signAndExp = ((y << 2) & EXPONENT_MASK_SMALL) + (y & MASK_SIGN);
-//        } else {
-//            m = y & SMALL_COEFFICIENT_MASK;
-//            // 16 digits + odd
-//            signAndExp = y & (-1L << EXPONENT_SHIFT_SMALL);
-//            if (m <= MAX_COEFFICIENT / 10 + 1)
-//                return y;
-//        }
-//
-//        if ((y & 1) == 0)
-//            return y;
-//        // NeedAdjustment
-//        // Check the last digit
-//        final long m1 = m + 1;
-//        m = m1 / 10;
-//        if (m1 - m * 10 > 2)
-//            return y;
-//
-//        signAndExp += 1L << EXPONENT_SHIFT_SMALL;
-//        if (Decimal64Utils.toDouble(signAndExp + m) != x)
-//            return y;
-//
-//        for (long n = m; ; ) {
-//            if ((int) n == n) {
-//                long p;
-//                while (true) {
-//                    p = n * FAST_DIV10_RECIPROCAL;
-//                    final long m10 = p >> FAST_DIV10_SHIFT;
-//                    if ((p & FAST_DIV10_MUL10_MASK) != 0)
-//                        return signAndExp + n;
-//                    n = m10;
-//                    signAndExp += 1L << EXPONENT_SHIFT_SMALL;
-//                }
-//            }
-//            final long m10 = n / 10;
-//            if (m10 * 10 != n)
-//                return signAndExp + n;
-//            n = m10;
-//            signAndExp += 1L << EXPONENT_SHIFT_SMALL;
-//        }
+        final String s = FloatToDecimal.toString(x);
+        return Decimal64Utils.parse(s);
     }
 
 //    private final static ThreadLocal<Decimal64Parts> tlsDecimal64Parts = new ThreadLocal<Decimal64Parts>() {

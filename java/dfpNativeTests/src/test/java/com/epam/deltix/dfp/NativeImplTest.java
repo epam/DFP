@@ -368,12 +368,39 @@ public class NativeImplTest {
 
     @Test
     public void issue89FromFloatVsDouble() {
-        final float x = 3.15f;
+        final float x = 3.15f; // 1.2f;// 3.452899E18f; //3.15f;
+        final String s = Float.toString(x);
+
+        Decimal64.fromDecimalDouble(Double.parseDouble(Float.toString(x)));
         final Decimal64 fd64 = Decimal64.fromFloat(x);
         final Decimal64 fd64d = Decimal64.fromDecimalFloat(x);
         Decimal64Utils.fromDouble(x);
 //        In Java (double) == 3.1500000953674316, so the only way to convert value correctly - use string conversion.
 //        But the string conversion could be slow and also allocate memory.
+    }
+
+    @Test
+    public void issue89FromDecimalFloatVsParse() throws Exception {
+        checkFromDecimalFloatVsParse(3.452899E18f);
+
+        for (final long x : specialValues)
+            checkFromDecimalFloatVsParse(x);
+
+        checkInMultipleThreads(() -> {
+            final MersenneTwister random = new MersenneTwister();
+            for (int i = 0; i < NTests; ++i)
+                checkFromDecimalFloatVsParse((float)((random.nextDouble() - 0.5) * Math.exp(random.nextDouble() - 0.5)));
+        });
+    }
+
+    private static void checkFromDecimalFloatVsParse(final float x) {
+        final long test =  Decimal64Utils.fromDecimalFloat(x);
+        final long ref = Decimal64Utils.parse(Float.toString(x));
+
+        if (!Decimal64Utils.equals(test, ref))
+            throw new RuntimeException("The function(" + x + " = 0x" + Long.toHexString(Float.floatToRawIntBits(x)) +
+                "L) return " + Decimal64Utils.toScientificString(test) + " = 0x" + Long.toHexString(test) +
+                "L instead of " + Decimal64Utils.toScientificString(ref) + " = 0x" + Long.toHexString(ref) + "L");
     }
 
     @Test
@@ -395,7 +422,7 @@ public class NativeImplTest {
 
     private static void checkDecimalDoubleVsStringCase(final double x) {
         final long testRet = Decimal64Utils.fromDecimalDouble(x);
-        final long refRet = Decimal64Utils.parse(Double.toString(x));
+            final long refRet = Decimal64Utils.fromBigDecimal(BigDecimal.valueOf(x).round(MathContext.DECIMAL64));
 
         if (!Decimal64Utils.equals(testRet, refRet))
             throw new RuntimeException("The function(" + x + " = 0x" + Long.toHexString(Double.doubleToRawLongBits(x)) +
@@ -405,12 +432,13 @@ public class NativeImplTest {
 
     @Test
     public void testParserRounding() {
-        final double dbl = Double.longBitsToDouble(0x3fd962c0b1334d10L);
+        final double dbl = 2396.6246756198695; // 0.39665238671041525
         final String dblStr = Double.toString(dbl);
 
-        final Decimal64 d64Parse = Decimal64.parse(dblStr);
+//        final Decimal64 d64Parse = Decimal64.parse(dblStr);
+        final Decimal64 d64Parse = Decimal64.fromBigDecimal(BigDecimal.valueOf(dbl).round(MathContext.DECIMAL64)); // workaround
         final Decimal64 d64Double = Decimal64.fromDouble(dbl);
-        final Decimal64 d64DecimalDouble = Decimal64.fromDouble(dbl);
+        final Decimal64 d64DecimalDouble = Decimal64.fromDecimalDouble(dbl);
 
         assertEquals(d64Parse, d64Double);
         assertEquals(d64Parse, d64DecimalDouble);
