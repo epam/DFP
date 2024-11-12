@@ -13,7 +13,7 @@ Ideal data type for this purpose:
 * Support efficient conversion to String and double
 
 
-DFP uses Java long to represent base-10 floating point numbers. DFP is based on [IEEE 754-2008 standard](https://en.wikipedia.org/wiki/IEEE_754).
+DFP uses Java long to represent base-10 floating point numbers. DFP is based on [IEEE 754-2008 standard](https://en.wikipedia.org/wiki/IEEE_754) and supports up to 16 significant decimal digits.
 
 # How to use
 
