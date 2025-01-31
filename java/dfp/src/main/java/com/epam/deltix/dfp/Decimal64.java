@@ -331,9 +331,9 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     }
 
     /**
-     * Check, if the value held by this {@code Decimal64} instance is normalized.
+     * Check, if the value held by this {@code Decimal64} instance is normal: nor zero, nor NaN nor subnormal nor infinity.
      *
-     * @return {@code true}, if normalized.
+     * @return {@code true} if value is not zero, nor NaN nor subnormal nor infinity.
      */
     public boolean isNormal() {
         return Decimal64Utils.isNormal(value);

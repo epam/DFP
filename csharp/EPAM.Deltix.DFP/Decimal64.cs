@@ -389,6 +389,10 @@ namespace EPAM.Deltix.DFP
 			return DotNetImpl.IsFinite(Bits);
 		}
 
+		/// <summary>
+		/// Checks is the <code>DFP</code> value is normal: nor zero, nor NaN nor subnormal nor infinity.
+		/// </summary>
+		/// <returns><code>true</code> if value is not zero, nor NaN nor subnormal nor infinity.</returns>
 		public Boolean IsNormal()
 		{
 			return NativeImpl.isNormal(Bits);

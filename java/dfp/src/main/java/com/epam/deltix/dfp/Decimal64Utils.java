@@ -546,6 +546,12 @@ public class Decimal64Utils {
         return JavaImpl.isNonFinite(value);
     }
 
+    /**
+     * Checks is the {@code DFP} value is normal: nor zero, nor NaN nor subnormal nor infinity.
+     *
+     * @param value {@code DFP} value
+     * @return {@code true} if value is not zero, nor NaN nor subnormal nor infinity.
+     */
     public static boolean isNormal(@Decimal final long value) {
         return JavaImplCmp.bid64_isNormal(value);
     }
