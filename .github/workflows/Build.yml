@@ -96,7 +96,7 @@ jobs:
           retention-days: 7
 
   build-native-macos:
-    runs-on: macos-14
+    runs-on: macos-13
     needs: [build-wrappers]
     steps:
       - uses: actions/checkout@v4
@@ -229,7 +229,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-22.04', 'windows-2022', 'macos-14']
+        os: [ 'ubuntu-22.04', 'windows-2022', 'macos-13']
         java: [ '8', '11', '19']
     steps:
       - uses: actions/checkout@v4
@@ -257,7 +257,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-22.04', 'windows-2022', 'macos-14']
+        os: [ 'ubuntu-22.04', 'windows-2022', 'macos-13']
     steps:
       - uses: actions/checkout@v4
         with:
@@ -276,7 +276,7 @@ jobs:
           cd csharp
           ./build --target=Run-Unit-Tests
       - name: test nix
-        if: ${{ matrix.os == 'ubuntu-22.04' || matrix.os == 'macos-14' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' || matrix.os == 'macos-13' }}
         run: |
           cd csharp
           ./build.sh --target=Run-Unit-Tests
