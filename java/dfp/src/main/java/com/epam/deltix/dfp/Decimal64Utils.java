@@ -422,6 +422,39 @@ public class Decimal64Utils {
         return JavaImplCastBinary64.binary64_to_bid64(value, BID_ROUNDING_TO_NEAREST);
     }
 
+    public static int FROM_DOUBLE_ROUNDED_DEFAULT_PRECISION = 12;
+    public static RoundingMode FROM_DOUBLE_ROUNDED_DEFAULT_ROUNDING = RoundingMode.HALF_UP;
+
+    /**
+     * Create {@code DFP} value from 64-bit binary floating point ({@code double}) value
+     * rounded according the {@code FROM_DOUBLE_ROUNDED_DEFAULT_PRECISION} precision and
+     * {@code FROM_DOUBLE_ROUNDED_DEFAULT_ROUNDING} rounding type.
+     * This is just an alias to the
+     * {@code fromDoubleRounded(value, FROM_DOUBLE_ROUNDED_DEFAULT_PRECISION, FROM_DOUBLE_ROUNDED_DEFAULT_ROUNDING)} call.
+     *
+     * @param value source 64-bit binary floating point value
+     * @return {@code DFP} converted and rounded value
+     */
+    @Decimal
+    public static long fromDoubleRounded(final double value) {
+        return fromDoubleRounded(value, FROM_DOUBLE_ROUNDED_DEFAULT_PRECISION, FROM_DOUBLE_ROUNDED_DEFAULT_ROUNDING);
+    }
+
+    /**
+     * Create {@code DFP} value from 64-bit binary floating point ({@code double}) value
+     * rounded according the selected rounding type and precision.
+     * This is just an alias to the {@code round(fromDouble(value), n, roundType)} call.
+     *
+     * @param value     source 64-bit binary floating point value
+     * @param n         the number of decimals to use when rounding the number
+     * @param roundType {@code RoundingMode} type of rounding
+     * @return {@code DFP} converted and rounded value
+     */
+    @Decimal
+    public static long fromDoubleRounded(final double value, final int n, final RoundingMode roundType) {
+        return round(fromDouble(value), n, roundType);
+    }
+
     /**
      * Convert {@code DFP} value to 64-bit binary floating point ({@code double}) value.
      * <p>Note that not all decimal FP values can be exactly represented as binary FP values.

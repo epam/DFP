@@ -196,6 +196,20 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.fromFloat64(value));
 		}
 
+		public static readonly int FromDoubleRoundedDefaultPrecision = 12;
+		public static readonly RoundingMode FromDoubleRoundedDefaultRounding = RoundingMode.HalfUp;
+
+		public static Decimal64 FromDoubleRounded(double value)
+		{
+			return FromDoubleRounded(value, FromDoubleRoundedDefaultPrecision, FromDoubleRoundedDefaultRounding);
+		}
+
+		public static Decimal64 FromDoubleRounded(double value, int n, RoundingMode roundType)
+		{
+			return FromDouble(value).Round(n, roundType);
+		}
+
+
 		public static Decimal64 FromDecimalDouble(Double value)
 		{
 			return new Decimal64(DotNetImpl.FromDecimalFloat64(value));
