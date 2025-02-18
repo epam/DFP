@@ -6,6 +6,4 @@ include(':java:dfp')
 include(':java:dfpNativeTests')
 include(':java:dfp-math')
 include(':java:springTest')
-if (!System.getProperty("os.name").toLowerCase().contains("mac")) {
-    include(':java:vtaTest')
-}
+include(':java:vtaTest')
