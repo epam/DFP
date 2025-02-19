@@ -232,7 +232,7 @@ public class FromDoubleTest {
         final int roundingModeLength = RoundingMode.values().length - 1;
         for (int i = 0; i < N; ++i) {
             final double inputValue = random.nextDouble() * (random.nextInt(40) - 20);
-            final int n = random.nextInt(-20, 20);
+            final int n = random.nextInt(40) - 20;
             final RoundingMode mode = RoundingMode.valueOf(random.nextInt(roundingModeLength));
 
             final long ref = Decimal64Utils.round(Decimal64Utils.fromDouble(inputValue), n, mode);
