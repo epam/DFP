@@ -209,7 +209,6 @@ namespace EPAM.Deltix.DFP
 			return FromDouble(value).Round(n, roundType);
 		}
 
-
 		public static Decimal64 FromDecimalDouble(Double value)
 		{
 			return new Decimal64(DotNetImpl.FromDecimalFloat64(value));

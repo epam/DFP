@@ -1251,7 +1251,7 @@ namespace EPAM.Deltix.DFP.Test
 				new ToStringData(Decimal64.Zero, "0", "0.0")
 			};
 
-			foreach(var testCase in testCases)
+			foreach (var testCase in testCases)
 			{
 				var testValue = testCase.TestValue;
 				Assert.AreEqual(testCase.NormalOut, testValue.ToString());
@@ -1270,6 +1270,45 @@ namespace EPAM.Deltix.DFP.Test
 		}
 
 		readonly int N = 5000000;
+
+
+		[Test]
+		public void TestFromDoubleRoundedShortAlias()
+		{
+			Random random = new Random();
+			for (int i = 0; i < N; ++i)
+			{
+				double inputValue = random.NextDouble() * random.Next(-20, 20);
+				var refValue = Decimal64.FromDouble(inputValue).Round(
+					Decimal64.FromDoubleRoundedDefaultPrecision,
+					Decimal64.FromDoubleRoundedDefaultRounding);
+				var testValue = Decimal64.FromDoubleRounded(inputValue);
+				if (refValue != testValue)
+					throw new Exception("The inputValue(=Double.longBitsToDouble(" +
+						BitConverter.DoubleToInt64Bits(inputValue) + "L) case error: refValue(=" + refValue + "L) != testValue(=" + testValue + ")");
+			}
+		}
+
+		[Test]
+		public void TestFromDoubleRoundedLongAlias()
+		{
+			Random random = new Random();
+			var roundingModeValues = Enum.GetValues(typeof(RoundingMode));
+			int roundingModeLength = roundingModeValues.Length - 1;
+			for (int i = 0; i < N; ++i)
+			{
+				double inputValue = random.NextDouble() * random.Next(-20, 20);
+				int n = random.Next(-20, 20);
+				RoundingMode mode = (RoundingMode)roundingModeValues.GetValue(random.Next(roundingModeLength));
+
+				var refValue = Decimal64.FromDouble(inputValue).Round(n, mode);
+				var testValue = Decimal64.FromDoubleRounded(inputValue, n, mode);
+				if (refValue != testValue)
+					throw new Exception("The inputValue(=Double.longBitsToDouble(" +
+						BitConverter.DoubleToInt64Bits(inputValue) + "L) n(=" + n + ") mode(=" + mode +
+						")  case error: refValue(=" + refValue + "L) != testValue(=" + testValue + ")");
+			}
+		}
 
 		static void Main()
 		{

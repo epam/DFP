@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.security.SecureRandom;
+import java.math.RoundingMode;
 import java.util.Random;
 
 import static com.epam.deltix.dfp.TestUtils.*;
@@ -210,4 +210,37 @@ public class FromDoubleTest {
     }
 
     static final int N = 5000000;
+
+    @Test
+    public void testFromDoubleRoundedShortAlias() {
+        final Random random = new Random();
+        for (int i = 0; i < N; ++i) {
+            final double inputValue = random.nextDouble() * random.nextInt(-20, 20);
+            final long ref = Decimal64Utils.round(Decimal64Utils.fromDouble(inputValue),
+                Decimal64Utils.FROM_DOUBLE_ROUNDED_DEFAULT_PRECISION,
+                Decimal64Utils.FROM_DOUBLE_ROUNDED_DEFAULT_ROUNDING);
+            final long test = Decimal64Utils.fromDoubleRounded(inputValue);
+            if (ref != test)
+                throw new RuntimeException("The inputValue(=Double.longBitsToDouble(" +
+                    Double.doubleToRawLongBits(inputValue) + "L) case error: ref(=" + ref + "L) != test(=" + test + ")");
+        }
+    }
+
+    @Test
+    public void testFromDoubleRoundedLongAlias() {
+        final Random random = new Random();
+        final int roundingModeLength = RoundingMode.values().length - 1;
+        for (int i = 0; i < N; ++i) {
+            final double inputValue = random.nextDouble() * random.nextInt(-20, 20);
+            final int n = random.nextInt(-20, 20);
+            final RoundingMode mode = RoundingMode.valueOf(random.nextInt(roundingModeLength));
+
+            final long ref = Decimal64Utils.round(Decimal64Utils.fromDouble(inputValue), n, mode);
+            final long test = Decimal64Utils.fromDoubleRounded(inputValue, n, mode);
+            if (ref != test)
+                throw new RuntimeException("The inputValue(=Double.longBitsToDouble(" +
+                    Double.doubleToRawLongBits(inputValue) + "L) n(=" + n + ") mode(=" + mode +
+                    ")  case error: ref(=" + ref + "L) != test(=" + test + ")");
+        }
+    }
 }
