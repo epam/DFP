@@ -407,7 +407,7 @@ public class Decimal64Utils {
      * fromDecimalDouble: 0.531006278913499
      * sprintf('%.30f')   0.531006278913499052407587441849
      * ---------------------------------------------------
-     * Also, let's consider the examples when fromDouble and fromDecimalDouble produce exactly the save
+     * Also, let's consider the examples when fromDouble and fromDecimalDouble produce exactly the same
      * result:
      * ---------------------------------------------------
      * Double:            720491.5510000001
