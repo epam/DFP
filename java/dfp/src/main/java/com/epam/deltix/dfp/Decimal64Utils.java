@@ -387,6 +387,57 @@ public class Decimal64Utils {
      * The only difference from {@link #fromDouble(double)} is that it fudges the last digit of
      * mantissa towards decimal 0 as long as the result produces shorter mantissa and
      * is still within rounding error range.
+     * It tries to guarantee correct decimal->double->decimal roundtrip.
+     * I.e. the doubleValue(fromDouble(value)) and doubleValue(fromDecimalDouble(value)) must
+     * produce equal values. This mean the correction must be within +-Math.ulp(value) interval.
+     * These are examples of the fromDouble, fromDecimalDouble and sprintf('%.30f') from Octave
+     * ---------------------------------------------------
+     * Double:            0.898317491899492
+     * fromDouble:        0.8983174918994919
+     * fromDecimalDouble: 0.898317491899492
+     * sprintf('%.30f')   0.898317491899491948892375603464
+     * ---------------------------------------------------
+     * Double:            0.954510556332067
+     * fromDouble:        0.9545105563320671
+     * fromDecimalDouble: 0.954510556332067
+     * sprintf('%.30f')   0.954510556332067050533396468381
+     * ---------------------------------------------------
+     * Double:            0.531006278913499
+     * fromDouble:        0.5310062789134991
+     * fromDecimalDouble: 0.531006278913499
+     * sprintf('%.30f')   0.531006278913499052407587441849
+     * ---------------------------------------------------
+     * Also, let's consider the examples when fromDouble and fromDecimalDouble produce exactly the save
+     * result:
+     * ---------------------------------------------------
+     * Double:            720491.5510000001
+     * fromDouble:        720491.5510000001
+     * fromDecimalDouble: 720491.5510000001
+     * sprintf('%.30f')   720491.551000000094063580036163330078
+     * ---------------------------------------------------
+     * Double:            74.51231011000002
+     * fromDouble:        74.51231011000002
+     * fromDecimalDouble: 74.51231011000002
+     * sprintf('%.30f')   74.512310110000015583864296786487
+     * ---------------------------------------------------
+     * Double:            9.889899999999999
+     * fromDouble:        9.889899999999999
+     * fromDecimalDouble: 9.889899999999999
+     * sprintf('%.30f')   9.889899999999999025135366537143
+     * ---------------------------------------------------
+     * Note! There are also cases when both fromDouble and fromDecimalDouble produce rounded value because decimal64
+     * can save only 16 digits from mantissa:
+     * ---------------------------------------------------
+     * Double:            25087.309999999998
+     * fromDouble:        25087.31
+     * fromDecimalDouble: 25087.31
+     * sprintf('%.30f')   25087.309999999997671693563461303711
+     * ---------------------------------------------------
+     * Double:            320000.00000000006
+     * fromDouble:        320000.0000000001
+     * fromDecimalDouble: 320000.0000000001
+     * sprintf('%.30f')   320000.000000000058207660913467407227
+     * ---------------------------------------------------
      *
      * @param value source 64-bit binary floating point value
      * @return New {@code DFP} value.
