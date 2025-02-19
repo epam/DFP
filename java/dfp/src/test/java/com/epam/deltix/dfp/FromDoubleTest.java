@@ -215,7 +215,7 @@ public class FromDoubleTest {
     public void testFromDoubleRoundedShortAlias() {
         final Random random = new Random();
         for (int i = 0; i < N; ++i) {
-            final double inputValue = random.nextDouble() * random.nextInt(-20, 20);
+            final double inputValue = random.nextDouble() * (random.nextInt(40) - 20);
             final long ref = Decimal64Utils.round(Decimal64Utils.fromDouble(inputValue),
                 Decimal64Utils.FROM_DOUBLE_ROUNDED_DEFAULT_PRECISION,
                 Decimal64Utils.FROM_DOUBLE_ROUNDED_DEFAULT_ROUNDING);
@@ -231,7 +231,7 @@ public class FromDoubleTest {
         final Random random = new Random();
         final int roundingModeLength = RoundingMode.values().length - 1;
         for (int i = 0; i < N; ++i) {
-            final double inputValue = random.nextDouble() * random.nextInt(-20, 20);
+            final double inputValue = random.nextDouble() * (random.nextInt(40) - 20);
             final int n = random.nextInt(-20, 20);
             final RoundingMode mode = RoundingMode.valueOf(random.nextInt(roundingModeLength));
 
