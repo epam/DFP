@@ -850,6 +850,11 @@ public class Decimal64Utils {
 
     /// region Rounding
 
+    @Decimal
+    public static long shortenMantissa(@Decimal final long value, final long delta, final int minZerosCount) {
+        return JavaImpl.shortenMantissa(value, delta, minZerosCount);
+    }
+
     /**
      * Returns the {@code DFP} value that is rounded to the value, reciprocal to r, according the selected rounding type.
      *
