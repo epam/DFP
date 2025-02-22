@@ -27,6 +27,10 @@ compileJava {
     sourceCompatibility = 8
     targetCompatibility = 8
 }
+compileTestJava {
+    sourceCompatibility = 8
+    targetCompatibility = 8
+}
 
 compileJava9Java {
     sourceCompatibility = 9
