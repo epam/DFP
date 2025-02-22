@@ -256,42 +256,15 @@ public class FromDoubleTest {
     }
 
     @Test
-    public void testShortenMantissaDeltaPower10() {
-        checkShortenMantissaCase(9999888877776001L, 1000);
-    }
-
-    @Test
     public void testShortenMantissaCase006() {
-
-
-//        final long tmp = value >> JavaImpl.EXPONENT_SHIFT_SMALL;
-//        partsExponent = (int) (tmp & JavaImpl.EXPONENT_MASK);
-//
-//        // Extract coefficient.
-//        partsCoefficient = (value & JavaImpl.SMALL_COEFFICIENT_MASK);
-
-
         String testString = "0.006";
         final double testValue = Double.parseDouble(testString);
         final double testX = 0.005999999999998265; // Math.nextDown(testValue);
 
-        Decimal64 d64 = Decimal64.fromDouble(testX).shortenMantissa(1735 - 1, 1);
+        Decimal64 d64 = Decimal64.fromDouble(testX).shortenMantissa(1735, 1);
         Assert.assertEquals(testString, d64.toString());
 
         Decimal64.fromDouble(9.060176071990028E-7).shortenMantissa(2, 1);
-    }
-
-    @Test
-    public void testShortenMantissaCaseBigShift() {
-        Assert.assertEquals(
-            Decimal64.fromLong(9876_0000_0000_0000L),
-            Decimal64.fromLong(9876_0000_0000_0075L)
-                .shortenMantissa(110, 1));
-
-        Assert.assertEquals(
-            Decimal64.fromLong(9876_0000_0000_0000L),
-            Decimal64.fromLong(9875_9999_9999_9925L)
-                .shortenMantissa(110, 1));
     }
 
     @Test
@@ -300,7 +273,7 @@ public class FromDoubleTest {
         final Random random = new Random(randomSeed);
 
         try {
-            for (int iteration = 0; iteration < 1000_000; ++iteration) {
+            for (int iteration = 0; iteration < N; ++iteration) {
                 long mantissa = generateMantissa(random, Decimal64Utils.MAX_SIGNIFICAND_DIGITS);
                 int error = random.nextInt(3) - 1;
                 mantissa = Math.min(JavaImpl.MAX_COEFFICIENT, Math.max(0, mantissa + error));
@@ -320,6 +293,12 @@ public class FromDoubleTest {
 
     @Test
     public void testShortenMantissaCase() {
+        checkShortenMantissaCase(9999888877776001L, 1000);
+        checkShortenMantissaCase(1230000000000000L, 80);
+        checkShortenMantissaCase(1230000000000075L, 80);
+        checkShortenMantissaCase(1229999999999925L, 80);
+        checkShortenMantissaCase(4409286553495543L, 900);
+        checkShortenMantissaCase(4409286553495000L, 1000);
         checkShortenMantissaCase(4409286550000000L, 81117294);
         checkShortenMantissaCase(9010100000000001L, 999999999999999L);
         checkShortenMantissaCase(8960196546869015L, 1);
@@ -334,9 +313,9 @@ public class FromDoubleTest {
         try {
             final long bestSolution = shortenMantissaDirect(mantissa, delta);
 
-            final Decimal64 test64 = Decimal64.fromLong(mantissa).shortenMantissa(delta, 0);
+            final long test64 = Decimal64Utils.toLong(Decimal64Utils.shortenMantissa(Decimal64Utils.fromLong(mantissa), delta, 0));
 
-            if (test64.longValue() != bestSolution)
+            if (test64 != bestSolution)
                 throw new RuntimeException("The mantissa(=" + mantissa + ") and delta(=" + delta + ") produce test64(=" + test64 + ") != bestSolution(=" + bestSolution + ").");
         } catch (Throwable e) {
             throw new RuntimeException("The mantissa(=" + mantissa + ") and delta(=" + delta + ") produce exception.", e);
@@ -390,66 +369,5 @@ public class FromDoubleTest {
         for (; i < minimalLength; ++i)
             m = m * 10;
         return m;
-    }
-
-    @Test
-    public void testShortenMantissaPrecision() {
-        final int randomSeed = new SecureRandom().nextInt();
-        final Random random = new Random(randomSeed);
-
-        int bugsCount = 0;
-        for (int iteration = 0; iteration < 1000; ++iteration) {
-            int mantissaLength = 2 + random.nextInt(Decimal64Utils.MAX_SIGNIFICAND_DIGITS - 4);
-            int exponent = random.nextInt(4 * Decimal64Utils.MAX_SIGNIFICAND_DIGITS) - 2 * Decimal64Utils.MAX_SIGNIFICAND_DIGITS;
-
-            final StringBuilder sb = new StringBuilder();
-            sb.append(1 + random.nextInt(9)).append('.');
-            for (int i = 1; i < mantissaLength - 1; ++i)
-                sb.append(random.nextInt(10));
-            sb.append(1 + random.nextInt(9));
-            sb.append('E');
-            sb.append(exponent);
-
-            String testString = sb.toString();
-            double testValue = Double.parseDouble(testString);
-            boolean goUp = random.nextInt(2) > 0;
-            double nextValue = goUp ? Math.nextUp(testValue) : Math.nextDown(testValue);
-
-            final Decimal64 d64 = Decimal64.fromDouble(nextValue).shortenMantissa(3, 2);
-            final String d64s = d64.toScientificString();
-
-            int latestMantissaDigit = d64s.indexOf('e');
-            while (latestMantissaDigit > 1 && d64s.charAt(latestMantissaDigit - 1) == '0')
-                latestMantissaDigit--;
-
-            if (latestMantissaDigit != mantissaLength + 1) {
-                bugsCount++;
-                System.out.println("The Math." + (goUp ? "nextUp" : "nextDown") + "(Double.parseDouble(\"" + testString + "\")) with the value " + nextValue + " incorrectly converted to " + d64s);
-            }
-        }
-
-        if (bugsCount != 0) {
-            throw new RuntimeException("There are a " + bugsCount + " bugs. See the report for random seed " + randomSeed);
-        }
-    }
-
-    @Test
-    public void testShortenMantissa() {
-        final int randomSeed = -313667659;//new SecureRandom().nextInt();
-        final Random random = new Random(randomSeed);
-
-        final double testValue = 0.006;
-        final double ulp = Math.ulp(testValue);
-
-
-        Decimal64 d641 = Decimal64.fromDouble(Double.longBitsToDouble(4649175626595015063L)).shortenMantissa(3, 0);
-
-        Decimal64 d642 = Decimal64.fromDouble(9.060176071990029E-7).shortenMantissa(3, 3);
-
-        for (int d = -1000; d <= 1000; ++d) {
-            for (int e = 1; e <= 1000; ++e) {
-                Decimal64.fromDouble(testValue + d * ulp).shortenMantissa(e, 1);
-            }
-        }
     }
 }

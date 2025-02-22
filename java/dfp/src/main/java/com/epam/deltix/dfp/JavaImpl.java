@@ -3673,15 +3673,11 @@ class JavaImpl {
             }
         }
 
-        final long coefficientResult = tryShorten(partsCoefficient, delta, rangeUp, rangeDown, deltaFloorPowerTen);
-        if (coefficientResult != Long.MIN_VALUE) {
-            if (coefficientResult % POWERS_OF_TEN[minZerosCount] == 0)
-                return pack(partsSignMask, partsExponent, coefficientResult, BID_ROUNDING_TO_NEAREST);
-            else
-                return value;
-        }
-
-        throw new RuntimeException("WTF?");
+        final long coefficientResult = tryShortenNoRangeCheck(partsCoefficient, delta, deltaFloorPowerTen);
+        if (coefficientResult % POWERS_OF_TEN[minZerosCount] == 0)
+            return pack(partsSignMask, partsExponent, coefficientResult, BID_ROUNDING_TO_NEAREST);
+        else
+            return value;
     }
 
     private static long tryShorten(final long partsCoefficient, final long delta,
@@ -3713,6 +3709,48 @@ class JavaImpl {
         { // Check half-up
             final long coefficientHalf = ((partsCoefficient + deltaPowerTen / 2) / deltaPowerTen) * deltaPowerTen;
             if (coefficientResult != coefficientHalf && rangeDown <= coefficientHalf && coefficientHalf <= rangeUp) {
+                // If the number of zeros in coefficientHalf is not less than the number of zeros in cr,
+                // then coefficientHalf should be chosen.
+                // Since both numbers are multiplied by epsilonFloor10Up, it can be ignored
+                // The only next digit after epsilonFloor10Up could be checked,
+                // since cr and coefficientHalf differs in (delta - (epsilonFloor10Up / 2 - 1)).
+                final int coefficientHalfZerosCount = (coefficientHalf % delatPowerTenUp == 0 ? 1 : 0);
+                if (coefficientHalfZerosCount >= coefficientResultZerosCount) {
+                    coefficientResult = coefficientHalf;
+                    coefficientResultZerosCount = coefficientHalfZerosCount;
+                }
+            }
+        }
+
+        return coefficientResult;
+    }
+
+    private static long tryShortenNoRangeCheck(final long partsCoefficient, final long delta,
+                                   final long deltaPowerTen) {
+        long coefficientResult = Long.MIN_VALUE;
+        int coefficientResultZerosCount = Integer.MIN_VALUE;
+        final long delatPowerTenUp = deltaPowerTen * 10;
+
+        { // Check ceiling
+            final long coefficientUp = ((partsCoefficient + delta) / deltaPowerTen) * deltaPowerTen;
+            coefficientResult = coefficientUp;
+            coefficientResultZerosCount = (coefficientResult % delatPowerTenUp == 0 ? 1 : 0);
+        }
+
+        { // Check flooring
+            final long coefficientDown = (partsCoefficient / deltaPowerTen) * deltaPowerTen;
+            if (coefficientResult != coefficientDown) {
+                final int coefficientDownZerosCount = (coefficientDown % delatPowerTenUp == 0 ? 1 : 0);
+                if (coefficientDownZerosCount > coefficientResultZerosCount) {
+                    coefficientResult = coefficientDown;
+                    coefficientResultZerosCount = coefficientDownZerosCount;
+                }
+            }
+        }
+
+        { // Check half-up
+            final long coefficientHalf = ((partsCoefficient + deltaPowerTen / 2) / deltaPowerTen) * deltaPowerTen;
+            if (coefficientResult != coefficientHalf) {
                 // If the number of zeros in coefficientHalf is not less than the number of zeros in cr,
                 // then coefficientHalf should be chosen.
                 // Since both numbers are multiplied by epsilonFloor10Up, it can be ignored
