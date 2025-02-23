@@ -203,7 +203,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
-          java-version: '19'
+          java-version: '21'
       - name: build
         run: |
           ./gradlew jar
@@ -256,7 +256,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ 'ubuntu-22.04', 'windows-2022', 'macos-13']
-        java: [ '8', '11', '19']
+        java: [ '8', '11', '21']
     steps:
       - uses: actions/checkout@v4
         with:
@@ -360,7 +360,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
-          java-version: '19'
+          java-version: '21'
       - run: ./gradlew publish
         env:
           SONATYPE_REPOSITORY:       ${{ secrets.SONATYPE_REPOSITORY }}
