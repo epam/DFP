@@ -251,8 +251,8 @@ public class FromDoubleTest {
 
     @Test
     public void testShortenMantissaBigDelta() {
-        Assert.assertEquals(Decimal64.parse("9000000000000000"),
-            Decimal64.parse("9999000000000000").shortenMantissa(JavaImpl.MAX_COEFFICIENT / 2, 2));
+        Assert.assertEquals(Decimal64.parse("10000000000000000"),
+            Decimal64.parse("9999000000000000").shortenMantissa(JavaImpl.MAX_COEFFICIENT / 10, 2));
     }
 
     @Test

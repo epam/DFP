@@ -1272,8 +1272,8 @@ namespace EPAM.Deltix.DFP.Test
 		[Test]
 		public void TestShortenMantissaBigDelta()
 		{
-			Assert.AreEqual(Decimal64.Parse("9000000000000000"),
-				Decimal64.Parse("9999000000000000").ShortenMantissa(DotNetImpl.MaxCoefficient / 2, 2));
+			Assert.AreEqual(Decimal64.Parse("10000000000000000"),
+				Decimal64.Parse("9999000000000000").ShortenMantissa(DotNetImpl.MaxCoefficient / 10, 2));
 		}
 
 		[Test]
