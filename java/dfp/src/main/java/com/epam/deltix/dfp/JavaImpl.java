@@ -3589,8 +3589,9 @@ class JavaImpl {
         if (minZerosCount < 0)
             throw new IllegalArgumentException("The minZerosCount value must be non-negative.");
 
-        if (delta >= MAX_COEFFICIENT)
-            return Decimal64Utils.ZERO;
+        // No need this check because of delta range restriction.
+//        if (delta >= MAX_COEFFICIENT)
+//            return Decimal64Utils.ZERO;
 
         if (isNonFinite(value) || delta == 0 || minZerosCount >= MAX_FORMAT_DIGITS)
             return value;
@@ -3644,14 +3645,14 @@ class JavaImpl {
                 : MAX_FORMAT_DIGITS - ei - 1;
             partsCoefficient *= POWERS_OF_TEN[expDiff];
             partsExponent -= expDiff;
-
-            assert (partsCoefficient <= MAX_COEFFICIENT);
-            assert (partsCoefficient > MAX_COEFFICIENT / 10);
-            assert (Decimal64Utils.equals(value, pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST)));
         }
+//        assert (partsCoefficient <= MAX_COEFFICIENT);
+//        assert (partsCoefficient > MAX_COEFFICIENT / 10);
+//        assert (Decimal64Utils.equals(value, pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST)));
 
-        if (partsCoefficient <= delta) // Downside of the interval is close to zero,
-            return Decimal64Utils.ZERO;  // this is nearly impossible but still can happen
+        // No need this check because of delta range restriction.
+//        if (partsCoefficient <= delta) // Downside of the interval is close to zero,
+//            return Decimal64Utils.ZERO;  // this is nearly impossible but still can happen
 
         int ei = Arrays.binarySearch(POWERS_OF_TEN, delta);
         final long deltaFloorPowerTen = ei >= 0 ? POWERS_OF_TEN[ei] : POWERS_OF_TEN[~ei - 1];
