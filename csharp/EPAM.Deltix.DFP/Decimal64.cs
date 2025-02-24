@@ -809,6 +809,35 @@ namespace EPAM.Deltix.DFP
 			return new Decimal64(NativeImpl.multiply2(ratio, multiple.Bits));
 		}
 
+		/// <summary>
+		/// Returns a <code>DFP</code> number in some neighborhood of the input value with a maximally
+		/// reduced number of digits.
+		/// Explanation:
+		/// Any finite <code>DFP</code> value can be represented as 16-digits integer number (mantissa)
+		/// multiplied by some power of ten (exponent):
+		/// 12.3456              = 1234_5600_0000_0000 * 10^-14
+		/// 720491.5510000001    = 7204_9155_1000_0001 * 10^-10
+		/// 0.009889899999999999 = 9889_8999_9999_9999 * 10^-18
+		/// 9.060176071990028E-7 = 9060_1760_7199_0028 * 10^-22
+		/// This function modify only the mantissa and leave the exponent unchanged.
+		/// This function attempts to find the number with the maximum count of trailing zeros
+		/// within the neighborhood range [mantissa-delta ... mantissa+delta].
+		/// If the number of trailing zeros is less than minZerosCount, the original value is returned.
+		/// For the examples above the
+		/// Decimal64.FromDouble(12.3456).ShortenMantissa(4, 1) => 12.3456
+		/// Decimal64.FromDouble(720491.5510000001).ShortenMantissa(4, 1) => 720491.551
+		/// Decimal64.FromDouble(0.009889899999999999).ShortenMantissa(4, 1) => 0.0098899
+		/// Decimal64.FromDouble(9.060176071990028E-7).ShortenMantissa(4, 1) => 0.000000906017607199003
+		/// </summary>
+		/// <param name="value"></param>
+		/// <param name="delta"></param>
+		/// <param name="minZerosCount"></param>
+		/// <returns></returns>
+		public Decimal64 ShortenMantissa(UInt64 delta, uint minZerosCount)
+		{
+			return new Decimal64(DotNetImpl.ShortenMantissa(Bits, delta, minZerosCount));
+		}
+
 		public Decimal64 Round(int n, RoundingMode roundType)
 		{
 			return new Decimal64(DotNetImpl.Round(Bits, n, roundType));

@@ -309,7 +309,7 @@ public class FromDoubleTest {
         checkShortenMantissaCase(1519453608576584L, 3207L);
     }
 
-    private void checkShortenMantissaCase(final long mantissa, final long delta) {
+    private static void checkShortenMantissaCase(final long mantissa, final long delta) {
         try {
             final long bestSolution = shortenMantissaDirect(mantissa, delta);
 

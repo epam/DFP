@@ -401,9 +401,224 @@ namespace EPAM.Deltix.DFP
 			return value & ~SignMask;
 		}
 
+		public static bool IsSpecial(BID_UINT64 value)
+		{
+			return (value & MaskSpecial) == MaskSpecial;
+		}
+
+		public static bool IsNonFinite(BID_UINT64 value)
+		{
+			return (value & MaskInfinityAndNan) == MaskInfinityAndNan;
+		}
+
 		#endregion
 
 		#region Rounding
+
+		public static UInt64 ShortenMantissa(UInt64 value, UInt64 delta, uint minZerosCount)
+		{
+			if (delta < 0 || delta > MaxCoefficient / 10)
+				throw new ArgumentException("The delta value must be in [0.." + MaxCoefficient / 10 + "] range.");
+			// Can't happen with uint
+			//if (minZerosCount < 0)
+			//	throw new ArgumentException("The minZerosCount value must be non-negative.");
+
+			// No need this check because of delta range restriction.
+			//        if (delta >= MAX_COEFFICIENT)
+			//            return Decimal64Utils.ZERO;
+
+			if (IsNonFinite(value) || delta == 0 || minZerosCount >= MaxFormatDigits)
+				return value;
+
+			//        final Decimal64Parts parts = tlsDecimal64Parts.get();
+			//        JavaImpl.toParts(value, parts);
+			BID_UINT64 partsSignMask;
+			int partsExponent;
+			BID_UINT64 partsCoefficient;
+			{ // Copy-paste the toParts method for speedup
+				partsSignMask = value & MaskSign;
+
+				if (IsSpecial(value))
+				{
+					// if (IsNonFinite(value)) {
+					//	partsExponent = 0;
+					//
+					// partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
+					// if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
+					//	partsCoefficient = value & ~MASK_COEFFICIENT;
+					// if (isInfinity(value))
+					//	partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+					// } else
+					{
+						// Check for non-canonical values.
+						BID_UINT64 coefficient = (value & DotNetReImpl.LARGE_COEFF_MASK64) | DotNetReImpl.LARGE_COEFF_HIGH_BIT64;
+						partsCoefficient = coefficient > MaxCoefficient ? 0 : coefficient;
+
+						// Extract exponent.
+						BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_LARGE64;
+						partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+					}
+				}
+				else
+				{
+
+					// Extract exponent. Maximum biased value for "small exponent" is 0x2FF(*2=0x5FE), signed: []
+					// upper 1/4 of the mask range is "special", as checked in the code above
+					BID_UINT64 tmp = value >> DotNetReImpl.EXPONENT_SHIFT_SMALL64;
+					partsExponent = (int)(tmp & DotNetReImpl.EXPONENT_MASK64);
+
+					// Extract coefficient.
+					partsCoefficient = (value & DotNetReImpl.SMALL_COEFF_MASK64);
+				}
+			}
+
+			if (partsCoefficient == 0) // This is a zero with any exponent
+				return Zero;
+
+			if (partsCoefficient <= MaxCoefficient / 10)
+			{ // Denormalized value case - normalize mantissa and exponent
+				int pei = Array.BinarySearch(PowersOfTen, partsCoefficient);
+				int expDiff = pei < 0
+					? MaxFormatDigits - ~pei
+					: MaxFormatDigits - pei - 1;
+				partsCoefficient *= PowersOfTen[expDiff];
+				partsExponent -= expDiff;
+			}
+			// assert (partsCoefficient <= MAX_COEFFICIENT);
+			// assert (partsCoefficient > MAX_COEFFICIENT / 10);
+			// assert (Decimal64Utils.equals(value, pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST)));
+
+			// No need this check because of delta range restriction.
+			// if (partsCoefficient <= delta) // Downside of the interval is close to zero,
+			//	return Decimal64Utils.ZERO;  // this is nearly impossible but still can happen
+
+			int ei = Array.BinarySearch(PowersOfTen, delta);
+			var deltaFloorPowerTen = ei >= 0 ? PowersOfTen[ei] : PowersOfTen[~ei - 1];
+
+			var rangeUp = partsCoefficient + delta;
+			var rangeDown = partsCoefficient - delta;
+
+			BID_UINT32 fpsf = DotNetReImpl.BID_EXACT_STATUS;
+			{ // Check the optimistic case first
+				var deltaFloorPowerTenUp = deltaFloorPowerTen * 10; // Note: this is not the ceil: consider the case when epsilon = 10^n
+				if (deltaFloorPowerTenUp < MaxCoefficient)
+				{
+					var coefficientResultUp = TryShorten(partsCoefficient, delta, rangeUp, rangeDown, deltaFloorPowerTenUp);
+
+					if (coefficientResultUp != BID_UINT64.MaxValue)
+					{
+						if (coefficientResultUp % PowersOfTen[minZerosCount] == 0)
+							return DotNetReImpl.get_BID64(partsSignMask, partsExponent, coefficientResultUp, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf);
+						else
+							return value;
+					}
+				}
+			}
+
+			var coefficientResult = TryShortenNoRangeCheck(partsCoefficient, delta, deltaFloorPowerTen);
+			if (coefficientResult % PowersOfTen[minZerosCount] == 0)
+				return DotNetReImpl.get_BID64(partsSignMask, partsExponent, coefficientResult, DotNetReImpl.BID_ROUNDING_TO_NEAREST, ref fpsf);
+			else
+				return value;
+		}
+
+		private static BID_UINT64 TryShorten(BID_UINT64 partsCoefficient, BID_UINT64 delta,
+									   BID_UINT64 rangeUp, BID_UINT64 rangeDown,
+									   BID_UINT64 deltaPowerTen)
+		{
+			var coefficientResult = BID_UINT64.MaxValue;
+			var coefficientResultZerosCount = int.MinValue;
+			var delatPowerTenUp = deltaPowerTen * 10;
+
+			{ // Check ceiling
+				var coefficientUp = (rangeUp / deltaPowerTen) * deltaPowerTen;
+				if (rangeDown <= coefficientUp && coefficientUp <= rangeUp)
+				{
+					coefficientResult = coefficientUp;
+					coefficientResultZerosCount = (coefficientResult % delatPowerTenUp == 0 ? 1 : 0);
+				}
+			}
+
+			{ // Check flooring
+				var coefficientDown = (partsCoefficient / deltaPowerTen) * deltaPowerTen;
+				if (coefficientResult != coefficientDown && rangeDown <= coefficientDown && coefficientDown <= rangeUp)
+				{
+					var coefficientDownZerosCount = (coefficientDown % delatPowerTenUp == 0 ? 1 : 0);
+					if (coefficientDownZerosCount > coefficientResultZerosCount)
+					{
+						coefficientResult = coefficientDown;
+						coefficientResultZerosCount = coefficientDownZerosCount;
+					}
+				}
+			}
+
+			{ // Check half-up
+				var coefficientHalf = ((partsCoefficient + deltaPowerTen / 2) / deltaPowerTen) * deltaPowerTen;
+				if (coefficientResult != coefficientHalf && rangeDown <= coefficientHalf && coefficientHalf <= rangeUp)
+				{
+					// If the number of zeros in coefficientHalf is not less than the number of zeros in cr,
+					// then coefficientHalf should be chosen.
+					// Since both numbers are multiplied by epsilonFloor10Up, it can be ignored
+					// The only next digit after epsilonFloor10Up could be checked,
+					// since cr and coefficientHalf differs in (delta - (epsilonFloor10Up / 2 - 1)).
+					var coefficientHalfZerosCount = (coefficientHalf % delatPowerTenUp == 0 ? 1 : 0);
+					if (coefficientHalfZerosCount >= coefficientResultZerosCount)
+					{
+						coefficientResult = coefficientHalf;
+						coefficientResultZerosCount = coefficientHalfZerosCount;
+					}
+				}
+			}
+
+			return coefficientResult;
+		}
+
+		private static BID_UINT64 TryShortenNoRangeCheck(BID_UINT64 partsCoefficient, BID_UINT64 delta,
+									   BID_UINT64 deltaPowerTen)
+		{
+			var coefficientResult = BID_UINT64.MaxValue;
+			var coefficientResultZerosCount = int.MinValue;
+			var delatPowerTenUp = deltaPowerTen * 10;
+
+			{ // Check ceiling
+				var coefficientUp = ((partsCoefficient + delta) / deltaPowerTen) * deltaPowerTen;
+				coefficientResult = coefficientUp;
+				coefficientResultZerosCount = (coefficientResult % delatPowerTenUp == 0 ? 1 : 0);
+			}
+
+			{ // Check flooring
+				var coefficientDown = (partsCoefficient / deltaPowerTen) * deltaPowerTen;
+				if (coefficientResult != coefficientDown)
+				{
+					var coefficientDownZerosCount = (coefficientDown % delatPowerTenUp == 0 ? 1 : 0);
+					if (coefficientDownZerosCount > coefficientResultZerosCount)
+					{
+						coefficientResult = coefficientDown;
+						coefficientResultZerosCount = coefficientDownZerosCount;
+					}
+				}
+			}
+
+			{ // Check half-up
+				var coefficientHalf = ((partsCoefficient + deltaPowerTen / 2) / deltaPowerTen) * deltaPowerTen;
+				if (coefficientResult != coefficientHalf)
+				{
+					// If the number of zeros in coefficientHalf is not less than the number of zeros in cr,
+					// then coefficientHalf should be chosen.
+					// Since both numbers are multiplied by epsilonFloor10Up, it can be ignored
+					// The only next digit after epsilonFloor10Up could be checked,
+					// since cr and coefficientHalf differs in (delta - (epsilonFloor10Up / 2 - 1)).
+					var coefficientHalfZerosCount = (coefficientHalf % delatPowerTenUp == 0 ? 1 : 0);
+					if (coefficientHalfZerosCount >= coefficientResultZerosCount)
+					{
+						coefficientResult = coefficientHalf;
+						coefficientResultZerosCount = coefficientHalfZerosCount;
+					}
+				}
+			}
+
+			return coefficientResult;
+		}
 
 		public static UInt64 Round(UInt64 value, int n, RoundingMode roundType)
 		{
@@ -1680,6 +1895,10 @@ namespace EPAM.Deltix.DFP
 
 		public const UInt64 InfinityMask = 0x7800000000000000UL;
 		public const UInt64 SignedInfinityMask = 0xF800000000000000UL;
+
+		public const BID_UINT64 MaskSign = 0x8000000000000000UL;
+		public const BID_UINT64 MaskSpecial = 0x6000000000000000UL;
+		public const BID_UINT64 MaskInfinityAndNan = 0x7800000000000000UL;
 
 		public const UInt64 NaNMask = 0x7C00000000000000UL;
 		public const UInt64 SignalingNaNMask = 0xFC00000000000000UL;
