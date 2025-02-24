@@ -1367,8 +1367,8 @@ namespace EPAM.Deltix.DFP.Test
 			long bestSolution = long.MinValue;
 			if (rgDown > 0)
 			{
-				var mUp = (mantissa / 10) * 10;
-				uint mFactor = 1;
+				long mUp = (mantissa / 10) * 10;
+				long mFactor = 1;
 
 				long bestDifference = long.MaxValue;
 				int bestPosition = -1;
@@ -1379,7 +1379,7 @@ namespace EPAM.Deltix.DFP.Test
 				{
 					for (uint d = 0; d < 10; ++d)
 					{
-						var mTest = (mUp + d) * mFactor;
+						long mTest = (mUp + d) * mFactor;
 						if (rgDown <= mTest && mTest <= rgUp)
 						{
 							var md = Math.Abs(mantissa - mTest);
