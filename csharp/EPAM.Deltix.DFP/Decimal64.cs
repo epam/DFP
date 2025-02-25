@@ -823,6 +823,11 @@ namespace EPAM.Deltix.DFP
 		/// This function attempts to find the number with the maximum count of trailing zeros
 		/// within the neighborhood range [mantissa-delta ... mantissa+delta].
 		/// If the number of trailing zeros is less than minZerosCount, the original value is returned.
+		/// The delta argument determines how far new values can be from the input value.
+		/// It defines the region within which candidates are searched.
+		/// Once the best candidate within the search region is found, it is checked to determine if the candidate is good enough.
+		/// The good candidate must have at least minZerosCount trailing zeros.
+		/// If this is true, the new value with a shortened mantissa is returned; otherwise, the original input value is returned.
 		/// For the examples above the
 		/// Decimal64.FromDouble(12.3456).ShortenMantissa(4, 1) => 12.3456
 		/// Decimal64.FromDouble(720491.5510000001).ShortenMantissa(4, 1) => 720491.551
