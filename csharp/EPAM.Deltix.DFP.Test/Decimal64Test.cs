@@ -1269,6 +1269,151 @@ namespace EPAM.Deltix.DFP.Test
 			}
 		}
 
+		[Test]
+		public void TestShortenMantissaBigDelta()
+		{
+			Assert.AreEqual(Decimal64.Parse("10000000000000000"),
+				Decimal64.Parse("9999000000000000").ShortenMantissa(DotNetImpl.MaxCoefficient / 10, 2));
+		}
+
+		[Test]
+		public void TestShortenMantissaCase006()
+		{
+			String testString = "0.006";
+			var testValue = Double.Parse(testString);
+			var testX = 0.005999999999998265; // Math.nextDown(testValue);
+
+			var d64 = Decimal64.FromDouble(testX).ShortenMantissa(1735, 1);
+			Assert.AreEqual(testString, d64.ToString());
+
+			Decimal64.FromDouble(9.060176071990028E-7).ShortenMantissa(2, 1);
+		}
+
+		[Test]
+		public void TestShortenMantissaRandom()
+		{
+			var randomSeed = new Random().Next();
+			var random = new Random(randomSeed);
+
+			try
+			{
+				for (int iteration = 0; iteration < N; ++iteration)
+				{
+					var mantissa = GenerateMantissa(random, Decimal64.MaxSignificandDigits);
+					int error = random.Next(3) - 1;
+					mantissa = Math.Min(DotNetImpl.MaxCoefficient, Math.Max(0, (ulong)((long)mantissa + error)));
+					if (mantissa <= DotNetImpl.MaxCoefficient / 10)
+						mantissa = mantissa * 10;
+
+					var delta = GenerateMantissa(random, 0);
+					if (delta > DotNetImpl.MaxCoefficient / 10)
+						delta = delta / 10;
+
+					CheckShortenMantissaCase(mantissa, delta);
+				}
+			}
+			catch (Exception e)
+			{
+				throw new Exception("Random seed " + randomSeed + " exception: " + e.Message, e);
+			}
+		}
+
+		[Test]
+		public void TestShortenMantissaCase()
+		{
+			CheckShortenMantissaCase(9999888877776001UL, 1000);
+			CheckShortenMantissaCase(1230000000000000UL, 80);
+			CheckShortenMantissaCase(1230000000000075UL, 80);
+			CheckShortenMantissaCase(1229999999999925UL, 80);
+			CheckShortenMantissaCase(4409286553495543UL, 900);
+			CheckShortenMantissaCase(4409286553495000UL, 1000);
+			CheckShortenMantissaCase(4409286550000000UL, 81117294);
+			CheckShortenMantissaCase(9010100000000001UL, 999999999999999L);
+			CheckShortenMantissaCase(8960196546869015UL, 1);
+			CheckShortenMantissaCase(4700900091799999UL, 947076117508L);
+			CheckShortenMantissaCase(5876471737721999UL, 91086);
+			CheckShortenMantissaCase(6336494570000000UL, 6092212816L);
+			CheckShortenMantissaCase(8960196546869011UL, 999999999999999L);
+			CheckShortenMantissaCase(1519453608576584UL, 3207L);
+		}
+
+		private static void CheckShortenMantissaCase(ulong mantissa, ulong delta)
+		{
+			try
+			{
+				var bestSolution = ShortenMantissaDirect(mantissa, delta);
+
+				var test64 = Decimal64.FromULong(mantissa).ShortenMantissa(delta, 0).ToULong();
+
+				if (test64 != bestSolution)
+					throw new Exception("The mantissa(=" + mantissa + ") and delta(=" + delta + ") produce test64(=" + test64 + ") != bestSolution(=" + bestSolution + ").");
+			}
+			catch (Exception e)
+			{
+				throw new Exception("The mantissa(=" + mantissa + ") and delta(=" + delta + ") produce exception.", e);
+			}
+		}
+
+		private static ulong ShortenMantissaDirect(ulong mantissaIn, ulong deltaIn)
+		{
+			var mantissa = (long)mantissaIn;
+			var delta = (long)deltaIn;
+			var rgUp = mantissa + delta;
+			var rgDown = mantissa - delta;
+
+			if (mantissaIn <= DotNetImpl.MaxCoefficient / 10 || mantissaIn > DotNetImpl.MaxCoefficient)
+				throw new ArgumentException("The mantissa(=" + mantissa + ") must be in (" + DotNetImpl.MaxCoefficient / 10 + ".." + DotNetImpl.MaxCoefficient + "] range");
+
+			long bestSolution = long.MinValue;
+			if (rgDown > 0)
+			{
+				long mUp = (mantissa / 10) * 10;
+				long mFactor = 1;
+
+				long bestDifference = long.MaxValue;
+				int bestPosition = -1;
+
+				for (int replacePosition = 0;
+					 replacePosition < Decimal64.MaxSignificandDigits + 1;
+					 ++replacePosition, mUp = (mUp / 100) * 10, mFactor *= 10)
+				{
+					for (uint d = 0; d < 10; ++d)
+					{
+						long mTest = (mUp + d) * mFactor;
+						if (rgDown <= mTest && mTest <= rgUp)
+						{
+							var md = Math.Abs(mantissa - mTest);
+							if (bestPosition < replacePosition ||
+								(bestPosition == replacePosition && bestDifference >= md))
+							{
+								bestPosition = replacePosition;
+								bestDifference = md;
+								bestSolution = mTest;
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				bestSolution = 0;
+			}
+
+			return (ulong)bestSolution;
+		}
+
+		private static ulong GenerateMantissa(Random random, int minimalLength)
+		{
+			int mLen = (1 + random.Next(Decimal64.MaxSignificandDigits) /*[1..16]*/);
+			ulong m = 1 + (ulong)random.Next(9);
+			int i = 1;
+			for (; i < mLen; ++i)
+				m = m * 10 + (ulong)random.Next(10);
+			for (; i < minimalLength; ++i)
+				m = m * 10;
+			return m;
+		}
+
 		readonly int N = 5000000;
 
 		static void Main()
