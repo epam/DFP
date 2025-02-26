@@ -873,7 +873,11 @@ public class Decimal64Utils {
      * Decimal64.fromDouble(12.3456).shortenMantissa(4, 1) => 12.3456
      * Decimal64.fromDouble(720491.5510000001).shortenMantissa(4, 1) => 720491.551
      * Decimal64.fromDouble(0.009889899999999999).shortenMantissa(4, 1) => 0.0098899
-     * Decimal64.fromDouble(9.060176071990028E-7).shortenMantissa(4, 1) => 0.000000906017607199003
+     * Decimal64.fromDouble(9.060176071990028E-7).shortenMantissa(4, 1)  => 0.000000906017607199003
+     * Decimal64.fromDouble(9.060176071990028E-7).shortenMantissa(30, 4) => 0.000000906017607199
+     * Decimal64.fromDouble(9.060176071990048E-7).shortenMantissa(30, 4)
+     *                   => 9.060176071990048E-7 - Note: this value is not rounded because the delta is too small
+     *                      for ...0048 range is [...0018 - ...0078] and there is no value with 4 trailing zeros in this range.
      *
      * @param value         {@code DFP} argument for mantissa shorting
      * @param delta         the maximal mantissa difference in [0..999999999999999] range.
