@@ -810,6 +810,7 @@ namespace EPAM.Deltix.DFP
 		}
 
 		/// <summary>
+		/// This function is experimental.
 		/// Returns a <code>DFP</code> number in some neighborhood of the input value with a maximally
 		/// reduced number of digits.
 		/// Explanation:

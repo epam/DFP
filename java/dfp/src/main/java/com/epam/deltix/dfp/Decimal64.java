@@ -716,6 +716,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
     /// region Rounding
 
     /**
+     * This function is experimental.
      * Returns a {@code DFP} number in some neighborhood of the input value with a maximally
      * reduced number of digits.
      * Explanation:
