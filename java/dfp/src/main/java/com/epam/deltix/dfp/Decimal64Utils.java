@@ -851,6 +851,46 @@ public class Decimal64Utils {
     /// region Rounding
 
     /**
+     * This function is experimental.
+     * Returns a {@code DFP} number in some neighborhood of the input value with a maximally
+     * reduced number of digits.
+     * Explanation:
+     * Any finite {@code DFP} value can be represented as 16-digits integer number (mantissa)
+     * multiplied by some power of ten (exponent):
+     * 12.3456              = 1234_5600_0000_0000 * 10^-14
+     * 720491.5510000001    = 7204_9155_1000_0001 * 10^-10
+     * 0.009889899999999999 = 9889_8999_9999_9999 * 10^-18
+     * 9.060176071990028E-7 = 9060_1760_7199_0028 * 10^-22
+     * This function modify only the mantissa and leave the exponent unchanged.
+     * This function attempts to find the number with the maximum count of trailing zeros
+     * within the neighborhood range [mantissa-delta ... mantissa+delta].
+     * If the number of trailing zeros is less than minZerosCount, the original value is returned.
+     * The delta argument determines how far new values can be from the input value.
+     * It defines the region within which candidates are searched.
+     * Once the best candidate within the search region is found, it is checked to determine if the candidate is good enough.
+     * The good candidate must have at least minZerosCount trailing zeros.
+     * If this is true, the new value with a shortened mantissa is returned; otherwise, the original input value is returned.
+     * For the examples above the
+     * Decimal64.fromDouble(12.3456).shortenMantissa(4, 1) => 12.3456
+     * Decimal64.fromDouble(720491.5510000001).shortenMantissa(4, 1) => 720491.551
+     * Decimal64.fromDouble(0.009889899999999999).shortenMantissa(4, 1) => 0.0098899
+     * Decimal64.fromDouble(9.060176071990028E-7).shortenMantissa(4, 1)  => 0.000000906017607199003
+     * Decimal64.fromDouble(9.060176071990028E-7).shortenMantissa(30, 4) => 0.000000906017607199
+     * Decimal64.fromDouble(9.060176071990048E-7).shortenMantissa(30, 4)
+     *                   => 9.060176071990048E-7 - Note: this value is not rounded because the delta is too small
+     *                      for ...0048 range is [...0018 - ...0078] and there is no value with 4 trailing zeros in this range.
+     *
+     * @param value         {@code DFP} argument for mantissa shorting
+     * @param delta         the maximal mantissa difference in [0..999999999999999] range.
+     * @param minZerosCount the minimal number of trailing zeros (must be non-negative).
+     * @return the {@code DFP} value
+     */
+    @Decimal
+    public static long shortenMantissa(@Decimal final long value, final long delta, final int minZerosCount) {
+        return JavaImpl.shortenMantissa(value, delta, minZerosCount);
+    }
+
+    /**
      * Returns the {@code DFP} value that is rounded to the value, reciprocal to r, according the selected rounding type.
      *
      * @param value     {@code DFP} argument to round
@@ -2462,6 +2502,21 @@ public class Decimal64Utils {
     public static long minChecked(@Decimal final long a, @Decimal final long b) {
         checkNull(a, b);
         return min(a, b);
+    }
+
+    /**
+     * Implements {@link Decimal64#shortenMantissa(long, int)}, adds null check; do not use directly.
+     *
+     * @param value         {@code DFP} argument for mantissa shorting
+     * @param delta         the maximal mantissa difference in [0..999999999999999] range.
+     * @param minZerosCount the minimal number of trailing zeros (must be non-negative).
+     * @return the {@code DFP} value
+     */
+    @Decimal
+    @Deprecated
+    public static long shortenMantissaChecked(@Decimal final long value, final long delta, final int minZerosCount) {
+        checkNull(value);
+        return shortenMantissa(value, delta, minZerosCount);
     }
 
     /**
