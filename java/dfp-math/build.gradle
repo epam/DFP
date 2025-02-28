@@ -53,7 +53,7 @@ task copyNativeDfpMathResources(type: Copy, dependsOn: copyNativeDfpMathResource
     exclude 'linux/amd64/**'
     exclude 'linux/musl-gcc/**'
 }
-compileJava.dependsOn(copyNativeDfpMathResources)
+processResources.dependsOn(copyNativeDfpMathResources)
 
 def rUser = findProperty('SONATYPE_NEXUS_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: "FakeUser"
 def rPass = findProperty('SONATYPE_NEXUS_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: "FakePass"

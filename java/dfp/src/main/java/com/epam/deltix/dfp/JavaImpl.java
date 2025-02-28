@@ -3364,4 +3364,189 @@ class JavaImpl {
 
         return true;
     }
+
+    public static long shortenMantissa(final long value, final long delta, final int minZerosCount) {
+        if (delta < 0 || delta > MAX_COEFFICIENT / 10)
+            throw new IllegalArgumentException("The delta value must be in [0.." + MAX_COEFFICIENT / 10 + "] range.");
+        if (minZerosCount < 0)
+            throw new IllegalArgumentException("The minZerosCount value must be non-negative.");
+
+        // No need this check because of delta range restriction.
+//        if (delta >= MAX_COEFFICIENT)
+//            return Decimal64Utils.ZERO;
+
+        if (isNonFinite(value) || delta == 0 || minZerosCount >= MAX_FORMAT_DIGITS)
+            return value;
+
+//        final Decimal64Parts parts = tlsDecimal64Parts.get();
+//        JavaImpl.toParts(value, parts);
+        long partsCoefficient;
+        long partsSignMask;
+        int partsExponent;
+        { // Copy-paste the toParts method for speedup
+            partsSignMask = value & MASK_SIGN;
+
+            if (isSpecial(value)) {
+//                if (isNonFinite(value)) {
+//                    partsExponent = 0;
+//
+//                    partsCoefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
+//                    if ((value & 0x0003_FFFF_FFFF_FFFFL) > MAX_COEFFICIENT)
+//                        partsCoefficient = value & ~MASK_COEFFICIENT;
+//                    if (isInfinity(value))
+//                        partsCoefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+//                } else
+                {
+                    // Check for non-canonical values.
+                    final long coefficient = (value & LARGE_COEFFICIENT_MASK) | LARGE_COEFFICIENT_HIGH_BIT;
+                    partsCoefficient = coefficient > MAX_COEFFICIENT ? 0 : coefficient;
+
+                    // Extract exponent.
+                    final long tmp = value >> EXPONENT_SHIFT_LARGE;
+                    partsExponent = (int) (tmp & EXPONENT_MASK);
+                }
+            } else {
+
+                // Extract exponent. Maximum biased value for "small exponent" is 0x2FF(*2=0x5FE), signed: []
+                // upper 1/4 of the mask range is "special", as checked in the code above
+                final long tmp = value >> EXPONENT_SHIFT_SMALL;
+                partsExponent = (int) (tmp & EXPONENT_MASK);
+
+                // Extract coefficient.
+                partsCoefficient = (value & SMALL_COEFFICIENT_MASK);
+            }
+        }
+
+        if (partsCoefficient == 0) // This is a zero with any exponent
+            return Decimal64Utils.ZERO;
+
+        if (partsCoefficient <= MAX_COEFFICIENT / 10) { // Denormalized value case - normalize mantissa and exponent
+            int ei = Arrays.binarySearch(POWERS_OF_TEN, partsCoefficient);
+            final int expDiff = ei < 0
+                ? MAX_FORMAT_DIGITS - ~ei
+                : MAX_FORMAT_DIGITS - ei - 1;
+            partsCoefficient *= POWERS_OF_TEN[expDiff];
+            partsExponent -= expDiff;
+        }
+//        assert (partsCoefficient <= MAX_COEFFICIENT);
+//        assert (partsCoefficient > MAX_COEFFICIENT / 10);
+//        assert (Decimal64Utils.equals(value, pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST)));
+
+        // No need this check because of delta range restriction.
+//        if (partsCoefficient <= delta) // Downside of the interval is close to zero,
+//            return Decimal64Utils.ZERO;  // this is nearly impossible but still can happen
+
+        int ei = Arrays.binarySearch(POWERS_OF_TEN, delta);
+        final long deltaFloorPowerTen = ei >= 0 ? POWERS_OF_TEN[ei] : POWERS_OF_TEN[~ei - 1];
+
+        final long rangeUp = partsCoefficient + delta;
+        final long rangeDown = partsCoefficient - delta;
+
+        { // Check the optimistic case first
+            final long deltaFloorPowerTenUp = deltaFloorPowerTen * 10; // Note: this is not the ceil: consider the case when epsilon = 10^n
+            if (deltaFloorPowerTenUp < MAX_COEFFICIENT) {
+                final long coefficientResult = tryShorten(partsCoefficient, delta, rangeUp, rangeDown, deltaFloorPowerTenUp);
+
+                if (coefficientResult != Long.MIN_VALUE) {
+                    if (coefficientResult % POWERS_OF_TEN[minZerosCount] == 0)
+                        return pack(partsSignMask, partsExponent, coefficientResult, BID_ROUNDING_TO_NEAREST);
+                    else
+                        return value;
+                }
+            }
+        }
+
+        final long coefficientResult = tryShortenNoRangeCheck(partsCoefficient, delta, deltaFloorPowerTen);
+        if (coefficientResult % POWERS_OF_TEN[minZerosCount] == 0)
+            return pack(partsSignMask, partsExponent, coefficientResult, BID_ROUNDING_TO_NEAREST);
+        else
+            return value;
+    }
+
+    private static long tryShorten(final long partsCoefficient, final long delta,
+                                   final long rangeUp, final long rangeDown,
+                                   final long deltaPowerTen) {
+        long coefficientResult = Long.MIN_VALUE;
+        int coefficientResultZerosCount = Integer.MIN_VALUE;
+        final long delatPowerTenUp = deltaPowerTen * 10;
+
+        { // Check ceiling
+            final long coefficientUp = (rangeUp / deltaPowerTen) * deltaPowerTen;
+            if (rangeDown <= coefficientUp && coefficientUp <= rangeUp) {
+                coefficientResult = coefficientUp;
+                coefficientResultZerosCount = (coefficientResult % delatPowerTenUp == 0 ? 1 : 0);
+            }
+        }
+
+        { // Check flooring
+            final long coefficientDown = (partsCoefficient / deltaPowerTen) * deltaPowerTen;
+            if (coefficientResult != coefficientDown && rangeDown <= coefficientDown && coefficientDown <= rangeUp) {
+                final int coefficientDownZerosCount = (coefficientDown % delatPowerTenUp == 0 ? 1 : 0);
+                if (coefficientDownZerosCount > coefficientResultZerosCount) {
+                    coefficientResult = coefficientDown;
+                    coefficientResultZerosCount = coefficientDownZerosCount;
+                }
+            }
+        }
+
+        { // Check half-up
+            final long coefficientHalf = ((partsCoefficient + deltaPowerTen / 2) / deltaPowerTen) * deltaPowerTen;
+            if (coefficientResult != coefficientHalf && rangeDown <= coefficientHalf && coefficientHalf <= rangeUp) {
+                // If the number of zeros in coefficientHalf is not less than the number of zeros in cr,
+                // then coefficientHalf should be chosen.
+                // Since both numbers are multiplied by epsilonFloor10Up, it can be ignored
+                // The only next digit after epsilonFloor10Up could be checked,
+                // since cr and coefficientHalf differs in (delta - (epsilonFloor10Up / 2 - 1)).
+                final int coefficientHalfZerosCount = (coefficientHalf % delatPowerTenUp == 0 ? 1 : 0);
+                if (coefficientHalfZerosCount >= coefficientResultZerosCount) {
+                    coefficientResult = coefficientHalf;
+                    coefficientResultZerosCount = coefficientHalfZerosCount;
+                }
+            }
+        }
+
+        return coefficientResult;
+    }
+
+    private static long tryShortenNoRangeCheck(final long partsCoefficient, final long delta,
+                                   final long deltaPowerTen) {
+        long coefficientResult = Long.MIN_VALUE;
+        int coefficientResultZerosCount = Integer.MIN_VALUE;
+        final long delatPowerTenUp = deltaPowerTen * 10;
+
+        { // Check ceiling
+            final long coefficientUp = ((partsCoefficient + delta) / deltaPowerTen) * deltaPowerTen;
+            coefficientResult = coefficientUp;
+            coefficientResultZerosCount = (coefficientResult % delatPowerTenUp == 0 ? 1 : 0);
+        }
+
+        { // Check flooring
+            final long coefficientDown = (partsCoefficient / deltaPowerTen) * deltaPowerTen;
+            if (coefficientResult != coefficientDown) {
+                final int coefficientDownZerosCount = (coefficientDown % delatPowerTenUp == 0 ? 1 : 0);
+                if (coefficientDownZerosCount > coefficientResultZerosCount) {
+                    coefficientResult = coefficientDown;
+                    coefficientResultZerosCount = coefficientDownZerosCount;
+                }
+            }
+        }
+
+        { // Check half-up
+            final long coefficientHalf = ((partsCoefficient + deltaPowerTen / 2) / deltaPowerTen) * deltaPowerTen;
+            if (coefficientResult != coefficientHalf) {
+                // If the number of zeros in coefficientHalf is not less than the number of zeros in cr,
+                // then coefficientHalf should be chosen.
+                // Since both numbers are multiplied by epsilonFloor10Up, it can be ignored
+                // The only next digit after epsilonFloor10Up could be checked,
+                // since cr and coefficientHalf differs in (delta - (epsilonFloor10Up / 2 - 1)).
+                final int coefficientHalfZerosCount = (coefficientHalf % delatPowerTenUp == 0 ? 1 : 0);
+                if (coefficientHalfZerosCount >= coefficientResultZerosCount) {
+                    coefficientResult = coefficientHalf;
+                    coefficientResultZerosCount = coefficientHalfZerosCount;
+                }
+            }
+        }
+
+        return coefficientResult;
+    }
 }

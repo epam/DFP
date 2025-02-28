@@ -46,7 +46,7 @@ task copyNativeDfpResources(type: Copy, dependsOn: copyNativeDfpResourcesMuslToA
     exclude 'linux/amd64/**'
     exclude 'linux/musl-gcc/**'
 }
-compileJava.dependsOn(copyNativeDfpResources)
+processTestResources.dependsOn(copyNativeDfpResources)
 
 task testsJar(type: Jar, dependsOn: [jar, testClasses, processTestResources]) {
     archiveClassifier = 'tests'
