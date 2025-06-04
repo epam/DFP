@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net40</TargetFrameworks>
+    <TargetFrameworks>net6.0;net40</TargetFrameworks>
     <LangVersion>6</LangVersion>
     <RootNamespace>EPAM.Deltix.DFP.Test</RootNamespace>
     <AssemblyName>EPAM.Deltix.DFP.Test</AssemblyName>
