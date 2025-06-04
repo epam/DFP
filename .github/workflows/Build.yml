@@ -209,7 +209,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.x
+          dotnet-version: 8.x
       - name: build
         run: |
           cd csharp
@@ -269,7 +269,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.x
+          dotnet-version: 8.x
       - name: test windows
         if: ${{ matrix.os == 'windows-2022' }}
         run: |
@@ -289,4 +289,4 @@ jobs:
             csharp/EPAM.Deltix.DFPMath/bin/*
             csharp/*.txt
             csharp/*.xml
-          name: Dotnet-3.1-${{ matrix.os }}-TestReports
+          name: Dotnet-${{ matrix.os }}-TestReports
