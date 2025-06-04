@@ -26,6 +26,10 @@ static bool isNaN(BID_UINT64 value) {
     return (value & MASK_INFINITY_NAN) == MASK_INFINITY_NAN;
 }
 
+static bool isNegativeSign(BID_UINT64 value) {
+    return value & MASK_SIGN;
+}
+
 #define BCD_TABLE_DIGITS 3
 static const int BCD_DIVIDER = 1000000000;
 static const int BCD_DIVIDER_GROUPS = 3; // log10(BCD_DIVIDER) / BCD_TABLE_DIGITS must be natural value
@@ -131,7 +135,7 @@ const char* dfp64_to_string_4(BID_UINT64 value, char decimalMark, char* buffer51
     if (isNonFinite(value)) {
         // Value is either Inf or NaN
         // TODO: Do we need SNaN?
-        return isNaN(value) ? "NaN" : value < 0 ? "-Infinity" : "Infinity";
+        return isNaN(value) ? "NaN" : isNegativeSign(value) ? "-Infinity" : "Infinity";
     }
 
     BID_UINT64 partsSignMask, partsCoefficient;
@@ -274,7 +278,7 @@ const char* dfp64_to_scientific_string_3(BID_UINT64 value, char decimalMark, cha
     if (isNonFinite(value)) {
         // Value is either Inf or NaN
         // TODO: Do we need SNaN?
-        return isNaN(value) ? "NaN" : value < 0 ? "-Infinity" : "Infinity";
+        return isNaN(value) ? "NaN" : isNegativeSign(value < 0) ? "-Infinity" : "Infinity";
     }
 
     BID_UINT64 partsSignMask, partsCoefficient;
