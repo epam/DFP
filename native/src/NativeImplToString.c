@@ -278,7 +278,7 @@ const char* dfp64_to_scientific_string_3(BID_UINT64 value, char decimalMark, cha
     if (isNonFinite(value)) {
         // Value is either Inf or NaN
         // TODO: Do we need SNaN?
-        return isNaN(value) ? "NaN" : isNegativeSign(value < 0) ? "-Infinity" : "Infinity";
+        return isNaN(value) ? "NaN" : isNegativeSign(value) ? "-Infinity" : "Infinity";
     }
 
     BID_UINT64 partsSignMask, partsCoefficient;
