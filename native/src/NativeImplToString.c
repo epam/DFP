@@ -183,8 +183,8 @@ const char* dfp64_to_string_4(BID_UINT64 value, char decimalMark, char* buffer51
         int digits = numberOfDigits(partsCoefficient);
 
         if (digits + exponent > 0) {
-            long integralPart = partsCoefficient / POWERS_OF_TEN[-exponent];
-            long fractionalPart = partsCoefficient % POWERS_OF_TEN[-exponent];
+            BID_UINT64 integralPart = partsCoefficient / POWERS_OF_TEN[-exponent];
+            BID_UINT64 fractionalPart = partsCoefficient % POWERS_OF_TEN[-exponent];
 
             while (fractionalPart > 0) {
                 bi = formatUIntFromBcdTable((int)(fractionalPart % BCD_DIVIDER), buffer512, bi);
