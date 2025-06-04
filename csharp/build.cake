@@ -73,7 +73,7 @@ Task("Build")
     DotNetCoreBuild("./EPAM.Deltix.DFPMath/EPAM.Deltix.DFPMath.csproj", buildSettings);
 
     if (!IsRunningOnWindows())
-        buildSettings.Framework = "net6.0";
+        buildSettings.Framework = "net8.0";
 
     DotNetCoreBuild("./EPAM.Deltix.DFP.Benchmark/EPAM.Deltix.DFP.Benchmark.csproj", buildSettings);
     DotNetCoreBuild("./EPAM.Deltix.DFP.Demo/EPAM.Deltix.DFP.Demo.csproj", buildSettings);
@@ -93,7 +93,7 @@ Task("Run-Unit-Tests")
 
     //settings.NoBuild = true;
     if (!IsRunningOnWindows())
-         buildSettings.Framework = "net6.0";
+         buildSettings.Framework = "net8.0";
 
 	Information("Running tests with .NET Core");
 	DotNetCoreTest("./EPAM.Deltix.DFP.Test/EPAM.Deltix.DFP.Test.csproj", buildSettings);
