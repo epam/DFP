@@ -22,25 +22,21 @@ import org.gradle.api.tasks.TaskAction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodySubscribers;
-import java.net.http.HttpResponse.ResponseInfo;
-import java.time.Duration;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-
-import static java.nio.charset.StandardCharsets.US_ASCII;
 
 /**
  * This task performs manual steps to publish artifacts to Central Portal via OSSRH Staging API.
  */
-public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask
-{
+public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask {
     private static final String CENTRAL_PORTAL_OSSRH_API_URI = "https://ossrh-staging-api.central.sonatype.com";
-    private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(30);
+    private static final int CONNECTION_TIMEOUT = 30000;
 
     private final Property<String> portalUsername;
     private final Property<String> portalPassword;
@@ -50,8 +46,7 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask
     /**
      * Create new task instance.
      */
-    public SonatypeCentralPortalUploadRepositoryTask()
-    {
+    public SonatypeCentralPortalUploadRepositoryTask() {
         portalUsername = getProject().getObjects().property(String.class);
         portalPassword = getProject().getObjects().property(String.class);
         groupId = getProject().getObjects().property(String.class);
@@ -64,8 +59,7 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask
      * @return Central Portal username.
      */
     @Input
-    public Property<String> getPortalUsername()
-    {
+    public Property<String> getPortalUsername() {
         return portalUsername;
     }
 
@@ -75,8 +69,7 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask
      * @return Central Portal password.
      */
     @Input
-    public Property<String> getPortalPassword()
-    {
+    public Property<String> getPortalPassword() {
         return portalPassword;
     }
 
@@ -86,8 +79,7 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask
      * @return {@code groupId} of the project.
      */
     @Input
-    public Property<String> getGroupId()
-    {
+    public Property<String> getGroupId() {
         return groupId;
     }
 
@@ -97,8 +89,7 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask
      * @return {@code true} if snapshot release.
      */
     @Input
-    public Property<Boolean> getSnapshotRelease()
-    {
+    public Property<Boolean> getSnapshotRelease() {
         return snapshotRelease;
     }
 
@@ -106,123 +97,114 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask
      * Publish staging repository to the Central Portal.
      */
     @TaskAction
-    public void run() throws IOException, InterruptedException
-    {
-        if (!portalUsername.isPresent())
-        {
-            return; // release is not configured
+    public void run() throws IOException, InterruptedException {
+        if (!portalUsername.isPresent()) {
+            return;
         }
 
-        if (snapshotRelease.get())
-        {
-            return; // snapshots are published directly
+        if (snapshotRelease.get()) {
+            return;
         }
 
-        final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(CONNECTION_TIMEOUT)
-            .build();
+        String userNameAndPassword = portalUsername.get() + ":" + portalPassword.get();
+        String basicAuth = Base64.getEncoder().encodeToString(userNameAndPassword.getBytes(StandardCharsets.US_ASCII));
+        String bearer = "Bearer " + basicAuth;
 
-        final String userNameAndPassword = portalUsername.get() + ":" + portalPassword.get();
-        final String bearer = new String(
-            Base64.getEncoder().encode(userNameAndPassword.getBytes(US_ASCII)), US_ASCII);
-
-        final HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-            .header("Authorization", "Bearer " + bearer);
-
-        final URI apiUri = URI.create(CENTRAL_PORTAL_OSSRH_API_URI);
-
-        final String repositoryKey = findOpenRepository(apiUri, httpClient, requestBuilder);
-        uploadRepositoryToPortal(apiUri, httpClient, requestBuilder, repositoryKey);
-        dropRepository(apiUri, httpClient, requestBuilder, repositoryKey);
+        URI apiUri = URI.create(CENTRAL_PORTAL_OSSRH_API_URI);
+        String repositoryKey = findOpenRepository(apiUri, bearer);
+        uploadRepositoryToPortal(apiUri, bearer, repositoryKey);
+        dropRepository(apiUri, bearer, repositoryKey);
     }
 
-    private String findOpenRepository(
-        final URI apiUri,
-        final HttpClient httpClient,
-        final HttpRequest.Builder requestBuilder) throws IOException, InterruptedException
-    {
-        final HttpRequest request = requestBuilder
-            .copy()
-            .GET()
-            .uri(apiUri.resolve("/manual/search/repositories?ip=client"))
-            .build();
-        final HttpResponse<String> response = httpClient.send(
-            request, (ResponseInfo responseInfo) -> BodySubscribers.ofString(US_ASCII));
+    private String findOpenRepository(URI apiUri, String bearer) throws IOException {
+        String endpoint = apiUri.resolve("/manual/search/repositories?ip=client").toString();
+        HttpURLConnection conn = (HttpURLConnection) new URL(endpoint).openConnection();
+        conn.setConnectTimeout(CONNECTION_TIMEOUT);
+        conn.setReadTimeout(CONNECTION_TIMEOUT);
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", bearer);
 
-        if (200 != response.statusCode())
-        {
+        int status = conn.getResponseCode();
+        String body = readBody(conn);
+
+        if (status != 200) {
             throw new IllegalStateException("Failed to query repositories: " +
-                "status=" + response.statusCode() + ", response=" + response.body());
+                "status=" + status + ", response=" + body);
         }
 
-        final JSONArray repositories = new JSONObject(response.body()).getJSONArray("repositories");
-        if (repositories.isEmpty())
-        {
+        final JSONArray repositories = new JSONObject(body).getJSONArray("repositories");
+        if (repositories.isEmpty()) {
             throw new IllegalStateException("No open repositories found!");
         }
 
         String repositoryKey = null;
         final String group = groupId.get();
-        for (int i = 0; i < repositories.length(); i++)
-        {
-            final JSONObject repo = (JSONObject)repositories.get(i);
-            if ("open".equals(repo.getString("state")))
-            {
+        for (int i = 0; i < repositories.length(); i++) {
+            final JSONObject repo = (JSONObject) repositories.get(i);
+            if ("open".equals(repo.getString("state"))) {
                 final String key = repo.getString("key");
-                if (key.contains(group))
-                {
+                if (key.contains(group)) {
                     repositoryKey = key;
                     break;
                 }
             }
         }
 
-        if (null == repositoryKey)
-        {
+        if (null == repositoryKey) {
             throw new IllegalStateException("No open repositories found!");
         }
         return repositoryKey;
     }
 
-    private static void uploadRepositoryToPortal(
-        final URI apiUri,
-        final HttpClient httpClient,
-        final HttpRequest.Builder requestBuilder,
-        final String repositoryKey) throws IOException, InterruptedException
-    {
-        final HttpRequest request = requestBuilder
-            .copy()
-            .POST(HttpRequest.BodyPublishers.noBody())
-            .uri(apiUri.resolve("/manual/upload/repository/" + repositoryKey + "?publishing_type=automatic"))
-            .build();
-        final HttpResponse<String> response = httpClient.send(
-            request, (ResponseInfo responseInfo) -> BodySubscribers.ofString(US_ASCII));
+    private static void uploadRepositoryToPortal(URI apiUri, String bearer, String repositoryKey) throws IOException {
+        String endpoint = apiUri.resolve("/manual/upload/repository/" + repositoryKey + "?publishing_type=user_managed").toString();
+        HttpURLConnection conn = (HttpURLConnection) new URL(endpoint).openConnection();
+        conn.setConnectTimeout(CONNECTION_TIMEOUT);
+        conn.setReadTimeout(CONNECTION_TIMEOUT);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Authorization", bearer);
+        conn.setDoOutput(true);
+        conn.getOutputStream().close(); // no body
 
-        if (200 != response.statusCode())
-        {
-            throw new IllegalStateException("Failed to upload repository: repository_key=" + repositoryKey +
-                ", status=" + response.statusCode() + ", response=" + response.body());
+        int status = conn.getResponseCode();
+        String body = readBody(conn);
+
+        if (status != 200) {
+            throw new IllegalStateException("Failed to upload repository: repository_key=" + repositoryKey + ", status=" + status + ", response=" + body);
         }
     }
 
-    private static void dropRepository(
-        final URI apiUri,
-        final HttpClient httpClient,
-        final HttpRequest.Builder requestBuilder,
-        final String repositoryKey) throws IOException, InterruptedException
-    {
-        final HttpRequest request = requestBuilder
-            .copy()
-            .DELETE()
-            .uri(apiUri.resolve("/manual/drop/repository/" + repositoryKey))
-            .build();
-        final HttpResponse<String> response = httpClient.send(
-            request, (ResponseInfo responseInfo) -> BodySubscribers.ofString(US_ASCII));
+    private static void dropRepository(URI apiUri, String bearer, String repositoryKey) throws IOException {
+        String endpoint = apiUri.resolve("/manual/drop/repository/" + repositoryKey).toString();
+        HttpURLConnection conn = (HttpURLConnection) new URL(endpoint).openConnection();
+        conn.setConnectTimeout(CONNECTION_TIMEOUT);
+        conn.setReadTimeout(CONNECTION_TIMEOUT);
+        conn.setRequestMethod("DELETE");
+        conn.setRequestProperty("Authorization", bearer);
 
-        if (204 != response.statusCode())
-        {
-            throw new IllegalStateException("Failed to drop repository: repository_key=" + repositoryKey +
-                ", status=" + response.statusCode() + ", response=" + response.body());
+        int status = conn.getResponseCode();
+        String body = readBody(conn);
+
+        if (status != 204) {
+            throw new IllegalStateException("Failed to drop repository: repository_key=" + repositoryKey + ", status=" + status + ", response=" + body);
         }
+    }
+
+    private static String readBody(HttpURLConnection conn) throws IOException {
+        InputStream stream;
+        try {
+            stream = (conn.getResponseCode() < 400) ? conn.getInputStream() : conn.getErrorStream();
+            if (stream == null) return "";
+        } catch (IOException e) {
+            return "";
+        }
+        BufferedReader in = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        StringBuilder body = new StringBuilder();
+        String line;
+        while ((line = in.readLine()) != null) {
+            body.append(line);
+        }
+        in.close();
+        return body.toString();
     }
 }
