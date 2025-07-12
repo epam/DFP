@@ -361,7 +361,7 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '21'
-      - run: ./gradlew publish
+      - run: ./gradlew publish uploadArtifactsToCentralPortal
         env:
           SONATYPE_REPOSITORY:       ${{ secrets.SONATYPE_REPOSITORY }}
           SONATYPE_NEXUS_USERNAME:   ${{ secrets.SONATYPE_NEXUS_USERNAME }}

@@ -1,3 +1,5 @@
+import com.epam.deltix.buildsrc.SonatypeCentralPortalUploadRepositoryTask
+
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 apply plugin: 'java'
@@ -112,6 +114,13 @@ publishing {
             }
         }
     }
+}
+
+tasks.register('uploadArtifactsToCentralPortal', SonatypeCentralPortalUploadRepositoryTask) {
+    portalUsername.set(rUser)
+    portalPassword.set(rPass)
+    groupId.set('com.epam.deltix')
+    snapshotRelease.set(!isReleaseVersion)
 }
 
 if (isReleaseVersion) {
