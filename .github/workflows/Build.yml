@@ -276,7 +276,7 @@ jobs:
           cd csharp
           ./build --target=Run-Unit-Tests
       - name: test nix
-        if: ${{ matrix.os == 'ubuntu-22.04' || matrix.os == 'macos-13' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' || matrix.os == 'macos-14' }}
         run: |
           cd csharp
           ./build.sh --target=Run-Unit-Tests
