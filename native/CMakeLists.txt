@@ -104,12 +104,11 @@ file(GLOB BID_SRCS
 		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_ux_ops_64.c
 		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_four_over_pi.c
 		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/dpml_exception.c
-		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/sqrt_tab_t.c
-		src/NativeImplToString.c)
+		src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/float128/sqrt_tab_t.c)
 		
 file(GLOB PUBLIC_HEADERS "include/*")
 
-add_library(dfp ${BID_SRCS} src/NativeImpl.c)
+add_library(dfp ${BID_SRCS} src/NativeImpl.c src/ToString.c src/ScaleParts.c)
 include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
 target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_)
 if (JAVA_PREFIX)

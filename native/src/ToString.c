@@ -1,34 +1,8 @@
 #include <math.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include "NativeImplToString.h"
-#include <bid_conf.h>
-#include <bid_functions.h>
-#include <bid_internal.h>
-
-static const BID_UINT64 DFP_NAN_NULL = 0xFFFFFFFFFFFFFF80ull; // = -0x80L;
-static const BID_UINT64 MASK_INFINITY_AND_NAN = 0x7800000000000000ull;
-static const BID_UINT64 MASK_INFINITY_NAN = 0x7C00000000000000L;
-
-static const int EXPONENT_BIAS = 398;
-
-
-static bool isNull(BID_UINT64 value) {
-    return DFP_NAN_NULL == value;
-}
-
-static bool isNonFinite(BID_UINT64 value) {
-    return (value & MASK_INFINITY_AND_NAN) == MASK_INFINITY_AND_NAN;
-}
-
-static bool isNaN(BID_UINT64 value) {
-    return (value & MASK_INFINITY_NAN) == MASK_INFINITY_NAN;
-}
-
-static bool isNegativeSign(BID_UINT64 value) {
-    return value & MASK_SIGN;
-}
+#include "auxiliary.h"
+#include "ToString.h"
 
 #define BCD_TABLE_DIGITS 3
 static const int BCD_DIVIDER = 1000000000;

@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #include "NativeImpl.h"
-#include "NativeImplToString.h"
+#include "ToString.h"
 
 #ifdef _MSC_VER
 #define strcmpIgnoreCase stricmp
