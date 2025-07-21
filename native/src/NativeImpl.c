@@ -3,6 +3,7 @@
 
 #include "NativeImpl.h"
 #include "ToString.h"
+#include "ScaleParts.h"
 
 #ifdef _MSC_VER
 #define strcmpIgnoreCase stricmp
@@ -40,14 +41,14 @@ OPNR(toFixedPoint, int64, bid64_to_int64_xint(bid64_scalbn(value, numberOfDigits
 OPN(parse, dfp64_parse(str), const char* str)
 OPN(tryParse, dfp64_try_parse(str, exception), const char* str, uint32* exception)
 
-OPNR(to_string, const char*, dfp64_to_string(x), BID_UINT64 x)
-OPNR(to_string_2, const char*, dfp64_to_string_2(x, decimalMark), BID_UINT64 x, char decimalMark)
-OPNR(to_string_3, const char*, dfp64_to_string_3(x, decimalMark, buffer512), BID_UINT64 x, char decimalMark, char* buffer512)
-OPNR(to_string_4, const char*, dfp64_to_string_4(x, decimalMark, buffer512, floatStyle), BID_UINT64 x, char decimalMark, char* buffer512, int32 floatStyle)
+OPNR(toString, const char*, dfp64_to_string(x), BID_UINT64 x)
+OPNR(toString2, const char*, dfp64_to_string_2(x, decimalMark), BID_UINT64 x, char decimalMark)
+OPNR(toString3, const char*, dfp64_to_string_3(x, decimalMark, buffer512), BID_UINT64 x, char decimalMark, char* buffer512)
+OPNR(toString4, const char*, dfp64_to_string_4(x, decimalMark, buffer512, floatStyle), BID_UINT64 x, char decimalMark, char* buffer512, int32 floatStyle)
 
-OPNR(to_scientific_string, const char*, dfp64_to_scientific_string(x), BID_UINT64 x)
-OPNR(to_scientific_string_2, const char*, dfp64_to_scientific_string_2(x, decimalMark), BID_UINT64 x, char decimalMark)
-OPNR(to_scientific_string_3, const char*, dfp64_to_scientific_string_3(x, decimalMark, buffer512), BID_UINT64 x, char decimalMark, char* buffer512)
+OPNR(toScientificString, const char*, dfp64_to_scientific_string(x), BID_UINT64 x)
+OPNR(toScientificString2, const char*, dfp64_to_scientific_string_2(x, decimalMark), BID_UINT64 x, char decimalMark)
+OPNR(toScientificString3, const char*, dfp64_to_scientific_string_3(x, decimalMark, buffer512), BID_UINT64 x, char decimalMark, char* buffer512)
 
 
 //endregion
@@ -151,6 +152,13 @@ OPN(divideByInt64, bid64_div(x, bid64_from_int64(integer)), BID_UINT64 x, int64 
 OPN(multiplyAndAdd, bid64_fma(a, b, c), BID_UINT64 a, BID_UINT64 b, BID_UINT64 c)
 OPN(scaleByPowerOfTen, bid64_scalbn(a, n), BID_UINT64 a, int32 n)
 OPN(mean2, bid64_div(bid64_add(a, b), twoConst), BID_UINT64 a, BID_UINT64 b)
+
+//endregion
+
+//region Parts processing
+
+OPNR(getUnscaledValue, BID_SINT64, dfp64_get_unscaled_value(x, abnormalReturn), BID_UINT64 x, BID_SINT64 abnormalReturn)
+OPNR(getScale, int, dfp64_get_scale(x, abnormalReturn), BID_UINT64 x, BID_SINT64 abnormalReturn)
 
 //endregion
 
