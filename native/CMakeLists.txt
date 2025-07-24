@@ -108,7 +108,7 @@ file(GLOB BID_SRCS
 		
 file(GLOB PUBLIC_HEADERS "include/*")
 
-add_library(dfp ${BID_SRCS} src/NativeImpl.c src/ToString.c src/ScaleParts.c)
+add_library(dfp ${BID_SRCS} src/NativeImpl.c src/ToString.c src/ScaleParts.c src/Round.c)
 include_directories(src/thirdparty/IntelRDFPMathLib20U2/LIBRARY/src)
 target_compile_definitions(dfp PRIVATE API_PREFIX=ddfp${VERSION_SUFFIX}_)
 if (JAVA_PREFIX)

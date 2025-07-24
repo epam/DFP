@@ -57,35 +57,6 @@ int formatUIntFromBcdTable(int value, char* buffer, int bi) {
     return bi;
 }
 
-static const BID_UINT64 POWERS_OF_TEN[] = {
-    /*  0 */ 1L,
-    /*  1 */ 10L,
-    /*  2 */ 100L,
-    /*  3 */ 1000L,
-    /*  4 */ 10000L,
-    /*  5 */ 100000L,
-    /*  6 */ 1000000L,
-    /*  7 */ 10000000L,
-    /*  8 */ 100000000L,
-    /*  9 */ 1000000000L,
-    /* 10 */ 10000000000L,
-    /* 11 */ 100000000000L,
-    /* 12 */ 1000000000000L,
-    /* 13 */ 10000000000000L,
-    /* 14 */ 100000000000000L,
-    /* 15 */ 1000000000000000L,
-    /* 16 */ 10000000000000000L,
-    /* 17 */ 100000000000000000L,
-    /* 18 */ 1000000000000000000L
-};
-
-int numberOfDigits(BID_UINT64 value) {
-    for (int i = 1; i < sizeof(POWERS_OF_TEN) / sizeof(POWERS_OF_TEN[0]); i += 1)
-        if (value < POWERS_OF_TEN[i])
-            return i;
-    return 19;
-}
-
 #define bufferMinLength 511
 #define bufferMinLengthWithZero 512
 BID_THREAD char tls_to_string_buffer[bufferMinLengthWithZero];
