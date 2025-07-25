@@ -4,16 +4,16 @@
 #include <bid_conf.h>
 #include <bid_functions.h>
 
-enum DFP64RoundingMode
+typedef enum 
 {
-    Up = 0,
-    Down = 1,
-    Ceiling = 2,
-    Floor = 3,
-    HalfUp = 4,
-    HalfDown = 5,
-    HalfEven = 6,
-};
+    UP = 0,
+    DOWN = 1,
+    CEILING = 2,
+    FLOOR = 3,
+    HALF_UP = 4,
+    HALF_DOWN = 5,
+    HALF_EVEN = 6,
+} DFP64RoundingMode;
 
 BID_EXTERN_C BID_UINT64 dfp64_round(BID_UINT64 value, int n, enum DFP64RoundingMode roundType);
 BID_EXTERN_C bool dfp64_is_rounded(BID_UINT64 value, int n);

@@ -4,7 +4,8 @@
 
 typedef unsigned int uint;
 
-#define LONG_LOW_PART 0xFFFFFFFFull
+#define LONG_LOW_PART       0xFFFFFFFFull
+#define INT32_MAX_VALUE     0x7fffffffull
 
 int max(int x, int y) {
     return x >= y ? x : y;
@@ -209,6 +210,15 @@ bool dfp64_is_rounded(BID_UINT64 value, int n) {
     }
 }
 
+#define PAIR_DIV(divFactor)    {  BID_UINT64 r21 = coefficientMulR_w21 % divFactor;   coefficientMulR_w21 /= divFactor;   coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor;  }
+#define PAIR_MUL(divFactor)    {  BID_UINT64 lowMul = coefficientMulR_w0 * divFactor;   coefficientMulR_w0 = lowMul & LONG_LOW_PART;   coefficientMulR_w21 = coefficientMulR_w21 * divFactor + (lowMul >> 32);  }
+
+#define PAIR_MUL_TO_DIVFACTOR  {  PAIR_MUL(divFactor01)   if (divFactor02 > 1) PAIR_MUL(divFactor02)   if (divFactor03 > 1) PAIR_MUL(divFactor03)  }
+#define PAIR_DIV_BY_DIVFACTOR  {  PAIR_DIV(divFactor01)   if (divFactor02 > 1) PAIR_DIV(divFactor02)   if (divFactor03 > 1) PAIR_DIV(divFactor03)  }
+
+#define PAIR_DIV_MUL_DIVFACTOR {  PAIR_DIV_BY_DIVFACTOR   PAIR_MUL_TO_DIVFACTOR  }
+
+
 BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP64RoundingMode roundType) {
     if (isNonFinite(value))
         return value;
@@ -310,11 +320,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                 coefficientMulR_w0 = LONG_LOW_PART & divFactor12;
                 coefficientMulR_w21 = divFactor12 >> 32;
 
-                if (divFactor03 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                }
+                if (divFactor03 > 1) PAIR_MUL(divFactor03)
             }
 
         }
@@ -333,9 +339,9 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                 }
 
                 { // divFactor - 1
-                    BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                    BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFull;
                     divFactor_w0 = lowPart & LONG_LOW_PART;
-                    divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >> 32);
+                    divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFull + (lowPart >> 32);
                 }
 
                 {
@@ -344,44 +350,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                     coefficientMulR_w21 += divFactor_w21 + (lowPart >> 32);
                 }
             }
-            { // / divFactor
-                {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor01;
-                    coefficientMulR_w21 /= divFactor01;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor02;
-                    coefficientMulR_w21 /= divFactor02;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor03;
-                    coefficientMulR_w21 /= divFactor03;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
-                }
-            }
-            { // * divFactor
-                {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor01;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >> 32);
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor02;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >> 32);
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                }
-            }
+            PAIR_DIV_MUL_DIVFACTOR
         }
         // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
         break;
@@ -396,44 +365,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
 
         }
         else { // addExponent != 0
-            { // / divFactor
-                {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor01;
-                    coefficientMulR_w21 /= divFactor01;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor02;
-                    coefficientMulR_w21 /= divFactor02;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor03;
-                    coefficientMulR_w21 /= divFactor03;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
-                }
-            }
-            { // * divFactor
-                {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor01;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >> 32);
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor02;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >> 32);
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                }
-            }
+            PAIR_DIV_MUL_DIVFACTOR
         }
         // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
         break;
@@ -447,11 +379,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                     coefficientMulR_w0 = LONG_LOW_PART & divFactor12;
                     coefficientMulR_w21 = divFactor12 >> 32;
 
-                    if (divFactor03 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                    }
+                    if (divFactor03 > 1) PAIR_MUL(divFactor03)
                 }
 
             }
@@ -470,55 +398,18 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                     }
 
                     { // divFactor - 1
-                        BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                        BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFull;
                         divFactor_w0 = lowPart & LONG_LOW_PART;
-                        divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >> 32);
+                        divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFull + (lowPart >> 32);
                     }
 
                     {
                         BID_UINT64 lowPart = coefficientMulR_w0 + divFactor_w0;
                         coefficientMulR_w0 = lowPart & LONG_LOW_PART;
-                        coefficientMulR_w21 += divFactor_w21 + (lowPart >> > 32);
+                        coefficientMulR_w21 += divFactor_w21 + (lowPart >> 32);
                     }
                 }
-                { // / divFactor
-                    {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor01;
-                        coefficientMulR_w21 /= divFactor01;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
-                    }
-
-                    if (divFactor02 > 1) {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor02;
-                        coefficientMulR_w21 /= divFactor02;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
-                    }
-
-                    if (divFactor03 > 1) {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor03;
-                        coefficientMulR_w21 /= divFactor03;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
-                    }
-                }
-                { // * divFactor
-                    {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor01;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >> 32);
-                    }
-
-                    if (divFactor02 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor02;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >> 32);
-                    }
-
-                    if (divFactor03 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                    }
-                }
+                PAIR_DIV_MUL_DIVFACTOR
             }
             // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
 
@@ -533,44 +424,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
 
             }
             else { // addExponent != 0
-                { // / divFactor
-                    {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor01;
-                        coefficientMulR_w21 /= divFactor01;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
-                    }
-
-                    if (divFactor02 > 1) {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor02;
-                        coefficientMulR_w21 /= divFactor02;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
-                    }
-
-                    if (divFactor03 > 1) {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor03;
-                        coefficientMulR_w21 /= divFactor03;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
-                    }
-                }
-                { // * divFactor
-                    {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor01;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >> 32);
-                    }
-
-                    if (divFactor02 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor02;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >> 32);
-                    }
-
-                    if (divFactor03 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                    }
-                }
+                PAIR_DIV_MUL_DIVFACTOR
             }
             // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
         }
@@ -587,44 +441,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
 
             }
             else { // addExponent != 0
-                { // / divFactor
-                    {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor01;
-                        coefficientMulR_w21 /= divFactor01;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
-                    }
-
-                    if (divFactor02 > 1) {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor02;
-                        coefficientMulR_w21 /= divFactor02;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
-                    }
-
-                    if (divFactor03 > 1) {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor03;
-                        coefficientMulR_w21 /= divFactor03;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
-                    }
-                }
-                { // * divFactor
-                    {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor01;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >> 32);
-                    }
-
-                    if (divFactor02 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor02;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >> 32);
-                    }
-
-                    if (divFactor03 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                    }
-                }
+                PAIR_DIV_MUL_DIVFACTOR
             }
             // partsCoefficient = addExponent == 0 ? (partsCoefficient / divFactor) * divFactor : 0;
 
@@ -637,11 +454,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                     coefficientMulR_w0 = LONG_LOW_PART & divFactor12;
                     coefficientMulR_w21 = divFactor12 >> 32;
 
-                    if (divFactor03 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                    }
+                    if (divFactor03 > 1) PAIR_MUL(divFactor03)
                 }
 
             }
@@ -660,9 +473,9 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                     }
 
                     { // divFactor - 1
-                        BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                        BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFull;
                         divFactor_w0 = lowPart & LONG_LOW_PART;
-                        divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >> 32);
+                        divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFull + (lowPart >> 32);
                     }
 
                     {
@@ -671,44 +484,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                         coefficientMulR_w21 += divFactor_w21 + (lowPart >> 32);
                     }
                 }
-                { // / divFactor
-                    {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor01;
-                        coefficientMulR_w21 /= divFactor01;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
-                    }
-
-                    if (divFactor02 > 1) {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor02;
-                        coefficientMulR_w21 /= divFactor02;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
-                    }
-
-                    if (divFactor03 > 1) {
-                        BID_UINT64 r21 = coefficientMulR_w21 % divFactor03;
-                        coefficientMulR_w21 /= divFactor03;
-                        coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
-                    }
-                }
-                { // * divFactor
-                    {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor01;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >> 32);
-                    }
-
-                    if (divFactor02 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor02;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >> 32);
-                    }
-
-                    if (divFactor03 > 1) {
-                        BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                        coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                        coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                    }
-                }
+                PAIR_DIV_MUL_DIVFACTOR
             }
             // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor - 1) / divFactor) * divFactor : divFactor;
         }
@@ -729,7 +505,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                 {
                     BID_UINT64 lowPart = (long)divFactor01 * divFactor02;
                     divFactor_w0 = lowPart & LONG_LOW_PART;
-                    divFactor_w21 = lowPart >> > 32;
+                    divFactor_w21 = lowPart >> 32;
                 }
                 if (divFactor03 > 1) {
                     BID_UINT64 lowMul = divFactor_w0 * divFactor03;
@@ -748,44 +524,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                     coefficientMulR_w21 += divFactor_w21 + (lowPart >> 32);
                 }
             }
-            { // / divFactor
-                {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor01;
-                    coefficientMulR_w21 /= divFactor01;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor02;
-                    coefficientMulR_w21 /= divFactor02;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor03;
-                    coefficientMulR_w21 /= divFactor03;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
-                }
-            }
-            { // * divFactor
-                {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor01;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >> 32);
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor02;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >> 32);
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                }
-            }
+            PAIR_DIV_MUL_DIVFACTOR
         }
         // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2) / divFactor) * divFactor : 0;
         break;
@@ -819,7 +558,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                 }
 
                 { // divFactor - 1
-                    BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                    BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFull;
                     divFactor_w0 = lowPart & LONG_LOW_PART;
                     divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFull + (lowPart >> 32);
                 }
@@ -830,44 +569,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                     coefficientMulR_w21 += divFactor_w21 + (lowPart >> 32);
                 }
             }
-            { // / divFactor
-                {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor01;
-                    coefficientMulR_w21 /= divFactor01;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor02;
-                    coefficientMulR_w21 /= divFactor02;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor03;
-                    coefficientMulR_w21 /= divFactor03;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
-                }
-            }
-            { // * divFactor
-                {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor01;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >> 32);
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor02;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >> 32);
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                }
-            }
+            PAIR_DIV_MUL_DIVFACTOR
         }
         // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1) / divFactor) * divFactor : 0;
         break;
@@ -928,9 +630,9 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                 }
 
                 if (!divisionLatestBit) { // divFactor - 1
-                    BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFL;
+                    BID_UINT64 lowPart = divFactor_w0 + 0xFFFFFFFFull;
                     divFactor_w0 = lowPart & LONG_LOW_PART;
-                    divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFL + (lowPart >> 32);
+                    divFactor_w21 = divFactor_w21 + 0xFFFFFFFFFFFFFFFFull + (lowPart >> 32);
                 }
 
                 {
@@ -939,73 +641,28 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
                     coefficientMulR_w21 += divFactor_w21 + (lowPart >> 32);
                 }
             }
-            { // / divFactor
-                {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor01;
-                    coefficientMulR_w21 /= divFactor01;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor01;
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor02;
-                    coefficientMulR_w21 /= divFactor02;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor02;
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 r21 = coefficientMulR_w21 % divFactor03;
-                    coefficientMulR_w21 /= divFactor03;
-                    coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / divFactor03;
-                }
-            }
-            { // * divFactor
-                {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor01;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor01 + (lowMul >> 32);
-                }
-
-                if (divFactor02 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor02;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor02 + (lowMul >> 32);
-                }
-
-                if (divFactor03 > 1) {
-                    BID_UINT64 lowMul = coefficientMulR_w0 * divFactor03;
-                    coefficientMulR_w0 = lowMul & LONG_LOW_PART;
-                    coefficientMulR_w21 = coefficientMulR_w21 * divFactor03 + (lowMul >> 32);
-                }
-            }
+            PAIR_DIV_MUL_DIVFACTOR
         }
         // partsCoefficient = addExponent == 0 ? ((partsCoefficient + divFactor / 2 - 1 + ((partsCoefficient / divFactor) & 1L)) / divFactor) * divFactor : 0;
         break;
 
-    case UNNECESSARY:
-        if (!isRoundedToReciprocalImpl(
-            addExponent, coefficientMulR_w21, coefficientMulR_w0,
-            divFactor01, divFactor02, divFactor03))
-            throw new ArithmeticException("Rounding necessary");
-
-        return value;
-
     default:
-        throw new IllegalArgumentException("Unsupported roundType(=" + roundType + ") value.");
+        return BID_UINT64_NAN;
     }
 
     { // / r
-        final long r21 = coefficientMulR_w21 % r;
+        BID_UINT64 r21 = coefficientMulR_w21 % r;
         coefficientMulR_w21 /= r;
         coefficientMulR_w0 = ((r21 << 32) | coefficientMulR_w0) / r;
 
-        if (coefficientMulR_w21 > Integer.MAX_VALUE) {
-            final int dn = numberOfDigits(coefficientMulR_w21 / Integer.MAX_VALUE);
-            final int f = (int)POWERS_OF_TEN[dn];
+        if (coefficientMulR_w21 > INT32_MAX_VALUE) {
+            int dn = numberOfDigits(coefficientMulR_w21 / INT32_MAX_VALUE);
+            uint f = (uint)POWERS_OF_TEN[dn];
 
             partsExponent += dn;
 
             {
-                final long f21 = coefficientMulR_w21 % f;
+                BID_UINT64 f21 = coefficientMulR_w21 % f;
                 coefficientMulR_w21 /= f;
                 coefficientMulR_w0 = ((f21 << 32) | coefficientMulR_w0) / f;
             }
@@ -1016,9 +673,9 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
 
     partsExponent += addExponent;
     if (partsCoefficient == 0)
-        return JavaImpl.ZERO;
+        return BID_UINT64_ZERO;
 
-    return pack(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST); // JavaImpl.fromParts(parts)
+    return get_BID64(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST, 0/*nullptr*/);
 }
 
 bool dfp64_is_rounded_to_reciprocal(BID_UINT64 value, int r) {
