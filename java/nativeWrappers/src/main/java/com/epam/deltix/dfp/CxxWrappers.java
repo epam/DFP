@@ -518,6 +518,8 @@ public class CxxWrappers {
             case "D64Bits":
             case "BID_UINT64":
                 return "decimal_native_t";
+            case "BID_SINT64":
+                return "int64_t";
             case "int8":
             case "Int8":
                 return "int8_t";
