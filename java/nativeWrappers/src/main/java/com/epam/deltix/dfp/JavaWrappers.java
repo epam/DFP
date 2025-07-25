@@ -85,6 +85,7 @@ public class JavaWrappers {
             case "decimal64":
             case "D64Bits":
             case "BID_UINT64":
+            case "BID_SINT64":
                 return "long";
             case "int8":
             case "uint8":
@@ -114,6 +115,8 @@ public class JavaWrappers {
                 return "double";
             case "intBool":
                 return "boolean";
+            case "DFP64RoundingMode":
+                return "int";
             default:
                 throw new RuntimeException("Can't convert C++ type (='" + type + "') to Java type.");
         }
