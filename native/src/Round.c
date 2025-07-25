@@ -1,17 +1,16 @@
 #include "Round.h"
 #include "auxiliary.h"
-#include <stdint.h>
 
 typedef unsigned int uint;
 
 #define LONG_LOW_PART       0xFFFFFFFFull
 #define INT32_MAX_VALUE     0x7fffffffull
 
-int max(int x, int y) {
+int int_max(int x, int y) {
     return x >= y ? x : y;
 }
 
-int min(int x, int y) {
+int int_min(int x, int y) {
     return x <= y ? x : y;
 }
 
@@ -19,7 +18,7 @@ bool is_rounded_impl(int addExponent, long partsCoefficient, long divFactor) {
     return addExponent == 0 && partsCoefficient % divFactor == 0;
 }
 
-BID_UINT64 dfp64_round(BID_UINT64 value, int n, enum DFP64RoundingMode roundType) {
+BID_UINT64 dfp64_round(BID_UINT64 value, int n, DFP64RoundingMode roundType) {
     if (isNonFinite(value))
         return value;
     if (n > MAX_EXPONENT)
@@ -219,7 +218,7 @@ bool dfp64_is_rounded(BID_UINT64 value, int n) {
 #define PAIR_DIV_MUL_DIVFACTOR {  PAIR_DIV_BY_DIVFACTOR   PAIR_MUL_TO_DIVFACTOR  }
 
 
-BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP64RoundingMode roundType) {
+BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, DFP64RoundingMode roundType) {
     if (isNonFinite(value))
         return value;
     //if (Math.log10(r) > JavaImpl.MAX_EXPONENT) // Never can happens
@@ -300,11 +299,11 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
     int addExponent;
     {
         int absPower = -unbiasedExponent;
-        int maxPower = min(absPower, min(3 * 9, numberOfDigits(coefficientMulR_w21) + 10 /* low part */));
+        int maxPower = int_min(absPower, int_min(3 * 9, numberOfDigits(coefficientMulR_w21) + 10 /* low part */));
         //divFactor = POWERS_OF_TEN[maxPower];
-        int factor1Power = min(maxPower, 9); // Int can hold max 1_000_000_000
+        int factor1Power = int_min(maxPower, 9); // Int can hold max 1_000_000_000
         divFactor01 = (uint)POWERS_OF_TEN[factor1Power];
-        int factor2Power = min(maxPower - factor1Power, 9);
+        int factor2Power = int_min(maxPower - factor1Power, 9);
         divFactor02 = (uint)POWERS_OF_TEN[factor2Power];
         divFactor03 = (uint)POWERS_OF_TEN[maxPower - factor1Power - factor2Power];
         addExponent = absPower - maxPower;
@@ -678,7 +677,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, enum DFP6
     return get_BID64(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST, 0/*nullptr*/);
 }
 
-bool dfp64_is_rounded_to_reciprocal(BID_UINT64 value, int r) {
+bool dfp64_is_rounded_to_reciprocal(BID_UINT64 value, unsigned int r) {
 }
 
 BID_UINT64 dfp64_shorten_mantissa(BID_UINT64 value, long long delta, int minZerosCount) {

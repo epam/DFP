@@ -121,11 +121,11 @@ OPN(roundTowardsZero, bid64_round_integral_zero(x), BID_UINT64 x)
 OPN(roundToNearestTiesAwayFromZero, bid64_round_integral_nearest_away(x), BID_UINT64 x)
 OPN(roundToNearestTiesToEven, bid64_round_integral_nearest_even(x), BID_UINT64 x)
 
-OPN(round, dfp64_round(value, n, roundType), BID_UINT64 value, int n, enum DFP64RoundingMode roundType)
+OPN(round, dfp64_round(value, n, roundType), BID_UINT64 value, int n, DFP64RoundingMode roundType)
 OPN_BOOL(isRounded, dfp64_is_rounded(value, n), BID_UINT64 value, int n)
 
-OPN(roundToReciprocal, dfp64_round_to_reciprocal(value, r, roundType), BID_UINT64 value, int r, enum DFP64RoundingMode roundType)
-OPN_BOOL(isRoundedToReciprocal, dfp64_is_rounded_to_reciprocal(value, r), BID_UINT64 value, int r)
+OPN(roundToReciprocal, dfp64_round_to_reciprocal(value, r, roundType), BID_UINT64 value, unsigned int r, DFP64RoundingMode roundType)
+OPN_BOOL(isRoundedToReciprocal, dfp64_is_rounded_to_reciprocal(value, r), BID_UINT64 value, unsigned int r)
 
 OPN(shortenMantissa, dfp64_shorten_mantissa(value, delta, minZerosCount), BID_UINT64 value, BID_SINT64 delta, int minZerosCount)
 
