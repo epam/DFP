@@ -121,13 +121,13 @@ OPN(roundTowardsZero, bid64_round_integral_zero(x), BID_UINT64 x)
 OPN(roundToNearestTiesAwayFromZero, bid64_round_integral_nearest_away(x), BID_UINT64 x)
 OPN(roundToNearestTiesToEven, bid64_round_integral_nearest_even(x), BID_UINT64 x)
 
-OPN(round, dfp64_round(value, n, roundType), BID_UINT64 value, int n, DFP64RoundingMode roundType)
-OPN_BOOL(isRounded, dfp64_is_rounded(value, n), BID_UINT64 value, int n)
+OPN(round, dfp64_round(value, n, roundType), BID_UINT64 value, int32 n, DFP64RoundingMode roundType)
+OPN_BOOL(isRounded, dfp64_is_rounded(value, n), BID_UINT64 value, int32 n)
 
-OPN(roundToReciprocal, dfp64_round_to_reciprocal(value, r, roundType), BID_UINT64 value, unsigned int r, DFP64RoundingMode roundType)
-OPN_BOOL(isRoundedToReciprocal, dfp64_is_rounded_to_reciprocal(value, r), BID_UINT64 value, unsigned int r)
+OPN(roundToReciprocal, dfp64_round_to_reciprocal(value, r, roundType), BID_UINT64 value, uint32 r, DFP64RoundingMode roundType)
+OPN_BOOL(isRoundedToReciprocal, dfp64_is_rounded_to_reciprocal(value, r), BID_UINT64 value, uint32 r)
 
-OPN(shortenMantissa, dfp64_shorten_mantissa(value, delta, minZerosCount), BID_UINT64 value, BID_SINT64 delta, int minZerosCount)
+OPN(shortenMantissa, dfp64_shorten_mantissa(value, delta, minZerosCount), BID_UINT64 value, BID_SINT64 delta, uint32 minZerosCount)
 
 //endregion
 
@@ -167,7 +167,7 @@ OPN(mean2, bid64_div(bid64_add(a, b), twoConst), BID_UINT64 a, BID_UINT64 b)
 //region Parts processing
 
 OPNR(getUnscaledValue, BID_SINT64, dfp64_get_unscaled_value(x, abnormalReturn), BID_UINT64 x, BID_SINT64 abnormalReturn)
-OPNR(getScale, int, dfp64_get_scale(x, abnormalReturn), BID_UINT64 x, BID_SINT64 abnormalReturn)
+OPNR(getScale, int32, dfp64_get_scale(x, abnormalReturn), BID_UINT64 x, BID_SINT64 abnormalReturn)
 
 //endregion
 

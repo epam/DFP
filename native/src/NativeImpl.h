@@ -1,5 +1,6 @@
 #pragma once
 
+#include "NativeTypes.h"
 #include <bid_conf.h>
 #include <bid_functions.h>
 
@@ -44,15 +45,6 @@
 #define PPCAT(A, B) PPCAT_NX(A, B)
 
 typedef BID_UINT64          decimal64;
-typedef char                int8;
-typedef unsigned char       uint8;
-typedef short               int16;
-typedef unsigned short      uint16;
-typedef int                 int32;
-typedef unsigned int        uint32;
-typedef long long           int64;
-typedef unsigned long long  uint64;
-typedef int                 intBool;
 
 //https://stackoverflow.com/questions/4079243/how-can-i-use-sizeof-in-a-preprocessor-macro
 #define STATIC_ASSERT(condition) typedef char p__LINE__[ (condition) ? 1 : -1];
@@ -94,14 +86,3 @@ JNI_API(mcr__type) PPCAT(PPCAT(JavaCritical_, JAVA_PREFIX), mcr__name) (__VA_ARG
 static const BID_UINT64 nanConst =  0x7C00000000000000ull;
 static const BID_UINT64 zeroConst = 0x31C0000000000000ull;
 static const BID_UINT64 twoConst =  0x31C0000000000002ull;
-
-typedef double      Float64;
-typedef float       Float32;
-typedef int64       Int64;
-typedef uint64      UInt64;
-typedef int32       Int32;
-typedef uint32      UInt32;
-typedef int16       Int16;
-typedef uint16      UInt16;
-typedef int8        Int8;
-typedef uint8       UInt8;

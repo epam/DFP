@@ -26,7 +26,7 @@ BID_EXTERN_C BID_SINT64 dfp64_get_unscaled_value(BID_UINT64 value, BID_SINT64 ab
     }
 }
 
-BID_EXTERN_C int dfp64_get_scale(BID_UINT64 value, int abnormalReturn) {
+BID_EXTERN_C int32 dfp64_get_scale(BID_UINT64 value, int abnormalReturn) {
     if (!isSpecial(value)) {
         return -((int)((value >> EXPONENT_SHIFT_SMALL64) & EXPONENT_MASK64) - EXPONENT_BIAS);
     }

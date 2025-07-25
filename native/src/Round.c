@@ -1,8 +1,6 @@
 #include "Round.h"
 #include "auxiliary.h"
 
-typedef unsigned int uint;
-
 #define LONG_LOW_PART       0xFFFFFFFFull
 #define INT32_MAX_VALUE     0x7fffffffull
 
@@ -18,7 +16,7 @@ bool is_rounded_impl(int addExponent, long partsCoefficient, long divFactor) {
     return addExponent == 0 && partsCoefficient % divFactor == 0;
 }
 
-BID_UINT64 dfp64_round(BID_UINT64 value, int n, DFP64RoundingMode roundType) {
+BID_UINT64 dfp64_round(BID_UINT64 value, int32 n, DFP64RoundingMode roundType) {
     if (isNonFinite(value))
         return value;
     if (n > MAX_EXPONENT)
@@ -140,7 +138,7 @@ BID_UINT64 dfp64_round(BID_UINT64 value, int n, DFP64RoundingMode roundType) {
     return get_BID64(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST, 0/*nullptr*/);
 }
 
-bool dfp64_is_rounded(BID_UINT64 value, int n) {
+bool dfp64_is_rounded(BID_UINT64 value, int32 n) {
     if (isNonFinite(value))
         return false;
     if (n > MAX_EXPONENT)
@@ -218,7 +216,7 @@ bool dfp64_is_rounded(BID_UINT64 value, int n) {
 #define PAIR_DIV_MUL_DIVFACTOR {  PAIR_DIV_BY_DIVFACTOR   PAIR_MUL_TO_DIVFACTOR  }
 
 
-BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, DFP64RoundingMode roundType) {
+BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, uint32 r, DFP64RoundingMode roundType) {
     if (isNonFinite(value))
         return value;
     //if (Math.log10(r) > JavaImpl.MAX_EXPONENT) // Never can happens
@@ -295,17 +293,17 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, DFP64Roun
     }
 
     //final long divFactor;
-    uint divFactor01, divFactor02, divFactor03; // divFactor = divFactor1 * divFactor2 * divFactor3
+    uint32 divFactor01, divFactor02, divFactor03; // divFactor = divFactor1 * divFactor2 * divFactor3
     int addExponent;
     {
         int absPower = -unbiasedExponent;
         int maxPower = int_min(absPower, int_min(3 * 9, numberOfDigits(coefficientMulR_w21) + 10 /* low part */));
         //divFactor = POWERS_OF_TEN[maxPower];
         int factor1Power = int_min(maxPower, 9); // Int can hold max 1_000_000_000
-        divFactor01 = (uint)POWERS_OF_TEN[factor1Power];
+        divFactor01 = (uint32)POWERS_OF_TEN[factor1Power];
         int factor2Power = int_min(maxPower - factor1Power, 9);
-        divFactor02 = (uint)POWERS_OF_TEN[factor2Power];
-        divFactor03 = (uint)POWERS_OF_TEN[maxPower - factor1Power - factor2Power];
+        divFactor02 = (uint32)POWERS_OF_TEN[factor2Power];
+        divFactor03 = (uint32)POWERS_OF_TEN[maxPower - factor1Power - factor2Power];
         addExponent = absPower - maxPower;
     }
 
@@ -656,7 +654,7 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, DFP64Roun
 
         if (coefficientMulR_w21 > INT32_MAX_VALUE) {
             int dn = numberOfDigits(coefficientMulR_w21 / INT32_MAX_VALUE);
-            uint f = (uint)POWERS_OF_TEN[dn];
+            uint32 f = (uint32)POWERS_OF_TEN[dn];
 
             partsExponent += dn;
 
@@ -677,9 +675,9 @@ BID_UINT64 dfp64_round_to_reciprocal(BID_UINT64 value, unsigned int r, DFP64Roun
     return get_BID64(partsSignMask, partsExponent, partsCoefficient, BID_ROUNDING_TO_NEAREST, 0/*nullptr*/);
 }
 
-bool dfp64_is_rounded_to_reciprocal(BID_UINT64 value, unsigned int r) {
+bool dfp64_is_rounded_to_reciprocal(BID_UINT64 value, uint32 r) {
 }
 
-BID_UINT64 dfp64_shorten_mantissa(BID_UINT64 value, long long delta, int minZerosCount) {
+BID_UINT64 dfp64_shorten_mantissa(BID_UINT64 value, BID_SINT64 delta, uint32 minZerosCount) {
 
 }

@@ -561,6 +561,8 @@ public class CxxWrappers {
             case "uint32 *":
             case "uint32*":
                 return "uint32_t *";
+            case "DFP64RoundingMode":
+                return "DFP64RoundingMode";
             default:
                 throw new RuntimeException("Can't convert C++ type (='" + type + "') to C type.");
         }

@@ -126,6 +126,8 @@ public class CsWrappers {
             case "D64Bits":
             case "BID_UINT64":
                 return "UInt64";
+            case "BID_SINT64":
+                return "Int64";
             case "int8":
             case "Int8":
                 return "SByte";
@@ -166,6 +168,8 @@ public class CsWrappers {
             case "uint32 *":
             case "uint32*":
                 return "out uint";
+            case "DFP64RoundingMode":
+                return "UInt32";
             default:
                 throw new RuntimeException("Can't convert C++ type (='" + type + "') to Cs type.");
         }
