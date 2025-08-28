@@ -13,6 +13,8 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import static com.epam.deltix.dfp.Decimal64Utils.*;
@@ -1098,5 +1100,16 @@ public class JavaImplTest {
                 assertEquals(testCase.floatOut, testValue.floatAppendTo((Appendable) sb).toString());
             }
         }
+    }
+
+    @Test
+    public void issue110BoxedEquals() {
+        Map<String, Long> cache = new HashMap<>();
+        @Decimal long val = Decimal64Utils.fromDouble(0.5);
+        cache.put("val", val);
+        @Decimal long val2 = Decimal64Utils.fromDouble(0.5);
+        assertTrue(val2 == cache.get("val"));
+        assertTrue(Decimal64Utils.compareTo(val2, cache.get("val")) == 0);
+        assertTrue(Decimal64Utils.equals(val2, cache.get("val")));
     }
 }
