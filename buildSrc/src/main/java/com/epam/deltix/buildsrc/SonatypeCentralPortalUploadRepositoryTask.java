@@ -108,10 +108,9 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask {
         }
 
         String userNameAndPassword = portalUsername.get() + ":" + portalPassword.get();
-        String basicAuth = Base64.getEncoder().encodeToString(userNameAndPassword.getBytes(StandardCharsets.US_ASCII));
-        String bearer = "Bearer " + basicAuth;
-
+        String bearer = Base64.getEncoder().encodeToString(userNameAndPassword.getBytes(StandardCharsets.US_ASCII));
         URI apiUri = URI.create(CENTRAL_PORTAL_OSSRH_API_URI);
+
         String repositoryKey = findOpenRepository(apiUri, bearer);
         uploadRepositoryToPortal(apiUri, bearer, repositoryKey);
         dropRepository(apiUri, bearer, repositoryKey);
@@ -123,27 +122,26 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask {
         conn.setConnectTimeout(CONNECTION_TIMEOUT);
         conn.setReadTimeout(CONNECTION_TIMEOUT);
         conn.setRequestMethod("GET");
-        conn.setRequestProperty("Authorization", bearer);
+        conn.setRequestProperty("Authorization", "Bearer " + bearer);
 
         int status = conn.getResponseCode();
         String body = readBody(conn);
-
         if (status != 200) {
             throw new IllegalStateException("Failed to query repositories: " +
                 "status=" + status + ", response=" + body);
         }
 
-        final JSONArray repositories = new JSONObject(body).getJSONArray("repositories");
+        JSONArray repositories = new JSONObject(body).getJSONArray("repositories");
         if (repositories.isEmpty()) {
             throw new IllegalStateException("No open repositories found!");
         }
 
         String repositoryKey = null;
-        final String group = groupId.get();
+        String group = groupId.get();
         for (int i = 0; i < repositories.length(); i++) {
-            final JSONObject repo = (JSONObject) repositories.get(i);
+            JSONObject repo = (JSONObject) repositories.get(i);
             if ("open".equals(repo.getString("state"))) {
-                final String key = repo.getString("key");
+                String key = repo.getString("key");
                 if (key.contains(group)) {
                     repositoryKey = key;
                     break;
@@ -163,13 +161,12 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask {
         conn.setConnectTimeout(CONNECTION_TIMEOUT);
         conn.setReadTimeout(CONNECTION_TIMEOUT);
         conn.setRequestMethod("POST");
-        conn.setRequestProperty("Authorization", bearer);
+        conn.setRequestProperty("Authorization", "Bearer " + bearer);
         conn.setDoOutput(true);
-        conn.getOutputStream().close(); // no body
+        conn.getOutputStream().close();
 
         int status = conn.getResponseCode();
         String body = readBody(conn);
-
         if (status != 200) {
             throw new IllegalStateException("Failed to upload repository: repository_key=" + repositoryKey + ", status=" + status + ", response=" + body);
         }
@@ -181,11 +178,10 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask {
         conn.setConnectTimeout(CONNECTION_TIMEOUT);
         conn.setReadTimeout(CONNECTION_TIMEOUT);
         conn.setRequestMethod("DELETE");
-        conn.setRequestProperty("Authorization", bearer);
+        conn.setRequestProperty("Authorization", "Bearer " + bearer);
 
         int status = conn.getResponseCode();
         String body = readBody(conn);
-
         if (status != 204) {
             throw new IllegalStateException("Failed to drop repository: repository_key=" + repositoryKey + ", status=" + status + ", response=" + body);
         }
@@ -195,17 +191,20 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask {
         InputStream stream;
         try {
             stream = (conn.getResponseCode() < 400) ? conn.getInputStream() : conn.getErrorStream();
-            if (stream == null) return "";
+            if (stream == null) {
+                return "";
+            }
         } catch (IOException e) {
             return "";
         }
-        BufferedReader in = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+
         StringBuilder body = new StringBuilder();
-        String line;
-        while ((line = in.readLine()) != null) {
-            body.append(line);
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                body.append(line);
+            }
         }
-        in.close();
         return body.toString();
     }
 }

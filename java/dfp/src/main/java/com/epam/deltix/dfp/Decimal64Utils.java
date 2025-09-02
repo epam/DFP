@@ -285,7 +285,8 @@ public class Decimal64Utils {
      */
     public static boolean equals(@Decimal final long a, final Object b) {
         return (b == null && NULL == a)
-            || (b instanceof Decimal64 && equals(a, ((Decimal64) b).value));
+            || (b instanceof Decimal64 && equals(a, ((Decimal64) b).value))
+            || (b instanceof Long && equals(a, (long) b));
     }
 
     /**

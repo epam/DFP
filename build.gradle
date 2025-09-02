@@ -32,3 +32,13 @@ allprojects {
     project.ext.set("javaPrefix", "com_epam_deltix_dfp_NativeImpl_")
     project.ext.set("javaMathPrefix", "com_epam_deltix_dfpmath_NativeMathImpl_")
 }
+
+def rUser = findProperty('SONATYPE_NEXUS_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: "FakeUser"
+def rPass = findProperty('SONATYPE_NEXUS_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: "FakePass"
+
+tasks.register('uploadArtifactsToCentralPortal', com.epam.deltix.buildsrc.SonatypeCentralPortalUploadRepositoryTask) {
+    portalUsername.set(rUser)
+    portalPassword.set(rPass)
+    groupId.set('com.epam.deltix')
+    snapshotRelease.set(!version.endsWith("SNAPSHOT"))
+}
