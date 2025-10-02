@@ -19,11 +19,16 @@ We recommend using Decimal64Util.fromLong(123) or predefined constants like Deci
 
 ### Infix operators and similar
 
-Examples that probably won't work as intended (assuming all variables are @Decimal):
+Examples that won't work as intended (assuming all variables are @Decimal):
 
 * `` remainingQuantity = childQuantity/100; ``
 * `` if (remainingQuantity >= childQuantity) {} ``
 * `` remainingQuantity -= childQuantity; ``
+
+For all cases above you have to use appropriate `Decimal64Utils` functions:
+* `` remainingQuantity = Decimal64Utils.divideByInteger(childQuantity, 100); ``
+* ``if (Decimal64Utils.isGreaterOrEqual(remainingQuantity, childQuantity)) {} ``
+* `` remainingQuantity = Decimal64Utils.subtract(remainingQuantity, childQuantity); ``
 
 
 ### Using of `java.lang.Math`` functions:
@@ -33,15 +38,16 @@ Accidental (or not) usage of Math library function to operate on @Decimal number
 ```java
 @Decimal long childQuantity = Decimal64Utils.subtract(Math.min(remainingQuantity, displayQuantity), quantityOnTheMarket); // BUG
 ```
- 
+
 ### Conversion from ``double``
 
-Many Java APIs use `double` for market data prices and sizes. Problem is - when you convert double to decimal64 rounding errors are likely. For example, double value 99.085 will be converted as 99.08499999999999. You need to round results. 
+Many Java APIs use `double` for market data prices and sizes. Problem is - when you convert `double` to `Decimal64` rounding errors are likely. For example, double value 99.085 will be converted as 99.08499999999999. You need to round results.
  For example, to convert price of some instrument use tick size:
 
-```java 
+```java
   @Decimal rawPrice = Decimal64Utils.fromDouble(99.085); // 99.08499999999999
-  @Decimal long tickSize = instrument.getTickSize(); // e.g. 0.005 
+  @Decimal long tickSize = instrument.getTickSize(); // e.g. 0.005
   Decimal64Utils.round(rawPrice, tickSize); // produces 99.085
  ```
- 
+
+It's important to understand that the error is in `double` representation itself and
