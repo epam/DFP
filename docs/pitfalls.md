@@ -50,4 +50,5 @@ Many Java APIs use `double` for market data prices and sizes. Problem is - when 
   Decimal64Utils.round(rawPrice, tickSize); // produces 99.085
  ```
 
-It's important to understand that the error is in `double` representation itself and
+It's important to understand that the source of the error here is not in the Decimal64 representation or in the conversion process,
+but in the `double` representation itself, because the decimal value `99.085` cannot be represented exactly in binary floating-point format.
