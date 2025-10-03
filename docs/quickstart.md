@@ -4,7 +4,7 @@ Add the following dependency to your Java project (Gradle sample):
 
 ```groovy
 dependencies {
-    compile 'com.epam.deltix:dfp:0.11.23'
+    compile 'com.epam.deltix:dfp:1.0.10'
 }
 ```
 
@@ -16,9 +16,10 @@ import com.epam.deltix.dfp.Decimal64Utils;
 @Decimal long commission = Decimal64Utils.fromFixedPoint(8, 4); // 8 basis points, 0.0008
 @Decimal long price = Decimal64Utils.fromDouble (123.45);
 @Decimal long adjustedPrice = Decimal64Utils.add (price, Decimal64Utils.multiply (price, commission));
+System.out.println(Decimal64Utils.toString(adjustedPrice));
 ```
 
-This may look a bit bulky, but if you are familiar with similar libraries like Joda Money, or BigDecimal, you will find it reasonable. 
+This may look a bit bulky, but if you are familiar with similar libraries like Joda Money, or BigDecimal, you will find it reasonable.
 
 ## Key points:
 
@@ -42,8 +43,8 @@ Another example. This time we illustrate conversion from string and back:
       // logger.info("Processed quantity %s).withDecimal(result);
    } catch (NumberFormatException e) {
       throw new IllegalArgumentException ("Bad quantity: \" + quantityText + '"');
-   }  
-   return result; 
+   }
+   return result;
 }
 ```
 
@@ -69,8 +70,8 @@ System.out.println("Decimal64: 0,3 - 0,2 = " + (Decimal64Utils.toString(b3))); /
 ```
 # Decimal64 Value Type
 
-For people who prefer strong type safety and want to avoid mixing `long` values with `@Decimal long` Deltix offers Decimal64 value type. 
-General idea is that DFP values are represented by immutable instances of class Decimal64. Special runtime agent converts usages of Decimal64 to primitive `long` using nifty bytecode modification technique. 
+For people who prefer strong type safety and want to avoid mixing `long` values with `@Decimal long` Deltix offers Decimal64 value type.
+General idea is that DFP values are represented by immutable instances of class Decimal64. Special runtime agent converts usages of Decimal64 to primitive `long` using nifty bytecode modification technique.
 
 Decimal64 gives you both type safe Decimal operations and runtime effectiveness of primitive data type.
 
