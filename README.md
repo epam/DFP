@@ -21,12 +21,14 @@ DFP uses Java `long` primitive type to represent base-10 floating point numbers.
 
 ## Supported languages
 * Java - pure Java implementation (since version 0.12). Supported on all platforms where Java is supported.
-* .NET - wrapper over C implementation with some functions re-written in C#. Supported platforms are same as for C implementation.
-* C/C++ - based on [Intel Decimal Floating Point Math Library](https://www.intel.com/content/www/us/en/developer/articles/tool/intel-decimal-floating-point-math-library.html) with some additional APIs (like string parsing and specialized math functions). Supported platforms:
+* .NET - wrapper over C implementation with some functions re-written in C#. Supported platforms:
   * x86-64 (Windows, Linux, Mac)
   * x86 (Windows, Linux)
   * arm64 (Linux, Mac)
   * arm7 (Linux)
+* C/C++ - based on [Intel Decimal Floating Point Math Library](https://www.intel.com/content/www/us/en/developer/articles/tool/intel-decimal-floating-point-math-library.html) with some additional APIs (like string parsing and specialized math functions).
+  * Please see [DFP on Conan](https://conan.io/center/recipes/dfp) for supported platforms.
+
 
 # How to use
 ## Java
