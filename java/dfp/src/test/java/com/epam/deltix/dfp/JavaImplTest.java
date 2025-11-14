@@ -1112,4 +1112,27 @@ public class JavaImplTest {
         assertTrue(Decimal64Utils.compareTo(val2, cache.get("val")) == 0);
         assertTrue(Decimal64Utils.equals(val2, cache.get("val")));
     }
+
+    // https://github.com/epam/DFP/issues/110
+    @Test
+    public void issue110BoxedEquals_2() {
+        Map<String, Decimal64> cache = new HashMap<>();
+        Decimal64 val = Decimal64.fromDouble(0.5);
+        cache.put("val", val);
+        @Decimal long val2 = Decimal64Utils.fromDouble(0.5);
+
+        // Compare unboxed value with boxed value (the best way for this case)
+        assertTrue(Decimal64Utils.equals(val2, cache.get("val")));
+
+        // Compare boxed values
+        assertTrue(Decimal64.fromUnderlying(val2).equals(cache.get("val")));
+
+        // Compare binary representations
+        assertTrue(val2 == Decimal64.toUnderlying(cache.get("val")));
+        assertTrue(Decimal64Utils.compareTo(val2, Decimal64.toUnderlying(cache.get("val"))) == 0);
+
+        // Compare binary representations with use of new toUnderlying()
+        assertTrue(val2 == cache.get("val").toUnderlying()); // May produce NPE, if no value in the cache!
+        assertTrue(Decimal64Utils.compareTo(val2, cache.get("val").toUnderlying()) == 0); // May produce NPE, if no value in the cache!
+    }
 }

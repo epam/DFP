@@ -13,6 +13,11 @@ public class Decimal64Test {
     }
 
     @Test
+    public void unboxInstance() {
+        Assert.assertEquals(5L, Decimal64.fromUnderlying(5L).toUnderlying());
+    }
+
+    @Test
     public void equality() {
 
         Decimal64 a = Decimal64.fromDouble(12345.6789);
