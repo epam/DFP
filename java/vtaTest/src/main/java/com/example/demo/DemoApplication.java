@@ -39,5 +39,7 @@ public class DemoApplication {
             sDecimal.toScientificString() + "(=0x" + Long.toHexString(Decimal64.toUnderlying(sDecimal)) + "L) ) = " +
             qDecimal.toScientificString() + "(=0x" + Long.toHexString(Decimal64.toUnderlying(qDecimal)) + "L) ) is a double " +
             q + "(=0x" + Long.toHexString(Double.doubleToRawLongBits(q)) + "L)");
+
+        System.out.println(Decimal64.fromUnderlying(aDecimal.toUnderlying()));
     }
 }

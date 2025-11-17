@@ -309,11 +309,6 @@ public class Decimal64Utils {
         return value;
     }
 
-    @Decimal
-    public static long toUnderlying(@Decimal final long value) {
-        return value;
-    }
-
     /**
      * Create {@code @Decimal long} value from {@code BigDecimal} binary floating point value.
      * <p>Note that not all binary FP values can be exactly represented as decimal FP values.
@@ -3126,6 +3121,20 @@ public class Decimal64Utils {
     public static int compareToChecked(@Decimal final long a, final Object b) {
         checkNull(a);
         return compareTo(a, ((Decimal64) b).value);
+    }
+
+    /**
+     * Checks underlying binary value for null-value and returns it; do not use directly.
+     *
+     * @param value 64-bit DFP value
+     * @return same 64-bit DFP value (unless it is DFP null-value)
+     * @throws NullPointerException if the value is null
+     */
+    @Deprecated
+    @Decimal
+    public static long toUnderlyingChecked(@Decimal final long value) {
+        checkNull(value);
+        return value;
     }
 
     /// endregion
