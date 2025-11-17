@@ -1125,7 +1125,9 @@ public class JavaImplTest {
         assertTrue(Decimal64Utils.equals(val2, cache.get("val")));
 
         // Compare boxed values
-        assertTrue(Decimal64.fromUnderlying(val2).equals(cache.get("val")));
+        Decimal64 value2boxed = Decimal64.fromUnderlying(val2);
+        assertTrue(value2boxed.equals(cache.get("val")));
+        assertTrue(value2boxed.compareTo(cache.get("val")) == 0);
 
         // Compare binary representations
         assertTrue(val2 == Decimal64.toUnderlying(cache.get("val")));
