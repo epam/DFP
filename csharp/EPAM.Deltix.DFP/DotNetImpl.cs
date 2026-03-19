@@ -1429,6 +1429,8 @@ namespace EPAM.Deltix.DFP
 		{
 			if (!IsFinite(value))
 			{
+				if (IsNull(value))
+					return "Null";
 				// Value is either Inf or NaN
 				// TODO: Do we need SNaN?
 				return IsNaN(value) ? "NaN" : SignBit(value) ? "-Infinity" : "Infinity";
