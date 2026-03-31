@@ -117,7 +117,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
 
     final long value;
 
-    Decimal64(final long value) {
+    Decimal64(@Decimal final long value) {
         this.value = value;
     }
 
@@ -129,7 +129,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @param value 64-bit DFP value
      * @return new {@code Decimal64} instance
      */
-    public static Decimal64 fromUnderlying(final long value) {
+    public static Decimal64 fromUnderlying(@Decimal final long value) {
         return Decimal64Utils.NULL == value ? null : new Decimal64(value);
     }
 
@@ -139,8 +139,19 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @param obj {@code Decimal64} instance, {@code null} can be passed too
      * @return underlying binary representation as {@code long}
      */
+    @Decimal
     public static long toUnderlying(final Decimal64 obj) {
         return null == obj ? Decimal64Utils.NULL : obj.value;
+    }
+
+    /**
+     * Get binary representation as {@code long} (unboxing).
+     *
+     * @return underlying binary representation as {@code long}
+     */
+    @Decimal
+    public long toUnderlying() {
+        return value;
     }
 
     /**
@@ -358,6 +369,7 @@ public class Decimal64 extends Number implements Comparable<Decimal64> {
      * @see #equals(Decimal64, Decimal64)
      * @see #equals(Object)
      */
+    @SuppressWarnings("NumberEquality")
     public boolean equals(final Decimal64 other) {
         return this == other || other != null && Decimal64Utils.equals(this.value, other.value);
     }
